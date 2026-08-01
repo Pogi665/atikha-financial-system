@@ -161,7 +161,7 @@ function gemini_extract_receipt(string $absPath, string $mimeType, array $catego
         return $fail('Unable to build the AI request.');
     }
 
-    $model = defined('GEMINI_MODEL') && GEMINI_MODEL !== '' ? GEMINI_MODEL : 'gemini-2.5-flash';
+    $model = defined('GEMINI_MODEL') && GEMINI_MODEL !== '' ? GEMINI_MODEL : 'gemini-2.0-flash';
     $timeout = defined('GEMINI_TIMEOUT') ? (int) GEMINI_TIMEOUT : 45;
 
     $ch = curl_init(GEMINI_ENDPOINT_BASE . rawurlencode($model) . ':generateContent');
