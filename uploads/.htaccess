@@ -1,0 +1,36 @@
+# Defence in depth: even if a malicious file survives validation, Apache must
+# never execute anything in this directory.
+#
+# php_flag only exists when PHP runs as an Apache module, so each one is guarded:
+# an unguarded php_flag returns HTTP 500 under PHP-FPM/CGI. php_admin_flag is
+# deliberately NOT used - Apache rejects it in .htaccess context ("php_admin_flag
+# not allowed here") and 500s the whole directory.
+# The FilesMatch block below is the guard that works in every configuration.
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php5.c>
+    php_flag engine off
+</IfModule>
+
+<FilesMatch "\.(?i:php|phtml|php3|php4|php5|php7|php8|phps|pht|phar|cgi|pl|py|asp|aspx|jsp|shtml|htaccess)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .pht .phar
+    RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .pht .phar
+    AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .pht .phar
+</IfModule>
+
+Options -ExecCGI -Indexes

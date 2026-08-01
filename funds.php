@@ -7,8 +7,9 @@ if (empty($_SESSION['UserID'])) {
 }
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/includes/categories.php';
 
-$categories = ['Donation', 'Grant', 'Fundraiser', 'Sponsorship', 'Other'];
+$categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_FUND);
 $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -96,6 +97,12 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
             >
                 Expenses
+            </a>
+            <a
+                href="ocr_expense.php"
+                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+            >
+                Scan Receipt
             </a>
             <a
                 href="reports.php"

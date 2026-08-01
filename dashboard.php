@@ -66,6 +66,12 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 Expenses
             </a>
             <a
+                href="ocr_expense.php"
+                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+            >
+                Scan Receipt
+            </a>
+            <a
                 href="reports.php"
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
             >

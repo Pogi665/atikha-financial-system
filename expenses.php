@@ -7,9 +7,11 @@ if (empty($_SESSION['UserID'])) {
 }
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/includes/categories.php';
 
-$categories = ['Utilities', 'Payroll', 'Office Supplies', 'Event Costs', 'Equipment', 'Miscellaneous'];
+$categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
 $errorMessage = '';
+$successMessage = isset($_GET['saved']) ? 'Expense saved successfully.' : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payee = isset($_POST['payee']) ? trim($_POST['payee']) : '';
@@ -98,6 +100,12 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 Expenses
             </a>
             <a
+                href="ocr_expense.php"
+                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+            >
+                Scan Receipt
+            </a>
+            <a
                 href="reports.php"
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
             >
@@ -134,6 +142,14 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
                     <p class="text-sm text-red-600 font-medium">
                         <?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($successMessage !== ''): ?>
+                <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
+                    <p class="text-sm text-emerald-700 font-medium">
+                        <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
                     </p>
                 </div>
             <?php endif; ?>
