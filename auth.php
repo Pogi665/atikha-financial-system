@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/includes/logger.php';
 
 session_start();
 
@@ -32,6 +33,17 @@ try {
         $_SESSION['UserID'] = $user['UserID'];
         $_SESSION['FullName'] = $user['FullName'];
         $_SESSION['Role'] = $user['Role'];
+
+        log_system_action(
+            $pdo,
+            (int) $user['UserID'],
+            AUDIT_ACTION_LOGIN,
+            'Auth',
+            null,
+            null,
+            ['email' => $email, 'role' => $user['Role']]
+        );
+
         header('Location: dashboard.php');
         exit;
     }

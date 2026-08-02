@@ -9,6 +9,7 @@ if (empty($_SESSION['UserID'])) {
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
 require_once __DIR__ . '/includes/gemini_client.php';
+require_once __DIR__ . '/includes/logger.php';
 
 if (is_file(__DIR__ . '/config.php')) {
     require_once __DIR__ . '/config.php';
@@ -292,6 +293,26 @@ if ($action === 'upload') {
                 error_log('Failed to update receipt OCR status: ' . $e->getMessage());
             }
 
+            log_system_action(
+                $pdo,
+                $userId,
+                AUDIT_ACTION_CREATE,
+                'OCR',
+                $receiptId,
+                null,
+                [
+                    // record_id is a ReceiptID here, not an ExpenseID.
+                    'entity'            => 'receipt',
+                    'receipt_id'        => $receiptId,
+                    'original_filename' => $stored['original'],
+                    'mime_type'         => $stored['mime'],
+                    'file_size'         => $stored['size'],
+                    'ocr_status'        => $ocr['ok'] ? 'Processed' : 'Failed',
+                    'ocr_error'         => $ocr['ok'] ? null : $ocr['error'],
+                ],
+                receipt_public_url($stored['path'])
+            );
+
             $_SESSION['pending_receipt_id'] = $receiptId;
 
             header('Location: ' . $_SERVER['PHP_SELF'] . '?receipt=' . $receiptId);
@@ -319,6 +340,22 @@ if ($action === 'discard') {
             ]);
 
             @unlink(receipt_absolute_path($target['File_Path']));
+
+            log_system_action(
+                $pdo,
+                $userId,
+                AUDIT_ACTION_DELETE,
+                'OCR',
+                $receiptId,
+                [
+                    'entity'     => 'receipt',
+                    'receipt_id' => $receiptId,
+                    'file_path'  => $target['File_Path'],
+                    'ocr_status' => $target['OCR_Status'],
+                ],
+                ['entity' => 'receipt', 'ocr_status' => 'Discarded', 'image_removed' => true],
+                receipt_public_url($target['File_Path'])
+            );
         }
 
         unset($_SESSION['pending_receipt_id']);
@@ -391,6 +428,48 @@ if ($action === 'save') {
                     'ocr_status' => 'Processed',
                     'receipt_id' => $receiptId,
                 ]);
+
+                // Inside the transaction on purpose: if the audit row cannot be
+                // written, the expense is rolled back rather than saved
+                // unlogged.
+                $aiValues = gemini_normalized_from_raw((string) ($target['OCR_Raw_JSON'] ?? ''), $categories);
+
+                log_system_action(
+                    $pdo,
+                    $userId,
+                    AUDIT_ACTION_CREATE,
+                    'OCR',
+                    $expenseId,
+                    null,
+                    [
+                        // record_id is the new ExpenseID; receipt_id ties it back
+                        // to the scanned image in source_link.
+                        'entity'           => 'expense',
+                        'payee'            => $payee,
+                        'category'         => $category,
+                        'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
+                        'date_incurred'    => $dateIncurred,
+                        'receipt_id'       => $receiptId,
+                        'ai_confidence'    => $aiValues['confidence'] ?? null,
+                        'edited_before_save' => $aiValues !== null
+                            ? audit_diff(
+                                [
+                                    'payee'         => $aiValues['merchant'],
+                                    'category'      => $aiValues['category'],
+                                    'amount'        => $aiValues['total_amount'],
+                                    'date_incurred' => $aiValues['transaction_date'],
+                                ],
+                                [
+                                    'payee'         => $payee,
+                                    'category'      => $category,
+                                    'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
+                                    'date_incurred' => $dateIncurred,
+                                ]
+                            )
+                            : null,
+                    ],
+                    receipt_public_url((string) $target['File_Path'])
+                );
 
                 $pdo->commit();
 
@@ -479,6 +558,7 @@ $missingFields = $extracted['missing'] ?? [];
 $lowConfidence = $extracted !== null && $extracted['confidence'] < RECEIPT_LOW_CONFIDENCE;
 $confidencePercent = $extracted !== null ? (int) round($extracted['confidence'] * 100) : 0;
 
+$isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
@@ -527,6 +607,14 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             >
                 Reports
             </a>
+            <?php if ($isAdmin): ?>
+                <a
+                    href="audit_trail.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Audit Trail
+                </a>
+            <?php endif; ?>
         </nav>
     </aside>
 

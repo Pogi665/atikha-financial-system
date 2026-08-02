@@ -84,6 +84,7 @@ foreach ($expenses as $row) {
 
 $netIncome = $totalRevenues - $totalExpenses;
 
+$isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
@@ -139,6 +140,14 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             >
                 Reports
             </a>
+            <?php if ($isAdmin): ?>
+                <a
+                    href="audit_trail.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Audit Trail
+                </a>
+            <?php endif; ?>
         </nav>
     </aside>
 

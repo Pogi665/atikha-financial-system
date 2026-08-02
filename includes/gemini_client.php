@@ -156,6 +156,53 @@ function gemini_extract_receipt(string $absPath, string $mimeType, array $catego
         ],
     ];
 
+    $call = gemini_request($payload);
+
+    if (!$call['ok']) {
+        return $fail($call['error'], $call['raw']);
+    }
+
+    if ($call['text'] === '') {
+        return $fail('The AI could not read this receipt. Please enter the details manually.', $call['raw']);
+    }
+
+    $extracted = json_decode(gemini_strip_code_fences($call['text']), true);
+    if (!is_array($extracted)) {
+        error_log('Gemini returned non-JSON content: ' . substr($call['text'], 0, 500));
+
+        return $fail('The AI response could not be understood. Please enter the details manually.', $call['raw']);
+    }
+
+    return [
+        'ok'    => true,
+        'data'  => normalize_receipt_data($extracted, $categories),
+        'raw'   => $call['raw'],
+        'error' => '',
+    ];
+}
+
+/**
+ * POST one generateContent payload and hand back the model's text.
+ *
+ * Shared by every caller so the transport, timeout, key header and HTTP error
+ * wording stay in one place.
+ *
+ * @return array{ok: bool, text: string, raw: string, error: string}
+ */
+function gemini_request(array $payload): array
+{
+    $fail = static function (string $error, string $raw = ''): array {
+        return ['ok' => false, 'text' => '', 'raw' => $raw, 'error' => $error];
+    };
+
+    if (!gemini_is_configured()) {
+        return $fail('AI features are not configured. Add your Gemini API key to config.php.');
+    }
+
+    if (!function_exists('curl_init')) {
+        return $fail('The PHP cURL extension is not enabled.');
+    }
+
     $body = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     if ($body === false) {
         return $fail('Unable to build the AI request.');
@@ -221,7 +268,7 @@ function gemini_extract_receipt(string $absPath, string $mimeType, array $catego
 
     if (!empty($decoded['promptFeedback']['blockReason'])) {
         return $fail(
-            'The AI service blocked this image (' . (string) $decoded['promptFeedback']['blockReason'] . ').',
+            'The AI service blocked this request (' . (string) $decoded['promptFeedback']['blockReason'] . ').',
             $raw
         );
     }
@@ -231,22 +278,52 @@ function gemini_extract_receipt(string $absPath, string $mimeType, array $catego
         $finishReason = $decoded['candidates'][0]['finishReason'] ?? 'unknown';
         error_log('Gemini returned no usable text. finishReason=' . (string) $finishReason);
 
-        return $fail('The AI could not read this receipt. Please enter the details manually.', $raw);
+        return ['ok' => true, 'text' => '', 'raw' => $raw, 'error' => ''];
     }
 
-    $extracted = json_decode(gemini_strip_code_fences($text), true);
-    if (!is_array($extracted)) {
-        error_log('Gemini returned non-JSON content: ' . substr($text, 0, 500));
+    return ['ok' => true, 'text' => $text, 'raw' => $raw, 'error' => ''];
+}
 
-        return $fail('The AI response could not be understood. Please enter the details manually.', $raw);
+/**
+ * Ask for structured JSON and decode it.
+ *
+ * @param array<string, mixed> $schema A responseSchema object.
+ *
+ * @return array{ok: bool, data: ?array, error: string}
+ */
+function gemini_structured_json(string $systemPrompt, string $userText, array $schema): array
+{
+    $call = gemini_request([
+        'systemInstruction' => [
+            'parts' => [['text' => $systemPrompt]],
+        ],
+        'contents' => [[
+            'role'  => 'user',
+            'parts' => [['text' => $userText]],
+        ]],
+        'generationConfig' => [
+            'temperature'      => 0,
+            'responseMimeType' => 'application/json',
+            'responseSchema'   => $schema,
+        ],
+    ]);
+
+    if (!$call['ok']) {
+        return ['ok' => false, 'data' => null, 'error' => $call['error']];
     }
 
-    return [
-        'ok'    => true,
-        'data'  => normalize_receipt_data($extracted, $categories),
-        'raw'   => $raw,
-        'error' => '',
-    ];
+    if ($call['text'] === '') {
+        return ['ok' => false, 'data' => null, 'error' => 'The AI returned an empty response. Please try again.'];
+    }
+
+    $decoded = json_decode(gemini_strip_code_fences($call['text']), true);
+    if (!is_array($decoded)) {
+        error_log('Gemini returned non-JSON content: ' . substr($call['text'], 0, 500));
+
+        return ['ok' => false, 'data' => null, 'error' => 'The AI response could not be understood. Please try again.'];
+    }
+
+    return ['ok' => true, 'data' => $decoded, 'error' => ''];
 }
 
 /**
@@ -445,5 +522,262 @@ function normalize_receipt_data(array $extracted, array $categories): array
         'confidence'       => $confidence,
         'notes'            => $notes,
         'missing'          => $missing,
+    ];
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail monitoring
+// ---------------------------------------------------------------------------
+
+const AUDIT_AI_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH'];
+const AUDIT_AI_RISK_LEVELS = ['NONE', 'LOW', 'MEDIUM', 'HIGH'];
+const AUDIT_AI_MAX_FINDINGS = 10;
+
+/**
+ * Review recent audit rows for patterns worth a human's attention.
+ *
+ * @param array<int, array<string, mixed>> $logs Rows from audit_logs_for_ai().
+ *
+ * @return array{ok: bool, data: ?array, error: string}
+ */
+function gemini_audit_anomaly_scan(array $logs): array
+{
+    if ($logs === []) {
+        return ['ok' => false, 'data' => null, 'error' => 'There are no audit entries to scan yet.'];
+    }
+
+    $systemPrompt = <<<'PROMPT'
+You are a forensic reviewer for the audit trail of an internal financial
+management system operated by a Philippine non-profit. You will receive recent
+audit_logs rows as JSON, newest first. Timestamps are server local time
+(Asia/Manila). Return ONLY a JSON object matching the schema. No prose.
+
+WHAT TO LOOK FOR
+- Off-hours activity: financial writes (CREATE, EDIT, DELETE) timestamped
+  outside 07:00-19:00, or on a Sunday.
+- Bursts: one user performing many EDIT or DELETE actions within a few minutes.
+- Value manipulation: compare old_values with new_values and flag large
+  monetary swings, especially amount increases over 50% or over 10,000 pesos.
+- Deletions of financial records, which destroy the underlying row and are
+  always worth naming.
+- Login patterns: an account logging in from an ip address that differs from the
+  one it normally uses in this data set.
+- Repeated failed OCR extractions by the same user, which can indicate someone
+  probing the scanner.
+
+RULES
+- Base every finding strictly on the rows given. Never speculate about data you
+  cannot see, and never invent an id.
+- log_ids must contain only id values present in the input.
+- Ordinary single CREATE entries during business hours are not anomalies. If
+  nothing stands out, return risk_level "NONE" and an empty findings array
+  rather than manufacturing a concern.
+- severity: HIGH for deletions, large value changes or unfamiliar-IP logins;
+  MEDIUM for off-hours writes and bursts; LOW for everything else worth noting.
+- Return at most 10 findings, most serious first. detail is at most 300
+  characters and states the concrete evidence (who, when, what changed).
+PROMPT;
+
+    $payload = json_encode(['logs' => $logs], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($payload === false) {
+        return ['ok' => false, 'data' => null, 'error' => 'Unable to prepare the audit data for review.'];
+    }
+
+    $result = gemini_structured_json(
+        $systemPrompt,
+        'Review these ' . count($logs) . " audit entries for suspicious activity.\n" . $payload,
+        [
+            'type'       => 'OBJECT',
+            'properties' => [
+                'risk_level' => ['type' => 'STRING', 'enum' => AUDIT_AI_RISK_LEVELS],
+                'assessment' => ['type' => 'STRING'],
+                'findings'   => [
+                    'type'  => 'ARRAY',
+                    'items' => [
+                        'type'       => 'OBJECT',
+                        'properties' => [
+                            'severity' => ['type' => 'STRING', 'enum' => AUDIT_AI_SEVERITIES],
+                            'title'    => ['type' => 'STRING'],
+                            'detail'   => ['type' => 'STRING'],
+                            'log_ids'  => ['type' => 'ARRAY', 'items' => ['type' => 'INTEGER']],
+                        ],
+                        'required'         => ['severity', 'title', 'detail'],
+                        'propertyOrdering' => ['severity', 'title', 'detail', 'log_ids'],
+                    ],
+                ],
+            ],
+            'required'         => ['risk_level', 'assessment', 'findings'],
+            'propertyOrdering' => ['risk_level', 'assessment', 'findings'],
+        ]
+    );
+
+    if (!$result['ok']) {
+        return $result;
+    }
+
+    return [
+        'ok'    => true,
+        'data'  => normalize_anomaly_scan($result['data'], $logs),
+        'error' => '',
+    ];
+}
+
+/**
+ * Constrain the model's answer to ids and severities that actually exist.
+ *
+ * @param array<int, array<string, mixed>> $logs
+ *
+ * @return array{risk_level: string, assessment: string, findings: array<int, array<string, mixed>>, scanned: int}
+ */
+function normalize_anomaly_scan(array $decoded, array $logs): array
+{
+    $knownIds = [];
+    foreach ($logs as $log) {
+        $knownIds[(int) $log['id']] = true;
+    }
+
+    $riskLevel = strtoupper((string) ($decoded['risk_level'] ?? 'NONE'));
+    if (!in_array($riskLevel, AUDIT_AI_RISK_LEVELS, true)) {
+        $riskLevel = 'NONE';
+    }
+
+    $findings = [];
+    $rawFindings = is_array($decoded['findings'] ?? null) ? $decoded['findings'] : [];
+
+    foreach ($rawFindings as $finding) {
+        if (!is_array($finding)) {
+            continue;
+        }
+
+        $severity = strtoupper((string) ($finding['severity'] ?? 'LOW'));
+        if (!in_array($severity, AUDIT_AI_SEVERITIES, true)) {
+            $severity = 'LOW';
+        }
+
+        $title = is_scalar($finding['title'] ?? null) ? trim((string) $finding['title']) : '';
+        $detail = is_scalar($finding['detail'] ?? null) ? trim((string) $finding['detail']) : '';
+        if ($title === '' && $detail === '') {
+            continue;
+        }
+
+        $logIds = [];
+        foreach ((array) ($finding['log_ids'] ?? []) as $id) {
+            $id = (int) $id;
+            if (isset($knownIds[$id])) {
+                $logIds[] = $id;
+            }
+        }
+
+        $findings[] = [
+            'severity' => $severity,
+            'title'    => substr($title, 0, 120),
+            'detail'   => substr($detail, 0, 300),
+            'log_ids'  => array_values(array_unique($logIds)),
+        ];
+
+        if (count($findings) >= AUDIT_AI_MAX_FINDINGS) {
+            break;
+        }
+    }
+
+    if ($findings === []) {
+        $riskLevel = 'NONE';
+    }
+
+    $assessment = is_scalar($decoded['assessment'] ?? null) ? trim((string) $decoded['assessment']) : '';
+
+    return [
+        'risk_level' => $riskLevel,
+        'assessment' => substr($assessment, 0, 400),
+        'findings'   => $findings,
+        'scanned'    => count($logs),
+    ];
+}
+
+/**
+ * Executive summary of a filtered slice of the audit trail.
+ *
+ * @param array<int, array<string, mixed>> $logs Rows from audit_logs_for_ai().
+ *
+ * @return array{ok: bool, data: ?array, error: string}
+ */
+function gemini_audit_summary(array $logs, string $filterDescription): array
+{
+    if ($logs === []) {
+        return ['ok' => false, 'data' => null, 'error' => 'There are no audit entries to summarize.'];
+    }
+
+    $systemPrompt = <<<'PROMPT'
+You write short audit summaries for the board of a Philippine non-profit. You
+will receive audit_logs rows as JSON, newest first, timestamped in server local
+time (Asia/Manila). Return ONLY a JSON object matching the schema. No prose,
+no markdown.
+
+- summary: 2 to 4 plain sentences a non-technical trustee can read. Cover the
+  period covered by the entries, who was active, which modules were touched,
+  and the balance of creates versus edits versus deletions. Amounts are
+  Philippine pesos.
+- highlights: 3 to 6 short bullet strings, each one concrete fact drawn from the
+  rows (a named user, a count, a module, a specific change). At most 140
+  characters each.
+- Report only what the rows support. Do not speculate, do not recommend, and do
+  not invent totals you cannot derive from the data.
+PROMPT;
+
+    $payload = json_encode(['logs' => $logs], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($payload === false) {
+        return ['ok' => false, 'data' => null, 'error' => 'Unable to prepare the audit data for summary.'];
+    }
+
+    $result = gemini_structured_json(
+        $systemPrompt,
+        'Summarize these ' . count($logs) . ' audit entries. Active filters: '
+            . $filterDescription . ".\n" . $payload,
+        [
+            'type'       => 'OBJECT',
+            'properties' => [
+                'summary'    => ['type' => 'STRING'],
+                'highlights' => ['type' => 'ARRAY', 'items' => ['type' => 'STRING']],
+            ],
+            'required'         => ['summary', 'highlights'],
+            'propertyOrdering' => ['summary', 'highlights'],
+        ]
+    );
+
+    if (!$result['ok']) {
+        return $result;
+    }
+
+    $summary = is_scalar($result['data']['summary'] ?? null)
+        ? trim((string) $result['data']['summary'])
+        : '';
+
+    $highlights = [];
+    foreach ((array) ($result['data']['highlights'] ?? []) as $highlight) {
+        if (!is_scalar($highlight)) {
+            continue;
+        }
+        $text = trim((string) $highlight);
+        if ($text !== '') {
+            $highlights[] = substr($text, 0, 140);
+        }
+        if (count($highlights) >= 8) {
+            break;
+        }
+    }
+
+    if ($summary === '' && $highlights === []) {
+        return ['ok' => false, 'data' => null, 'error' => 'The AI returned an empty summary. Please try again.'];
+    }
+
+    return [
+        'ok'    => true,
+        'data'  => [
+            'summary'    => substr($summary, 0, 1200),
+            'highlights' => $highlights,
+            'counted'    => count($logs),
+            'filters'    => $filterDescription,
+        ],
+        'error' => '',
     ];
 }
