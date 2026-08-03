@@ -166,16 +166,16 @@ function gemini_extract_receipt(string $absPath, string $mimeType, array $catego
         return $fail('The AI could not read this receipt. Please enter the details manually.', $call['raw']);
     }
 
-    $extracted = json_decode(gemini_strip_code_fences($call['text']), true);
-    if (!is_array($extracted)) {
+    $parsed = gemini_decode_json_string($call['text']);
+    if (!$parsed['ok']) {
         error_log('Gemini returned non-JSON content: ' . substr($call['text'], 0, 500));
 
-        return $fail('The AI response could not be understood. Please enter the details manually.', $call['raw']);
+        return $fail($parsed['error'] . ' Please enter the details manually.', $call['raw']);
     }
 
     return [
         'ok'    => true,
-        'data'  => normalize_receipt_data($extracted, $categories),
+        'data'  => normalize_receipt_data($parsed['data'], $categories),
         'raw'   => $call['raw'],
         'error' => '',
     ];
@@ -209,7 +209,8 @@ function gemini_request(array $payload): array
     }
 
     $model = defined('GEMINI_MODEL') && GEMINI_MODEL !== '' ? GEMINI_MODEL : 'gemini-2.0-flash';
-    $timeout = defined('GEMINI_TIMEOUT') ? (int) GEMINI_TIMEOUT : 45;
+    $timeout = defined('GEMINI_TIMEOUT') ? (int) GEMINI_TIMEOUT : 120;
+    $timeout = max(120, $timeout > 0 ? $timeout : 120);
 
     $ch = curl_init(GEMINI_ENDPOINT_BASE . rawurlencode($model) . ':generateContent');
     curl_setopt_array($ch, [
@@ -222,8 +223,8 @@ function gemini_request(array $payload): array
             // access logs or proxy history.
             'x-goog-api-key: ' . GEMINI_API_KEY,
         ],
-        CURLOPT_TIMEOUT        => $timeout > 0 ? $timeout : 45,
-        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => $timeout,
+        CURLOPT_CONNECTTIMEOUT => 120,
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_SSL_VERIFYHOST => 2,
     ]);
@@ -251,19 +252,54 @@ function gemini_request(array $payload): array
 
     $raw = (string) $response;
     $decoded = json_decode($raw, true);
+    $jsonError = json_last_error_msg();
 
     if ($status !== 200 || !is_array($decoded)) {
-        $apiMessage = is_array($decoded) ? ($decoded['error']['message'] ?? '') : '';
-        error_log(sprintf('Gemini HTTP %d: %s', $status, $apiMessage !== '' ? $apiMessage : substr($raw, 0, 500)));
+        $apiMessage = is_array($decoded) ? (string) ($decoded['error']['message'] ?? '') : '';
+        $logDetail = $apiMessage !== ''
+            ? $apiMessage
+            : (!is_array($decoded) ? 'JSON decode failed: ' . $jsonError : substr($raw, 0, 500));
+        error_log(sprintf('Gemini HTTP %d: %s', $status, $logDetail));
+
+        $appendApi = static function (string $base, string $msg): string {
+            $msg = trim($msg);
+
+            return $msg !== '' ? $base . ' (' . $msg . ')' : $base;
+        };
+
+        if (!is_array($decoded)) {
+            return $fail(
+                sprintf('The AI service returned HTTP %d with invalid JSON: %s', $status, $jsonError),
+                $raw
+            );
+        }
 
         if ($status === 400 || $status === 401 || $status === 403) {
-            return $fail('The AI service rejected the request. Check that your Gemini API key is valid.', $raw);
+            return $fail(
+                $appendApi(
+                    'The AI service rejected the request. Check that your Gemini API key is valid.',
+                    $apiMessage
+                ),
+                $raw
+            );
         }
         if ($status === 429) {
-            return $fail('The AI service rate limit was reached. Please wait a moment and try again.', $raw);
+            return $fail(
+                $appendApi(
+                    'The AI service rate limit was reached. Please wait a moment and try again.',
+                    $apiMessage
+                ),
+                $raw
+            );
         }
 
-        return $fail('The AI service returned an unexpected response. Please try again.', $raw);
+        if ($apiMessage !== '') {
+            return $fail(sprintf('The AI service returned HTTP %d: %s', $status, $apiMessage), $raw);
+        }
+
+        $snippet = substr(preg_replace('/\s+/', ' ', $raw) ?? $raw, 0, 300);
+
+        return $fail(sprintf('The AI service returned HTTP %d: %s', $status, $snippet), $raw);
     }
 
     if (!empty($decoded['promptFeedback']['blockReason'])) {
@@ -316,14 +352,14 @@ function gemini_structured_json(string $systemPrompt, string $userText, array $s
         return ['ok' => false, 'data' => null, 'error' => 'The AI returned an empty response. Please try again.'];
     }
 
-    $decoded = json_decode(gemini_strip_code_fences($call['text']), true);
-    if (!is_array($decoded)) {
+    $parsed = gemini_decode_json_string($call['text']);
+    if (!$parsed['ok']) {
         error_log('Gemini returned non-JSON content: ' . substr($call['text'], 0, 500));
 
-        return ['ok' => false, 'data' => null, 'error' => 'The AI response could not be understood. Please try again.'];
+        return ['ok' => false, 'data' => null, 'error' => $parsed['error']];
     }
 
-    return ['ok' => true, 'data' => $decoded, 'error' => ''];
+    return ['ok' => true, 'data' => $parsed['data'], 'error' => ''];
 }
 
 /**
@@ -346,9 +382,9 @@ function gemini_normalized_from_raw(string $raw, array $categories): ?array
         return null;
     }
 
-    $extracted = json_decode(gemini_strip_code_fences($text), true);
+    $parsed = gemini_decode_json_string($text);
 
-    return is_array($extracted) ? normalize_receipt_data($extracted, $categories) : null;
+    return $parsed['ok'] ? normalize_receipt_data($parsed['data'], $categories) : null;
 }
 
 /**
@@ -359,12 +395,37 @@ function gemini_strip_code_fences(string $text): string
 {
     $trimmed = trim($text);
 
+    if (preg_match('/```(?:json)?\s*\n?(.*?)\n?```/s', $trimmed, $matches)) {
+        return trim($matches[1]);
+    }
+
     if (strncmp($trimmed, '```', 3) === 0) {
         $trimmed = preg_replace('/^```[a-zA-Z]*\s*/', '', $trimmed) ?? $trimmed;
         $trimmed = preg_replace('/\s*```$/', '', $trimmed) ?? $trimmed;
     }
 
     return trim($trimmed);
+}
+
+/**
+ * Strip markdown fences and decode a JSON string from model text.
+ *
+ * @return array{ok: bool, data: ?array, error: string}
+ */
+function gemini_decode_json_string(string $text): array
+{
+    $clean = gemini_strip_code_fences($text);
+    $decoded = json_decode($clean, true);
+
+    if (!is_array($decoded)) {
+        return [
+            'ok'    => false,
+            'data'  => null,
+            'error' => 'The AI response was not valid JSON: ' . json_last_error_msg(),
+        ];
+    }
+
+    return ['ok' => true, 'data' => $decoded, 'error' => ''];
 }
 
 /**
@@ -779,5 +840,221 @@ PROMPT;
             'filters'    => $filterDescription,
         ],
         'error' => '',
+    ];
+}
+
+// ---------------------------------------------------------------------------
+// Predictive forecasting
+// ---------------------------------------------------------------------------
+
+const FORECAST_AI_RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH'];
+
+// A projection above this multiple of the worst month on record is a
+// hallucination, not a forecast, and would flatten the chart's y-axis.
+const FORECAST_AI_MAX_PEAK_MULTIPLE = 20;
+
+const FORECAST_AI_MAX_ADVICE_CHARS = 700;
+
+/**
+ * Project the next months of outflow and advise on the numbers behind it.
+ *
+ * @param array<string, mixed> $history Bundle from forecast_history_for_ai().
+ *
+ * @return array{ok: bool, data: ?array, error: string}
+ */
+function gemini_forecast_projection(array $history): array
+{
+    $projectionMonths = [];
+    foreach ((array) ($history['projection_months'] ?? []) as $month) {
+        $projectionMonths[] = (string) $month;
+    }
+
+    if ($projectionMonths === []) {
+        return ['ok' => false, 'data' => null, 'error' => 'There is no forecast period to project.'];
+    }
+
+    $peakOutflow = 0.0;
+    foreach ((array) ($history['monthly_history'] ?? []) as $point) {
+        $peakOutflow = max($peakOutflow, (float) ($point['outflow'] ?? 0));
+    }
+
+    $baselineOutflow = (float) ($history['metrics']['recent_avg_outflow'] ?? 0);
+
+    $horizon = count($projectionMonths);
+    $monthList = implode(', ', $projectionMonths);
+
+    $systemPrompt = <<<PROMPT
+You are the Chief Financial Officer of a Philippine non-profit, reviewing your
+own organization's books. You will receive aggregated financial history as JSON.
+All amounts are Philippine pesos. Return ONLY a JSON object matching the
+schema. No prose, no markdown.
+
+WHAT YOU RECEIVE
+- monthly_history: up to 12 closed months of total outflow and inflow, oldest
+  first. Every month here is finished, so the figures are directly comparable.
+- current_month_to_date: what has been recorded so far in the month now in
+  progress. This month is incomplete, so treat its total as a floor rather than
+  as a decline, and remember it is the first month you are asked to project.
+- category_outflow: per-category totals with each category's share of spend, its
+  monthly average, its trailing three-month average, and a trend of rising,
+  falling or steady.
+- funding_sources: donors and grantors with each one's share of inflow and the
+  date it last paid.
+- metrics: pre-computed totals, averages, net position, runway in months, and
+  funding gap counts. These figures are authoritative. Use them as given and do
+  not recompute or contradict them.
+- baseline_projection: a flat trailing-average projection. Treat it as the
+  neutral case you are expected to improve on, not as an answer to repeat.
+
+FIELDS
+- chart_data: exactly {$horizon} entries, one for each of these months in this
+  order: {$monthList}. projected_outflow is the total pesos you expect to leave
+  the organization that month, as a plain non-negative number. Ground it in the
+  trailing averages and the per-category trends. Reflect real seasonality only
+  where the history shows it; do not invent a spike. The first entry is the
+  month already in progress: project its full-month total, which cannot be less
+  than the current_month_to_date outflow already recorded.
+- reallocation_suggestion: 2 to 4 sentences. Name the specific over-spent
+  categories (high share and a rising trend) and the specific under-spent ones
+  (a low recent average against their own monthly average), then give one
+  concrete reallocation. Cite the category names and figures from the data.
+- funding_risk: 2 to 4 sentences. Cover concentration risk when one source
+  supplies a large share of inflow, and expiration risk implied by the funding
+  gaps and the last received dates. If inflows have stopped or never existed,
+  say so plainly.
+- risk_level: HIGH when the runway is under three months, a single source holds
+  more than 60 percent of inflow, or funding has lapsed for three months or
+  more. MEDIUM for a runway under six months or a source above 40 percent.
+  Otherwise LOW.
+
+HARD RULES
+- Every figure you cite must come from the data given. Never invent a category,
+  a donor, an amount or a date.
+- Do not recompute the metrics; quote them.
+- Refer to pesos in plain digits. Do not use markdown, bullet characters or
+  currency symbols in the strings.
+- Address the reader as the organization ("your"), not as a third party.
+PROMPT;
+
+    $payload = json_encode($history, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($payload === false) {
+        return ['ok' => false, 'data' => null, 'error' => 'Unable to prepare the financial data for forecasting.'];
+    }
+
+    $result = gemini_structured_json(
+        $systemPrompt,
+        'Forecast the next ' . $horizon . " months of outflow and advise on this history.\n" . $payload,
+        [
+            'type'       => 'OBJECT',
+            'properties' => [
+                'chart_data' => [
+                    'type'  => 'ARRAY',
+                    'items' => [
+                        'type'       => 'OBJECT',
+                        'properties' => [
+                            'month'             => ['type' => 'STRING'],
+                            'projected_outflow' => ['type' => 'NUMBER'],
+                        ],
+                        'required'         => ['month', 'projected_outflow'],
+                        'propertyOrdering' => ['month', 'projected_outflow'],
+                    ],
+                ],
+                'reallocation_suggestion' => ['type' => 'STRING'],
+                'funding_risk'            => ['type' => 'STRING'],
+                'risk_level'              => ['type' => 'STRING', 'enum' => FORECAST_AI_RISK_LEVELS],
+            ],
+            'required' => [
+                'chart_data',
+                'reallocation_suggestion',
+                'funding_risk',
+                'risk_level',
+            ],
+            'propertyOrdering' => [
+                'chart_data',
+                'reallocation_suggestion',
+                'funding_risk',
+                'risk_level',
+            ],
+        ]
+    );
+
+    if (!$result['ok']) {
+        return $result;
+    }
+
+    return [
+        'ok'    => true,
+        'data'  => normalize_forecast($result['data'], $projectionMonths, $peakOutflow, $baselineOutflow),
+        'error' => '',
+    ];
+}
+
+/**
+ * Coerce the model's forecast into something the chart can plot.
+ *
+ * The month labels are taken from the server calendar rather than the response,
+ * so a dropped, duplicated or reordered entry can never shift the x-axis: the
+ * nth number the model returned is the nth month we asked about, and a missing
+ * one falls back to the trailing average.
+ *
+ * @param string[] $projectionMonths
+ * @param float    $baselineOutflow Trailing average used for any entry the model omitted.
+ *
+ * @return array{chart_data: array<int, array{month: string, projected_outflow: float}>,
+ *               reallocation_suggestion: string, funding_risk: string, risk_level: string}
+ */
+function normalize_forecast(
+    array $decoded,
+    array $projectionMonths,
+    float $peakOutflow,
+    float $baselineOutflow
+): array {
+    $ceiling = $peakOutflow > 0 ? $peakOutflow * FORECAST_AI_MAX_PEAK_MULTIPLE : 0.0;
+    $fallback = round(max(0.0, $baselineOutflow), 2);
+
+    $values = [];
+    foreach ((array) ($decoded['chart_data'] ?? []) as $entry) {
+        // The schema asks for objects, but a bare number is cheap to survive.
+        $amount = is_array($entry) ? ($entry['projected_outflow'] ?? null) : $entry;
+
+        if (!is_numeric($amount)) {
+            $values[] = null;
+            continue;
+        }
+
+        $amount = max(0.0, (float) $amount);
+        if ($ceiling > 0 && $amount > $ceiling) {
+            $amount = $ceiling;
+        }
+
+        $values[] = round($amount, 2);
+    }
+
+    $chartData = [];
+    foreach ($projectionMonths as $index => $month) {
+        $chartData[] = [
+            'month'             => $month,
+            'projected_outflow' => $values[$index] ?? $fallback,
+        ];
+    }
+
+    $clip = static function ($value): string {
+        $text = is_scalar($value) ? trim((string) $value) : '';
+
+        return function_exists('mb_substr')
+            ? mb_substr($text, 0, FORECAST_AI_MAX_ADVICE_CHARS)
+            : substr($text, 0, FORECAST_AI_MAX_ADVICE_CHARS);
+    };
+
+    $riskLevel = strtoupper((string) ($decoded['risk_level'] ?? 'LOW'));
+    if (!in_array($riskLevel, FORECAST_AI_RISK_LEVELS, true)) {
+        $riskLevel = 'LOW';
+    }
+
+    return [
+        'chart_data'              => $chartData,
+        'reallocation_suggestion' => $clip($decoded['reallocation_suggestion'] ?? ''),
+        'funding_risk'            => $clip($decoded['funding_risk'] ?? ''),
+        'risk_level'              => $riskLevel,
     ];
 }

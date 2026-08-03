@@ -1,4 +1,5 @@
 <?php
+set_time_limit(120);
 
 /**
  * AI monitoring endpoint for the audit trail.
@@ -28,6 +29,18 @@ function audit_ai_respond(bool $ok, ?array $data, string $error, int $status = 2
     http_response_code($status);
     echo json_encode(['ok' => $ok, 'data' => $data, 'error' => $error], JSON_UNESCAPED_UNICODE);
     exit;
+}
+
+/**
+ * @param array{ok: bool, data: ?array, error: string} $result
+ */
+function audit_ai_respond_result(string $action, array $result): void
+{
+    if (!$result['ok']) {
+        error_log('Audit AI [' . $action . ']: ' . $result['error']);
+    }
+
+    audit_ai_respond($result['ok'], $result['data'], $result['error']);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -60,7 +73,7 @@ try {
         $logs = audit_fetch_logs($pdo, audit_filters_from_request([]), AUDIT_SCAN_LIMIT);
         $result = gemini_audit_anomaly_scan(audit_logs_for_ai($logs));
 
-        audit_ai_respond($result['ok'], $result['data'], $result['error']);
+        audit_ai_respond_result('anomaly_scan', $result);
     }
 
     if ($action === 'summary') {
@@ -70,7 +83,7 @@ try {
             audit_filters_describe($filters)
         );
 
-        audit_ai_respond($result['ok'], $result['data'], $result['error']);
+        audit_ai_respond_result('summary', $result);
     }
 } catch (PDOException $e) {
     error_log('Audit AI query failed: ' . $e->getMessage());
