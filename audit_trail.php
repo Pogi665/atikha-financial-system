@@ -228,6 +228,12 @@ $exportQuery = http_build_query(array_merge(
                 Reports
             </a>
             <a
+                href="admin_users.php"
+                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+            >
+                User Management
+            </a>
+            <a
                 href="audit_trail.php"
                 class="block rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-medium text-white"
             >

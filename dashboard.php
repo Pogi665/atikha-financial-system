@@ -93,6 +93,12 @@ $canRefresh = in_array($_SESSION['Role'] ?? '', ['Admin', 'Management'], true);
             </a>
             <?php if ($isAdmin): ?>
                 <a
+                    href="admin_users.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    User Management
+                </a>
+                <a
                     href="audit_trail.php"
                     class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
                 >
