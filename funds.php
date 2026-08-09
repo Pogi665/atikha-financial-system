@@ -263,6 +263,7 @@ $fieldClass = 'w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-
 $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700'
     . ' text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-emerald-500'
     . ' focus:ring-offset-2';
+$activePage = 'funds';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -273,58 +274,7 @@ $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-eme
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen min-w-[1024px] bg-slate-50">
-    <aside class="fixed inset-y-0 left-0 w-64 bg-slate-800 text-slate-100 flex flex-col">
-        <div class="px-6 py-6 border-b border-slate-700">
-            <h2 class="text-lg font-bold tracking-tight">Atikha Finance</h2>
-            <p class="text-slate-400 text-xs mt-1">Management System</p>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-1">
-            <a
-                href="dashboard.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Dashboard
-            </a>
-            <a
-                href="funds.php"
-                class="block rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white"
-            >
-                Incoming Funds
-            </a>
-            <a
-                href="expenses.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Expenses
-            </a>
-            <a
-                href="ocr_expense.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Scan Receipt
-            </a>
-            <a
-                href="reports.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Reports
-            </a>
-            <?php if ($isAdmin): ?>
-                <a
-                    href="admin_users.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    User Management
-                </a>
-                <a
-                    href="audit_trail.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    Audit Trail
-                </a>
-            <?php endif; ?>
-        </nav>
-    </aside>
+    <?php include __DIR__ . '/includes/nav.php'; ?>
 
     <div class="ml-64 flex flex-col min-h-screen">
         <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">

@@ -41,11 +41,19 @@ try {
 
     $dash = (curl.exe -s -c $jarM -b $jarM "$base/dashboard.php") -join "`n"
     Write-Host ("dashboard renders for Management  : {0}" -f ($dash -match 'Signed in as'))
+    Write-Host ("Executive Dashboard shown         : {0}" -f ($dash -match 'Executive Dashboard'))
+    Write-Host ("Financial Records link shown      : {0}" -f ($dash -match 'href="financial_records\.php"'))
     Write-Host ("Incoming Funds link hidden        : {0}" -f (-not ($dash -match 'href="funds\.php"')))
     Write-Host ("Scan Receipt link hidden          : {0}" -f (-not ($dash -match 'href="ocr_expense\.php"')))
-    Write-Host ("Expenses link still shown         : {0}" -f ($dash -match 'href="expenses\.php"'))
+    Write-Host ("Expenses link hidden              : {0}" -f (-not ($dash -match 'href="expenses\.php"')))
+    Write-Host ("Reports link shown                : {0}" -f ($dash -match 'href="reports\.php"'))
+    Write-Host ("User Management hidden            : {0}" -f (-not ($dash -match 'href="admin_users\.php"')))
 
-    foreach ($p in @('expenses.php', 'reports.php')) {
+    $ledger = (curl.exe -s -w "`nSTATUS:%{http_code}" -c $jarM -b $jarM "$base/financial_records.php") -join "`n"
+    Write-Host ("financial_records.php status      : {0}" -f ([regex]'STATUS:(\d+)').Match($ledger).Groups[1].Value)
+    Write-Host ("financial_records read-only       : {0}" -f ($ledger -match 'Unified read-only ledger'))
+
+    foreach ($p in @('financial_records.php', 'reports.php')) {
         $c = (curl.exe -s -c $jarM -b $jarM "$base/$p") -join "`n"
         Write-Host ("{0}: workspace links hidden      : {1}" -f $p, (-not ($c -match 'href="funds\.php"') -and -not ($c -match 'href="ocr_expense\.php"')))
     }

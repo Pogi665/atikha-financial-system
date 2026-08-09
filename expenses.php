@@ -1,23 +1,18 @@
 <?php
 session_start();
 
-if (empty($_SESSION['UserID'])) {
-    header('Location: login.php');
-    exit;
-}
-
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
+require_once __DIR__ . '/includes/require_role.php';
+
+require_login();
+require_role(['Staff', 'Admin'], 'The Staff Operational Workspace');
 
 $categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
 $userId = (int) $_SESSION['UserID'];
 $isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
-
-// The Staff Operational Workspace (Incoming Funds, Scan Receipt) is closed to
-// Management, so those links are hidden rather than left to 403.
-$canUseWorkspace = in_array($_SESSION['Role'] ?? '', ['Staff', 'Admin'], true);
 
 $csrfToken = csrf_token();
 
@@ -247,8 +242,21 @@ try {
     $errorMessage = $errorMessage ?: 'Unable to load records. Please try again later.';
 }
 
+// The verification panel reads off the list already in memory.
+$recentRecords = array_slice($records, 0, 10);
+$recentTotal = array_sum(array_map(static fn (array $row): float => (float) $row['Amount'], $recentRecords));
+
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
+
+// Workspace theme tokens, kept in one place so the form and the edit modal
+// cannot drift apart.
+$fieldClass = 'w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400'
+    . ' focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0 outline-none transition';
+$primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700'
+    . ' text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-emerald-500'
+    . ' focus:ring-offset-2';
+$activePage = 'expenses';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -258,63 +266,8 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
     <title>Expenses — Atikha Financial System</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen min-w-[1024px] bg-slate-100">
-    <aside class="fixed inset-y-0 left-0 w-64 bg-slate-800 text-slate-100 flex flex-col">
-        <div class="px-6 py-6 border-b border-slate-700">
-            <h2 class="text-lg font-bold tracking-tight">Atikha Finance</h2>
-            <p class="text-slate-400 text-xs mt-1">Management System</p>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-1">
-            <a
-                href="dashboard.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Dashboard
-            </a>
-            <?php if ($canUseWorkspace): ?>
-                <a
-                    href="funds.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    Incoming Funds
-                </a>
-            <?php endif; ?>
-            <a
-                href="expenses.php"
-                class="block rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-medium text-white"
-            >
-                Expenses
-            </a>
-            <?php if ($canUseWorkspace): ?>
-                <a
-                    href="ocr_expense.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    Scan Receipt
-                </a>
-            <?php endif; ?>
-            <a
-                href="reports.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Reports
-            </a>
-            <?php if ($isAdmin): ?>
-                <a
-                    href="admin_users.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    User Management
-                </a>
-                <a
-                    href="audit_trail.php"
-                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-                >
-                    Audit Trail
-                </a>
-            <?php endif; ?>
-        </nav>
-    </aside>
+<body class="min-h-screen min-w-[1024px] bg-slate-50">
+    <?php include __DIR__ . '/includes/nav.php'; ?>
 
     <div class="ml-64 flex flex-col min-h-screen">
         <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
@@ -334,10 +287,12 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             </a>
         </header>
 
-        <main class="flex-1 p-8 space-y-8">
-            <div>
+        <main class="flex-1 p-8 space-y-6">
+            <div class="border-l-4 border-emerald-600 pl-4">
                 <h1 class="text-2xl font-bold text-slate-900">Expenses</h1>
-                <p class="text-slate-600 mt-2">Record and view organizational expenditures.</p>
+                <p class="text-slate-600 mt-1">
+                    Record organizational expenditures, then verify them against the running list.
+                </p>
             </div>
 
             <?php if ($errorMessage !== ''): ?>
@@ -356,75 +311,149 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 </div>
             <?php endif; ?>
 
-            <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h2 class="text-lg font-semibold text-slate-900 mb-4">Add New Record</h2>
-                <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" class="grid grid-cols-2 gap-4">
-                    <input type="hidden" name="action" value="create">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-                    <div>
-                        <label for="payee" class="block text-sm font-medium text-slate-700 mb-1">Payee</label>
-                        <input
-                            type="text"
-                            id="payee"
-                            name="payee"
-                            required
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                            placeholder="Vendor or recipient"
-                        >
+            <div class="grid grid-cols-3 gap-6 items-start">
+                <section class="col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="px-6 py-4 border-b border-slate-200">
+                        <h2 class="text-base font-semibold text-slate-900">Add New Record</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Every entry is written to the audit trail.</p>
                     </div>
-                    <div>
-                        <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                        <select
-                            id="category"
-                            name="category"
-                            required
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                        >
-                            <option value="" disabled selected>Select a category</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>">
-                                    <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="amount" class="block text-sm font-medium text-slate-700 mb-1">Amount</label>
-                        <input
-                            type="number"
-                            id="amount"
-                            name="amount"
-                            step="0.01"
-                            min="0.01"
-                            required
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                            placeholder="0.00"
-                        >
-                    </div>
-                    <div>
-                        <label for="date_incurred" class="block text-sm font-medium text-slate-700 mb-1">Date Incurred</label>
-                        <input
-                            type="date"
-                            id="date_incurred"
-                            name="date_incurred"
-                            required
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                        >
-                    </div>
-                    <div class="col-span-2">
+                    <form
+                        method="POST"
+                        action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
+                        class="p-6 space-y-4"
+                    >
+                        <input type="hidden" name="action" value="create">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                        <div>
+                            <label for="payee" class="block text-sm font-medium text-slate-700 mb-1">Payee</label>
+                            <input
+                                type="text"
+                                id="payee"
+                                name="payee"
+                                required
+                                maxlength="255"
+                                class="<?= $fieldClass ?>"
+                                placeholder="Vendor or recipient"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                            <select
+                                id="category"
+                                name="category"
+                                required
+                                class="<?= $fieldClass ?>"
+                            >
+                                <option value="" disabled selected>Select a category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-slate-700 mb-1">Amount</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">&#8369;</span>
+                                <input
+                                    type="number"
+                                    id="amount"
+                                    name="amount"
+                                    step="0.01"
+                                    min="0.01"
+                                    required
+                                    class="<?= $fieldClass ?> pl-9"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="date_incurred" class="block text-sm font-medium text-slate-700 mb-1">Date Incurred</label>
+                            <input
+                                type="date"
+                                id="date_incurred"
+                                name="date_incurred"
+                                required
+                                value="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>"
+                                class="<?= $fieldClass ?>"
+                            >
+                        </div>
+
                         <button
                             type="submit"
-                            class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2"
+                            class="<?= $primaryButtonClass ?> w-full"
                         >
                             Save Record
                         </button>
+                    </form>
+                </section>
+
+                <section class="col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-900">Recently Logged</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                The <?= count($recentRecords) ?> newest entries, for quick verification.
+                            </p>
+                        </div>
+                        <?php if (!empty($recentRecords)): ?>
+                            <div class="text-right">
+                                <p class="text-xs uppercase tracking-wide text-slate-500">Shown total</p>
+                                <p class="text-lg font-bold text-emerald-700">
+                                    &#8369;<?= htmlspecialchars(number_format($recentTotal, 2), ENT_QUOTES, 'UTF-8') ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                </form>
-            </section>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 text-left">
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($recentRecords)): ?>
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-10 text-center text-slate-500">
+                                            Nothing logged yet. Use the form to record your first expense.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($recentRecords as $row): ?>
+                                        <tr class="border-b border-slate-100 last:border-0 hover:bg-emerald-50/40 transition">
+                                            <td class="px-6 py-3 text-slate-700 whitespace-nowrap">
+                                                <?= htmlspecialchars(date('M j, Y', strtotime($row['Date_Incurred'])), ENT_QUOTES, 'UTF-8') ?>
+                                            </td>
+                                            <td class="px-6 py-3 text-slate-900 font-medium">
+                                                <?= htmlspecialchars($row['Payee'], ENT_QUOTES, 'UTF-8') ?>
+                                                <span class="block text-xs font-normal text-slate-500">
+                                                    <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                                &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
 
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-lg font-semibold text-slate-900">All Records</h2>
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-slate-900">All Records</h2>
+                    <span class="text-xs text-slate-500"><?= count($records) ?> total</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -444,8 +473,8 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($records as $row): ?>
-                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                                        <td class="px-6 py-3 text-slate-700">
+                                    <tr class="border-b border-slate-100 last:border-0 hover:bg-emerald-50/40 transition">
+                                        <td class="px-6 py-3 text-slate-700 whitespace-nowrap">
                                             <?= htmlspecialchars(date('M j, Y', strtotime($row['Date_Incurred'])), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
                                         <td class="px-6 py-3 text-slate-900">
@@ -454,13 +483,13 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                                         <td class="px-6 py-3 text-slate-700">
                                             <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
                                         </td>
-                                        <td class="px-6 py-3 text-slate-900 font-medium text-right">
-                                            ₱<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
+                                        <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                            &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
                                         <td class="px-6 py-3 text-right whitespace-nowrap">
                                             <button
                                                 type="button"
-                                                class="js-edit-expense rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition"
+                                                class="js-edit-expense rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700 transition"
                                                 data-record="<?= htmlspecialchars(json_encode([
                                                     'id'            => (int) $row['ExpenseID'],
                                                     'payee'         => $row['Payee'],
@@ -525,7 +554,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                         id="edit-payee"
                         name="payee"
                         required
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 outline-none transition"
+                        class="<?= $fieldClass ?>"
                     >
                 </div>
                 <div>
@@ -534,7 +563,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                         id="edit-category"
                         name="category"
                         required
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 outline-none transition"
+                        class="<?= $fieldClass ?>"
                     >
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>">
@@ -552,7 +581,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                         step="0.01"
                         min="0.01"
                         required
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 outline-none transition"
+                        class="<?= $fieldClass ?>"
                     >
                 </div>
                 <div>
@@ -562,7 +591,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                         id="edit-date"
                         name="date_incurred"
                         required
-                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 outline-none transition"
+                        class="<?= $fieldClass ?>"
                     >
                 </div>
                 <div class="col-span-2 flex items-center justify-end gap-3 pt-2">
@@ -575,7 +604,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                     </button>
                     <button
                         type="submit"
-                        class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 px-5 text-sm transition"
+                        class="<?= $primaryButtonClass ?> py-2 px-5 text-sm"
                     >
                         Save Changes
                     </button>

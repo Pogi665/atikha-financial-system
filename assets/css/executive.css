@@ -1,0 +1,103 @@
+/**
+ * Executive Suite theme — soft grays, deep professional blues, generous spacing.
+ */
+
+.executive-theme {
+    background-color: #f8fafc;
+}
+
+.executive-theme .exec-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    padding: 2rem;
+}
+
+.executive-theme .exec-kpi-value {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.executive-theme .exec-chart-wrap {
+    position: relative;
+    height: 20rem;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.executive-theme .exec-kpi-label {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.executive-theme .exec-btn-primary {
+    border-radius: 0.5rem;
+    background-color: #1e3a8a;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.625rem 1.5rem;
+    transition: background-color 0.15s ease;
+}
+
+.executive-theme .exec-btn-primary:hover {
+    background-color: #1e40af;
+}
+
+.executive-theme .exec-btn-primary:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.executive-theme .exec-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.executive-theme .exec-alert-over {
+    border-radius: 0.5rem;
+    border: 1px solid #fecaca;
+    background-color: #fef2f2;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+.executive-theme .exec-alert-warning {
+    border-radius: 0.5rem;
+    border: 1px solid #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+@media print {
+    .executive-theme .no-print {
+        display: none !important;
+    }
+
+    .executive-theme main {
+        margin: 0;
+        padding: 24px;
+    }
+
+    .executive-theme .statement {
+        max-width: 100%;
+        font-size: 12pt;
+    }
+
+    .executive-theme .statement-header {
+        border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@page {
+    margin: 1.5cm;
+}

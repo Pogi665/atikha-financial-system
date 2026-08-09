@@ -72,6 +72,8 @@ function forecast_payload(
             'risk_level'              => $forecast['risk_level'] ?? '',
         ],
         'metrics'      => $history['metrics'],
+        'categories'   => $history['categories'],
+        'current_month'=> $history['current_month'],
     ];
 }
 
