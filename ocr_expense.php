@@ -1,38 +1,35 @@
 <?php
-session_start();
 
-if (empty($_SESSION['UserID'])) {
-    header('Location: login.php');
-    exit;
-}
+/**
+ * Scan Receipt workspace.
+ *
+ * A split screen: the receipt image on the left, the extracted values on the
+ * right. Uploading is normally driven by ocr_extract.php over AJAX so the page
+ * can show a loading state, but the synchronous 'upload' action below is kept
+ * as the no-JavaScript fallback.
+ *
+ * Saving always goes through this page, so the values a Staff member confirms
+ * are validated server-side no matter how they got into the form.
+ */
+
+session_start();
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
+require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/gemini_client.php';
 require_once __DIR__ . '/includes/logger.php';
+require_once __DIR__ . '/includes/receipts.php';
+require_once __DIR__ . '/includes/require_role.php';
 
 if (is_file(__DIR__ . '/config.php')) {
     require_once __DIR__ . '/config.php';
 }
 
-const RECEIPT_UPLOAD_DIR = __DIR__ . '/uploads/receipts';
-const RECEIPT_PUBLIC_DIR = 'uploads/receipts';
-const MAX_RECEIPT_BYTES = 8 * 1024 * 1024;
+require_login();
+require_role(['Staff', 'Admin'], 'Scan Receipt');
 
-// Real MIME types, read from the file contents rather than the client's header.
-const ALLOWED_RECEIPT_MIMES = [
-    'image/jpeg' => 'jpg',
-    'image/png'  => 'png',
-    'image/webp' => 'webp',
-    'image/heic' => 'heic',
-    'image/heif' => 'heif',
-];
-
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrfToken = $_SESSION['csrf_token'];
-
+$csrfToken = csrf_token();
 $userId = (int) $_SESSION['UserID'];
 $categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
 
@@ -41,203 +38,16 @@ $successMessage = '';
 $receipt = null;
 $extracted = null;
 
-/**
- * Human-readable reason for a PHP upload error code.
- */
-function receipt_upload_error_message(int $code): string
-{
-    switch ($code) {
-        case UPLOAD_ERR_INI_SIZE:
-        case UPLOAD_ERR_FORM_SIZE:
-            return 'That image is too large. Please upload a receipt photo under 8 MB.';
-        case UPLOAD_ERR_PARTIAL:
-            return 'The upload was interrupted. Please try again.';
-        case UPLOAD_ERR_NO_FILE:
-            return 'Please choose or capture a receipt image first.';
-        case UPLOAD_ERR_NO_TMP_DIR:
-        case UPLOAD_ERR_CANT_WRITE:
-            return 'The server could not store the image. Please contact your administrator.';
-        case UPLOAD_ERR_EXTENSION:
-            return 'The upload was blocked by the server configuration.';
-        default:
-            return 'The image could not be uploaded. Please try again.';
-    }
-}
-
-/**
- * Validate and store an uploaded receipt.
- *
- * @return array{ok: bool, error: string, path: string, public_path: string,
- *               mime: string, size: int, original: string}
- */
-function store_uploaded_receipt(array $file): array
-{
-    $result = [
-        'ok'          => false,
-        'error'       => '',
-        'path'        => '',
-        'public_path' => '',
-        'mime'        => '',
-        'size'        => 0,
-        'original'    => '',
-    ];
-
-    // 1. PHP-level upload status.
-    $code = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
-    if ($code !== UPLOAD_ERR_OK) {
-        $result['error'] = receipt_upload_error_message($code);
-
-        return $result;
-    }
-
-    $tmpPath = $file['tmp_name'] ?? '';
-
-    // 2. Confirm this really came through PHP's upload handler, which rules out
-    //    a forged tmp_name pointing at an arbitrary server file.
-    if (!is_string($tmpPath) || $tmpPath === '' || !is_uploaded_file($tmpPath)) {
-        $result['error'] = 'The upload could not be verified. Please try again.';
-
-        return $result;
-    }
-
-    // 3. Size bounds.
-    $size = (int) ($file['size'] ?? 0);
-    if ($size <= 0) {
-        $result['error'] = 'The uploaded file is empty. Please try again.';
-
-        return $result;
-    }
-    if ($size > MAX_RECEIPT_BYTES) {
-        $result['error'] = 'That image is too large. Please upload a receipt photo under 8 MB.';
-
-        return $result;
-    }
-
-    // 4. MIME sniffed from content, not from $file['type'] which the client sets.
-    $mime = '';
-    if (function_exists('finfo_open')) {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        if ($finfo !== false) {
-            $detected = finfo_file($finfo, $tmpPath);
-            finfo_close($finfo);
-            if (is_string($detected)) {
-                $mime = strtolower($detected);
-            }
-        }
-    }
-    if ($mime === '') {
-        $probe = @getimagesize($tmpPath);
-        if (is_array($probe) && !empty($probe['mime'])) {
-            $mime = strtolower((string) $probe['mime']);
-        }
-    }
-    if (!isset(ALLOWED_RECEIPT_MIMES[$mime])) {
-        $result['error'] = 'Only JPG, PNG, WEBP or HEIC images are accepted.';
-
-        return $result;
-    }
-
-    // 5. Independent confirmation that the bytes actually decode as an image.
-    //    HEIC is exempt because getimagesize() cannot parse it on most builds.
-    if (!in_array($mime, ['image/heic', 'image/heif'], true)) {
-        $dimensions = @getimagesize($tmpPath);
-        if ($dimensions === false
-            || empty($dimensions[0])
-            || empty($dimensions[1])
-            || (int) $dimensions[0] < 32
-            || (int) $dimensions[1] < 32
-        ) {
-            $result['error'] = 'That file is not a readable image. Please upload a clear receipt photo.';
-
-            return $result;
-        }
-    }
-
-    if (!is_dir(RECEIPT_UPLOAD_DIR) && !@mkdir(RECEIPT_UPLOAD_DIR, 0755, true) && !is_dir(RECEIPT_UPLOAD_DIR)) {
-        error_log('Unable to create receipt upload directory: ' . RECEIPT_UPLOAD_DIR);
-        $result['error'] = 'The server could not store the image. Please contact your administrator.';
-
-        return $result;
-    }
-
-    // 6. Filename is generated, never derived from user input, so double
-    //    extensions, traversal and null bytes are structurally impossible.
-    $filename = bin2hex(random_bytes(16)) . '.' . ALLOWED_RECEIPT_MIMES[$mime];
-    $destination = RECEIPT_UPLOAD_DIR . DIRECTORY_SEPARATOR . $filename;
-
-    // 7. Move into place and drop execute permissions.
-    if (!move_uploaded_file($tmpPath, $destination)) {
-        error_log('move_uploaded_file failed for destination: ' . $destination);
-        $result['error'] = 'The server could not store the image. Please try again.';
-
-        return $result;
-    }
-    @chmod($destination, 0644);
-
-    $originalName = is_string($file['name'] ?? null) ? basename($file['name']) : '';
-
-    return [
-        'ok'          => true,
-        'error'       => '',
-        'path'        => RECEIPT_PUBLIC_DIR . '/' . $filename,
-        'public_path' => RECEIPT_PUBLIC_DIR . '/' . $filename,
-        'mime'        => $mime,
-        'size'        => $size,
-        'original'    => substr($originalName, 0, 255),
-    ];
-}
-
-/**
- * Load a receipt the current user owns. Returns null for anything else, so a
- * guessed ReceiptID leaks nothing.
- */
-function load_owned_receipt(PDO $pdo, int $receiptId, int $userId): ?array
-{
-    if ($receiptId <= 0) {
-        return null;
-    }
-
-    $stmt = $pdo->prepare(
-        'SELECT ReceiptID, ExpenseID, File_Path, Mime_Type, OCR_Status, OCR_Raw_JSON, OCR_Error
-         FROM Receipts
-         WHERE ReceiptID = :receipt_id AND UploadedBy_UserID = :user_id'
-    );
-    $stmt->execute([
-        'receipt_id' => $receiptId,
-        'user_id'    => $userId,
-    ]);
-    $row = $stmt->fetch();
-
-    return $row === false ? null : $row;
-}
-
-/**
- * Absolute path for a stored receipt, rebuilt from the basename so a tampered
- * File_Path can never escape the uploads directory.
- */
-function receipt_absolute_path(string $storedPath): string
-{
-    return RECEIPT_UPLOAD_DIR . DIRECTORY_SEPARATOR . basename($storedPath);
-}
-
-function receipt_public_url(string $storedPath): string
-{
-    return RECEIPT_PUBLIC_DIR . '/' . basename($storedPath);
-}
-
 $action = $_POST['action'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submittedToken = $_POST['csrf_token'] ?? '';
-
-    if (!is_string($submittedToken) || !hash_equals($csrfToken, $submittedToken)) {
-        $errorMessage = 'Your session expired. Please try again.';
-        $action = '';
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify($_POST['csrf_token'] ?? null)) {
+    $errorMessage = 'Your session expired. Please try again.';
+    $action = '';
 }
 
 // ---------------------------------------------------------------------------
-// Upload: store the image, record the receipt, then hand it to Gemini.
+// Upload: the no-JavaScript path. Store the image, record the receipt, then
+// hand it to Gemini. With JavaScript this work happens in ocr_extract.php.
 // ---------------------------------------------------------------------------
 if ($action === 'upload') {
     $stored = store_uploaded_receipt($_FILES['receipt_image'] ?? []);
@@ -554,6 +364,7 @@ if (isset($_GET['discarded'])) {
 }
 
 $aiConfigured = gemini_is_configured();
+$hasReceipt = $receipt !== null;
 $missingFields = $extracted['missing'] ?? [];
 $lowConfidence = $extracted !== null && $extracted['confidence'] < RECEIPT_LOW_CONFIDENCE;
 $confidencePercent = $extracted !== null ? (int) round($extracted['confidence'] * 100) : 0;
@@ -561,6 +372,23 @@ $confidencePercent = $extracted !== null ? (int) round($extracted['confidence'] 
 $isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
+
+// Workspace theme tokens. The amber variant marks a field the AI could not read.
+$fieldBaseClass = 'w-full rounded-lg border px-4 py-2.5 text-slate-900 placeholder-slate-400'
+    . ' focus:ring-2 focus:ring-offset-0 outline-none transition';
+$fieldNormalClass = 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-500';
+$fieldMissingClass = 'border-amber-400 bg-amber-50 focus:border-amber-500 focus:ring-amber-500';
+$primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700'
+    . ' text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-emerald-500'
+    . ' focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+/**
+ * Class list for one extraction field, amber when the AI left it blank.
+ */
+function ocr_field_class(string $key, array $missing, string $base, string $normal, string $amber): string
+{
+    return $base . ' ' . (in_array($key, $missing, true) ? $amber : $normal);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -570,7 +398,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
     <title>Scan Receipt — Atikha Financial System</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen min-w-[1024px] bg-slate-100">
+<body class="min-h-screen min-w-[1024px] bg-slate-50">
     <aside class="fixed inset-y-0 left-0 w-64 bg-slate-800 text-slate-100 flex flex-col">
         <div class="px-6 py-6 border-b border-slate-700">
             <h2 class="text-lg font-bold tracking-tight">Atikha Finance</h2>
@@ -597,7 +425,7 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             </a>
             <a
                 href="ocr_expense.php"
-                class="block rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-medium text-white"
+                class="block rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white"
             >
                 Scan Receipt
             </a>
@@ -642,21 +470,22 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             </a>
         </header>
 
-        <main class="flex-1 p-8 space-y-8">
-            <div>
+        <main class="flex-1 p-8 space-y-6">
+            <div class="border-l-4 border-emerald-600 pl-4">
                 <h1 class="text-2xl font-bold text-slate-900">Scan Receipt</h1>
-                <p class="text-slate-600 mt-2">
-                    Photograph a receipt and let AI fill in the expense details for you to review.
+                <p class="text-slate-600 mt-1">
+                    Drop a receipt on the left, then review what the AI read on the right before saving.
                 </p>
             </div>
 
-            <?php if ($errorMessage !== ''): ?>
-                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                    <p class="text-sm text-red-600 font-medium">
-                        <?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?>
-                    </p>
-                </div>
-            <?php endif; ?>
+            <div
+                id="alert-error"
+                class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 <?= $errorMessage === '' ? 'hidden' : '' ?>"
+            >
+                <p class="text-sm text-red-600 font-medium" id="alert-error-text">
+                    <?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?>
+                </p>
+            </div>
 
             <?php if ($successMessage !== ''): ?>
                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
@@ -679,268 +508,545 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
                 </div>
             <?php endif; ?>
 
-            <?php if ($receipt === null): ?>
-                <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-2xl">
-                    <h2 class="text-lg font-semibold text-slate-900">Upload Receipt</h2>
-                    <p class="text-sm text-slate-600 mt-1">
-                        JPG, PNG, WEBP or HEIC, up to 8 MB. On a phone this opens the rear camera.
-                    </p>
+            <div class="grid grid-cols-2 gap-6 items-start">
+                <!-- Left: the receipt image -->
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200">
+                        <h2 class="text-base font-semibold text-slate-900">Receipt Image</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            JPG, PNG, WEBP or HEIC, up to 8 MB. On a phone this opens the rear camera.
+                        </p>
+                    </div>
 
-                    <form
-                        method="POST"
-                        action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
-                        enctype="multipart/form-data"
-                        class="mt-5 space-y-5"
-                        id="receipt-form"
-                    >
-                        <input type="hidden" name="action" value="upload">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-
-                        <label
-                            for="receipt_image"
-                            class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center cursor-pointer hover:border-slate-400 hover:bg-slate-100 transition"
+                    <div class="p-6 space-y-4">
+                        <form
+                            method="POST"
+                            action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
+                            enctype="multipart/form-data"
+                            id="upload-form"
+                            class="<?= $hasReceipt ? 'hidden' : '' ?>"
                         >
-                            <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-                            </svg>
-                            <span class="text-sm font-medium text-slate-700">
-                                Tap to take a photo or choose a file
-                            </span>
-                            <span class="text-xs text-slate-500" id="file-name">No file selected</span>
-                            <input
-                                type="file"
-                                id="receipt_image"
-                                name="receipt_image"
-                                accept="image/*"
-                                capture="environment"
-                                required
-                                class="sr-only"
+                            <input type="hidden" name="action" value="upload">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+
+                            <label
+                                for="receipt_image"
+                                id="dropzone"
+                                class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition"
                             >
-                        </label>
+                                <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+                                </svg>
+                                <span class="text-sm font-semibold text-slate-700">
+                                    Drag a receipt here, or click to browse
+                                </span>
+                                <span class="text-xs text-slate-500" id="file-name">No file selected</span>
+                                <input
+                                    type="file"
+                                    id="receipt_image"
+                                    name="receipt_image"
+                                    accept="image/*"
+                                    capture="environment"
+                                    required
+                                    class="sr-only"
+                                >
+                            </label>
 
-                        <div class="hidden" id="preview-wrapper">
-                            <p class="text-sm font-medium text-slate-700 mb-2">Preview</p>
-                            <img id="preview" alt="Selected receipt preview" class="max-h-64 rounded-lg border border-slate-200">
+                            <button
+                                type="submit"
+                                id="fallback-submit"
+                                class="<?= $primaryButtonClass ?> w-full mt-4"
+                            >
+                                Scan Receipt
+                            </button>
+                        </form>
+
+                        <div id="preview-shell" class="<?= $hasReceipt ? '' : 'hidden' ?> space-y-3">
+                            <img
+                                id="preview"
+                                <?php if ($hasReceipt): ?>
+                                    src="<?= htmlspecialchars(receipt_public_url((string) $receipt['File_Path']), ENT_QUOTES, 'UTF-8') ?>"
+                                <?php endif; ?>
+                                alt="Receipt preview"
+                                class="w-full rounded-lg border border-slate-200 bg-slate-50 object-contain max-h-[32rem]"
+                            >
+                            <div class="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    id="replace-image"
+                                    class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition"
+                                >
+                                    Replace Image
+                                </button>
+                                <form
+                                    method="POST"
+                                    action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
+                                    id="discard-form"
+                                    class="flex-1"
+                                    onsubmit="return confirm('Discard this receipt? The image will be deleted.');"
+                                >
+                                    <input type="hidden" name="action" value="discard">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                    <input
+                                        type="hidden"
+                                        name="receipt_id"
+                                        id="discard-receipt-id"
+                                        value="<?= $hasReceipt ? (int) $receipt['ReceiptID'] : '' ?>"
+                                    >
+                                    <button
+                                        type="submit"
+                                        class="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 hover:border-red-300 transition"
+                                    >
+                                        Discard
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-
-                        <button
-                            type="submit"
-                            id="submit-button"
-                            class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            Scan Receipt
-                        </button>
-                    </form>
+                    </div>
                 </section>
-            <?php else: ?>
+
+                <!-- Right: the extracted values -->
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-slate-900">Review Extracted Details</h2>
-                            <p class="text-sm text-slate-600 mt-0.5">
+                            <h2 class="text-base font-semibold text-slate-900">Expense Details</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
                                 Nothing is saved until you confirm. Correct anything the AI misread.
                             </p>
                         </div>
-                        <?php if ($receipt['OCR_Status'] === 'Processed'): ?>
-                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <?= $lowConfidence ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' ?>">
-                                <?= $confidencePercent ?>% confidence
-                            </span>
-                        <?php else: ?>
-                            <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-semibold">
-                                Manual entry
-                            </span>
-                        <?php endif; ?>
+                        <span
+                            id="confidence-badge"
+                            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <?= $hasReceipt ? ($receipt['OCR_Status'] === 'Processed' ? ($lowConfidence ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') : 'bg-slate-100 text-slate-700') : 'hidden' ?>"
+                        >
+                            <?php if ($hasReceipt): ?>
+                                <?= $receipt['OCR_Status'] === 'Processed' ? $confidencePercent . '% confidence' : 'Manual entry' ?>
+                            <?php endif; ?>
+                        </span>
                     </div>
 
-                    <div class="grid grid-cols-5 gap-6 p-6">
-                        <div class="col-span-2 space-y-3">
-                            <img
-                                src="<?= htmlspecialchars(receipt_public_url((string) $receipt['File_Path']), ENT_QUOTES, 'UTF-8') ?>"
-                                alt="Uploaded receipt"
-                                class="w-full rounded-lg border border-slate-200 bg-slate-50 object-contain max-h-[28rem]"
+                    <!-- Idle -->
+                    <div id="state-idle" class="<?= $hasReceipt ? 'hidden' : '' ?> px-6 py-20 text-center">
+                        <svg class="mx-auto w-12 h-12 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        <p class="text-sm font-medium text-slate-600 mt-4">Upload a receipt to begin</p>
+                        <p class="text-xs text-slate-500 mt-1">
+                            The extracted date, payee, amount and category will appear here for review.
+                        </p>
+                    </div>
+
+                    <!-- Loading -->
+                    <div id="state-loading" class="hidden px-6 py-10">
+                        <div class="flex items-center gap-3">
+                            <svg class="animate-spin h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <p class="text-sm font-medium text-slate-700">Reading receipt&hellip;</p>
+                        </div>
+                        <div class="mt-6 space-y-4 animate-pulse">
+                            <div class="h-3 w-24 rounded bg-slate-200"></div>
+                            <div class="h-10 rounded-lg bg-slate-100"></div>
+                            <div class="h-3 w-32 rounded bg-slate-200"></div>
+                            <div class="h-10 rounded-lg bg-slate-100"></div>
+                            <div class="h-3 w-20 rounded bg-slate-200"></div>
+                            <div class="h-10 rounded-lg bg-slate-100"></div>
+                        </div>
+                    </div>
+
+                    <!-- Ready -->
+                    <div id="state-form" class="<?= $hasReceipt ? '' : 'hidden' ?> p-6 space-y-4">
+                        <div
+                            id="ai-warning"
+                            class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 <?= ($hasReceipt && $lowConfidence && $receipt['OCR_Status'] === 'Processed') ? '' : 'hidden' ?>"
+                        >
+                            <p class="text-sm text-amber-800 font-medium" id="ai-warning-text">
+                                The AI was unsure about this receipt. Please verify every field carefully.
+                            </p>
+                        </div>
+
+                        <p
+                            id="ai-note"
+                            class="text-sm text-slate-600 <?= !empty($extracted['notes']) ? '' : 'hidden' ?>"
+                        >
+                            <span class="font-medium text-slate-700">AI note:</span>
+                            <span id="ai-note-text"><?= htmlspecialchars($extracted['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+                        </p>
+
+                        <form
+                            method="POST"
+                            action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
+                            id="save-form"
+                            class="grid grid-cols-2 gap-4"
+                        >
+                            <input type="hidden" name="action" value="save">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                            <input
+                                type="hidden"
+                                name="receipt_id"
+                                id="save-receipt-id"
+                                value="<?= $hasReceipt ? (int) $receipt['ReceiptID'] : '' ?>"
                             >
-                            <form
-                                method="POST"
-                                action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
-                                onsubmit="return confirm('Discard this receipt? The image will be deleted.');"
-                            >
-                                <input type="hidden" name="action" value="discard">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-                                <input type="hidden" name="receipt_id" value="<?= (int) $receipt['ReceiptID'] ?>">
+
+                            <div>
+                                <label for="date_incurred" class="block text-sm font-medium text-slate-700 mb-1">
+                                    Date Incurred
+                                </label>
+                                <input
+                                    type="date"
+                                    id="date_incurred"
+                                    name="date_incurred"
+                                    required
+                                    value="<?= htmlspecialchars($extracted['transaction_date'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    class="<?= ocr_field_class('transaction_date', $missingFields, $fieldBaseClass, $fieldNormalClass, $fieldMissingClass) ?>"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="amount" class="block text-sm font-medium text-slate-700 mb-1">
+                                    Total Amount
+                                </label>
+                                <input
+                                    type="number"
+                                    id="amount"
+                                    name="amount"
+                                    step="0.01"
+                                    min="0.01"
+                                    required
+                                    value="<?= htmlspecialchars($extracted['total_amount'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    class="<?= ocr_field_class('total_amount', $missingFields, $fieldBaseClass, $fieldNormalClass, $fieldMissingClass) ?>"
+                                    placeholder="0.00"
+                                >
+                            </div>
+
+                            <div class="col-span-2">
+                                <label for="payee" class="block text-sm font-medium text-slate-700 mb-1">
+                                    Payee / Merchant
+                                </label>
+                                <input
+                                    type="text"
+                                    id="payee"
+                                    name="payee"
+                                    required
+                                    maxlength="255"
+                                    value="<?= htmlspecialchars($extracted['merchant'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    class="<?= ocr_field_class('merchant', $missingFields, $fieldBaseClass, $fieldNormalClass, $fieldMissingClass) ?>"
+                                    placeholder="Vendor or recipient"
+                                >
+                            </div>
+
+                            <div class="col-span-2">
+                                <label for="category" class="block text-sm font-medium text-slate-700 mb-1">
+                                    Category
+                                    <span class="text-slate-500 font-normal">(suggested by AI)</span>
+                                </label>
+                                <select
+                                    id="category"
+                                    name="category"
+                                    required
+                                    class="<?= $fieldBaseClass . ' ' . $fieldNormalClass ?>"
+                                >
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option
+                                            value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"
+                                            <?= $cat === ($extracted['category'] ?? '') ? 'selected' : '' ?>
+                                        >
+                                            <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="col-span-2 flex items-center gap-3 pt-2">
                                 <button
                                     type="submit"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                                    id="save-button"
+                                    class="<?= $primaryButtonClass ?>"
                                 >
-                                    Discard Receipt
+                                    Confirm &amp; Save Expense
                                 </button>
-                            </form>
-                        </div>
-
-                        <div class="col-span-3 space-y-4">
-                            <?php if ($lowConfidence && $receipt['OCR_Status'] === 'Processed'): ?>
-                                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                                    <p class="text-sm text-amber-800 font-medium">
-                                        The AI was unsure about this receipt. Please verify every field carefully.
-                                    </p>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if (!empty($extracted['notes'])): ?>
-                                <p class="text-sm text-slate-600">
-                                    <span class="font-medium text-slate-700">AI note:</span>
-                                    <?= htmlspecialchars($extracted['notes'], ENT_QUOTES, 'UTF-8') ?>
-                                </p>
-                            <?php endif; ?>
-
-                            <?php if (!empty($missingFields)): ?>
-                                <p class="text-sm text-slate-600">
-                                    Fields the AI could not read are highlighted and left blank.
-                                </p>
-                            <?php endif; ?>
-
-                            <form
-                                method="POST"
-                                action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
-                                class="grid grid-cols-2 gap-4"
-                            >
-                                <input type="hidden" name="action" value="save">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-                                <input type="hidden" name="receipt_id" value="<?= (int) $receipt['ReceiptID'] ?>">
-
-                                <?php
-                                $baseInputClass = 'w-full rounded-lg border px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition';
-                                $normalBorder = ' border-slate-300';
-                                $missingBorder = ' border-amber-400 bg-amber-50';
-                                $payeeClass = $baseInputClass . (in_array('merchant', $missingFields, true) ? $missingBorder : $normalBorder);
-                                $amountClass = $baseInputClass . (in_array('total_amount', $missingFields, true) ? $missingBorder : $normalBorder);
-                                $dateClass = $baseInputClass . (in_array('transaction_date', $missingFields, true) ? $missingBorder : $normalBorder);
-                                ?>
-
-                                <div class="col-span-2">
-                                    <label for="payee" class="block text-sm font-medium text-slate-700 mb-1">
-                                        Payee / Merchant
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="payee"
-                                        name="payee"
-                                        required
-                                        value="<?= htmlspecialchars($extracted['merchant'], ENT_QUOTES, 'UTF-8') ?>"
-                                        class="<?= $payeeClass ?>"
-                                        placeholder="Vendor or recipient"
-                                    >
-                                </div>
-
-                                <div>
-                                    <label for="amount" class="block text-sm font-medium text-slate-700 mb-1">
-                                        Total Amount
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="amount"
-                                        name="amount"
-                                        step="0.01"
-                                        min="0.01"
-                                        required
-                                        value="<?= htmlspecialchars($extracted['total_amount'], ENT_QUOTES, 'UTF-8') ?>"
-                                        class="<?= $amountClass ?>"
-                                        placeholder="0.00"
-                                    >
-                                </div>
-
-                                <div>
-                                    <label for="date_incurred" class="block text-sm font-medium text-slate-700 mb-1">
-                                        Date Incurred
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="date_incurred"
-                                        name="date_incurred"
-                                        required
-                                        value="<?= htmlspecialchars($extracted['transaction_date'], ENT_QUOTES, 'UTF-8') ?>"
-                                        class="<?= $dateClass ?>"
-                                    >
-                                </div>
-
-                                <div class="col-span-2">
-                                    <label for="category" class="block text-sm font-medium text-slate-700 mb-1">
-                                        Category
-                                        <span class="text-slate-500 font-normal">(suggested by AI)</span>
-                                    </label>
-                                    <select
-                                        id="category"
-                                        name="category"
-                                        required
-                                        class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                                    >
-                                        <?php foreach ($categories as $cat): ?>
-                                            <option
-                                                value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>"
-                                                <?= $cat === $extracted['category'] ? 'selected' : '' ?>
-                                            >
-                                                <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-span-2 flex items-center gap-3 pt-2">
-                                    <button
-                                        type="submit"
-                                        class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2"
-                                    >
-                                        Save Expense
-                                    </button>
-                                    <a
-                                        href="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
-                                        class="text-sm font-medium text-slate-600 hover:text-slate-900 transition"
-                                    >
-                                        Scan another receipt
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
+                                <a
+                                    href="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>"
+                                    class="text-sm font-medium text-slate-600 hover:text-emerald-700 transition"
+                                >
+                                    Scan another receipt
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </section>
-            <?php endif; ?>
+            </div>
         </main>
     </div>
 
     <script>
         (function () {
-            const input = document.getElementById('receipt_image');
-            if (!input) {
-                return;
+            const endpoint = 'ocr_extract.php';
+            const maxBytes = <?= MAX_RECEIPT_BYTES ?>;
+            const csrfToken = <?= json_encode($csrfToken, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+            const uploadForm = document.getElementById('upload-form');
+            const fileInput = document.getElementById('receipt_image');
+            const dropzone = document.getElementById('dropzone');
+            const fileName = document.getElementById('file-name');
+            const fallbackSubmit = document.getElementById('fallback-submit');
+            const previewShell = document.getElementById('preview-shell');
+            const preview = document.getElementById('preview');
+            const replaceButton = document.getElementById('replace-image');
+            const discardReceiptId = document.getElementById('discard-receipt-id');
+
+            const stateIdle = document.getElementById('state-idle');
+            const stateLoading = document.getElementById('state-loading');
+            const stateForm = document.getElementById('state-form');
+            const confidenceBadge = document.getElementById('confidence-badge');
+            const aiWarning = document.getElementById('ai-warning');
+            const aiWarningText = document.getElementById('ai-warning-text');
+            const aiNote = document.getElementById('ai-note');
+            const aiNoteText = document.getElementById('ai-note-text');
+            const alertError = document.getElementById('alert-error');
+            const alertErrorText = document.getElementById('alert-error-text');
+
+            const saveForm = document.getElementById('save-form');
+            const saveButton = document.getElementById('save-button');
+            const saveReceiptId = document.getElementById('save-receipt-id');
+            const fieldPayee = document.getElementById('payee');
+            const fieldAmount = document.getElementById('amount');
+            const fieldDate = document.getElementById('date_incurred');
+            const fieldCategory = document.getElementById('category');
+
+            const missingClasses = ['border-amber-400', 'bg-amber-50', 'focus:border-amber-500', 'focus:ring-amber-500'];
+            const normalClasses = ['border-slate-300', 'focus:border-emerald-500', 'focus:ring-emerald-500'];
+
+            // A receipt row already exists once the image is stored, so leaving
+            // without saving would strand it.
+            let hasUnsavedReceipt = <?= $hasReceipt ? 'true' : 'false' ?>;
+            let objectUrl = null;
+            let busy = false;
+
+            // JavaScript takes over the upload, so the synchronous fallback
+            // button is only for browsers that never run this script.
+            fallbackSubmit.classList.add('hidden');
+
+            function showError(message) {
+                alertErrorText.textContent = message;
+                alertError.classList.remove('hidden');
             }
 
-            const fileName = document.getElementById('file-name');
-            const preview = document.getElementById('preview');
-            const previewWrapper = document.getElementById('preview-wrapper');
-            const form = document.getElementById('receipt-form');
-            const submitButton = document.getElementById('submit-button');
+            function clearError() {
+                alertError.classList.add('hidden');
+            }
 
-            input.addEventListener('change', function () {
-                const file = input.files && input.files[0];
-                if (!file) {
-                    fileName.textContent = 'No file selected';
-                    previewWrapper.classList.add('hidden');
+            function setFieldMissing(field, isMissing) {
+                if (!field) {
                     return;
                 }
+                field.classList.remove(...missingClasses, ...normalClasses);
+                field.classList.add(...(isMissing ? missingClasses : normalClasses));
+            }
+
+            function showState(name) {
+                stateIdle.classList.toggle('hidden', name !== 'idle');
+                stateLoading.classList.toggle('hidden', name !== 'loading');
+                stateForm.classList.toggle('hidden', name !== 'form');
+            }
+
+            function handleFile(file) {
+                if (!file || busy) {
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    showError('Only JPG, PNG, WEBP or HEIC images are accepted.');
+                    return;
+                }
+
+                if (file.size > maxBytes) {
+                    showError('That image is too large. Please upload a receipt photo under 8 MB.');
+                    return;
+                }
+
+                clearError();
 
                 const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
                 fileName.textContent = file.name + ' (' + sizeMb + ' MB)';
 
-                if (preview.src) {
-                    URL.revokeObjectURL(preview.src);
+                // Paint the local image first so the receipt is visible while
+                // the request is still in flight.
+                if (objectUrl) {
+                    URL.revokeObjectURL(objectUrl);
                 }
-                preview.src = URL.createObjectURL(file);
-                previewWrapper.classList.remove('hidden');
+                objectUrl = URL.createObjectURL(file);
+                preview.src = objectUrl;
+                uploadForm.classList.add('hidden');
+                previewShell.classList.remove('hidden');
+
+                upload(file);
+            }
+
+            function upload(file) {
+                busy = true;
+                showState('loading');
+                confidenceBadge.classList.add('hidden');
+                saveButton.disabled = true;
+
+                const payload = new FormData();
+                payload.append('receipt_image', file);
+                payload.append('csrf_token', csrfToken);
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        return response.json().catch(function () {
+                            throw new Error('The server returned an unreadable response.');
+                        });
+                    })
+                    .then(function (result) {
+                        if (!result.ok) {
+                            throw new Error(result.error || 'The receipt could not be read.');
+                        }
+                        applyExtraction(result.data);
+                    })
+                    .catch(function (error) {
+                        showError(error.message || 'The upload failed. Please check your connection and try again.');
+                        resetToUpload();
+                    })
+                    .finally(function () {
+                        busy = false;
+                    });
+            }
+
+            function applyExtraction(data) {
+                hasUnsavedReceipt = true;
+
+                saveReceiptId.value = data.receipt_id;
+                discardReceiptId.value = data.receipt_id;
+                preview.src = data.image_url;
+
+                fieldPayee.value = data.payee || '';
+                fieldAmount.value = data.amount || '';
+                fieldDate.value = data.date_incurred || '';
+                if (data.category) {
+                    fieldCategory.value = data.category;
+                }
+
+                const missing = Array.isArray(data.missing) ? data.missing : [];
+                setFieldMissing(fieldPayee, missing.indexOf('merchant') !== -1);
+                setFieldMissing(fieldAmount, missing.indexOf('total_amount') !== -1);
+                setFieldMissing(fieldDate, missing.indexOf('transaction_date') !== -1);
+
+                confidenceBadge.classList.remove(
+                    'hidden',
+                    'bg-emerald-100', 'text-emerald-800',
+                    'bg-amber-100', 'text-amber-800',
+                    'bg-slate-100', 'text-slate-700'
+                );
+
+                if (data.status === 'Processed') {
+                    confidenceBadge.textContent = Math.round(data.confidence * 100) + '% confidence';
+                    confidenceBadge.classList.add(
+                        ...(data.low_confidence
+                            ? ['bg-amber-100', 'text-amber-800']
+                            : ['bg-emerald-100', 'text-emerald-800'])
+                    );
+                } else {
+                    confidenceBadge.textContent = 'Manual entry';
+                    confidenceBadge.classList.add('bg-slate-100', 'text-slate-700');
+                }
+
+                if (data.warning) {
+                    aiWarningText.textContent = data.warning;
+                    aiWarning.classList.remove('hidden');
+                } else if (data.low_confidence && data.status === 'Processed') {
+                    aiWarningText.textContent = 'The AI was unsure about this receipt. Please verify every field carefully.';
+                    aiWarning.classList.remove('hidden');
+                } else {
+                    aiWarning.classList.add('hidden');
+                }
+
+                if (data.notes) {
+                    aiNoteText.textContent = data.notes;
+                    aiNote.classList.remove('hidden');
+                } else {
+                    aiNote.classList.add('hidden');
+                }
+
+                saveButton.disabled = false;
+                showState('form');
+            }
+
+            function resetToUpload() {
+                if (objectUrl) {
+                    URL.revokeObjectURL(objectUrl);
+                    objectUrl = null;
+                }
+                preview.removeAttribute('src');
+                fileInput.value = '';
+                fileName.textContent = 'No file selected';
+                previewShell.classList.add('hidden');
+                uploadForm.classList.remove('hidden');
+                confidenceBadge.classList.add('hidden');
+                showState('idle');
+            }
+
+            fileInput.addEventListener('change', function () {
+                handleFile(fileInput.files && fileInput.files[0]);
             });
 
-            form.addEventListener('submit', function () {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Reading receipt…';
+            ['dragenter', 'dragover'].forEach(function (name) {
+                dropzone.addEventListener(name, function (event) {
+                    event.preventDefault();
+                    dropzone.classList.add('border-emerald-500', 'bg-emerald-50');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(function (name) {
+                dropzone.addEventListener(name, function (event) {
+                    event.preventDefault();
+                    dropzone.classList.remove('border-emerald-500', 'bg-emerald-50');
+                });
+            });
+
+            dropzone.addEventListener('drop', function (event) {
+                const files = event.dataTransfer && event.dataTransfer.files;
+                if (files && files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // Dropping anywhere else should not make the browser navigate to
+            // the file.
+            ['dragover', 'drop'].forEach(function (name) {
+                window.addEventListener(name, function (event) {
+                    if (!dropzone.contains(event.target)) {
+                        event.preventDefault();
+                    }
+                });
+            });
+
+            replaceButton.addEventListener('click', function () {
+                fileInput.click();
+            });
+
+            saveForm.addEventListener('submit', function () {
+                hasUnsavedReceipt = false;
+                saveButton.disabled = true;
+                saveButton.textContent = 'Saving…';
+            });
+
+            document.getElementById('discard-form').addEventListener('submit', function () {
+                hasUnsavedReceipt = false;
+            });
+
+            window.addEventListener('beforeunload', function (event) {
+                if (!hasUnsavedReceipt) {
+                    return;
+                }
+                event.preventDefault();
+                event.returnValue = '';
             });
         })();
     </script>

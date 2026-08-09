@@ -175,6 +175,9 @@ $truncated = count($logs) >= AUDIT_PAGE_LIMIT;
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 
+// Admin can use the Staff Operational Workspace; keep the links for them.
+$canUseWorkspace = true;
+
 $exportQuery = http_build_query(array_merge(
     array_filter($filters, static function ($value) {
         return $value !== '' && $value !== 0;
@@ -203,24 +206,28 @@ $exportQuery = http_build_query(array_merge(
             >
                 Dashboard
             </a>
-            <a
-                href="funds.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Incoming Funds
-            </a>
+            <?php if ($canUseWorkspace): ?>
+                <a
+                    href="funds.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Incoming Funds
+                </a>
+            <?php endif; ?>
             <a
                 href="expenses.php"
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
             >
                 Expenses
             </a>
-            <a
-                href="ocr_expense.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Scan Receipt
-            </a>
+            <?php if ($canUseWorkspace): ?>
+                <a
+                    href="ocr_expense.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Scan Receipt
+                </a>
+            <?php endif; ?>
             <a
                 href="reports.php"
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"

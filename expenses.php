@@ -14,6 +14,11 @@ require_once __DIR__ . '/includes/logger.php';
 $categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
 $userId = (int) $_SESSION['UserID'];
 $isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
+
+// The Staff Operational Workspace (Incoming Funds, Scan Receipt) is closed to
+// Management, so those links are hidden rather than left to 403.
+$canUseWorkspace = in_array($_SESSION['Role'] ?? '', ['Staff', 'Admin'], true);
+
 $csrfToken = csrf_token();
 
 $errorMessage = '';
@@ -266,24 +271,28 @@ $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
             >
                 Dashboard
             </a>
-            <a
-                href="funds.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Incoming Funds
-            </a>
+            <?php if ($canUseWorkspace): ?>
+                <a
+                    href="funds.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Incoming Funds
+                </a>
+            <?php endif; ?>
             <a
                 href="expenses.php"
                 class="block rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-medium text-white"
             >
                 Expenses
             </a>
-            <a
-                href="ocr_expense.php"
-                class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
-            >
-                Scan Receipt
-            </a>
+            <?php if ($canUseWorkspace): ?>
+                <a
+                    href="ocr_expense.php"
+                    class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
+                >
+                    Scan Receipt
+                </a>
+            <?php endif; ?>
             <a
                 href="reports.php"
                 class="block rounded-lg px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition"
