@@ -75,6 +75,19 @@ $sidebarClass = $navIsExecutive
         <a href="reports.php" class="<?= nav_link_class('reports', $activePage, $navIsExecutive) ?>">
             Reports
         </a>
+        <?php if ($navCanUseWorkspace): ?>
+            <a href="board_messages.php" class="<?= nav_link_class('board_messages', $activePage, $navIsExecutive) ?>">
+                Message the Board
+            </a>
+        <?php endif; ?>
+        <?php if ($navIsExecutive): ?>
+            <a href="management_reviews.php" class="<?= nav_link_class('management_reviews', $activePage, $navIsExecutive) ?>">
+                Review Queue
+            </a>
+            <a href="board_inbox.php" class="<?= nav_link_class('board_inbox', $activePage, $navIsExecutive) ?>">
+                Board Inbox
+            </a>
+        <?php endif; ?>
         <?php if ($navIsAdmin): ?>
             <a href="admin_users.php" class="<?= nav_link_class('admin_users', $activePage, $navIsExecutive) ?>">
                 User Management

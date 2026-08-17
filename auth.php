@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/logger.php';
+require_once __DIR__ . '/includes/mfa.php';
 
 session_start();
 
@@ -20,7 +21,7 @@ if ($email === '' || $password === '') {
 
 try {
     $stmt = $pdo->prepare(
-        'SELECT UserID, FullName, Role, Password
+        'SELECT UserID, FullName, Role, Email, Password
          FROM Users
          WHERE Email = :email
          LIMIT 1'
@@ -29,22 +30,17 @@ try {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['Password'])) {
-        session_regenerate_id(true);
-        $_SESSION['UserID'] = $user['UserID'];
-        $_SESSION['FullName'] = $user['FullName'];
-        $_SESSION['Role'] = $user['Role'];
+        $userId = (int) $user['UserID'];
 
-        log_system_action(
-            $pdo,
-            (int) $user['UserID'],
-            AUDIT_ACTION_LOGIN,
-            'Auth',
-            null,
-            null,
-            ['email' => $email, 'role' => $user['Role']]
-        );
+        if (!mfa_issue_and_send($pdo, $userId, (string) $user['Email'], (string) $user['FullName'])) {
+            mfa_clear_code($pdo, $userId);
+            header('Location: login.php?error=mfa_send');
+            exit;
+        }
 
-        header('Location: dashboard.php');
+        mfa_set_pending($userId, mfa_mask_email((string) $user['Email']));
+
+        header('Location: mfa_verify.php');
         exit;
     }
 } catch (PDOException $e) {

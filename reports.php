@@ -7,11 +7,16 @@ if (empty($_SESSION['UserID'])) {
 }
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/layout.php';
+require_once __DIR__ . '/includes/report_snapshots.php';
+require_once __DIR__ . '/includes/review_ui.php';
 
 $activePage = 'reports';
 $flags = layout_role_flags();
 $isExecutive = $flags['isExecutive'];
+$canUseWorkspace = $flags['canUseWorkspace'];
+$csrfToken = csrf_token();
 
 $currentYear = (int) date('Y');
 $currentMonth = date('m');
@@ -66,6 +71,11 @@ $totalRevenues = array_sum(array_map(static fn ($r) => (float) $r['Total'], $rev
 $totalExpenses = array_sum(array_map(static fn ($r) => (float) $r['Total'], $expenses));
 $netIncome = $totalRevenues - $totalExpenses;
 
+$reportSnapshot = report_snapshot_load($pdo, $monthInt, $year);
+$reportReviewStatus = $reportSnapshot['Review_Status'] ?? 'None';
+$reportReviewNotes = $reportSnapshot['Review_Notes'] ?? null;
+$reportId = (int) ($reportSnapshot['ReportID'] ?? 0);
+
 $printCss = <<<'CSS'
 <style>
     @media print {
@@ -85,6 +95,9 @@ $cardClass = $isExecutive ? 'exec-card' : 'bg-white rounded-xl border border-sla
 $stmtClass = $isExecutive ? 'exec-card statement' : 'bg-white rounded-xl border border-slate-200 shadow-sm p-8 print:shadow-none print:border-0 statement';
 $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 transition';
 ?>
+
+<div class="js-review-root" data-csrf="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+    <div id="review-flash" class="hidden"></div>
 
 <div class="no-print">
     <h1 class="text-2xl font-bold text-slate-900">Automated Reporting</h1>
@@ -114,6 +127,41 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
         </div>
         <button type="submit" class="<?= $btnPrimary ?>">Generate Statement</button>
     </form>
+
+    <div class="mt-6 pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-medium text-slate-700">Review status for this period</p>
+            <div class="mt-2"><?= review_render_status_badge((string) $reportReviewStatus) ?></div>
+            <?php if (!empty($reportReviewNotes)): ?>
+                <p class="text-xs text-slate-500 mt-2"><?= htmlspecialchars((string) $reportReviewNotes, ENT_QUOTES, 'UTF-8') ?></p>
+            <?php endif; ?>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <?php if ($canUseWorkspace && review_can_send((string) $reportReviewStatus)): ?>
+                <button
+                    type="button"
+                    class="js-send-review rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 transition"
+                    data-entity-type="report"
+                    data-report-month="<?= (int) $monthInt ?>"
+                    data-report-year="<?= (int) $year ?>"
+                >
+                    Send Report for Review
+                </button>
+            <?php elseif ($isExecutive && $reportReviewStatus === 'Requested' && $reportId > 0): ?>
+                <div class="flex flex-col items-end gap-2">
+                    <textarea id="review-notes" rows="2" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-[280px]" placeholder="Optional review notes"></textarea>
+                    <button
+                        type="button"
+                        class="js-mark-reviewed <?= $btnPrimary ?>"
+                        data-entity-type="report"
+                        data-entity-id="<?= $reportId ?>"
+                    >
+                        Mark as Reviewed
+                    </button>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </section>
 
 <section class="<?= $stmtClass ?>">
@@ -182,4 +230,8 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
     </div>
 </section>
 
-<?php layout_end(); ?>
+</div>
+
+<?php
+layout_end('<script src="assets/js/review_actions.js"></script>');
+?>

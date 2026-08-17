@@ -5,6 +5,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
+require_once __DIR__ . '/includes/review_ui.php';
 require_once __DIR__ . '/includes/require_role.php';
 
 require_login();
@@ -238,7 +239,7 @@ if ($action === 'delete') {
 
 try {
     $stmt = $pdo->query(
-        'SELECT FundID, Date_Received, Source_Donor, Category, Project_Code, Amount
+        'SELECT FundID, Date_Received, Source_Donor, Category, Project_Code, Amount, Review_Status, Review_Notes
          FROM Incoming_Funds
          ORDER BY Date_Received DESC, FundID DESC'
     );
@@ -255,6 +256,7 @@ $recentTotal = array_sum(array_map(static fn (array $row): float => (float) $row
 
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
+$reviewStatus = static fn (array $row): string => (string) ($row['Review_Status'] ?? 'None');
 
 // Workspace theme tokens, kept in one place so the form and the edit modal
 // cannot drift apart.
@@ -276,25 +278,11 @@ $activePage = 'funds';
 <body class="min-h-screen min-w-[1024px] bg-slate-50">
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
-    <div class="ml-64 flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-500">Signed in as</p>
-                <p class="text-slate-900 font-semibold">
-                    <?= $fullName ?>
-                    <span class="text-slate-400 font-normal">·</span>
-                    <span class="text-slate-600 font-medium text-sm"><?= $role ?></span>
-                </p>
-            </div>
-            <a
-                href="logout.php"
-                class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-            >
-                Logout
-            </a>
-        </header>
+    <div class="ml-64 flex flex-col min-h-screen js-review-root" data-csrf="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+        <?php include __DIR__ . '/includes/header_bar.php'; ?>
 
         <main class="flex-1 p-8 space-y-6">
+            <div id="review-flash" class="hidden"></div>
             <div class="border-l-4 border-emerald-600 pl-4">
                 <h1 class="text-2xl font-bold text-slate-900">Incoming Funds</h1>
                 <p class="text-slate-600 mt-1">
@@ -496,13 +484,14 @@ $activePage = 'funds';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Project</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($records)): ?>
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">No incoming fund records yet.</td>
+                                    <td colspan="7" class="px-6 py-8 text-center text-slate-500">No incoming fund records yet.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($records as $row): ?>
@@ -528,6 +517,9 @@ $activePage = 'funds';
                                         <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                             &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
+                                        <td class="px-6 py-3 whitespace-nowrap">
+                                            <?= review_render_status_badge($reviewStatus($row)) ?>
+                                        </td>
                                         <td class="px-6 py-3 text-right whitespace-nowrap">
                                             <button
                                                 type="button"
@@ -543,6 +535,16 @@ $activePage = 'funds';
                                             >
                                                 Edit
                                             </button>
+                                            <?php if (review_can_send($reviewStatus($row))): ?>
+                                                <button
+                                                    type="button"
+                                                    class="js-send-review rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition"
+                                                    data-entity-type="fund"
+                                                    data-entity-id="<?= (int) $row['FundID'] ?>"
+                                                >
+                                                    Send for Review
+                                                </button>
+                                            <?php endif; ?>
                                             <?php if ($isAdmin): ?>
                                                 <form
                                                     method="POST"
@@ -710,5 +712,7 @@ $activePage = 'funds';
             });
         })();
     </script>
+    <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/review_actions.js"></script>
 </body>
 </html>

@@ -233,21 +233,21 @@ else:
             <h2 class="text-lg font-semibold text-slate-900">Predictive Forecast</h2>
             <p id="forecast-meta" class="text-sm text-slate-500 mt-1">Projecting the next six months of outflow.</p>
         </div>
+        <?php if ($canRefresh): ?>
         <div class="text-right shrink-0">
             <button
                 type="button"
                 id="btn-refresh-forecast"
-                <?= $canRefresh && $aiConfigured ? '' : 'disabled' ?>
+                <?= $aiConfigured ? '' : 'disabled' ?>
                 class="rounded-lg bg-indigo-700 hover:bg-indigo-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 text-sm transition"
             >
                 Refresh Forecast
             </button>
             <?php if (!$aiConfigured): ?>
                 <p class="text-xs text-slate-400 mt-1.5">Add a Gemini API key to config.php</p>
-            <?php elseif (!$canRefresh): ?>
-                <p class="text-xs text-slate-400 mt-1.5">Recalculation is limited to Management</p>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
     </div>
 
     <div id="forecast-loading" class="px-6 py-16 flex flex-col items-center justify-center gap-3">

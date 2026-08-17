@@ -68,22 +68,7 @@ function layout_begin(
     <?php include __DIR__ . '/nav.php'; ?>
 
     <div class="ml-64 flex flex-col min-h-screen print:ml-0">
-        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between print:hidden">
-            <div>
-                <p class="text-sm text-slate-500">Signed in as</p>
-                <p class="text-slate-900 font-semibold">
-                    <?= $flags['fullName'] ?>
-                    <span class="text-slate-400 font-normal">·</span>
-                    <span class="text-slate-600 font-medium text-sm"><?= $flags['roleLabel'] ?></span>
-                </p>
-            </div>
-            <a
-                href="logout.php"
-                class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-            >
-                Logout
-            </a>
-        </header>
+        <?php include __DIR__ . '/header_bar.php'; ?>
 
         <main class="flex-1 p-8 space-y-8 print:p-0">
     <?php
@@ -95,6 +80,7 @@ function layout_end(string $extraScripts = ''): void
     ?>
         </main>
     </div>
+    <script src="assets/js/notifications.js"></script>
     <?= $extraScripts ?>
 </body>
 </html>

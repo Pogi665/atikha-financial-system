@@ -19,6 +19,7 @@ require_once __DIR__ . '/includes/categories.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/gemini_client.php';
 require_once __DIR__ . '/includes/logger.php';
+require_once __DIR__ . '/includes/expense_warnings.php';
 require_once __DIR__ . '/includes/receipts.php';
 require_once __DIR__ . '/includes/require_role.php';
 
@@ -283,6 +284,14 @@ if ($action === 'save') {
 
                 $pdo->commit();
 
+                expense_check_and_notify_warnings($pdo, [
+                    'ExpenseID'     => $expenseId,
+                    'Payee'         => $payee,
+                    'Category'      => $category,
+                    'Amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
+                    'Date_Incurred' => $dateIncurred,
+                ], (string) ($_SESSION['FullName'] ?? ''));
+
                 unset($_SESSION['pending_receipt_id']);
 
                 header('Location: expenses.php?saved=1');
@@ -403,22 +412,7 @@ $activePage = 'ocr_expense';
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
     <div class="ml-64 flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-            <div>
-                <p class="text-sm text-slate-500">Signed in as</p>
-                <p class="text-slate-900 font-semibold">
-                    <?= $fullName ?>
-                    <span class="text-slate-400 font-normal">·</span>
-                    <span class="text-slate-600 font-medium text-sm"><?= $role ?></span>
-                </p>
-            </div>
-            <a
-                href="logout.php"
-                class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-            >
-                Logout
-            </a>
-        </header>
+        <?php include __DIR__ . '/includes/header_bar.php'; ?>
 
         <main class="flex-1 p-8 space-y-6">
             <div class="border-l-4 border-emerald-600 pl-4">
@@ -1000,5 +994,6 @@ $activePage = 'ocr_expense';
             });
         })();
     </script>
+    <script src="assets/js/notifications.js"></script>
 </body>
 </html>

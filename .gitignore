@@ -1,4 +1,5 @@
 node_modules/
+vendor/
 
 # Local secrets (Gemini API key, overrides). Copy config.example.php instead.
 config.php
@@ -6,3 +7,6 @@ config.php
 # Uploaded receipt images. The tracked .htaccess / .gitignore stubs are kept.
 uploads/receipts/*
 !uploads/receipts/.gitignore
+
+uploads/board/*
+!uploads/board/.gitignore
