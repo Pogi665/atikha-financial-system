@@ -988,7 +988,7 @@ video {
 }
 
 .animate-gradient-shift {
-  animation: gradient-shift 8s ease infinite;
+  animation: gradient-shift 20s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -1469,7 +1469,7 @@ video {
   --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
 }
 
-.bg-\[length\:200\%_200\%\] {
+.bg-\[size\:200\%_200\%\] {
   background-size: 200% 200%;
 }
 
