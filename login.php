@@ -69,7 +69,7 @@ $csrfToken = csrf_token();
 
         <!-- Form panel -->
         <main class="flex w-full flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 xl:w-2/5">
-            <div class="w-full max-w-sm">
+            <div class="w-full max-w-sm animate-fade-slide-up motion-reduce:animate-none">
 
                 <!-- Logo placeholder -->
                 <div class="mb-8 flex flex-col items-center text-center lg:items-start lg:text-left">
