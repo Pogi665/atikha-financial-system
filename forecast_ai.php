@@ -25,7 +25,7 @@ if (is_file(__DIR__ . '/config.php')) {
 
 header('Content-Type: application/json; charset=utf-8');
 
-// Refreshing spends API tokens, so it is not something Staff can trigger.
+// Explicit refresh is available to both operational roles.
 const FORECAST_REFRESH_ROLES = ['Admin', 'Management'];
 
 // Shortest gap between two live generations. Guards against a double-click

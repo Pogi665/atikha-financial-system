@@ -23,10 +23,12 @@ function require_login(): void
  * Renders a bright-themed Access Denied page and exits. Use this for HTML
  * pages; JSON endpoints should return their own {ok, error} 403 envelope.
  *
- * @param string[] $allowed Role literals from Users.Role (Admin, Staff, Management).
+ * @param string[] $allowed Role literals from Users.Role (Admin, Management).
  */
 function require_role(array $allowed, string $featureName): void
 {
+    require_once __DIR__ . '/user_roles.php';
+    $allowedLabels = htmlspecialchars(implode(' or ', array_map('user_role_label', $allowed)), ENT_QUOTES, 'UTF-8');
     $role = $_SESSION['Role'] ?? '';
 
     if (in_array($role, $allowed, true)) {
@@ -49,7 +51,7 @@ function require_role(array $allowed, string $featureName): void
         <div class="max-w-md bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
             <h1 class="text-xl font-bold text-slate-900">Access Denied</h1>
             <p class="text-slate-600 mt-3 text-sm">
-                <?= $feature ?> is restricted to Accounting/Administrative Staff and System Administrators.
+                <?= $feature ?> is restricted to <?= $allowedLabels ?>.
                 <?= $deniedName !== '' ? 'You are signed in as ' . $deniedName . '.' : '' ?>
             </p>
             <a

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/user_identities.php';
 session_start();
 
 require_once __DIR__ . '/db_connect.php';
@@ -28,7 +29,7 @@ try {
     $sql = 'SELECT b.CommunicationID, b.Subject, b.Message_Body, b.File_Path,
                    b.Review_Status, b.Created_At, u.FullName AS SenderName
             FROM Board_Communications b
-            INNER JOIN Users u ON u.UserID = b.Sender_UserID';
+            INNER JOIN ' . user_identity_table($pdo) . ' u ON u.UserID = b.Sender_UserID';
     if ($filter === 'pending') {
         $sql .= " WHERE b.Review_Status = 'Requested'";
     } elseif ($filter === 'reviewed') {
@@ -42,7 +43,7 @@ try {
             'SELECT b.CommunicationID, b.Subject, b.Message_Body, b.File_Path,
                     b.Review_Status, b.Created_At, u.FullName AS SenderName
              FROM Board_Communications b
-             INNER JOIN Users u ON u.UserID = b.Sender_UserID
+             INNER JOIN ' . user_identity_table($pdo) . ' u ON u.UserID = b.Sender_UserID
              WHERE b.CommunicationID = :id'
         );
         $stmt->execute(['id' => $detailId]);
@@ -64,7 +65,7 @@ layout_begin('Board Inbox', $activePage);
     <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900">Board Inbox</h1>
-            <p class="text-slate-600 mt-2">Internal messages submitted by Staff and Administrators.</p>
+            <p class="text-slate-600 mt-2">Internal messages for Management review.</p>
         </div>
         <div class="flex gap-2">
             <a href="board_inbox.php?filter=pending" class="<?= $filter === 'pending' ? $btnPrimary : 'rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition' ?>">Pending</a>

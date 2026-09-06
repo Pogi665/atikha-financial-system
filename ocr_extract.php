@@ -6,7 +6,7 @@
  * POST-only, multipart in and JSON out. Stores the image, records the receipt,
  * hands it to Gemini, and returns the values for the reviewer to confirm.
  *
- * Nothing here writes an expense. The Staff member still confirms the values on
+ * Nothing here writes an expense. The Administrator still confirms the values on
  * ocr_expense.php, which is where validation that matters lives.
  */
 
@@ -25,7 +25,7 @@ if (is_file(__DIR__ . '/config.php')) {
 
 header('Content-Type: application/json; charset=utf-8');
 
-const OCR_WORKSPACE_ROLES = ['Staff', 'Admin'];
+const OCR_WORKSPACE_ROLES = ['Admin'];
 
 /**
  * @param array<string, mixed>|null $data
@@ -47,7 +47,7 @@ if (empty($_SESSION['UserID'])) {
 
 // A fetch target needs a JSON refusal, not the HTML page require_role() renders.
 if (!in_array($_SESSION['Role'] ?? '', OCR_WORKSPACE_ROLES, true)) {
-    ocr_respond(false, null, 'Scanning receipts is restricted to Staff and Administrators.', 403);
+    ocr_respond(false, null, 'Scanning receipts is restricted to System Administrators.', 403);
 }
 
 if (!csrf_verify($_POST['csrf_token'] ?? null)) {

@@ -14,7 +14,7 @@ require_once __DIR__ . '/includes/report_snapshots.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-const REVIEW_WORKSPACE_ROLES = ['Staff', 'Admin'];
+const REVIEW_WORKSPACE_ROLES = ['Admin'];
 const REVIEW_MANAGEMENT_ROLES = ['Management'];
 
 /**
@@ -50,7 +50,7 @@ $reportYear = (int) ($_POST['report_year'] ?? 0);
 
 if ($action === 'send_for_review') {
     if (!in_array($role, REVIEW_WORKSPACE_ROLES, true)) {
-        review_respond(false, null, 'Sending items for review is restricted to Staff and Administrators.', 403);
+        review_respond(false, null, 'Sending items for review is restricted to System Administrators.', 403);
     }
 
     if ($entityType === 'report') {

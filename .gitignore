@@ -1,6 +1,10 @@
 node_modules/
 vendor/
 
+# Local migration exports, verification manifests and restored upload copies.
+.migration-private/*
+!.migration-private/.htaccess
+
 # Local secrets (Gemini API key, overrides). Copy config.example.php instead.
 config.php
 

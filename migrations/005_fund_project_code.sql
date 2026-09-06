@@ -1,4 +1,4 @@
--- Add an optional project / grant code to incoming funds so Staff can tag
+-- Add an optional project / grant code to incoming funds so Administrators can tag
 -- deposits without disturbing the Category field used by reports.
 
 ALTER TABLE Incoming_Funds

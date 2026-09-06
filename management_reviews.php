@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/user_identities.php';
 session_start();
 
 require_once __DIR__ . '/db_connect.php';
@@ -70,7 +71,7 @@ try {
     $boardSql = 'SELECT b.CommunicationID, b.Subject, b.Message_Body, b.File_Path,
                         b.Review_Status, b.Created_At, u.FullName AS SubmitterName
                  FROM Board_Communications b
-                 INNER JOIN Users u ON u.UserID = b.Sender_UserID';
+                 INNER JOIN ' . user_identity_table($pdo) . ' u ON u.UserID = b.Sender_UserID';
     if ($filter === 'pending') {
         $boardSql .= " WHERE b.Review_Status = 'Requested'";
     } else {
@@ -100,7 +101,7 @@ layout_begin('Review Queue', $activePage);
         <div>
             <h1 class="text-2xl font-bold text-slate-900">Review Queue</h1>
             <p class="text-slate-600 mt-2">
-                Pending items submitted by Staff for Management review.
+                Pending items awaiting Management review.
                 <?php if ($pendingCount > 0): ?>
                     <span class="font-semibold text-amber-700"><?= (int) $pendingCount ?> awaiting review.</span>
                 <?php endif; ?>

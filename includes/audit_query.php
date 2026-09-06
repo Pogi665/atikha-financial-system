@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/user_identities.php';
 
 /**
  * Read side of the audit trail.
@@ -119,16 +120,16 @@ function audit_fetch_logs(PDO $pdo, array $filters, int $limit = AUDIT_PAGE_LIMI
         $params['date_to'] = $filters['date_to'] . ' 23:59:59';
     }
     if ($filters['q'] !== '') {
-        $where[] = '(u.FullName LIKE :q OR a.module LIKE :q OR a.action_type LIKE :q'
-            . ' OR a.ip_address LIKE :q OR a.old_values LIKE :q OR a.new_values LIKE :q)';
-        $params['q'] = '%' . $filters['q'] . '%';
+        $where[] = '(u.FullName LIKE :q0 OR a.module LIKE :q1 OR a.action_type LIKE :q2'
+            . ' OR a.ip_address LIKE :q3 OR a.old_values LIKE :q4 OR a.new_values LIKE :q5)';
+        for ($i = 0; $i < 6; $i++) { $params['q' . $i] = '%' . $filters['q'] . '%'; }
     }
 
     $sql = 'SELECT a.id, a.user_id, a.action_type, a.module, a.record_id,
                    a.old_values, a.new_values, a.source_link, a.ip_address, a.created_at,
                    u.FullName, u.Role
             FROM audit_logs a
-            INNER JOIN Users u ON u.UserID = a.user_id';
+            INNER JOIN ' . user_identity_table($pdo) . ' u ON u.UserID = a.user_id';
 
     if ($where !== []) {
         $sql .= ' WHERE ' . implode(' AND ', $where);
@@ -155,7 +156,7 @@ function audit_filter_options(PDO $pdo): array
         $stmt = $pdo->query(
             'SELECT DISTINCT u.UserID, u.FullName
              FROM audit_logs a
-             INNER JOIN Users u ON u.UserID = a.user_id
+             INNER JOIN ' . user_identity_table($pdo) . ' u ON u.UserID = a.user_id
              ORDER BY u.FullName ASC'
         );
         $options['users'] = $stmt->fetchAll();

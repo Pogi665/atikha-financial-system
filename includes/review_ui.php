@@ -16,7 +16,7 @@ function review_render_status_badge(string $status): string
 }
 
 /**
- * Whether Staff/Admin can send an item for review.
+ * Whether Admin can send an item for review.
  */
 function review_can_send(string $status): bool
 {

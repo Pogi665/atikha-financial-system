@@ -10,7 +10,7 @@ require_once __DIR__ . '/includes/require_role.php';
 require_once __DIR__ . '/includes/review_ui.php';
 
 require_login();
-require_role(['Staff', 'Admin'], 'Message the Board');
+require_role(['Admin'], 'Message the Board');
 
 $userId = (int) $_SESSION['UserID'];
 $csrfToken = csrf_token();

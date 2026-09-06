@@ -175,7 +175,7 @@ $truncated = count($logs) >= AUDIT_PAGE_LIMIT;
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 
-// Admin can use the Staff Operational Workspace; keep the links for them.
+// Admin can use the Financial Operational Workspace; keep the links for them.
 $canUseWorkspace = true;
 $activePage = 'audit_trail';
 

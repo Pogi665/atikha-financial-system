@@ -6,7 +6,7 @@ USE atikha_finance;
 CREATE TABLE IF NOT EXISTS Notifications (
   NotificationID   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   Recipient_UserID INT UNSIGNED NULL,
-  Recipient_Role   ENUM('Admin','Management','Staff') NULL,
+  Recipient_Role   ENUM('Admin','Management') NULL,
   Message          VARCHAR(500) NOT NULL,
   Target_URL       VARCHAR(255) NOT NULL DEFAULT '',
   Is_Read          TINYINT(1) NOT NULL DEFAULT 0,

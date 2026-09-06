@@ -9,7 +9,7 @@ require_once __DIR__ . '/includes/review_ui.php';
 require_once __DIR__ . '/includes/require_role.php';
 
 require_login();
-require_role(['Staff', 'Admin'], 'Incoming Funds');
+require_role(['Admin'], 'Incoming Funds');
 
 $categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_FUND);
 $userId = (int) $_SESSION['UserID'];

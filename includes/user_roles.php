@@ -3,14 +3,13 @@
 /**
  * Account role vocabulary and password policy.
  *
- * Users.Role is an ENUM('Admin', 'Management', 'Staff') and every access check
+ * Users.Role is an ENUM('Admin', 'Management') and every access check
  * in the system compares against those short literals. The organizational job
  * titles below are presentation only -- never store or compare them.
  */
 
 const USER_ROLE_LABELS = [
     'Admin'      => 'System Administrator',
-    'Staff'      => 'Accounting/Administrative Staff',
     'Management' => 'Management and Board',
 ];
 

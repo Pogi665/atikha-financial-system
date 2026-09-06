@@ -10,7 +10,7 @@ require_once __DIR__ . '/includes/review_ui.php';
 require_once __DIR__ . '/includes/require_role.php';
 
 require_login();
-require_role(['Staff', 'Admin'], 'The Staff Operational Workspace');
+require_role(['Admin'], 'The Financial Operational Workspace');
 
 $categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
 $userId = (int) $_SESSION['UserID'];

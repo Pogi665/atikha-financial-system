@@ -39,7 +39,7 @@ function expense_check_and_notify_warnings(PDO $pdo, array $expense, ?string $re
 
     $name = $recordedByName !== null && $recordedByName !== ''
         ? $recordedByName
-        : 'Staff';
+        : 'System Administrator';
 
     if ($amount > EXPENSE_WARNING_AMOUNT) {
         $formatted = '₱' . number_format($amount, 2);

@@ -13,6 +13,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/user_roles.php';
+require_once __DIR__ . '/includes/user_identities.php';
 
 if (empty($_SESSION['UserID'])) {
     header('Location: login.php');
@@ -86,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'creat
         $errorMessage = 'The initial password must be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters.';
     } else {
         try {
+            $pdo->beginTransaction();
             $stmt = $pdo->prepare(
                 'INSERT INTO Users
                     (FullName, Role, Email, Password)
@@ -99,12 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'creat
                 'password'  => password_hash($password, PASSWORD_DEFAULT),
             ]);
 
+            $newUserId = (int) $pdo->lastInsertId();
+            user_identity_create($pdo, $newUserId);
             log_system_action(
                 $pdo,
                 $adminId,
                 AUDIT_ACTION_CREATE,
                 'Users',
-                (int) $pdo->lastInsertId(),
+                $newUserId,
                 null,
                 [
                     'full_name' => $formFullName,
@@ -113,9 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'creat
                 ]
             );
 
+            $pdo->commit();
             header('Location: admin_users.php?created=1');
             exit;
         } catch (PDOException $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
             // Users.Email is UNIQUE; a collision is an ordinary input mistake,
             // not a server fault.
             if ($e->getCode() === '23000') {
@@ -148,7 +154,7 @@ try {
 $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 
-// Admin can use the Staff Operational Workspace; keep the links for them.
+// Admin can use the Financial Operational Workspace; keep the links for them.
 $canUseWorkspace = true;
 $activePage = 'admin_users';
 ?>

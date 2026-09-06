@@ -19,7 +19,7 @@ function layout_role_flags(): array
         'role'            => $role,
         'isAdmin'         => $role === 'Admin',
         'isExecutive'     => $role === 'Management',
-        'canUseWorkspace' => in_array($role, ['Staff', 'Admin'], true),
+        'canUseWorkspace' => in_array($role, ['Admin'], true),
         'canRefresh'      => in_array($role, ['Admin', 'Management'], true),
         'fullName'        => htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8'),
         'roleLabel'       => htmlspecialchars(user_role_label($role), ENT_QUOTES, 'UTF-8'),

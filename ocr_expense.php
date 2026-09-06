@@ -8,7 +8,7 @@
  * can show a loading state, but the synchronous 'upload' action below is kept
  * as the no-JavaScript fallback.
  *
- * Saving always goes through this page, so the values a Staff member confirms
+ * Saving always goes through this page, so the values an Administrator confirms
  * are validated server-side no matter how they got into the form.
  */
 
@@ -28,7 +28,7 @@ if (is_file(__DIR__ . '/config.php')) {
 }
 
 require_login();
-require_role(['Staff', 'Admin'], 'Scan Receipt');
+require_role(['Admin'], 'Scan Receipt');
 
 $csrfToken = csrf_token();
 $userId = (int) $_SESSION['UserID'];

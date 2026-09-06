@@ -15,7 +15,7 @@ if (!isset($activePage)) {
 $navRole = $_SESSION['Role'] ?? '';
 $navIsAdmin = $navRole === 'Admin';
 $navIsExecutive = $navRole === 'Management';
-$navCanUseWorkspace = in_array($navRole, ['Staff', 'Admin'], true);
+$navCanUseWorkspace = in_array($navRole, ['Admin'], true);
 
 $navRoleLabel = htmlspecialchars(user_role_label($navRole), ENT_QUOTES, 'UTF-8');
 

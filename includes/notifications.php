@@ -8,7 +8,6 @@
 
 const NOTIFICATION_ROLE_MANAGEMENT = 'Management';
 const NOTIFICATION_ROLE_ADMIN = 'Admin';
-const NOTIFICATION_ROLE_STAFF = 'Staff';
 
 const EXPENSE_LARGE_AMOUNT_LIMIT = 50000.00;
 const BUDGET_WARNING_PCT = 90.0;
@@ -64,6 +63,13 @@ function notification_create(
         }
 
         if ($userId === null || $userId <= 0) {
+            return false;
+        }
+
+        // Retired historical senders have no active inbox. Never redirect their alerts.
+        $recipient = $pdo->prepare('SELECT UserID FROM Users WHERE UserID = :id');
+        $recipient->execute(['id' => $userId]);
+        if ($recipient->fetchColumn() === false) {
             return false;
         }
 
