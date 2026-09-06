@@ -26,7 +26,7 @@ $csrfToken = csrf_token();
     <title>Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+<body class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 bg-[length:200%_200%] animate-gradient-shift text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
 
         <!-- Feature panel -->
