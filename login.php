@@ -31,7 +31,7 @@ $csrfToken = csrf_token();
 
         <!-- Feature panel -->
         <section
-            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-slate-900 bg-cover bg-center px-12 py-14 xl:px-16"
+            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 bg-[length:200%_200%] animate-gradient-shift bg-cover bg-center px-12 py-14 xl:px-16"
             style="background-image: linear-gradient(to bottom right, rgba(15,23,42,0.92), rgba(6,78,59,0.82)), url('assets/img/login-bg.png');"
         >
             <div class="max-w-md">
