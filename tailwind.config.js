@@ -18,7 +18,7 @@ module.exports = {
       },
       animation: {
         'fade-slide-up': 'fade-slide-up 0.6s ease-out forwards',
-        'gradient-shift': 'gradient-shift 8s ease infinite',
+        'gradient-shift': 'gradient-shift 2s ease infinite',
       }
     },
   },

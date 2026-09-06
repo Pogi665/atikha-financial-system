@@ -26,12 +26,12 @@ $csrfToken = csrf_token();
     <title>Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 bg-[length:200%_200%] animate-gradient-shift text-slate-900 antialiased">
+<body class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 bg-[size:200%_200%] animate-gradient-shift text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
 
         <!-- Feature panel -->
         <section
-            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 bg-[length:200%_200%] animate-gradient-shift bg-cover bg-center px-12 py-14 xl:px-16"
+            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 bg-[size:200%_200%] animate-gradient-shift bg-cover bg-center px-12 py-14 xl:px-16"
             style="background-image: linear-gradient(to bottom right, rgba(15,23,42,0.92), rgba(6,78,59,0.82)), url('assets/img/login-bg.png');"
         >
             <div class="max-w-md">
