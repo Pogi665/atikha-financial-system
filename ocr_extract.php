@@ -106,6 +106,12 @@ try {
     ]);
 } catch (PDOException $e) {
     error_log('Failed to update receipt OCR status: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'ok'    => false,
+        'error' => 'Failed to save OCR data to database: ' . $e->getMessage(),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
 log_system_action(
