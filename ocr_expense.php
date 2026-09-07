@@ -212,110 +212,104 @@ if ($action === 'save') {
         } else {
             $pdo->beginTransaction();
 
-            try {
-                $stmt = $pdo->prepare(
-                    'INSERT INTO Expenses
-                        (Payee, Category, Amount, Date_Incurred, RecordedBy_UserID)
-                     VALUES
-                        (:payee, :category, :amount, :date_incurred, :recorded_by)'
-                );
-                if ($stmt === false || $stmt->execute([
-                    'payee'         => $payee,
-                    'category'      => $category,
-                    'amount'        => round((float) $amount, 2),
-                    'date_incurred' => $dateIncurred,
-                    'recorded_by'   => $userId,
-                ]) === false) {
-                    throw new Exception('Failed to insert expense.');
-                }
-
-                $expenseId = (int) $pdo->lastInsertId();
-                if ($expenseId <= 0) {
-                    throw new Exception('Failed to obtain the new expense ID.');
-                }
-
-                $stmt = $pdo->prepare(
-                    'UPDATE Receipts
-                     SET ExpenseID = :expense_id, OCR_Status = :ocr_status
-                     WHERE ReceiptID = :receipt_id AND ExpenseID IS NULL'
-                );
-                if ($stmt === false || $stmt->execute([
-                    'expense_id' => $expenseId,
-                    'ocr_status' => 'Processed',
-                    'receipt_id' => $receiptId,
-                ]) === false) {
-                    throw new Exception('Failed to link the receipt to the expense.');
-                }
-                if ($stmt->rowCount() !== 1) {
-                    throw new Exception('The receipt was not linked to the expense.');
-                }
-
-                // Inside the transaction on purpose: if the audit row cannot be
-                // written, the expense is rolled back rather than saved
-                // unlogged.
-                $aiValues = gemini_normalized_from_raw((string) ($target['OCR_Raw_JSON'] ?? ''), $categories);
-
-                if (log_system_action(
-                    $pdo,
-                    $userId,
-                    AUDIT_ACTION_CREATE,
-                    'OCR',
-                    $expenseId,
-                    null,
-                    [
-                        // record_id is the new ExpenseID; receipt_id ties it back
-                        // to the scanned image in source_link.
-                        'entity'           => 'expense',
-                        'payee'            => $payee,
-                        'category'         => $category,
-                        'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
-                        'date_incurred'    => $dateIncurred,
-                        'receipt_id'       => $receiptId,
-                        'ai_confidence'    => $aiValues['confidence'] ?? null,
-                        'edited_before_save' => $aiValues !== null
-                            ? audit_diff(
-                                [
-                                    'payee'         => $aiValues['merchant'],
-                                    'category'      => $aiValues['category'],
-                                    'amount'        => $aiValues['total_amount'],
-                                    'date_incurred' => $aiValues['transaction_date'],
-                                ],
-                                [
-                                    'payee'         => $payee,
-                                    'category'      => $category,
-                                    'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
-                                    'date_incurred' => $dateIncurred,
-                                ]
-                            )
-                            : null,
-                    ],
-                    receipt_public_url((string) $target['File_Path'])
-                ) === false) {
-                    throw new Exception('Failed to write the expense audit record.');
-                }
-
-                $pdo->commit();
-
-                expense_check_and_notify_warnings($pdo, [
-                    'ExpenseID'     => $expenseId,
-                    'Payee'         => $payee,
-                    'Category'      => $category,
-                    'Amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
-                    'Date_Incurred' => $dateIncurred,
-                ], (string) ($_SESSION['FullName'] ?? ''));
-
-                unset($_SESSION['pending_receipt_id']);
-
-                header('Location: expenses.php?saved=1');
-                exit;
-            } catch (Throwable $e) {
-                if ($pdo->inTransaction()) {
-                    $pdo->rollBack();
-                }
-                throw $e;
+            $stmt = $pdo->prepare(
+                'INSERT INTO Expenses
+                    (Payee, Category, Amount, Date_Incurred, RecordedBy_UserID)
+                 VALUES
+                    (:payee, :category, :amount, :date_incurred, :recorded_by)'
+            );
+            if ($stmt === false || $stmt->execute([
+                'payee'         => $payee,
+                'category'      => $category,
+                'amount'        => round((float) $amount, 2),
+                'date_incurred' => $dateIncurred,
+                'recorded_by'   => $userId,
+            ]) === false) {
+                throw new Exception('Failed to insert expense.');
             }
+
+            $expenseId = (int) $pdo->lastInsertId();
+            if ($expenseId <= 0) {
+                throw new Exception('Failed to obtain the new expense ID.');
+            }
+
+            $stmt = $pdo->prepare(
+                'UPDATE Receipts
+                 SET ExpenseID = :expense_id, OCR_Status = :ocr_status
+                 WHERE ReceiptID = :receipt_id AND ExpenseID IS NULL'
+            );
+            if ($stmt === false || !$stmt->execute([
+                'expense_id' => $expenseId,
+                'ocr_status' => 'Processed',
+                'receipt_id' => $receiptId,
+            ])) {
+                throw new Exception('Failed to link the receipt to the expense.');
+            }
+            if ($stmt->rowCount() !== 1) {
+                throw new Exception('The receipt was not linked to the expense.');
+            }
+
+            // Keep the audit write inside the transaction so a failed audit
+            // record rolls back the expense and receipt changes together.
+            $aiValues = gemini_normalized_from_raw((string) ($target['OCR_Raw_JSON'] ?? ''), $categories);
+
+            if (log_system_action(
+                $pdo,
+                $userId,
+                AUDIT_ACTION_CREATE,
+                'OCR',
+                $expenseId,
+                null,
+                [
+                    'entity'           => 'expense',
+                    'payee'            => $payee,
+                    'category'         => $category,
+                    'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
+                    'date_incurred'    => $dateIncurred,
+                    'receipt_id'       => $receiptId,
+                    'ai_confidence'    => $aiValues['confidence'] ?? null,
+                    'edited_before_save' => $aiValues !== null
+                        ? audit_diff(
+                            [
+                                'payee'         => $aiValues['merchant'],
+                                'category'      => $aiValues['category'],
+                                'amount'        => $aiValues['total_amount'],
+                                'date_incurred' => $aiValues['transaction_date'],
+                            ],
+                            [
+                                'payee'         => $payee,
+                                'category'      => $category,
+                                'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
+                                'date_incurred' => $dateIncurred,
+                            ]
+                        )
+                        : null,
+                ],
+                receipt_public_url((string) $target['File_Path'])
+            ) === false) {
+                throw new Exception('Failed to write the expense audit record.');
+            }
+
+            expense_check_and_notify_warnings($pdo, [
+                'ExpenseID'     => $expenseId,
+                'Payee'         => $payee,
+                'Category'      => $category,
+                'Amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
+                'Date_Incurred' => $dateIncurred,
+            ], (string) ($_SESSION['FullName'] ?? ''));
+
+            unset($_SESSION['pending_receipt_id']);
+
+            $pdo->commit();
+
+            header('Location: expenses.php?saved=1');
+            exit;
         }
     } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
         error_log('Failed to save OCR expense: ' . $e->getMessage());
         $error = 'Unable to save the record. Please try again.';
         $errorMessage = $error;

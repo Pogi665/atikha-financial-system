@@ -245,7 +245,7 @@ try {
     $stmt = $pdo->query(
         'SELECT ExpenseID, Date_Incurred, Payee, Category, Amount, Review_Status, Review_Notes
          FROM Expenses
-         ORDER BY Date_Incurred DESC, ExpenseID DESC'
+            ORDER BY created_at DESC, ExpenseID DESC'
     );
     $records = $stmt->fetchAll();
 } catch (PDOException $e) {
