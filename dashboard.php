@@ -28,6 +28,7 @@ $totalExpenses = 0.0;
 $netBalance = 0.0;
 $budgetUtil = ['spent' => 0.0, 'budgeted' => 0.0, 'pct' => 0.0, 'by_category' => []];
 $budgetOverruns = [];
+$budgetAllocations = [];
 $budgetUpcoming = [];
 $cashFlowSeries = [];
 $expenseBreakdown = ['labels' => [], 'amounts' => []];
@@ -46,6 +47,16 @@ try {
 
     if ($isExecutive) {
         $budgetUtil = budget_utilization($pdo, $currentYear, $currentMonth);
+        // Reuse current month category budgets and expenditures (Recommendations 1 & 2).
+        foreach ($budgetUtil['by_category'] as $row) {
+            if ($row['budgeted'] > 0 || $row['spent'] > 0) {
+                $budgetAllocations[] = [
+                    'CategoryName' => $row['category'],
+                    'AllocatedBudget' => $row['budgeted'],
+                    'TotalSpent' => $row['spent'],
+                ];
+            }
+        }
         $budgetOverruns = budget_overrun_categories($pdo, $currentYear, $currentMonth);
         $budgetUpcoming = budget_upcoming_totals($pdo, 3);
 
@@ -131,6 +142,65 @@ if ($isExecutive):
             <?= htmlspecialchars(format_peso($budgetUtil['spent']), ENT_QUOTES, 'UTF-8') ?>
             of <?= htmlspecialchars(format_peso($budgetUtil['budgeted']), ENT_QUOTES, 'UTF-8') ?> budgeted this month
         </p>
+    </div>
+</div>
+
+<!-- Budget Allocation & Utilization Card (Addresses Recommendations 1 & 2) -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+    <div class="mb-4">
+        <h3 class="text-lg font-bold text-gray-800">Budget Allocation & Utilization</h3>
+        <p class="text-sm text-gray-500">Monitoring current month expenditures against allocated category budgets.</p>
+    </div>
+
+    <div class="space-y-6 mt-6">
+        <?php if (empty($budgetAllocations)): ?>
+            <p class="text-sm text-gray-500 italic">No budget data or expenses found for this month.</p>
+        <?php else: ?>
+            <?php foreach ($budgetAllocations as $alloc):
+                $categoryName = htmlspecialchars($alloc['CategoryName'], ENT_QUOTES, 'UTF-8');
+                $spent = (float) $alloc['TotalSpent'];
+                $budget = (float) $alloc['AllocatedBudget'];
+                $remaining = $budget - $spent;
+
+                // Calculate percentage, capped at 100% for the progress bar width.
+                $percent = $budget > 0 ? min(100, round(($spent / $budget) * 100)) : 100;
+
+                // Dynamic color logic for decision support.
+                $colorClass = 'bg-green-500'; // Healthy (Under 75%).
+                if ($percent >= 90) {
+                    $colorClass = 'bg-red-500'; // Critical (90% or higher).
+                } elseif ($percent >= 75) {
+                    $colorClass = 'bg-yellow-500'; // Warning (75% - 89%).
+                }
+            ?>
+
+            <div class="budget-item">
+                <div class="flex justify-between items-end mb-1">
+                    <span class="text-sm font-semibold text-gray-700"><?= $categoryName ?></span>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-gray-900">₱<?= number_format($spent, 2) ?></span>
+                        <span class="text-xs text-gray-500"> / ₱<?= number_format($budget, 2) ?></span>
+                    </div>
+                </div>
+
+                <!-- Tailwind Progress Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
+                    <div class="<?= $colorClass ?> h-2.5 rounded-full transition-all duration-500" style="width: <?= $percent ?>%"></div>
+                </div>
+
+                <!-- Remaining Balance / Over Budget Indicator -->
+                <div class="flex justify-between text-xs">
+                    <?php if ($remaining < 0): ?>
+                        <span class="text-red-600 font-medium">Over budget by ₱<?= number_format(abs($remaining), 2) ?></span>
+                    <?php else: ?>
+                        <span class="text-gray-500">Remaining: ₱<?= number_format($remaining, 2) ?></span>
+                    <?php endif; ?>
+                    <span class="text-gray-500"><?= $percent ?>% Utilized</span>
+                </div>
+            </div>
+
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </div>
 
