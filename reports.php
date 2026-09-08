@@ -11,6 +11,8 @@ require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/report_snapshots.php';
 require_once __DIR__ . '/includes/review_ui.php';
+require_once __DIR__ . '/includes/ledger_query.php';
+require_once __DIR__ . '/includes/ledger_ui.php';
 
 $activePage = 'reports';
 $flags = layout_role_flags();
@@ -22,7 +24,7 @@ $currentYear = (int) date('Y');
 $currentMonth = date('m');
 $yearOptions = range($currentYear, $currentYear - 4);
 
-$month = isset($_GET['month']) ? $_GET['month'] : $currentMonth;
+$month = is_string($_GET['month'] ?? null) ? $_GET['month'] : $currentMonth;
 $year = isset($_GET['year']) ? (int) $_GET['year'] : $currentYear;
 
 if (!preg_match('/^(0[1-9]|1[0-2])$/', $month)) {
@@ -44,32 +46,31 @@ $monthNames = [
 
 $revenues = [];
 $expenses = [];
-
+$reportError = false;
+$period = null;
+$totalRevenues = $totalExpenses = $netIncome = '0.00';
 try {
-    $stmt = $pdo->prepare(
-        'SELECT Category, SUM(Amount) AS Total
-         FROM Incoming_Funds
-         WHERE MONTH(Date_Received) = :m AND YEAR(Date_Received) = :y
-         GROUP BY Category ORDER BY Category ASC'
-    );
-    $stmt->execute(['m' => $monthInt, 'y' => $year]);
-    $revenues = $stmt->fetchAll();
-
-    $stmt = $pdo->prepare(
-        'SELECT Category, SUM(Amount) AS Total
-         FROM Expenses
-         WHERE MONTH(Date_Incurred) = :m AND YEAR(Date_Incurred) = :y
-         GROUP BY Category ORDER BY Category ASC'
-    );
-    $stmt->execute(['m' => $monthInt, 'y' => $year]);
-    $expenses = $stmt->fetchAll();
-} catch (PDOException $e) {
+    $start = sprintf('%04d-%02d-01', $year, $monthInt);
+    $end = (new DateTimeImmutable($start))->format('Y-m-t');
+    $period = ledger_period($pdo, $start, $end);
+    $groups = ['Incoming' => [], 'Expense' => []];
+    foreach ($period['rows'] as $row) {
+        $groups[$row['txn_type']][$row['category']] = ($groups[$row['txn_type']][$row['category']] ?? 0) + ledger_cents($row['amount']);
+    }
+    foreach ($groups as $type => $categories) {
+        ksort($categories);
+        foreach ($categories as $category => $cents) {
+            $item = ['Category' => (string) $category, 'Total' => ledger_decimal($cents)];
+            if ($type === 'Incoming') { $revenues[] = $item; } else { $expenses[] = $item; }
+        }
+    }
+    $totalRevenues = $period['incoming_total'];
+    $totalExpenses = $period['expense_total'];
+    $netIncome = ledger_decimal(ledger_cents($totalRevenues) - ledger_cents($totalExpenses));
+} catch (Throwable $e) {
+    $reportError = true;
     error_log('Report query failed: ' . $e->getMessage());
 }
-
-$totalRevenues = array_sum(array_map(static fn ($r) => (float) $r['Total'], $revenues));
-$totalExpenses = array_sum(array_map(static fn ($r) => (float) $r['Total'], $expenses));
-$netIncome = $totalRevenues - $totalExpenses;
 
 $reportSnapshot = report_snapshot_load($pdo, $monthInt, $year);
 $reportReviewStatus = $reportSnapshot['Review_Status'] ?? 'None';
@@ -78,14 +79,26 @@ $reportId = (int) ($reportSnapshot['ReportID'] ?? 0);
 
 $printCss = <<<'CSS'
 <style>
+    .ledger-table { table-layout: fixed; min-width: 1000px; }
+    .ledger-table th, .ledger-table td { overflow-wrap: anywhere; vertical-align: top; }
     @media print {
+        html, body, .js-review-root { min-width: 0 !important; width: auto !important; }
+        body > div, .js-review-root { margin-left: 0 !important; }
+        .detailed-report { break-before: page; }
+        .ledger-table-wrap { overflow: visible !important; }
+        .ledger-table { min-width: 0 !important; width: 100%; font-size: 9pt; }
+        .ledger-table th, .ledger-table td { padding: 5px; }
+        .ledger-table thead { display: table-header-group; }
+        .ledger-table tr, .ledger-completeness { break-inside: avoid; }
+        .statement, .exec-card { box-shadow: none !important; overflow: visible !important; padding: 0 !important; }
+
         body { background: white !important; }
         aside, header, .no-print { display: none !important; }
         main { margin: 0 !important; padding: 24px !important; }
         .statement { max-width: 100% !important; font-size: 12pt; }
         .statement-header { border-bottom: 2px solid #1e3a8a; padding-bottom: 1rem; margin-bottom: 1.5rem; }
     }
-    @page { margin: 1.5cm; }
+    @page { size: A4 landscape; margin: 1.2cm; }
 </style>
 CSS;
 
@@ -101,7 +114,7 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
 
 <div class="no-print">
     <h1 class="text-2xl font-bold text-slate-900">Automated Reporting</h1>
-    <p class="text-slate-600 mt-2">Generate professional monthly income statements by category.</p>
+    <p class="text-slate-600 mt-2">Generate monthly income statements and detailed transaction reports.</p>
 </div>
 
 <section class="<?= $cardClass ?> no-print">
@@ -171,6 +184,9 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
         </button>
     </div>
 
+    <?php if ($reportError): ?>
+        <p role="alert" class="p-4 text-red-700">Unable to generate this report. Financial totals and balances are unavailable. Please try again later.</p>
+    <?php else: ?>
     <div class="max-w-2xl mx-auto">
         <div class="text-center mb-10 statement-header">
             <p class="text-xs uppercase tracking-widest text-slate-500">Atikha Financial System</p>
@@ -188,14 +204,14 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
                     <?php foreach ($revenues as $row): ?>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-700"><?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="text-slate-900"><?= htmlspecialchars(format_peso((float) $row['Total']), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="text-slate-900"><?= htmlspecialchars(ledger_money($row['Total']), ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
             <div class="flex justify-between border-t border-slate-200 mt-4 pt-3 font-bold text-slate-900">
                 <span>Total Revenues</span>
-                <span><?= htmlspecialchars(format_peso($totalRevenues), ENT_QUOTES, 'UTF-8') ?></span>
+                <span><?= htmlspecialchars(ledger_money($totalRevenues), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </div>
 
@@ -208,26 +224,36 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
                     <?php foreach ($expenses as $row): ?>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-700"><?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="text-slate-900"><?= htmlspecialchars(format_peso((float) $row['Total']), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="text-slate-900"><?= htmlspecialchars(ledger_money($row['Total']), ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
             <div class="flex justify-between border-t border-slate-200 mt-4 pt-3 font-bold text-slate-900">
                 <span>Total Expenses</span>
-                <span><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></span>
+                <span><?= htmlspecialchars(ledger_money($totalExpenses), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </div>
 
         <div class="flex justify-between border-t-2 border-blue-900 pt-4 text-lg font-bold text-blue-900">
             <span>Net Income</span>
-            <span><?= htmlspecialchars(format_peso($netIncome), ENT_QUOTES, 'UTF-8') ?></span>
+            <span><?= htmlspecialchars(ledger_money($netIncome), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
 
         <p class="text-center text-xs text-slate-400 mt-10 no-print">
             Read-only report · Atikha Finance
         </p>
     </div>
+    <div class="detailed-report mt-10">
+        <h2 class="text-2xl font-bold">Detailed Transaction Report</h2>
+        <p><?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?></p>
+        <p class="text-sm text-slate-600">Organization balances include all incoming funds and expenses. These are not category budgets or project balances.</p>
+        <?php ledger_completeness_notice(ledger_completeness($period['rows'])); ?>
+        <p class="my-4 font-semibold">Opening Organization Balance: <?= htmlspecialchars(ledger_money($period['opening_balance']), ENT_QUOTES, 'UTF-8') ?></p>
+        <?php ledger_render_table($period['rows']); ?>
+        <p class="my-4 font-semibold">Closing Organization Balance: <?= htmlspecialchars(ledger_money($period['closing_balance']), ENT_QUOTES, 'UTF-8') ?></p>
+    </div>
+    <?php endif; ?>
 </section>
 
 </div>

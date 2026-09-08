@@ -3,6 +3,7 @@ session_start();
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
+require_once __DIR__ . '/includes/transaction_details.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/review_ui.php';
@@ -37,7 +38,7 @@ function load_fund(PDO $pdo, int $fundId): ?array
     }
 
     $stmt = $pdo->prepare(
-        'SELECT FundID, Source_Donor, Category, Project_Code, Amount, Date_Received, RecordedBy_UserID
+        'SELECT FundID, Source_Donor, Category, Purpose, Project_Code, Amount, Date_Received, RecordedBy_UserID
          FROM Incoming_Funds
          WHERE FundID = :fund_id'
     );
@@ -55,24 +56,26 @@ function read_fund_input(array $post, array $categories): ?array
 {
     $sourceDonor = isset($post['source_donor']) ? trim((string) $post['source_donor']) : '';
     $category = isset($post['category']) ? trim((string) $post['category']) : '';
-    $projectCode = isset($post['project_code']) ? trim((string) $post['project_code']) : '';
+    $details = transaction_details_input($post);
     $amount = $post['amount'] ?? '';
     $dateReceived = $post['date_received'] ?? '';
 
-    $amountValid = is_numeric($amount) && (float) $amount > 0;
+    $amountValid = is_numeric($amount) && is_finite((float) $amount)
+        && round((float) $amount, 2) > 0 && round((float) $amount, 2) <= 99999999.99;
     $dateValid = is_string($dateReceived) && $dateReceived !== '' && strtotime($dateReceived) !== false;
     $categoryValid = in_array($category, $categories, true);
 
-    if ($sourceDonor === '' || !$categoryValid || !$amountValid || !$dateValid) {
+    if ($details === null || $sourceDonor === '' || !$categoryValid || !$amountValid || !$dateValid) {
         return null;
     }
 
     return [
         'source_donor'  => $sourceDonor,
         'category'      => $category,
+        'purpose' => $details['purpose'],
         // Optional. Stored as NULL rather than '' so "no project" reads the
         // same on the rows that predate this column.
-        'project_code'  => $projectCode === '' ? null : mb_substr($projectCode, 0, 50),
+        'project_code'  => $details['project_code'],
         'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
         'date_received' => (string) $dateReceived,
     ];
@@ -94,18 +97,19 @@ if ($action === 'create') {
     $input = read_fund_input($_POST, $categories);
 
     if ($input === null) {
-        $errorMessage = 'Please fill in all fields with valid values.';
+        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
     } else {
         try {
             $stmt = $pdo->prepare(
                 'INSERT INTO Incoming_Funds
-                    (Source_Donor, Category, Project_Code, Amount, Date_Received, RecordedBy_UserID)
+                    (Source_Donor, Category, Purpose, Project_Code, Amount, Date_Received, RecordedBy_UserID)
                  VALUES
-                    (:source_donor, :category, :project_code, :amount, :date_received, :recorded_by)'
+                    (:source_donor, :category, :purpose, :project_code, :amount, :date_received, :recorded_by)'
             );
             $stmt->execute([
                 'source_donor'  => $input['source_donor'],
                 'category'      => $input['category'],
+                'purpose' => $input['purpose'],
                 'project_code'  => $input['project_code'],
                 'amount'        => $input['amount'],
                 'date_received' => $input['date_received'],
@@ -141,11 +145,12 @@ if ($action === 'update') {
         if ($before === null) {
             $errorMessage = 'That incoming fund could not be found.';
         } elseif ($input === null) {
-            $errorMessage = 'Please fill in all fields with valid values.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
         } else {
             $oldValues = [
                 'source_donor'  => $before['Source_Donor'],
                 'category'      => $before['Category'],
+                'purpose' => $before['Purpose'],
                 'project_code'  => $before['Project_Code'],
                 'amount'        => $before['Amount'],
                 'date_received' => $before['Date_Received'],
@@ -162,6 +167,7 @@ if ($action === 'update') {
                 'UPDATE Incoming_Funds
                  SET Source_Donor = :source_donor,
                      Category = :category,
+                     Purpose = :purpose,
                      Project_Code = :project_code,
                      Amount = :amount,
                      Date_Received = :date_received
@@ -170,6 +176,7 @@ if ($action === 'update') {
             $stmt->execute([
                 'source_donor'  => $input['source_donor'],
                 'category'      => $input['category'],
+                'purpose' => $input['purpose'],
                 'project_code'  => $input['project_code'],
                 'amount'        => $input['amount'],
                 'date_received' => $input['date_received'],
@@ -219,6 +226,7 @@ if ($action === 'delete') {
                     [
                         'source_donor'  => $before['Source_Donor'],
                         'category'      => $before['Category'],
+                        'purpose' => $before['Purpose'],
                         'project_code'  => $before['Project_Code'],
                         'amount'        => $before['Amount'],
                         'date_received' => $before['Date_Received'],
@@ -239,7 +247,7 @@ if ($action === 'delete') {
 
 try {
     $stmt = $pdo->query(
-        'SELECT FundID, Date_Received, Source_Donor, Category, Project_Code, Amount, Review_Status, Review_Notes
+        'SELECT FundID, Date_Received, Source_Donor, Category, Purpose, Project_Code, Amount, Review_Status, Review_Notes
          FROM Incoming_Funds
          ORDER BY Date_Received DESC, FundID DESC'
     );
@@ -318,6 +326,7 @@ $activePage = 'funds';
                         class="p-6 space-y-4"
                     >
                         <input type="hidden" name="action" value="create">
+                        <?php transaction_details_fields('', $fieldClass, $_POST, false); ?>
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                         <div>
@@ -381,7 +390,7 @@ $activePage = 'funds';
 
                         <div>
                             <label for="project_code" class="block text-sm font-medium text-slate-700 mb-1">
-                                Project Code
+                                Allocation/Project Code
                                 <span class="text-slate-400 font-normal">(optional)</span>
                             </label>
                             <input
@@ -426,14 +435,14 @@ $activePage = 'funds';
                                 <tr class="bg-slate-50 text-left">
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Source / Donor</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Project</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Allocation/Project Code</th>
+                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recentRecords)): ?>
                                     <tr>
-                                        <td colspan="4" class="px-6 py-10 text-center text-slate-500">
+                                        <td colspan="5" class="px-6 py-10 text-center text-slate-500">
                                             Nothing logged yet. Use the form to record your first incoming fund.
                                         </td>
                                     </tr>
@@ -455,10 +464,10 @@ $activePage = 'funds';
                                                         <?= htmlspecialchars((string) $row['Project_Code'], ENT_QUOTES, 'UTF-8') ?>
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="text-xs text-slate-400">&mdash;</span>
+                                                    <span class="text-xs text-slate-400">Unallocated</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                            <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                                 &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                             </td>
                                         </tr>
@@ -482,8 +491,8 @@ $activePage = 'funds';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Source / Donor</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Project</th>
-                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Allocation/Project Code</th>
+                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
                             </tr>
@@ -491,7 +500,7 @@ $activePage = 'funds';
                         <tbody>
                             <?php if (empty($records)): ?>
                                 <tr>
-                                    <td colspan="7" class="px-6 py-8 text-center text-slate-500">No incoming fund records yet.</td>
+                                    <td colspan="8" class="px-6 py-8 text-center text-slate-500">No incoming fund records yet.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($records as $row): ?>
@@ -511,10 +520,10 @@ $activePage = 'funds';
                                                     <?= htmlspecialchars((string) $row['Project_Code'], ENT_QUOTES, 'UTF-8') ?>
                                                 </span>
                                             <?php else: ?>
-                                                <span class="text-xs text-slate-400">&mdash;</span>
+                                                <span class="text-xs text-slate-400">Unallocated</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                        <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                             &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
                                         <td class="px-6 py-3 whitespace-nowrap">
@@ -528,6 +537,7 @@ $activePage = 'funds';
                                                     'id'            => (int) $row['FundID'],
                                                     'source_donor'  => $row['Source_Donor'],
                                                     'category'      => $row['Category'],
+                                                    'purpose' => $row['Purpose'],
                                                     'project_code'  => $row['Project_Code'],
                                                     'amount'        => $row['Amount'],
                                                     'date_received' => $row['Date_Received'],
@@ -578,13 +588,14 @@ $activePage = 'funds';
         id="edit-modal"
         class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-8"
     >
-        <div class="w-full max-w-lg bg-white rounded-xl shadow-2xl">
+        <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl">
             <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-slate-900">Edit Incoming Fund</h2>
                 <button type="button" id="edit-close" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
             </div>
             <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" class="p-6 grid grid-cols-2 gap-4">
                 <input type="hidden" name="action" value="update">
+                <?php transaction_details_fields('edit-', $fieldClass, [], false); ?>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="fund_id" id="edit-fund-id" value="">
                 <div class="col-span-2">
@@ -642,7 +653,7 @@ $activePage = 'funds';
                 </div>
                 <div class="col-span-2">
                     <label for="edit-project" class="block text-sm font-medium text-slate-700 mb-1">
-                        Project Code
+                        Allocation/Project Code
                         <span class="text-slate-400 font-normal">(optional)</span>
                     </label>
                     <input
@@ -688,6 +699,7 @@ $activePage = 'funds';
                     document.getElementById('edit-fund-id').value = record.id;
                     document.getElementById('edit-source').value = record.source_donor;
                     document.getElementById('edit-category').value = record.category;
+                    document.getElementById('edit-purpose').value = record.purpose || '';
                     document.getElementById('edit-project').value = record.project_code || '';
                     document.getElementById('edit-amount').value = record.amount;
                     document.getElementById('edit-date').value = record.date_received;

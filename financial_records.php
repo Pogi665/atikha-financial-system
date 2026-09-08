@@ -5,6 +5,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/require_role.php';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/ledger_query.php';
+require_once __DIR__ . '/includes/ledger_ui.php';
 
 require_login();
 
@@ -19,11 +20,16 @@ $flags = layout_role_flags();
 $filters = ledger_parse_filters($_GET);
 $totalRows = 0;
 $records = [];
+$ledgerError = false;
+$completeness = ledger_completeness([]);
 
 try {
-    $totalRows = ledger_count($pdo, $filters);
-    $records = ledger_fetch($pdo, $filters);
-} catch (PDOException $e) {
+    $view = ledger_view($pdo, $filters);
+    $totalRows = $view['total'];
+    $records = $view['rows'];
+    $completeness = $view['completeness'];
+} catch (Throwable $e) {
+    $ledgerError = true;
     error_log('Ledger query failed: ' . $e->getMessage());
 }
 
@@ -110,61 +116,15 @@ layout_begin(
 <section class="<?= $flags['isExecutive'] ? 'exec-card' : 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden' ?>">
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-slate-900">Ledger</h2>
-        <p class="text-sm text-slate-500"><?= (int) $totalRows ?> record<?= $totalRows === 1 ? '' : 's' ?></p>
+        <p class="text-sm text-slate-500"><?= $ledgerError ? 'Unavailable' : (int) $totalRows ?> record<?= $totalRows === 1 ? '' : 's' ?></p>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
-            <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                    <th class="px-4 py-3 font-semibold text-slate-700">Date</th>
-                    <th class="px-4 py-3 font-semibold text-slate-700">Type</th>
-                    <th class="px-4 py-3 font-semibold text-slate-700">Category</th>
-                    <th class="px-4 py-3 font-semibold text-slate-700">Party</th>
-                    <th class="px-4 py-3 font-semibold text-slate-700 text-right">Amount</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                <?php if ($records === []): ?>
-                    <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-slate-500 italic">
-                            No records match the selected filters.
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($records as $row): ?>
-                        <?php
-                        $isIncoming = $row['txn_type'] === 'Incoming';
-                        $amountClass = $isIncoming ? 'text-green-700' : 'text-red-700';
-                        $prefix = $isIncoming ? '+' : '−';
-                        $badgeClass = $isIncoming
-                            ? 'bg-green-50 text-green-800 border-green-200'
-                            : 'bg-red-50 text-red-800 border-red-200';
-                        ?>
-                        <tr class="hover:bg-slate-50/80">
-                            <td class="px-4 py-3 text-slate-700">
-                                <?= htmlspecialchars($row['txn_date'], ENT_QUOTES, 'UTF-8') ?>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium <?= $badgeClass ?>">
-                                    <?= htmlspecialchars($row['txn_type'], ENT_QUOTES, 'UTF-8') ?>
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-slate-700">
-                                <?= htmlspecialchars($row['category'], ENT_QUOTES, 'UTF-8') ?>
-                            </td>
-                            <td class="px-4 py-3 text-slate-700">
-                                <?= htmlspecialchars($row['party'], ENT_QUOTES, 'UTF-8') ?>
-                            </td>
-                            <td class="px-4 py-3 text-right font-medium <?= $amountClass ?>">
-                                <?= $prefix ?><?= htmlspecialchars(format_peso($row['amount']), ENT_QUOTES, 'UTF-8') ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+    <?php if ($ledgerError): ?>
+        <p role="alert" class="p-4 text-red-700">Unable to load financial records. Please try again later.</p>
+    <?php else: ?>
+        <p class="text-sm text-slate-600">Balances represent the organization after each transaction, including transactions hidden by filters. They are not category budgets or project balances.</p>
+        <?php ledger_completeness_notice($completeness); ledger_render_table($records); ?>
+    <?php endif; ?>
 
     <?php if ($totalPages > 1): ?>
         <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">

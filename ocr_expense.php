@@ -16,6 +16,7 @@ session_start();
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
+require_once __DIR__ . '/includes/transaction_details.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/gemini_client.php';
 require_once __DIR__ . '/includes/logger.php';
@@ -187,11 +188,13 @@ if ($action === 'save') {
     $receiptId = (int) ($_POST['receipt_id'] ?? 0);
     $payee = isset($_POST['payee']) ? trim($_POST['payee']) : '';
     $category = isset($_POST['category']) ? trim($_POST['category']) : '';
+    $details = transaction_details_input($_POST);
     $amount = $_POST['amount'] ?? '';
     $dateIncurred = $_POST['date_incurred'] ?? '';
 
     $amountValid = is_numeric($amount)
-        && (float) $amount > 0
+        && is_finite((float) $amount)
+        && round((float) $amount, 2) > 0
         && (float) $amount <= RECEIPT_MAX_AMOUNT;
     $dateValid = is_string($dateIncurred)
         && $dateIncurred !== ''
@@ -206,21 +209,23 @@ if ($action === 'save') {
         } elseif ($target['ExpenseID'] !== null) {
             // Guards against a double submit attaching one receipt twice.
             $errorMessage = 'This receipt has already been saved as an expense.';
-        } elseif ($payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
-            $errorMessage = 'Please fill in all fields with valid values.';
+        } elseif ($details === null || $payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
             $receipt = $target;
         } else {
             $pdo->beginTransaction();
 
             $stmt = $pdo->prepare(
                 'INSERT INTO Expenses
-                    (Payee, Category, Amount, Date_Incurred, RecordedBy_UserID)
+                    (Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID)
                  VALUES
-                    (:payee, :category, :amount, :date_incurred, :recorded_by)'
+                    (:payee, :category, :purpose, :project_code, :amount, :date_incurred, :recorded_by)'
             );
             if ($stmt === false || $stmt->execute([
                 'payee'         => $payee,
                 'category'      => $category,
+                'purpose' => $details['purpose'],
+                'project_code' => $details['project_code'],
                 'amount'        => round((float) $amount, 2),
                 'date_incurred' => $dateIncurred,
                 'recorded_by'   => $userId,
@@ -262,6 +267,8 @@ if ($action === 'save') {
                 null,
                 [
                     'entity'           => 'expense',
+                    'purpose' => $details['purpose'],
+                    'project_code' => $details['project_code'],
                     'payee'            => $payee,
                     'category'         => $category,
                     'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
@@ -313,6 +320,7 @@ if ($action === 'save') {
         error_log('Failed to save OCR expense: ' . $e->getMessage());
         $error = 'Unable to save the record. Please try again.';
         $errorMessage = $error;
+        $receipt = $target ?? null;
     }
 }
 
@@ -382,6 +390,12 @@ if (isset($_GET['discarded'])) {
 }
 
 $aiConfigured = gemini_is_configured();
+if ($action === 'save' && $receipt !== null && $errorMessage !== '') {
+    foreach (['payee' => 'merchant', 'amount' => 'total_amount', 'date_incurred' => 'transaction_date', 'category' => 'category'] as $input => $field) {
+        if (is_string($_POST[$input] ?? null)) { $extracted[$field] = $_POST[$input]; }
+    }
+}
+
 $hasReceipt = $receipt !== null;
 $missingFields = $extracted['missing'] ?? [];
 $lowConfidence = $extracted !== null && $extracted['confidence'] < RECEIPT_LOW_CONFIDENCE;
@@ -634,6 +648,7 @@ $activePage = 'ocr_expense';
                             class="grid grid-cols-2 gap-4"
                         >
                             <input type="hidden" name="action" value="save">
+                            <?php transaction_details_fields('', $fieldBaseClass . ' ' . $fieldNormalClass, $action === 'save' ? $_POST : []); ?>
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                             <input
                                 type="hidden"
@@ -879,6 +894,8 @@ $activePage = 'ocr_expense';
                 discardReceiptId.value = data.receipt_id;
                 preview.src = data.image_url;
 
+                document.getElementById('purpose').value = '';
+                document.getElementById('project').value = '';
                 fieldPayee.value = data.payee || '';
                 fieldAmount.value = data.amount || '';
                 fieldDate.value = data.date_incurred || '';

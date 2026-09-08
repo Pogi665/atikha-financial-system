@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Unified read-only ledger queries for financial_records.php.
+ * Unified read-only ledger queries for Financial Records and monthly reports.
  */
 
 const LEDGER_PAGE_SIZE = 50;
@@ -43,108 +43,124 @@ function ledger_parse_filters(array $get): array
     ];
 }
 
-/**
- * @param array{from: string, to: string, type: string, category: string} $filters
- */
-function ledger_count(PDO $pdo, array $filters): int
+/** Convert database DECIMAL values to cents without floating-point arithmetic. */
+function ledger_cents(string $amount): int
 {
-    $sql = 'SELECT COUNT(*) FROM (
-        SELECT Category, Date_Received AS txn_date, \'Incoming\' AS txn_type
-        FROM Incoming_Funds
+    if (!preg_match('/^(-?)([0-9]+)(?:\.([0-9]{1,2}))?$/', $amount, $m)) {
+        throw new UnexpectedValueException('Invalid ledger amount.');
+    }
+    $cents = (int) $m[2] * 100 + (int) str_pad($m[3] ?? '', 2, '0');
+    return ($m[1] === '-' ? -1 : 1) * $cents;
+}
+
+function ledger_decimal(int $cents): string
+{
+    return ($cents < 0 ? '-' : '') . intdiv(abs($cents), 100) . '.' . str_pad((string) (abs($cents) % 100), 2, '0', STR_PAD_LEFT);
+}
+
+function ledger_money(string $amount): string
+{
+    $cents = ledger_cents($amount);
+    return ($cents < 0 ? '-' : '') . "\u{20B1}" . number_format(intdiv(abs($cents), 100), 0, '.', ',') . '.' . str_pad((string) (abs($cents) % 100), 2, '0', STR_PAD_LEFT);
+}
+
+/** Shared source projection; source amounts are always unsigned transaction values. */
+function ledger_source_sql(string $incomingWhere, string $expenseWhere): string
+{
+    return "SELECT 'Incoming' AS txn_type, 0 AS type_order, FundID AS record_id,
+        Date_Received AS txn_date, Category AS category, Source_Donor AS party,
+        Amount AS amount, Purpose AS purpose, Project_Code AS project_code
+        FROM Incoming_Funds WHERE $incomingWhere
         UNION ALL
-        SELECT Category, Date_Incurred AS txn_date, \'Expense\' AS txn_type
-        FROM Expenses
-    ) AS ledger
-    WHERE txn_date BETWEEN :from_date AND :to_date';
-
-    $params = [
-        'from_date' => $filters['from'],
-        'to_date'   => $filters['to'],
-    ];
-
-    if ($filters['type'] !== '') {
-        $sql .= ' AND txn_type = :txn_type';
-        $params['txn_type'] = $filters['type'];
-    }
-    if ($filters['category'] !== '') {
-        $sql .= ' AND Category = :category';
-        $params['category'] = $filters['category'];
-    }
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-
-    return (int) $stmt->fetchColumn();
+        SELECT 'Expense', 1, ExpenseID, Date_Incurred, Category, Payee, Amount, Purpose, Project_Code
+        FROM Expenses WHERE $expenseWhere";
 }
 
 /**
- * @param array{from: string, to: string, type: string, category: string, page: int} $filters
- * @return array<int, array{txn_type: string, record_id: int, txn_date: string, category: string, party: string, amount: float, project_code: ?string}>
+ * Organization balances for an inclusive date range. Category/type filters are
+ * deliberately applied AFTER balances. One consistent snapshot covers both reads.
+ * @return array{rows: array, opening_balance: string, closing_balance: string, incoming_total: string, expense_total: string}
  */
+function ledger_period(PDO $pdo, string $from, string $to): array
+{
+    $end = (new DateTimeImmutable($to))->modify('+1 day')->format('Y-m-d');
+    $ownsTransaction = !$pdo->inTransaction();
+    if ($ownsTransaction) {
+        $pdo->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $pdo->beginTransaction();
+    }
+    try {
+        $sql = ledger_source_sql('Date_Received < :incoming_start', 'Date_Incurred < :expense_start');
+        $stmt = $pdo->prepare("SELECT COALESCE(SUM(CASE WHEN txn_type = 'Incoming' THEN amount ELSE -amount END), 0) FROM ($sql) AS history");
+        $stmt->execute(['incoming_start' => $from, 'expense_start' => $from]);
+        $opening = ledger_cents((string) $stmt->fetchColumn());
+        $sql = ledger_source_sql('Date_Received >= :incoming_start AND Date_Received < :incoming_end',
+            'Date_Incurred >= :expense_start AND Date_Incurred < :expense_end');
+        $stmt = $pdo->prepare("SELECT * FROM ($sql) AS ledger ORDER BY txn_date ASC, type_order ASC, record_id ASC");
+        $stmt->execute(['incoming_start' => $from, 'incoming_end' => $end, 'expense_start' => $from, 'expense_end' => $end]);
+        $rows = $stmt->fetchAll();
+        $balance = $opening;
+        $incoming = $expense = 0;
+        foreach ($rows as &$row) {
+            $cents = ledger_cents((string) $row['amount']);
+            if ($row['txn_type'] === 'Incoming') {
+                $incoming += $cents;
+                $balance += $cents;
+            } else {
+                $expense += $cents;
+                $balance -= $cents;
+            }
+            $row['record_id'] = (int) $row['record_id'];
+            $row['amount'] = ledger_decimal($cents);
+            $row['remaining_balance'] = ledger_decimal($balance);
+        }
+        unset($row);
+        if ($ownsTransaction) { $pdo->commit(); }
+        return ['rows' => $rows, 'opening_balance' => ledger_decimal($opening),
+            'closing_balance' => ledger_decimal($balance), 'incoming_total' => ledger_decimal($incoming),
+            'expense_total' => ledger_decimal($expense)];
+    } catch (Throwable $e) {
+        if ($ownsTransaction && $pdo->inTransaction()) { $pdo->rollBack(); }
+        throw $e;
+    }
+}
+
+function ledger_filtered_rows(array $rows, array $filters): array
+{
+    return array_values(array_filter($rows, static fn ($row) =>
+        (($filters['type'] ?? '') === '' || $row['txn_type'] === $filters['type']) &&
+        (($filters['category'] ?? '') === '' || $row['category'] === $filters['category'])));
+}
+
+function ledger_completeness(array $rows): array
+{
+    $counts = ['affected' => 0, 'missing_purpose' => 0, 'unallocated' => 0];
+    foreach ($rows as $row) {
+        $purpose = trim($row['purpose'] ?? '') === '';
+        $allocation = trim($row['project_code'] ?? '') === '';
+        $counts['missing_purpose'] += (int) $purpose;
+        $counts['unallocated'] += (int) $allocation;
+        $counts['affected'] += (int) ($purpose || $allocation);
+    }
+    return $counts;
+}
+
+function ledger_view(PDO $pdo, array $filters): array
+{
+    $period = ledger_period($pdo, $filters['from'], $filters['to']);
+    $rows = ledger_filtered_rows($period['rows'], $filters);
+    return ['total' => count($rows), 'completeness' => ledger_completeness($rows),
+        'rows' => array_slice(array_reverse($rows), ($filters['page'] - 1) * LEDGER_PAGE_SIZE, LEDGER_PAGE_SIZE)];
+}
+
+function ledger_count(PDO $pdo, array $filters): int
+{
+    return ledger_view($pdo, $filters + ['page' => 1])['total'];
+}
+
 function ledger_fetch(PDO $pdo, array $filters): array
 {
-    $offset = ($filters['page'] - 1) * LEDGER_PAGE_SIZE;
-
-    $sql = 'SELECT txn_type, record_id, txn_date, Category AS category, party, Amount AS amount, project_code
-            FROM (
-                SELECT \'Incoming\' AS txn_type,
-                       FundID AS record_id,
-                       Date_Received AS txn_date,
-                       Category,
-                       Source_Donor AS party,
-                       Amount,
-                       Project_Code AS project_code
-                FROM Incoming_Funds
-                UNION ALL
-                SELECT \'Expense\' AS txn_type,
-                       ExpenseID AS record_id,
-                       Date_Incurred AS txn_date,
-                       Category,
-                       Payee AS party,
-                       Amount,
-                       NULL AS project_code
-                FROM Expenses
-            ) AS ledger
-            WHERE txn_date BETWEEN :from_date AND :to_date';
-
-    $params = [
-        'from_date' => $filters['from'],
-        'to_date'   => $filters['to'],
-    ];
-
-    if ($filters['type'] !== '') {
-        $sql .= ' AND txn_type = :txn_type';
-        $params['txn_type'] = $filters['type'];
-    }
-    if ($filters['category'] !== '') {
-        $sql .= ' AND Category = :category';
-        $params['category'] = $filters['category'];
-    }
-
-    $sql .= ' ORDER BY txn_date DESC, record_id DESC LIMIT :limit OFFSET :offset';
-
-    $stmt = $pdo->prepare($sql);
-    foreach ($params as $key => $value) {
-        $stmt->bindValue(':' . $key, $value);
-    }
-    $stmt->bindValue(':limit', LEDGER_PAGE_SIZE, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $rows = [];
-    foreach ($stmt->fetchAll() as $row) {
-        $rows[] = [
-            'txn_type'     => (string) $row['txn_type'],
-            'record_id'    => (int) $row['record_id'],
-            'txn_date'     => (string) $row['txn_date'],
-            'category'     => (string) $row['category'],
-            'party'        => (string) $row['party'],
-            'amount'       => round((float) $row['amount'], 2),
-            'project_code' => $row['project_code'] !== null ? (string) $row['project_code'] : null,
-        ];
-    }
-
-    return $rows;
+    return ledger_view($pdo, $filters)['rows'];
 }
 
 /**

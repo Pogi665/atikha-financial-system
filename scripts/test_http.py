@@ -2,6 +2,7 @@
 SMTP/Gemini configuration is deliberately not copied. No external services are called.
 """
 import argparse
+from datetime import date
 import http.cookiejar
 import json
 import os
@@ -37,6 +38,7 @@ for name in ['receipts', 'board']:
 connection = app / 'db_connect.php'
 source = connection.read_text(encoding='utf-8')
 assert "$db   = 'atikha_finance';" in source
+source = source.replace("$host = '127.0.0.1';", "$host = '" + os.environ.get('ATIKHA_DB_HOST', '127.0.0.1') + "';")
 connection.write_text(source.replace("$db   = 'atikha_finance';", "$db   = '" + args.database + "';"), encoding='utf-8')
 router = run / 'router.php'
 router.write_text("<?php if (preg_match('~^/(scripts|includes|vendor)/~', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))) { http_response_code(404); exit; } return false;", encoding='utf-8')
@@ -100,7 +102,7 @@ try:
     for page in ['funds.php','expenses.php','ocr_expense.php','board_messages.php','admin_users.php','audit_trail.php']:
         check(request(admin,page)[0] == 200, 'Admin retains '+page)
     fcsrf = token(admin,'funds.php')
-    fund = {'action':'create','csrf_token':fcsrf,'source_donor':'HTTP Fixture','category':'Donation','project_code':'FIXTURE','amount':'1234.56','date_received':'2026-09-01'}
+    fund = {'action':'create','csrf_token':fcsrf,'purpose':'HTTP funding purpose','source_donor':'HTTP Fixture','category':'Donation','project_code':'FIXTURE','amount':'1234.56','date_received':f'{date.today().year}-09-01'}
     check('saved successfully' in request(admin,'funds.php',fund)[1], 'Admin records fund')
     fid = fixture('--inspect')['funds'][-1]['FundID']
     fund.update(action='update',fund_id=fid,project_code='UPDATED')
@@ -123,10 +125,67 @@ try:
     anonymous,_ = client()
     check(request(anonymous,'ocr_extract.php',{'csrf_token':'invalid'})[0] == 401,'Anonymous OCR denied')
     rid = fixture('--email=admin@example.invalid','--receipt')['receipt_id']
-    save={'action':'save','csrf_token':ocsrf,'receipt_id':rid,'payee':'Receipt Fixture','category':'Equipment','amount':'-5','date_incurred':'2026-09-01'}
+    save={'action':'save','csrf_token':ocsrf,'receipt_id':rid,'purpose':'Receipt confirmed purpose','project_code':'SHARED','payee':'Receipt Fixture','category':'Equipment','amount':'-5','date_incurred':f'{date.today().year}-09-01'}
     check('valid values' in request(admin,'ocr_expense.php',save)[1],'Receipt save rejects invalid amount')
     save['amount']='3830.40';request(admin,'ocr_expense.php',save)
     check(fixture('--inspect')['receipts'][-1]['ExpenseID'] is not None,'Admin confirms receipt as expense')
+    receipt_expense = fixture('--inspect')['expenses'][-1]
+    check(receipt_expense['Purpose']=='Receipt confirmed purpose' and receipt_expense['Project_Code']=='SHARED', 'OCR saves user-authored purpose and allocation')
+    invalid_receipt = fixture('--email=admin@example.invalid','--receipt')['receipt_id']
+    missing = dict(save, receipt_id=invalid_receipt, purpose=' ')
+    check('Purpose is required' in request(admin,'ocr_expense.php',missing)[1], 'OCR rejects missing purpose')
+    retry = dict(save, receipt_id=invalid_receipt, purpose='Keep my purpose', project_code='KEEP', amount='-1')
+    retry_body = request(admin,'ocr_expense.php',retry)[1]
+    check('Keep my purpose' in retry_body and 'value="KEEP"' in retry_body, 'OCR failed save retains authored fields')
+    missing_fund = dict(fund, purpose=' ')
+    check('Purpose is required' in request(admin,'funds.php',missing_fund)[1], 'Fund edits require purpose')
+    expense = {'action':'create','csrf_token':ocsrf,'payee':'Manual Fixture','category':'Equipment','purpose':'Manual purpose','project_code':'SHARED','amount':'1.23','date_incurred':f'{date.today().year}-09-02'}
+    check('saved successfully' in request(admin,'expenses.php',expense)[1], 'Manual expense saves metadata')
+    eid = fixture('--inspect')['expenses'][-1]['ExpenseID']
+    expense.update(action='update',expense_id=eid,purpose='Edited purpose',project_code='')
+    check('Expense updated' in request(admin,'expenses.php',expense)[1], 'Manual expense edit saves metadata')
+    stored = fixture('--inspect')['expenses'][-1]
+    check(stored['Purpose']=='Edited purpose' and stored['Project_Code'] is None, 'Expense edit preserves legitimate Unallocated NULL')
+    check('Purpose is required' in request(admin,'expenses.php',dict(expense,purpose=''))[1], 'Expense edit rejects blank purpose')
+    check('valid values' in request(admin,'funds.php',dict(fund,project_code='x'*51))[1], 'Overlength allocation rejected')
+    check('valid values' in request(admin,'funds.php',dict(fund,amount='0.001'))[1], 'Fund rejects amount rounding to zero')
+    check('valid values' in request(admin,'expenses.php',dict(expense,amount='0.001'))[1], 'Expense rejects amount rounding to zero')
+    check('valid values' in request(admin,'ocr_expense.php',dict(save,receipt_id=invalid_receipt,amount='0.001'))[1], 'OCR rejects amount rounding to zero')
+    state = fixture('--inspect')
+    check(all(float(row['Amount']) > 0 for row in state['funds'] + state['expenses']), 'Source amounts remain positive')
+    audited = [json.loads(row['new_values']) for row in state['audits'] if row['new_values']]
+    check(any(row.get('purpose')=='HTTP funding purpose' and row.get('project_code')=='UPDATED' for row in audited), 'Fund audit includes both fields')
+    check(any(row.get('purpose')=='Edited purpose' and row.get('project_code') is None for row in audited), 'Expense audit includes changed metadata')
+    check(any(row.get('purpose')=='Receipt confirmed purpose' and row.get('project_code')=='SHARED' for row in audited), 'OCR audit includes user-authored metadata')
+    historical = fixture('--report-fixture')
+    yr = historical['year']
+    report_url = f'reports.php?month=02&year={yr}'
+    for viewer, role in [(admin,'Admin'),(management,'Management')]:
+        report = request(viewer,report_url)[1]
+        (run / (role.lower()+'-report.html')).write_text(report,encoding='utf-8')
+        check(f'February {yr}' in report and 'Historical &lt;donor&gt;' in report and 'HTTP Fixture' not in report.split('Detailed Transaction Report',1)[1], role+' historical month selected')
+        check('Opening Organization Balance: '+chr(8369)+'75.05' in report and 'Closing Organization Balance: -'+chr(8369)+'14.93' in report, role+' opening and closing balances rendered')
+        check('3 records need attention' in report and '2 missing Purpose' in report and '2 Unallocated' in report, role+' completeness counts visible')
+        check('Purpose &lt;b&gt; &amp; verified' in report and 'SHARED' in report and 'Not specified' in report, role+' database metadata escaped and legacy shown')
+        check('Panel fund' in report and 'Panel expense' in report and 'Organization Balance After Transaction' in report, role+' category consistency and balance label')
+        check(report.index('Incoming-'+str(historical['first'])) < report.index('Incoming-'+str(historical['fund'])) < report.index('Expense-'+str(historical['expense'])), role+' deterministic report order')
+        (run / (role.lower()+'-report.html')).write_text(report,encoding='utf-8')
+    records = request(admin,f'financial_records.php?from={yr}-02-01&to={yr}-02-28')[1]
+    check('3 records need attention' in records and 'Purpose &lt;b&gt;' in records and 'Organization Balance After Transaction' in records, 'Financial Records matches detailed report')
+    empty = request(admin,f'reports.php?month=04&year={yr}')[1]
+    check('No records match' in empty and empty.count('-'+chr(8369)+'14.93')==2 and 'records need attention' not in empty, 'Empty month carries balance without false completeness notice')
+    legacy_fund = dict(fund, fund_id=historical['fund'], category='Panel fund',date_received=f'{yr}-02-01',amount='0.02',purpose='')
+    legacy_expense = dict(expense,expense_id=historical['expense'],category='Panel expense',date_incurred=f'{yr}-02-28',amount='0.01',purpose='')
+    check('Purpose is required' in request(admin,'funds.php',legacy_fund)[1] and 'Purpose is required' in request(admin,'expenses.php',legacy_expense)[1], 'Both legacy edit routes reject missing purpose')
+    check('updated' in request(admin,'funds.php',dict(legacy_fund,purpose='Confirmed legacy purpose',project_code=''))[1], 'Legacy fund can be corrected and remain Unallocated')
+    fixture('--report-error=on')
+    try:
+        error_report = request(admin,report_url)[1]
+        check('Unable to generate this report' in error_report and 'Closing Organization Balance:' not in error_report and 'Net Income' not in error_report, 'Report database error suppresses totals')
+        error_records = request(admin,'financial_records.php')[1]
+        check('Unable to load financial records' in error_records and 'No records match' not in error_records, 'Financial Records distinguishes error from empty')
+    finally:
+        fixture('--report-error=off')
     bcsrf=token(admin,'board_messages.php')
     check('message was sent' in request(admin,'board_messages.php',{'csrf_token':bcsrf,'subject':'Fixture board message','message_body':'Isolated review test'})[1],'Admin sends board message')
     check('Fixture board message' in request(management,'board_inbox.php?filter=all')[1],'Management inbox shows submission')

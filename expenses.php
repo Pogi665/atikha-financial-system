@@ -3,6 +3,7 @@ session_start();
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/categories.php';
+require_once __DIR__ . '/includes/transaction_details.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/expense_warnings.php';
@@ -39,7 +40,7 @@ function load_expense(PDO $pdo, int $expenseId): ?array
     }
 
     $stmt = $pdo->prepare(
-        'SELECT ExpenseID, Payee, Category, Amount, Date_Incurred, RecordedBy_UserID
+        'SELECT ExpenseID, Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID
          FROM Expenses
          WHERE ExpenseID = :expense_id'
     );
@@ -56,20 +57,24 @@ function read_expense_input(array $post, array $categories): ?array
 {
     $payee = isset($post['payee']) ? trim((string) $post['payee']) : '';
     $category = isset($post['category']) ? trim((string) $post['category']) : '';
+    $details = transaction_details_input($post);
     $amount = $post['amount'] ?? '';
     $dateIncurred = $post['date_incurred'] ?? '';
 
-    $amountValid = is_numeric($amount) && (float) $amount > 0;
+    $amountValid = is_numeric($amount) && is_finite((float) $amount)
+        && round((float) $amount, 2) > 0 && round((float) $amount, 2) <= 99999999.99;
     $dateValid = is_string($dateIncurred) && $dateIncurred !== '' && strtotime($dateIncurred) !== false;
     $categoryValid = in_array($category, $categories, true);
 
-    if ($payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
+    if ($details === null || $payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
         return null;
     }
 
     return [
         'payee'         => $payee,
         'category'      => $category,
+        'purpose' => $details['purpose'],
+        'project_code' => $details['project_code'],
         'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
         'date_incurred' => (string) $dateIncurred,
     ];
@@ -91,18 +96,20 @@ if ($action === 'create') {
     $input = read_expense_input($_POST, $categories);
 
     if ($input === null) {
-        $errorMessage = 'Please fill in all fields with valid values.';
+        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
     } else {
         try {
             $stmt = $pdo->prepare(
                 'INSERT INTO Expenses
-                    (Payee, Category, Amount, Date_Incurred, RecordedBy_UserID)
+                    (Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID)
                  VALUES
-                    (:payee, :category, :amount, :date_incurred, :recorded_by)'
+                    (:payee, :category, :purpose, :project_code, :amount, :date_incurred, :recorded_by)'
             );
             $stmt->execute([
                 'payee'         => $input['payee'],
                 'category'      => $input['category'],
+                'purpose' => $input['purpose'],
+                'project_code' => $input['project_code'],
                 'amount'        => $input['amount'],
                 'date_incurred' => $input['date_incurred'],
                 'recorded_by'   => $userId,
@@ -147,11 +154,13 @@ if ($action === 'update') {
         if ($before === null) {
             $errorMessage = 'That expense could not be found.';
         } elseif ($input === null) {
-            $errorMessage = 'Please fill in all fields with valid values.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
         } else {
             $oldValues = [
                 'payee'         => $before['Payee'],
                 'category'      => $before['Category'],
+                'purpose' => $before['Purpose'],
+                'project_code' => $before['Project_Code'],
                 'amount'        => $before['Amount'],
                 'date_incurred' => $before['Date_Incurred'],
             ];
@@ -167,6 +176,8 @@ if ($action === 'update') {
                 'UPDATE Expenses
                  SET Payee = :payee,
                      Category = :category,
+                     Purpose = :purpose,
+                     Project_Code = :project_code,
                      Amount = :amount,
                      Date_Incurred = :date_incurred
                  WHERE ExpenseID = :expense_id'
@@ -174,6 +185,8 @@ if ($action === 'update') {
             $stmt->execute([
                 'payee'         => $input['payee'],
                 'category'      => $input['category'],
+                'purpose' => $input['purpose'],
+                'project_code' => $input['project_code'],
                 'amount'        => $input['amount'],
                 'date_incurred' => $input['date_incurred'],
                 'expense_id'    => $expenseId,
@@ -224,6 +237,8 @@ if ($action === 'delete') {
                     [
                         'payee'         => $before['Payee'],
                         'category'      => $before['Category'],
+                        'purpose' => $before['Purpose'],
+                        'project_code' => $before['Project_Code'],
                         'amount'        => $before['Amount'],
                         'date_incurred' => $before['Date_Incurred'],
                         'recorded_by'   => (int) $before['RecordedBy_UserID'],
@@ -243,7 +258,7 @@ if ($action === 'delete') {
 
 try {
     $stmt = $pdo->query(
-        'SELECT ExpenseID, Date_Incurred, Payee, Category, Amount, Review_Status, Review_Notes
+        'SELECT ExpenseID, Date_Incurred, Payee, Category, Purpose, Project_Code, Amount, Review_Status, Review_Notes
          FROM Expenses
             ORDER BY created_at DESC, ExpenseID DESC'
     );
@@ -322,6 +337,7 @@ $activePage = 'expenses';
                         class="p-6 space-y-4"
                     >
                         <input type="hidden" name="action" value="create">
+                        <?php transaction_details_fields('', $fieldClass, $_POST, true); ?>
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                         <div>
@@ -415,13 +431,13 @@ $activePage = 'expenses';
                                 <tr class="bg-slate-50 text-left">
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Allocation/Project Code</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recentRecords)): ?>
                                     <tr>
-                                        <td colspan="3" class="px-6 py-10 text-center text-slate-500">
+                                        <td colspan="5" class="px-6 py-10 text-center text-slate-500">
                                             Nothing logged yet. Use the form to record your first expense.
                                         </td>
                                     </tr>
@@ -437,7 +453,7 @@ $activePage = 'expenses';
                                                     <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                            <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Project_Code'], 'Unallocated'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                                 &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                             </td>
                                         </tr>
@@ -461,7 +477,7 @@ $activePage = 'expenses';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Allocation/Project Code</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
                             </tr>
@@ -469,7 +485,7 @@ $activePage = 'expenses';
                         <tbody>
                             <?php if (empty($records)): ?>
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">No expense records yet.</td>
+                                    <td colspan="8" class="px-6 py-8 text-center text-slate-500">No expense records yet.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($records as $row): ?>
@@ -483,7 +499,7 @@ $activePage = 'expenses';
                                         <td class="px-6 py-3 text-slate-700">
                                             <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
                                         </td>
-                                        <td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                        <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Project_Code'], 'Unallocated'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                             &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
                                         <td class="px-6 py-3 whitespace-nowrap">
@@ -497,6 +513,8 @@ $activePage = 'expenses';
                                                     'id'            => (int) $row['ExpenseID'],
                                                     'payee'         => $row['Payee'],
                                                     'category'      => $row['Category'],
+                                                    'purpose' => $row['Purpose'],
+                                                    'project_code' => $row['Project_Code'],
                                                     'amount'        => $row['Amount'],
                                                     'date_incurred' => $row['Date_Incurred'],
                                                 ], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>"
@@ -546,13 +564,14 @@ $activePage = 'expenses';
         id="edit-modal"
         class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-8"
     >
-        <div class="w-full max-w-lg bg-white rounded-xl shadow-2xl">
+        <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl">
             <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-slate-900">Edit Expense</h2>
                 <button type="button" id="edit-close" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
             </div>
             <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" class="p-6 grid grid-cols-2 gap-4">
                 <input type="hidden" name="action" value="update">
+                <?php transaction_details_fields('edit-', $fieldClass, [], true); ?>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="expense_id" id="edit-expense-id" value="">
                 <div class="col-span-2">
@@ -641,6 +660,8 @@ $activePage = 'expenses';
                     document.getElementById('edit-expense-id').value = record.id;
                     document.getElementById('edit-payee').value = record.payee;
                     document.getElementById('edit-category').value = record.category;
+                    document.getElementById('edit-purpose').value = record.purpose || '';
+                    document.getElementById('edit-project').value = record.project_code || '';
                     document.getElementById('edit-amount').value = record.amount;
                     document.getElementById('edit-date').value = record.date_incurred;
 
