@@ -48,6 +48,18 @@ $sidebarClass = $navIsExecutive
     : 'fixed inset-y-0 left-0 w-64 bg-slate-800 text-slate-100 flex flex-col print:hidden';
 
 ?>
+<style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+</style>
+
 <aside class="<?= $sidebarClass ?>">
     <div class="px-6 py-6 border-b border-slate-700">
         <h2 class="text-lg font-bold tracking-tight">Atikha Finance</h2>
@@ -55,7 +67,7 @@ $sidebarClass = $navIsExecutive
             <?= $navIsExecutive ? 'Executive Suite' : 'Management System' ?>
         </p>
     </div>
-    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+    <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
         <a href="dashboard.php" class="<?= nav_link_class('dashboard', $activePage, $navIsExecutive) ?>">
             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             Dashboard
