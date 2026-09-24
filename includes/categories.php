@@ -22,7 +22,7 @@ function fetch_category_names(PDO $pdo, string $type = CATEGORY_TYPE_EXPENSE): a
         $type = CATEGORY_TYPE_EXPENSE;
     }
 
-    $catchAll = $type === CATEGORY_TYPE_EXPENSE ? 'Miscellaneous' : 'Other';
+    $catchAll = $type === CATEGORY_TYPE_EXPENSE ? '99 - Miscellaneous' : '99 - Other';
 
     $stmt = $pdo->prepare(
         'SELECT Name
@@ -57,17 +57,27 @@ function fetch_category_names_safe(PDO $pdo, string $type = CATEGORY_TYPE_EXPENS
     }
 
     return $type === CATEGORY_TYPE_FUND
-        ? ['Donation', 'Fundraiser', 'Grant', 'Sponsorship', 'Other']
+        ? [
+            '02 - Donation',
+            '04 - Revenue',
+            '05 - Equity',
+            '06 - Liability (Loan Received)',
+            '07 - Fundraiser',
+            '08 - Grant',
+            '09 - Sponsorship',
+            '99 - Other'
+        ]
         : [
-            'Equipment',
-            'Event Costs',
-            'Meals',
-            'Office Supplies',
-            'Payroll',
-            'Professional Fees',
-            'Transportation',
-            'Travel',
-            'Utilities',
-            'Miscellaneous',
+            '01 - Utilities',
+            '10 - Asset (Equipment Purchase)',
+            '11 - Liability (Loan Payment)',
+            '12 - Event Costs',
+            '13 - Meals',
+            '14 - Office Supplies',
+            '15 - Payroll',
+            '16 - Professional Fees',
+            '17 - Transportation',
+            '18 - Travel',
+            '99 - Miscellaneous',
         ];
 }
