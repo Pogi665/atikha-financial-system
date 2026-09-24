@@ -210,7 +210,7 @@ if ($action === 'save') {
             // Guards against a double submit attaching one receipt twice.
             $errorMessage = 'This receipt has already been saved as an expense.';
         } elseif ($details === null || $payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
-            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
             $receipt = $target;
         } else {
             $pdo->beginTransaction();
@@ -356,8 +356,8 @@ if ($receipt !== null) {
                 'merchant'         => '',
                 'total_amount'     => '',
                 'transaction_date' => '',
-                'category'         => in_array('Miscellaneous', $categories, true)
-                    ? 'Miscellaneous'
+                'category'         => in_array('99 - Miscellaneous', $categories, true)
+                    ? '99 - Miscellaneous'
                     : ($categories[0] ?? ''),
                 'confidence'       => 0.0,
                 'notes'            => '',

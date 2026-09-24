@@ -30,9 +30,9 @@ function transaction_details_fields(string $prefix, string $fieldClass, array $v
     </div>
     <?php if ($includeProject): ?>
     <div class="col-span-2">
-        <label for="<?= $escape($prefix) ?>project" class="block text-sm font-medium text-slate-700 mb-1">Allocation/Project Code (optional)</label>
+        <label for="<?= $escape($prefix) ?>project" class="block text-sm font-medium text-slate-700 mb-1">Internal Project (optional)</label>
         <input id="<?= $escape($prefix) ?>project" name="project_code" maxlength="50" class="<?= $escape($fieldClass) ?>" value="<?= $escape($values['project_code'] ?? '') ?>">
-        <p class="text-xs text-slate-500">Leave blank for Unallocated.</p>
+        <p class="text-xs text-slate-500 mt-1.5">e.g., Typhoon Relief 2026, Outreach Program. Leave blank if standard operations.</p>
     </div>
     <?php endif;
 }
