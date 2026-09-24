@@ -97,7 +97,7 @@ if ($action === 'create') {
     $input = read_fund_input($_POST, $categories);
 
     if ($input === null) {
-        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
+        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
     } else {
         try {
             $stmt = $pdo->prepare(
@@ -145,7 +145,7 @@ if ($action === 'update') {
         if ($before === null) {
             $errorMessage = 'That incoming fund could not be found.';
         } elseif ($input === null) {
-            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
         } else {
             $oldValues = [
                 'source_donor'  => $before['Source_Donor'],
@@ -390,7 +390,7 @@ $activePage = 'funds';
 
                         <div>
                             <label for="project_code" class="block text-sm font-medium text-slate-700 mb-1">
-                                Allocation/Project Code
+                                Internal Project
                                 <span class="text-slate-400 font-normal">(optional)</span>
                             </label>
                             <input
@@ -399,7 +399,7 @@ $activePage = 'funds';
                                 name="project_code"
                                 maxlength="50"
                                 class="<?= $fieldClass ?>"
-                                placeholder="e.g. ATK-2026-01"
+                                placeholder="e.g., Typhoon Relief 2026"
                             >
                         </div>
 
@@ -435,7 +435,7 @@ $activePage = 'funds';
                                 <tr class="bg-slate-50 text-left">
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Source / Donor</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Allocation/Project Code</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Internal Project</th>
                                     <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 </tr>
                             </thead>
@@ -491,7 +491,7 @@ $activePage = 'funds';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Source / Donor</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Allocation/Project Code</th>
+                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Internal Project</th>
                                 <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
@@ -653,7 +653,7 @@ $activePage = 'funds';
                 </div>
                 <div class="col-span-2">
                     <label for="edit-project" class="block text-sm font-medium text-slate-700 mb-1">
-                        Allocation/Project Code
+                        Internal Project
                         <span class="text-slate-400 font-normal">(optional)</span>
                     </label>
                     <input
@@ -662,7 +662,7 @@ $activePage = 'funds';
                         name="project_code"
                         maxlength="50"
                         class="<?= $fieldClass ?>"
-                        placeholder="e.g. ATK-2026-01"
+                        placeholder="e.g., Typhoon Relief 2026"
                     >
                 </div>
                 <div class="col-span-2 flex items-center justify-end gap-3 pt-2">

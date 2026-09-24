@@ -10,7 +10,7 @@ function ledger_completeness_notice(array $counts): void
         <?= (int) $counts['missing_purpose'] ?> missing Purpose;
         <?= (int) $counts['unallocated'] ?> Unallocated.
         Each affected transaction is counted once. Legacy transactions with missing Purpose display “Not specified” and need updating.
-        Unallocated is a legitimate status and may remain unchanged; confirm whether an allocation applies.
+        Unallocated is a legitimate status and may remain unchanged; confirm whether an internal project applies.
         Counts cover all selected records, including other pages.
     </div>
     <?php
@@ -28,8 +28,8 @@ function ledger_render_table(array $rows): void
             <?php endforeach; ?>
         </colgroup>
         <thead class="bg-slate-50"><tr>
-            <?php foreach (['Date', 'Transaction Type', 'Source/Payee', 'Amount', 'Category', 'Purpose', 'Allocation/Project Code', 'Organization Balance After Transaction'] as $label): ?>
-                <th class="px-3 py-3 font-semibold"><?= $label === 'Allocation/Project Code' ? 'Allocation/<wbr>Project Code' : $escape($label) ?></th>
+            <?php foreach (['Date', 'Transaction Type', 'Source/Payee', 'Amount', 'Category', 'Purpose', 'Internal Project', 'Organization Balance After Transaction'] as $label): ?>
+                <th class="px-3 py-3 font-semibold"><?= $escape($label) ?></th>
             <?php endforeach; ?>
         </tr></thead>
         <tbody>

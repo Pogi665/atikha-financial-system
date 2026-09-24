@@ -96,7 +96,7 @@ if ($action === 'create') {
     $input = read_expense_input($_POST, $categories);
 
     if ($input === null) {
-        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
+        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
     } else {
         try {
             $stmt = $pdo->prepare(
@@ -154,7 +154,7 @@ if ($action === 'update') {
         if ($before === null) {
             $errorMessage = 'That expense could not be found.';
         } elseif ($input === null) {
-            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Allocation/Project Code allows up to 50 characters.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
         } else {
             $oldValues = [
                 'payee'         => $before['Payee'],
@@ -431,7 +431,7 @@ $activePage = 'expenses';
                                 <tr class="bg-slate-50 text-left">
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
-                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Allocation/Project Code</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Internal Project</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -477,7 +477,7 @@ $activePage = 'expenses';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Allocation/Project Code</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Internal Project</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
                             </tr>
@@ -624,6 +624,20 @@ $activePage = 'expenses';
                         name="date_incurred"
                         required
                         class="<?= $fieldClass ?>"
+                    >
+                </div>
+                <div class="col-span-2">
+                    <label for="edit-project" class="block text-sm font-medium text-slate-700 mb-1">
+                        Internal Project
+                        <span class="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="edit-project"
+                        name="project_code"
+                        maxlength="50"
+                        class="<?= $fieldClass ?>"
+                        placeholder="e.g., Typhoon Relief 2026"
                     >
                 </div>
                 <div class="col-span-2 flex items-center justify-end gap-3 pt-2">
