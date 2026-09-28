@@ -22,7 +22,8 @@ function fetch_category_names(PDO $pdo, string $type = CATEGORY_TYPE_EXPENSE): a
         $type = CATEGORY_TYPE_EXPENSE;
     }
 
-    $catchAll = $type === CATEGORY_TYPE_EXPENSE ? '99 - Miscellaneous' : '99 - Other';
+    // Updated to match Atikha's official catch-all categories
+    $catchAll = $type === CATEGORY_TYPE_EXPENSE ? 'Miscellaneous Expense' : 'Other Income';
 
     $stmt = $pdo->prepare(
         'SELECT Name
@@ -58,26 +59,34 @@ function fetch_category_names_safe(PDO $pdo, string $type = CATEGORY_TYPE_EXPENS
 
     return $type === CATEGORY_TYPE_FUND
         ? [
-            '02 - Donation',
-            '04 - Revenue',
-            '05 - Equity',
-            '06 - Liability (Loan Received)',
-            '07 - Fundraiser',
-            '08 - Grant',
-            '09 - Sponsorship',
-            '99 - Other'
+            'Donations',
+            'Gains/Loss on Forex',
+            'Grants',
+            'Interest Income',
+            'Other Income',
+            'Sponsorship',
+            'Training/Consultation Fees'
         ]
         : [
-            '01 - Utilities',
-            '10 - Asset (Equipment Purchase)',
-            '11 - Liability (Loan Payment)',
-            '12 - Event Costs',
-            '13 - Meals',
-            '14 - Office Supplies',
-            '15 - Payroll',
-            '16 - Professional Fees',
-            '17 - Transportation',
-            '18 - Travel',
-            '99 - Miscellaneous',
+            'Admin Expenses',
+            'Communication and Internet',
+            'Depreciation Expense',
+            'Employee\'s Benefits',
+            'Light & Water',
+            'Meeting Exp. Meals and Accom',
+            'Miscellaneous Expense',
+            'Module & Knowledge Materials',
+            'Monitoring',
+            'Networking & Representation',
+            'Office Supplies/ Materials',
+            'Planning and Assessment',
+            'Professional Fee/Consultants Fee',
+            'Repairs & Maintenance',
+            'Salaries and Allowances',
+            'Staff Development',
+            'Taxes and Licenses',
+            'Training Exp., Meals and Accom',
+            'Transportation',
+            'Website Development and Admin'
         ];
 }
