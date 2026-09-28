@@ -69,10 +69,10 @@ function ledger_source_sql(string $incomingWhere, string $expenseWhere): string
 {
     return "SELECT 'Incoming' AS txn_type, 0 AS type_order, FundID AS record_id,
         Date_Received AS txn_date, Category AS category, Source_Donor AS party,
-        Amount AS amount, Purpose AS purpose, Project_Code AS project_code
+        Amount AS amount, Purpose AS purpose, Project_Code AS project_code, Reference_Number AS reference_number
         FROM Incoming_Funds WHERE $incomingWhere
         UNION ALL
-        SELECT 'Expense', 1, ExpenseID, Date_Incurred, Category, Payee, Amount, Purpose, Project_Code
+        SELECT 'Expense', 1, ExpenseID, Date_Incurred, Category, Payee, Amount, Purpose, Project_Code, Reference_Number
         FROM Expenses WHERE $expenseWhere";
 }
 

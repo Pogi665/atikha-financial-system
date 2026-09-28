@@ -40,7 +40,7 @@ function load_expense(PDO $pdo, int $expenseId): ?array
     }
 
     $stmt = $pdo->prepare(
-        'SELECT ExpenseID, Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID
+        'SELECT ExpenseID, Payee, Category, Purpose, Project_Code, Reference_Number, Amount, Date_Incurred, RecordedBy_UserID
          FROM Expenses
          WHERE ExpenseID = :expense_id'
     );
@@ -51,7 +51,7 @@ function load_expense(PDO $pdo, int $expenseId): ?array
 }
 
 /**
- * @return array{payee: string, category: string, amount: string, date_incurred: string}|null
+ * @return array{payee: string, category: string, purpose: string, project_code: ?string, reference_number: ?string, amount: string, date_incurred: string}|null
  */
 function read_expense_input(array $post, array $categories): ?array
 {
@@ -71,12 +71,13 @@ function read_expense_input(array $post, array $categories): ?array
     }
 
     return [
-        'payee'         => $payee,
-        'category'      => $category,
-        'purpose' => $details['purpose'],
-        'project_code' => $details['project_code'],
-        'amount'        => number_format(round((float) $amount, 2), 2, '.', ''),
-        'date_incurred' => (string) $dateIncurred,
+        'payee'            => $payee,
+        'category'         => $category,
+        'purpose'          => $details['purpose'],
+        'project_code'     => $details['project_code'],
+        'reference_number' => $details['reference_number'],
+        'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
+        'date_incurred'    => (string) $dateIncurred,
     ];
 }
 
@@ -87,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errorMessage = 'Your session expired. Please try again.';
         $action = '';
     } elseif ($action === '') {
-        // Older markup posted without an explicit action.
         $action = 'create';
     }
 }
@@ -96,23 +96,24 @@ if ($action === 'create') {
     $input = read_expense_input($_POST, $categories);
 
     if ($input === null) {
-        $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
+        $errorMessage = 'Please fill in all fields with valid values. Purpose is required; Internal Project and Reference No are optional.';
     } else {
         try {
             $stmt = $pdo->prepare(
                 'INSERT INTO Expenses
-                    (Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID)
+                    (Payee, Category, Purpose, Project_Code, Reference_Number, Amount, Date_Incurred, RecordedBy_UserID)
                  VALUES
-                    (:payee, :category, :purpose, :project_code, :amount, :date_incurred, :recorded_by)'
+                    (:payee, :category, :purpose, :project_code, :reference_number, :amount, :date_incurred, :recorded_by)'
             );
             $stmt->execute([
-                'payee'         => $input['payee'],
-                'category'      => $input['category'],
-                'purpose' => $input['purpose'],
-                'project_code' => $input['project_code'],
-                'amount'        => $input['amount'],
-                'date_incurred' => $input['date_incurred'],
-                'recorded_by'   => $userId,
+                'payee'            => $input['payee'],
+                'category'         => $input['category'],
+                'purpose'          => $input['purpose'],
+                'project_code'     => $input['project_code'],
+                'reference_number' => $input['reference_number'],
+                'amount'           => $input['amount'],
+                'date_incurred'    => $input['date_incurred'],
+                'recorded_by'      => $userId,
             ]);
 
             $expenseId = (int) $pdo->lastInsertId();
@@ -154,20 +155,20 @@ if ($action === 'update') {
         if ($before === null) {
             $errorMessage = 'That expense could not be found.';
         } elseif ($input === null) {
-            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required; Internal Project and Reference No are optional.';
         } else {
             $oldValues = [
-                'payee'         => $before['Payee'],
-                'category'      => $before['Category'],
-                'purpose' => $before['Purpose'],
-                'project_code' => $before['Project_Code'],
-                'amount'        => $before['Amount'],
-                'date_incurred' => $before['Date_Incurred'],
+                'payee'            => $before['Payee'],
+                'category'         => $before['Category'],
+                'purpose'          => $before['Purpose'],
+                'project_code'     => $before['Project_Code'],
+                'reference_number' => $before['Reference_Number'],
+                'amount'           => $before['Amount'],
+                'date_incurred'    => $before['Date_Incurred'],
             ];
             $changes = audit_diff($oldValues, $input);
 
             if ($changes === []) {
-                // Nothing moved, so there is nothing to attest to.
                 header('Location: ' . $_SERVER['PHP_SELF']);
                 exit;
             }
@@ -178,18 +179,20 @@ if ($action === 'update') {
                      Category = :category,
                      Purpose = :purpose,
                      Project_Code = :project_code,
+                     Reference_Number = :reference_number,
                      Amount = :amount,
                      Date_Incurred = :date_incurred
                  WHERE ExpenseID = :expense_id'
             );
             $stmt->execute([
-                'payee'         => $input['payee'],
-                'category'      => $input['category'],
-                'purpose' => $input['purpose'],
-                'project_code' => $input['project_code'],
-                'amount'        => $input['amount'],
-                'date_incurred' => $input['date_incurred'],
-                'expense_id'    => $expenseId,
+                'payee'            => $input['payee'],
+                'category'         => $input['category'],
+                'purpose'          => $input['purpose'],
+                'project_code'     => $input['project_code'],
+                'reference_number' => $input['reference_number'],
+                'amount'           => $input['amount'],
+                'date_incurred'    => $input['date_incurred'],
+                'expense_id'       => $expenseId,
             ]);
 
             log_system_action(
@@ -223,8 +226,6 @@ if ($action === 'delete') {
             if ($before === null) {
                 $errorMessage = 'That expense could not be found.';
             } else {
-                // Receipts.ExpenseID is ON DELETE SET NULL, so the scanned
-                // image survives as evidence even though the expense is gone.
                 $stmt = $pdo->prepare('DELETE FROM Expenses WHERE ExpenseID = :expense_id');
                 $stmt->execute(['expense_id' => $expenseId]);
 
@@ -235,13 +236,14 @@ if ($action === 'delete') {
                     'Expenses',
                     $expenseId,
                     [
-                        'payee'         => $before['Payee'],
-                        'category'      => $before['Category'],
-                        'purpose' => $before['Purpose'],
-                        'project_code' => $before['Project_Code'],
-                        'amount'        => $before['Amount'],
-                        'date_incurred' => $before['Date_Incurred'],
-                        'recorded_by'   => (int) $before['RecordedBy_UserID'],
+                        'payee'            => $before['Payee'],
+                        'category'         => $before['Category'],
+                        'purpose'          => $before['Purpose'],
+                        'project_code'     => $before['Project_Code'],
+                        'reference_number' => $before['Reference_Number'],
+                        'amount'           => $before['Amount'],
+                        'date_incurred'    => $before['Date_Incurred'],
+                        'recorded_by'      => (int) $before['RecordedBy_UserID'],
                     ],
                     null
                 );
@@ -258,7 +260,7 @@ if ($action === 'delete') {
 
 try {
     $stmt = $pdo->query(
-        'SELECT ExpenseID, Date_Incurred, Payee, Category, Purpose, Project_Code, Amount, Review_Status, Review_Notes
+        'SELECT ExpenseID, Date_Incurred, Payee, Category, Purpose, Project_Code, Reference_Number, Amount, Review_Status, Review_Notes
          FROM Expenses
             ORDER BY created_at DESC, ExpenseID DESC'
     );
@@ -269,7 +271,6 @@ try {
     $errorMessage = $errorMessage ?: 'Unable to load records. Please try again later.';
 }
 
-// The verification panel reads off the list already in memory.
 $recentRecords = array_slice($records, 0, 10);
 $recentTotal = array_sum(array_map(static fn (array $row): float => (float) $row['Amount'], $recentRecords));
 
@@ -277,8 +278,6 @@ $fullName = htmlspecialchars($_SESSION['FullName'] ?? '', ENT_QUOTES, 'UTF-8');
 $role = htmlspecialchars($_SESSION['Role'] ?? '', ENT_QUOTES, 'UTF-8');
 $reviewStatus = static fn (array $row): string => (string) ($row['Review_Status'] ?? 'None');
 
-// Workspace theme tokens, kept in one place so the form and the edit modal
-// cannot drift apart.
 $fieldClass = 'w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400'
     . ' focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0 outline-none transition';
 $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700'
@@ -401,7 +400,7 @@ $activePage = 'expenses';
 
                         <button
                             type="submit"
-                            class="<?= $primaryButtonClass ?> w-full"
+                            class="<?= $primaryButtonClass ?> w-full mt-2"
                         >
                             Save Record
                         </button>
@@ -431,7 +430,8 @@ $activePage = 'expenses';
                                 <tr class="bg-slate-50 text-left">
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                     <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
-                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Internal Project</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Ref No.</th>
+                                    <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -453,7 +453,10 @@ $activePage = 'expenses';
                                                     <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Project_Code'], 'Unallocated'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                            <td class="px-6 py-3 text-slate-700">
+                                                <?= htmlspecialchars($row['Reference_Number'] ?? '-', ENT_QUOTES, 'UTF-8') ?>
+                                            </td>
+                                            <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                                 &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                             </td>
                                         </tr>
@@ -477,7 +480,8 @@ $activePage = 'expenses';
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Date</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Payee</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Category</th>
-                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-left">Internal Project</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
+                                <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Ref No.</th>
+                                <th class="px-6 py-3 text-left">Purpose</th><th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Amount</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Review</th>
                                 <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-600 text-right">Actions</th>
                             </tr>
@@ -499,7 +503,10 @@ $activePage = 'expenses';
                                         <td class="px-6 py-3 text-slate-700">
                                             <?= htmlspecialchars($row['Category'], ENT_QUOTES, 'UTF-8') ?>
                                         </td>
-                                        <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Project_Code'], 'Unallocated'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
+                                        <td class="px-6 py-3 text-slate-700">
+                                            <?= htmlspecialchars($row['Reference_Number'] ?? '-', ENT_QUOTES, 'UTF-8') ?>
+                                        </td>
+                                        <td class="px-6 py-3"><?= htmlspecialchars(transaction_detail_label($row['Purpose'], 'Not specified'), ENT_QUOTES, 'UTF-8') ?></td><td class="px-6 py-3 text-slate-900 font-semibold text-right whitespace-nowrap">
                                             &#8369;<?= htmlspecialchars(number_format((float) $row['Amount'], 2), ENT_QUOTES, 'UTF-8') ?>
                                         </td>
                                         <td class="px-6 py-3 whitespace-nowrap">
@@ -510,13 +517,14 @@ $activePage = 'expenses';
                                                 type="button"
                                                 class="js-edit-expense rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700 transition"
                                                 data-record="<?= htmlspecialchars(json_encode([
-                                                    'id'            => (int) $row['ExpenseID'],
-                                                    'payee'         => $row['Payee'],
-                                                    'category'      => $row['Category'],
-                                                    'purpose' => $row['Purpose'],
-                                                    'project_code' => $row['Project_Code'],
-                                                    'amount'        => $row['Amount'],
-                                                    'date_incurred' => $row['Date_Incurred'],
+                                                    'id'               => (int) $row['ExpenseID'],
+                                                    'payee'            => $row['Payee'],
+                                                    'category'         => $row['Category'],
+                                                    'purpose'          => $row['Purpose'],
+                                                    'project_code'     => $row['Project_Code'],
+                                                    'reference_number' => $row['Reference_Number'],
+                                                    'amount'           => $row['Amount'],
+                                                    'date_incurred'    => $row['Date_Incurred'],
                                                 ], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>"
                                             >
                                                 Edit
@@ -626,20 +634,6 @@ $activePage = 'expenses';
                         class="<?= $fieldClass ?>"
                     >
                 </div>
-                <div class="col-span-2">
-                    <label for="edit-project" class="block text-sm font-medium text-slate-700 mb-1">
-                        Internal Project
-                        <span class="text-slate-400 font-normal">(optional)</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="edit-project"
-                        name="project_code"
-                        maxlength="50"
-                        class="<?= $fieldClass ?>"
-                        placeholder="e.g., Typhoon Relief 2026"
-                    >
-                </div>
                 <div class="col-span-2 flex items-center justify-end gap-3 pt-2">
                     <button
                         type="button"
@@ -676,6 +670,7 @@ $activePage = 'expenses';
                     document.getElementById('edit-category').value = record.category;
                     document.getElementById('edit-purpose').value = record.purpose || '';
                     document.getElementById('edit-project').value = record.project_code || '';
+                    document.getElementById('edit-ref').value = record.reference_number || '';
                     document.getElementById('edit-amount').value = record.amount;
                     document.getElementById('edit-date').value = record.date_incurred;
 

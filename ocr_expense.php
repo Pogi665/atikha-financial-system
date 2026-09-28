@@ -207,28 +207,28 @@ if ($action === 'save') {
         if ($target === null) {
             $errorMessage = 'That receipt could not be found.';
         } elseif ($target['ExpenseID'] !== null) {
-            // Guards against a double submit attaching one receipt twice.
             $errorMessage = 'This receipt has already been saved as an expense.';
         } elseif ($details === null || $payee === '' || !$categoryValid || !$amountValid || !$dateValid) {
-            $errorMessage = 'Please fill in all fields with valid values. Purpose is required (maximum 1000 characters); Internal Project allows up to 50 characters.';
+            $errorMessage = 'Please fill in all fields with valid values. Purpose is required; Internal Project and Reference No are optional.';
             $receipt = $target;
         } else {
             $pdo->beginTransaction();
 
             $stmt = $pdo->prepare(
                 'INSERT INTO Expenses
-                    (Payee, Category, Purpose, Project_Code, Amount, Date_Incurred, RecordedBy_UserID)
+                    (Payee, Category, Purpose, Project_Code, Reference_Number, Amount, Date_Incurred, RecordedBy_UserID)
                  VALUES
-                    (:payee, :category, :purpose, :project_code, :amount, :date_incurred, :recorded_by)'
+                    (:payee, :category, :purpose, :project_code, :reference_number, :amount, :date_incurred, :recorded_by)'
             );
             if ($stmt === false || $stmt->execute([
-                'payee'         => $payee,
-                'category'      => $category,
-                'purpose' => $details['purpose'],
-                'project_code' => $details['project_code'],
-                'amount'        => round((float) $amount, 2),
-                'date_incurred' => $dateIncurred,
-                'recorded_by'   => $userId,
+                'payee'            => $payee,
+                'category'         => $category,
+                'purpose'          => $details['purpose'],
+                'project_code'     => $details['project_code'],
+                'reference_number' => $details['reference_number'],
+                'amount'           => round((float) $amount, 2),
+                'date_incurred'    => $dateIncurred,
+                'recorded_by'      => $userId,
             ]) === false) {
                 throw new Exception('Failed to insert expense.');
             }
@@ -266,15 +266,16 @@ if ($action === 'save') {
                 $expenseId,
                 null,
                 [
-                    'entity'           => 'expense',
-                    'purpose' => $details['purpose'],
-                    'project_code' => $details['project_code'],
-                    'payee'            => $payee,
-                    'category'         => $category,
-                    'amount'           => number_format(round((float) $amount, 2), 2, '.', ''),
-                    'date_incurred'    => $dateIncurred,
-                    'receipt_id'       => $receiptId,
-                    'ai_confidence'    => $aiValues['confidence'] ?? null,
+                    'entity'             => 'expense',
+                    'purpose'            => $details['purpose'],
+                    'project_code'       => $details['project_code'],
+                    'reference_number'   => $details['reference_number'],
+                    'payee'              => $payee,
+                    'category'           => $category,
+                    'amount'             => number_format(round((float) $amount, 2), 2, '.', ''),
+                    'date_incurred'      => $dateIncurred,
+                    'receipt_id'         => $receiptId,
+                    'ai_confidence'      => $aiValues['confidence'] ?? null,
                     'edited_before_save' => $aiValues !== null
                         ? audit_diff(
                             [
@@ -356,8 +357,8 @@ if ($receipt !== null) {
                 'merchant'         => '',
                 'total_amount'     => '',
                 'transaction_date' => '',
-                'category'         => in_array('99 - Miscellaneous', $categories, true)
-                    ? '99 - Miscellaneous'
+                'category'         => in_array('Miscellaneous Expense', $categories, true)
+                    ? 'Miscellaneous Expense'
                     : ($categories[0] ?? ''),
                 'confidence'       => 0.0,
                 'notes'            => '',
@@ -896,6 +897,7 @@ $activePage = 'ocr_expense';
 
                 document.getElementById('purpose').value = '';
                 document.getElementById('project').value = '';
+                document.getElementById('ref').value = '';
                 fieldPayee.value = data.payee || '';
                 fieldAmount.value = data.amount || '';
                 fieldDate.value = data.date_incurred || '';

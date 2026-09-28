@@ -23,23 +23,24 @@ function ledger_render_table(array $rows): void
     <div class="ledger-table-wrap overflow-x-auto">
     <table class="ledger-table w-full text-sm text-left">
         <colgroup>
-            <?php foreach ([9, 10, 13, 10, 11, 18, 14, 15] as $width): ?>
+            <?php foreach ([8, 10, 10, 12, 9, 11, 14, 12, 14] as $width): ?>
                 <col style="width: <?= $width ?>%">
             <?php endforeach; ?>
         </colgroup>
         <thead class="bg-slate-50"><tr>
-            <?php foreach (['Date', 'Transaction Type', 'Source/Payee', 'Amount', 'Category', 'Purpose', 'Internal Project', 'Organization Balance After Transaction'] as $label): ?>
+            <?php foreach (['Date', 'Transaction Type', 'Ref No.', 'Source/Payee', 'Amount', 'Category', 'Purpose', 'Internal Project', 'Organization Balance After Transaction'] as $label): ?>
                 <th class="px-3 py-3 font-semibold"><?= $escape($label) ?></th>
             <?php endforeach; ?>
         </tr></thead>
         <tbody>
         <?php if ($rows === []): ?>
-            <tr><td colspan="8" class="px-3 py-6 text-center text-slate-500">No records match the selected period or filters.</td></tr>
+            <tr><td colspan="9" class="px-3 py-6 text-center text-slate-500">No records match the selected period or filters.</td></tr>
         <?php endif; ?>
         <?php foreach ($rows as $row): ?>
             <tr class="border-b border-slate-200" data-transaction="<?= $escape($row['txn_type'] . '-' . $row['record_id']) ?>">
                 <td class="px-3 py-3"><?= $escape($row['txn_date']) ?></td>
                 <td class="px-3 py-3"><?= $escape($row['txn_type']) ?></td>
+                <td class="px-3 py-3"><?= $escape($row['reference_number'] ?? '') ?></td>
                 <td class="px-3 py-3"><?= $escape($row['party']) ?></td>
                 <td class="px-3 py-3 text-right"><?= $escape(ledger_money($row['amount'])) ?></td>
                 <td class="px-3 py-3"><?= $escape($row['category']) ?></td>
