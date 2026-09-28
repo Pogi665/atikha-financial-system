@@ -3,15 +3,21 @@
 /** User-authored metadata only. Never populate these fields from OCR or notes. */
 function transaction_details_input(array $post): ?array
 {
-    if (!is_string($post['purpose'] ?? null) || !is_string($post['project_code'] ?? '')) {
+    if (!is_string($post['purpose'] ?? null) || !is_string($post['project_code'] ?? '') || !is_string($post['reference_number'] ?? '')) {
         return null;
     }
     $purpose = trim($post['purpose']);
     $project = trim($post['project_code'] ?? '');
-    if ($purpose === '' || mb_strlen($purpose) > 1000 || mb_strlen($project) > 50) {
+    $ref = trim($post['reference_number'] ?? '');
+
+    if ($purpose === '' || mb_strlen($purpose) > 1000 || mb_strlen($project) > 50 || mb_strlen($ref) > 100) {
         return null;
     }
-    return ['purpose' => $purpose, 'project_code' => $project === '' ? null : $project];
+    return [
+        'purpose' => $purpose, 
+        'project_code' => $project === '' ? null : $project,
+        'reference_number' => $ref === '' ? null : $ref
+    ];
 }
 
 function transaction_detail_label(?string $value, string $empty): string
@@ -24,6 +30,11 @@ function transaction_details_fields(string $prefix, string $fieldClass, array $v
 {
     $escape = static fn ($v) => htmlspecialchars(is_scalar($v) ? (string) $v : '', ENT_QUOTES, 'UTF-8');
     ?>
+    <div class="col-span-2">
+        <label for="<?= $escape($prefix) ?>ref" class="block text-sm font-medium text-slate-700 mb-1">Reference No. (optional)</label>
+        <input id="<?= $escape($prefix) ?>ref" name="reference_number" maxlength="100" class="<?= $escape($fieldClass) ?>" value="<?= $escape($values['reference_number'] ?? '') ?>" placeholder="e.g., OR-10293, Check No. 54321">
+        <p class="text-xs text-slate-500 mt-1.5">Official Receipt, Invoice, Check, or Bank Reference Number.</p>
+    </div>
     <div class="col-span-2">
         <label for="<?= $escape($prefix) ?>purpose" class="block text-sm font-medium text-slate-700 mb-1">Purpose</label>
         <textarea id="<?= $escape($prefix) ?>purpose" name="purpose" required maxlength="1000" rows="2" class="<?= $escape($fieldClass) ?>"><?= $escape($values['purpose'] ?? '') ?></textarea>
