@@ -49,14 +49,48 @@ $expenses = [];
 $reportError = false;
 $period = null;
 $totalRevenues = $totalExpenses = $netIncome = '0.00';
+
+// Cash Flow & General Ledger Setup
+$cfOperating = 0;
+$cfInvesting = 0;
+$cfFinancing = 0;
+$generalLedger = [];
+
+// Map Atikha's COA to Investing Activities
+$investingCategories = ['Interest Income', 'Gains/Loss on Forex'];
+
 try {
     $start = sprintf('%04d-%02d-01', $year, $monthInt);
     $end = (new DateTimeImmutable($start))->format('Y-m-t');
     $period = ledger_period($pdo, $start, $end);
+    
     $groups = ['Incoming' => [], 'Expense' => []];
     foreach ($period['rows'] as $row) {
-        $groups[$row['txn_type']][$row['category']] = ($groups[$row['txn_type']][$row['category']] ?? 0) + ledger_cents($row['amount']);
+        $cat = $row['category'];
+        $cents = ledger_cents($row['amount']);
+        
+        // Income Statement Grouping
+        $groups[$row['txn_type']][$cat] = ($groups[$row['txn_type']][$cat] ?? 0) + $cents;
+        
+        // General Ledger Grouping
+        if (!isset($generalLedger[$cat])) {
+            $generalLedger[$cat] = [];
+        }
+        $generalLedger[$cat][] = $row;
+        
+        // Cash Flow Statement Logic
+        $isExpense = ($row['txn_type'] === 'Expense');
+        $flow = $isExpense ? -$cents : $cents;
+        
+        if (in_array($cat, $investingCategories)) {
+            $cfInvesting += $flow;
+        } elseif ($cat === 'Depreciation Expense') {
+            // Non-cash expense; excluded from direct cash flow
+        } else {
+            $cfOperating += $flow;
+        }
     }
+    
     foreach ($groups as $type => $categories) {
         ksort($categories);
         foreach ($categories as $category => $cents) {
@@ -64,9 +98,14 @@ try {
             if ($type === 'Incoming') { $revenues[] = $item; } else { $expenses[] = $item; }
         }
     }
+    
     $totalRevenues = $period['incoming_total'];
     $totalExpenses = $period['expense_total'];
     $netIncome = ledger_decimal(ledger_cents($totalRevenues) - ledger_cents($totalExpenses));
+    
+    // Sort GL alphabetically by Account Name
+    ksort($generalLedger);
+    
 } catch (Throwable $e) {
     $reportError = true;
     error_log('Report query failed: ' . $e->getMessage());
@@ -84,7 +123,7 @@ $printCss = <<<'CSS'
     @media print {
         html, body, .js-review-root { min-width: 0 !important; width: auto !important; }
         body > div, .js-review-root { margin-left: 0 !important; }
-        .detailed-report { break-before: page; }
+        .statement-page { break-before: page; }
         .ledger-table-wrap { overflow: visible !important; }
         .ledger-table { min-width: 0 !important; width: 100%; font-size: 9pt; }
         .ledger-table th, .ledger-table td { padding: 5px; }
@@ -114,32 +153,49 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
 
 <div class="no-print">
     <h1 class="text-2xl font-bold text-slate-900">Automated Reporting</h1>
-    <p class="text-slate-600 mt-2">Generate monthly income statements and detailed transaction reports.</p>
+    <p class="text-slate-600 mt-2">Generate monthly statements and specialized books of accounts.</p>
 </div>
 
 <section class="<?= $cardClass ?> no-print">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Report Controls</h2>
-    <form method="GET" action="reports.php" class="flex flex-wrap items-end gap-4">
+    <div class="flex flex-wrap items-start justify-between gap-6">
         <div>
-            <label for="month" class="block text-sm font-medium text-slate-700 mb-1">Month</label>
-            <select id="month" name="month" required class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-800 focus:ring-2 focus:ring-blue-800 outline-none min-w-[160px]">
-                <?php foreach ($monthNames as $value => $label): ?>
-                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $month === $value ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Report Controls</h2>
+            <form method="GET" action="reports.php" class="flex flex-wrap items-end gap-4">
+                <div>
+                    <label for="month" class="block text-sm font-medium text-slate-700 mb-1">Month</label>
+                    <select id="month" name="month" required class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-800 focus:ring-2 focus:ring-blue-800 outline-none min-w-[160px]">
+                        <?php foreach ($monthNames as $value => $label): ?>
+                            <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $month === $value ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="year" class="block text-sm font-medium text-slate-700 mb-1">Year</label>
+                    <select id="year" name="year" required class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-800 focus:ring-2 focus:ring-blue-800 outline-none min-w-[120px]">
+                        <?php foreach ($yearOptions as $yearOption): ?>
+                            <option value="<?= (int) $yearOption ?>" <?= $year === $yearOption ? 'selected' : '' ?>><?= (int) $yearOption ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <button type="submit" class="<?= $btnPrimary ?>">Generate Statement</button>
+            </form>
         </div>
-        <div>
-            <label for="year" class="block text-sm font-medium text-slate-700 mb-1">Year</label>
-            <select id="year" name="year" required class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-800 focus:ring-2 focus:ring-blue-800 outline-none min-w-[120px]">
-                <?php foreach ($yearOptions as $yearOption): ?>
-                    <option value="<?= (int) $yearOption ?>" <?= $year === $yearOption ? 'selected' : '' ?>><?= (int) $yearOption ?></option>
-                <?php endforeach; ?>
-            </select>
+        
+        <!-- Books of Accounts Quick Links -->
+        <div class="border-l border-slate-200 pl-6">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Print Books of Accounts</h2>
+            <div class="flex flex-col gap-3">
+                <a href="financial_records.php?type=Incoming" class="inline-flex justify-center items-center rounded-lg border border-emerald-600 text-emerald-700 bg-white font-semibold py-2 px-4 hover:bg-emerald-50 transition shadow-sm">
+                    Cash Receipts Book (CRB) &rarr;
+                </a>
+                <a href="financial_records.php?type=Expense" class="inline-flex justify-center items-center rounded-lg border border-rose-600 text-rose-700 bg-white font-semibold py-2 px-4 hover:bg-rose-50 transition shadow-sm">
+                    Cash Disbursements Book (CDB) &rarr;
+                </a>
+            </div>
         </div>
-        <button type="submit" class="<?= $btnPrimary ?>">Generate Statement</button>
-    </form>
+    </div>
 
     <div class="mt-6 pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -187,7 +243,9 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
     <?php if ($reportError): ?>
         <p role="alert" class="p-4 text-red-700">Unable to generate this report. Financial totals and balances are unavailable. Please try again later.</p>
     <?php else: ?>
-    <div class="max-w-2xl mx-auto">
+    
+    <!-- 1. INCOME STATEMENT -->
+    <div class="max-w-2xl mx-auto statement-page">
         <div class="text-center mb-10 statement-header">
             <p class="text-xs uppercase tracking-widest text-slate-500">Atikha Financial System</p>
             <h2 class="text-2xl font-bold text-slate-900 mt-2">Income Statement</h2>
@@ -239,19 +297,82 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
             <span>Net Income</span>
             <span><?= htmlspecialchars(ledger_money($netIncome), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
+    </div>
 
+    <!-- 2. STATEMENT OF CASH FLOWS -->
+    <div class="max-w-2xl mx-auto mt-16 statement-page" style="page-break-before: always;">
+        <div class="text-center mb-10 statement-header">
+            <p class="text-xs uppercase tracking-widest text-slate-500">Atikha Financial System</p>
+            <h2 class="text-2xl font-bold text-slate-900 mt-2">Statement of Cash Flows</h2>
+            <p class="text-slate-600 mt-1"><?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?></p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-sm font-bold text-slate-900 bg-slate-100 py-2 px-3 mb-2">CASH FLOWS FROM OPERATING ACTIVITIES</h3>
+            <div class="flex justify-between text-sm px-3 py-1">
+                <span class="text-slate-700">Net cash provided by (used in) operating activities</span>
+                <span class="text-slate-900 font-semibold"><?= htmlspecialchars(ledger_decimal($cfOperating), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-sm font-bold text-slate-900 bg-slate-100 py-2 px-3 mb-2">CASH FLOWS FROM INVESTING ACTIVITIES</h3>
+            <div class="flex justify-between text-sm px-3 py-1">
+                <span class="text-slate-700">Net cash provided by (used in) investing activities</span>
+                <span class="text-slate-900 font-semibold"><?= htmlspecialchars(ledger_decimal($cfInvesting), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-sm font-bold text-slate-900 bg-slate-100 py-2 px-3 mb-2">CASH FLOWS FROM FINANCING ACTIVITIES</h3>
+            <div class="flex justify-between text-sm px-3 py-1">
+                <span class="text-slate-700">Net cash from financing activities</span>
+                <span class="text-slate-900 font-semibold"><?= htmlspecialchars(ledger_decimal($cfFinancing), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+        </div>
+
+        <div class="border-t-2 border-blue-900 pt-4 mt-8">
+            <div class="flex justify-between text-sm font-bold text-slate-900 mb-2">
+                <span>NET INCREASE (DECREASE) IN CASH AND CASH EQUIVALENTS</span>
+                <span><?= htmlspecialchars(ledger_decimal($cfOperating + $cfInvesting + $cfFinancing), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+            <div class="flex justify-between text-sm text-slate-700 mb-2">
+                <span>CASH AND CASH EQUIVALENTS, BEGINNING</span>
+                <span><?= htmlspecialchars(ledger_money($period['opening_balance']), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+            <div class="flex justify-between text-lg font-bold text-blue-900 bg-blue-50 py-2 px-3 mt-2">
+                <span>CASH AND CASH EQUIVALENTS, END</span>
+                <span><?= htmlspecialchars(ledger_money($period['closing_balance']), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+        </div>
+        
         <p class="text-center text-xs text-slate-400 mt-10 no-print">
             Read-only report · Atikha Finance
         </p>
     </div>
-    <div class="detailed-report mt-10">
-        <h2 class="text-2xl font-bold">Detailed Transaction Report</h2>
-        <p><?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?></p>
-        <p class="text-sm text-slate-600">Organization balances include all incoming funds and expenses. These are not category budgets or project balances.</p>
+
+    <!-- 3. GENERAL LEDGER -->
+    <div class="detailed-report mt-16 statement-page" style="page-break-before: always;">
+        <div class="text-center mb-10 statement-header">
+            <h2 class="text-2xl font-bold text-slate-900 mt-2">General Ledger</h2>
+            <p class="text-slate-600 mt-1"><?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?></p>
+            <p class="text-sm text-slate-600 mt-2">Chronological transaction details grouped by specific Account Categories.</p>
+        </div>
+        
         <?php ledger_completeness_notice(ledger_completeness($period['rows'])); ?>
-        <p class="my-4 font-semibold">Opening Organization Balance: <?= htmlspecialchars(ledger_money($period['opening_balance']), ENT_QUOTES, 'UTF-8') ?></p>
-        <?php ledger_render_table($period['rows']); ?>
-        <p class="my-4 font-semibold">Closing Organization Balance: <?= htmlspecialchars(ledger_money($period['closing_balance']), ENT_QUOTES, 'UTF-8') ?></p>
+        
+        <?php if (empty($generalLedger)): ?>
+            <p class="text-center text-slate-500 py-10">No transactions recorded for this period.</p>
+        <?php else: ?>
+            <?php foreach ($generalLedger as $categoryName => $catRows): ?>
+                <div class="mb-10">
+                    <h3 class="text-lg font-bold text-emerald-800 border-b-2 border-emerald-200 pb-2 mb-4">
+                        Account: <?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8') ?>
+                    </h3>
+                    <?php ledger_render_table($catRows); ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
 </section>
