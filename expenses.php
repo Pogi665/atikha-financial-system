@@ -13,7 +13,15 @@ require_once __DIR__ . '/includes/require_role.php';
 require_login();
 require_role(['Admin'], 'The Financial Operational Workspace');
 
-$categories = fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE);
+$categoriesUnavailable = false;
+$categories = [];
+try {
+    // Every request, including POST, validates against the current active accounts.
+    $categories = fetch_category_names($pdo, CATEGORY_TYPE_EXPENSE);
+} catch (PDOException $e) {
+    error_log('Account lookup failed: ' . $e->getMessage());
+    $categoriesUnavailable = true;
+}
 $userId = (int) $_SESSION['UserID'];
 $isAdmin = ($_SESSION['Role'] ?? '') === 'Admin';
 
@@ -92,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+if ($categoriesUnavailable && in_array($action, ['create', 'update'], true)) {
+    $errorMessage = 'Accounts are unavailable. Please reload and try again before saving.';
+    $action = '';
+}
+
 if ($action === 'create') {
     $input = read_expense_input($_POST, $categories);
 
@@ -147,10 +160,14 @@ if ($action === 'create') {
 
 if ($action === 'update') {
     $expenseId = (int) ($_POST['expense_id'] ?? 0);
-    $input = read_expense_input($_POST, $categories);
 
     try {
         $before = load_expense($pdo, $expenseId);
+        $editCategories = $categories;
+        if ($before !== null) {
+            $editCategories[] = $before['Category'];
+        }
+        $input = read_expense_input($_POST, $editCategories);
 
         if ($before === null) {
             $errorMessage = 'That expense could not be found.';
@@ -353,8 +370,12 @@ $activePage = 'expenses';
                         </div>
 
                         <div>
+                            <?php if ($categoriesUnavailable || !$categories): ?>
+                                <p role="status" class="text-sm text-amber-700 mb-2"><?= $categoriesUnavailable ? 'Accounts are unavailable. Please reload before saving.' : 'No active accounts are available for this transaction type. Add or reactivate an account in Chart of Accounts.' ?></p>
+                            <?php endif; ?>
                             <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
                             <select
+                                <?= ($categoriesUnavailable || !$categories) ? 'disabled' : '' ?>
                                 id="category"
                                 name="category"
                                 required
@@ -400,7 +421,8 @@ $activePage = 'expenses';
 
                         <button
                             type="submit"
-                            class="<?= $primaryButtonClass ?> w-full mt-2"
+                            <?= ($categoriesUnavailable || !$categories) ? 'disabled' : '' ?>
+                            class="<?= $primaryButtonClass ?> w-full mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Save Record
                         </button>
@@ -644,7 +666,8 @@ $activePage = 'expenses';
                     </button>
                     <button
                         type="submit"
-                        class="<?= $primaryButtonClass ?> py-2 px-5 text-sm"
+                        <?= $categoriesUnavailable ? 'disabled' : '' ?>
+                        class="<?= $primaryButtonClass ?> py-2 px-5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Save Changes
                     </button>
@@ -667,7 +690,14 @@ $activePage = 'expenses';
 
                     document.getElementById('edit-expense-id').value = record.id;
                     document.getElementById('edit-payee').value = record.payee;
-                    document.getElementById('edit-category').value = record.category;
+                    const categorySelect = document.getElementById('edit-category');
+                    categorySelect.querySelectorAll('[data-historical]').forEach(function (option) { option.remove(); });
+                    if (!Array.from(categorySelect.options).some(function (option) { return option.value === record.category; })) {
+                        const historical = new Option(record.category + ' (current historical category)', record.category);
+                        historical.dataset.historical = 'true';
+                        categorySelect.add(historical);
+                    }
+                    categorySelect.value = record.category;
                     document.getElementById('edit-purpose').value = record.purpose || '';
                     document.getElementById('edit-project').value = record.project_code || '';
                     document.getElementById('edit-ref').value = record.reference_number || '';

@@ -51,3 +51,4 @@ CREATE TABLE Expenses (
     ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -- Create the initial Admin with scripts/bootstrap_admin.php after all migrations.
+-- Categories is defined in migration 001; migration 012 adds account metadata.
