@@ -110,8 +110,12 @@ try {
     $httpId=(int)$pdo->query("SELECT UserID FROM Users WHERE Email='http@example.invalid'")->fetchColumn();
     [$code,$html]=account_http('admin_users.php');
     check($code===200 && str_contains($html,'Fixture &lt;b&gt; &amp; &quot;name&quot;') && !str_contains($html,$hash),'List escapes text and excludes hashes');
+    check(str_contains($html,'id="users-tab"') && str_contains($html,'id="resets-tab"') && str_contains($html,'id="pending-reset-count"'),'User management tabs and reset count render');
+    check(str_contains($html,'class="user-avatar"') && str_contains($html,'<th scope="col" class="px-6 py-3 font-semibold text-slate-600 whitespace-nowrap">User</th>') && str_contains($html,'status-active'),'Combined user table and status styling render');
+    check(str_contains($html,'total users') && str_contains($html,'users_filter_toolbar') === false,'Total user count renders without leaking implementation details');
+    check(str_contains(account_http('admin_users.php?tab=resets')[1],'No pending requests'),'Reset tab renders concise empty state');
     [$code,$html]=account_http('admin_users.php?edit='.$httpId);
-    check($code===200 && str_contains($html,'New password (optional)') && !str_contains($html,'value="FixturePass123!"'),'Edit password stays blank');
+    check($code===200 && str_contains($html,'New password (optional)') && str_contains($html,'data-open-modal="user"') && !str_contains($html,'value="FixturePass123!"'),'Edit password stays blank and opens modal');
     check(account_http('admin_users.php',array_replace($httpInput,['action'=>'update_user','user_id'=>$httpId,'password'=>'','full_name'=>'HTTP updated']))[0]===302,'Edit HTTP succeeds');
     check(str_contains(account_http('admin_users.php?q=HTTP&role=Admin&status=active')[1],'HTTP updated') && !str_contains(account_http('admin_users.php?q=nomatch')[1],'HTTP updated'),'List filters work');
     $pdo->exec("INSERT INTO password_resets (UserID, Email, ip_address) VALUES ($id,'management@example.invalid','127.0.0.1')");

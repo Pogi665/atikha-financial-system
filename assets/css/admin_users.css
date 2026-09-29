@@ -1,0 +1,151 @@
+.users-page .users-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.users-page .users-tabs { min-width: 0; }
+.users-page .users-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.75rem;
+    border-bottom: 2px solid transparent;
+    color: #64748b;
+    font-size: .875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+.users-page .users-tab:hover { color: #0f172a; }
+.users-page .users-tab.is-active { border-color: #1e293b; color: #0f172a; }
+.users-page .users-count-badge {
+    min-width: 1.5rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    padding: .125rem .4rem;
+    color: #475569;
+    font-size: .7rem;
+    line-height: 1rem;
+    text-align: center;
+}
+.users-page .users-tab.is-active .users-count-badge { background: #dbeafe; color: #1e3a8a; }
+.users-page .users-label { display: block; margin-bottom: .375rem; color: #334155; font-size: .875rem; font-weight: 600; }
+.users-page .users-filter-toolbar {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1.5fr) minmax(11rem, 1fr) minmax(10rem, 1fr) auto;
+    align-items: end;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.users-page .users-filter-actions { display: flex; align-items: end; gap: .625rem; }
+.users-page .user-row { transition: background-color .15s ease; }
+.users-page .user-row:hover { background: #f8fafc; }
+.users-page .user-cell { padding: 1rem 1.5rem; vertical-align: middle; color: #475569; }
+.users-page .user-avatar {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: .75rem;
+    font-weight: 700;
+}
+.users-page .your-account-badge {
+    display: inline-flex;
+    margin-left: .5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: .125rem .4rem;
+    color: #64748b;
+    font-size: .6875rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+.users-page .role-badge {
+    display: inline-block;
+    max-width: 15rem;
+    border: 1px solid #cbd5e1;
+    border-radius: .375rem;
+    background: #f8fafc;
+    padding: .25rem .5rem;
+    color: #475569;
+    font-size: .75rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+.users-page .status-pill { display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; padding: .25rem .6rem; font-size: .75rem; font-weight: 700; }
+.users-page .status-active { background: #ecfdf5; color: #047857; }
+.users-page .status-disabled { background: #f1f5f9; color: #64748b; }
+.users-page .status-dot { width: .4rem; height: .4rem; border-radius: 999px; background: currentColor; }
+.users-page .users-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgb(15 23 42 / .6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .16s ease;
+}
+.users-page .users-overlay.is-open { opacity: 1; pointer-events: auto; }
+.users-page .users-dialog {
+    width: 100%;
+    max-width: 32rem;
+    max-height: min(44rem, calc(100vh - 2rem));
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: .75rem;
+    background: #fff;
+    box-shadow: 0 24px 60px rgb(15 23 42 / .24);
+    transform: translateY(8px) scale(.99);
+    transition: transform .16s ease;
+}
+.users-page .users-overlay.is-open .users-dialog { transform: translateY(0) scale(1); }
+.users-page .users-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #e2e8f0; padding: 1.25rem 1.5rem; }
+.users-page .users-dialog-close { color: #94a3b8; font-size: 1.75rem; line-height: 1; }
+.users-page .users-dialog-close:hover { color: #334155; }
+.users-page .users-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 1.5rem; }
+.users-page .users-form-grid > .users-form-summary,
+.users-page .users-form-grid > .users-dialog-footer { grid-column: 1 / -1; }
+.users-page .users-dialog-footer { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding-top: .5rem; }
+.users-page .users-form-summary { border: 1px solid #fecaca; border-radius: .5rem; background: #fef2f2; padding: .75rem 1rem; color: #b91c1c; font-size: .875rem; font-weight: 600; }
+.users-page .password-toggle { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); color: #475569; font-size: .75rem; font-weight: 700; }
+.users-page .user-action-menu { animation: users-menu-in .12s ease-out; }
+@keyframes users-menu-in { from { opacity: 0; transform: translateY(-.25rem); } to { opacity: 1; transform: translateY(0); } }
+.users-page button:focus-visible,
+.users-page a:focus-visible,
+.users-page input:focus-visible,
+.users-page select:focus-visible { outline: 2px solid #475569; outline-offset: 2px; }
+@media (max-width: 767px) {
+    body.users-page > aside { position: static; width: 100%; }
+    body.users-page > aside nav { max-height: 12rem; }
+    body.users-page > .users-content { margin-left: 0; }
+    .users-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
+    .users-page .users-page-header { align-items: stretch; flex-direction: column; gap: 1rem; }
+    .users-page .users-page-header > a { width: 100%; }
+    .users-page .users-filter-toolbar { grid-template-columns: 1fr; }
+    .users-page .users-filter-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .users-page .users-form-grid { grid-template-columns: 1fr; }
+    .users-page .users-form-grid > .users-form-summary,
+    .users-page .users-form-grid > .users-dialog-footer { grid-column: auto; }
+    .users-page .users-dialog-footer { flex-direction: column-reverse; align-items: stretch; }
+    .users-page .users-dialog-footer > * { width: 100%; }
+    .users-page .users-dialog { max-height: calc(100vh - 1rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .users-page .users-overlay,
+    .users-page .users-dialog,
+    .users-page .user-row { transition: none; }
+    .users-page .user-action-menu { animation: none; }
+}
