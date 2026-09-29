@@ -411,8 +411,8 @@ else:
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="min-w-0 bg-slate-50 border border-slate-100 rounded-xl p-5 text-left">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style="background-color: #fef3c7; color: #d97706;">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                     </div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Budget Reallocation</h3>
                 </div>
@@ -420,8 +420,8 @@ else:
             </div>
             <div class="min-w-0 bg-slate-50 border border-slate-100 rounded-xl p-5 text-left">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Z" /></svg>
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style="background-color: #e0f2fe; color: #0284c7;">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     </div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Funding Risk</h3>
                 </div>
@@ -432,10 +432,10 @@ else:
 
     <section class="lg:col-span-1 min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6" aria-labelledby="expense-breakdown-title">
         <div class="flex items-center justify-between mb-2">
-            <h2 id="expense-breakdown-title" class="text-base font-bold text-slate-800 truncate">Expense Breakdown</h2>
-            <a href="reports.php" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 whitespace-nowrap ml-2 shrink-0">View Report &rarr;</a>
+            <h2 id="expense-breakdown-title" class="text-base font-bold text-slate-800 truncate" style="max-width: 65%;">Expense Breakdown</h2>
+            <a href="reports.php" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 whitespace-nowrap shrink-0">View Report &rarr;</a>
         </div>
-        <p class="text-xs text-slate-500 mb-4">Spending by category &middot; last 12 completed months.</p>
+        <p class="text-xs text-slate-500 mb-4 pb-2 border-b border-slate-100">Spending by category &middot; last 12 completed months.</p>
         <p id="expense-breakdown-status" class="text-sm text-slate-500" role="status">Loading expense breakdown…</p>
         <div id="expense-breakdown-chart" class="hidden relative h-64 w-full">
             <canvas id="expenseBreakdownChart" role="img" aria-label="Expense breakdown by category. Category amounts are listed below."></canvas>
