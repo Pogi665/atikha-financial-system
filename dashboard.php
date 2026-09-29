@@ -313,11 +313,27 @@ else:
     <p class="text-slate-600 mt-2">Real-time summary of incoming funds and expenses.</p>
 </div>
 
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <p class="text-sm text-slate-500">Total Incoming Funds</p>
+        <p class="text-3xl font-bold text-green-600 mt-2"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <p class="text-sm text-slate-500">Total Expenses</p>
+        <p class="text-3xl font-bold text-red-600 mt-2"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <p class="text-sm text-slate-500">Net Balance</p>
+        <p class="text-3xl font-bold text-blue-600 mt-2"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
+    </div>
+</div>
+
 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900">Predictive Forecast</h2>
             <p id="forecast-meta" class="text-sm text-slate-500 mt-1">Projecting the next six months of outflow.</p>
+            <span id="forecast-offline" role="status" class="hidden inline-block mt-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">Trailing 3-Month Baseline (Offline Mode)</span>
         </div>
         <?php if ($canRefresh): ?>
         <div class="text-right shrink-0">
@@ -375,26 +391,14 @@ else:
     </div>
 </section>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Total Incoming Funds</p>
-        <p class="text-3xl font-bold text-green-600 mt-2"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
+<section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6" aria-labelledby="expense-breakdown-title">
+    <h2 id="expense-breakdown-title" class="text-lg font-semibold text-slate-900">Expense Breakdown</h2>
+    <p class="text-sm text-slate-500 mt-1 mb-4">Spending by category · last 12 completed months.</p>
+    <p id="expense-breakdown-status" class="text-sm text-slate-500" role="status">Loading expense breakdown…</p>
+    <div id="expense-breakdown-chart" class="hidden relative h-80 w-full">
+        <canvas id="expenseBreakdownChart" role="img" aria-label="Expense breakdown by category. Category amounts are listed below."></canvas>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Total Expenses</p>
-        <p class="text-3xl font-bold text-red-600 mt-2"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Net Balance</p>
-        <p class="text-3xl font-bold text-blue-600 mt-2"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
-    </div>
-</div>
-
-<section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Income vs Expenses</h2>
-    <div class="relative h-80 w-full">
-        <canvas id="financeChart"></canvas>
-    </div>
+    <ul id="expense-breakdown-list" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm" aria-label="Expense category amounts"></ul>
 </section>
 
 <?php endif;
@@ -675,41 +679,6 @@ JS;
 
     $scripts = <<<JS
 <script>
-    const totalIncome = {$jsIncome};
-    const totalExpenses = {$jsExpenses};
-
-    new Chart(document.getElementById('financeChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Total Income', 'Total Expenses'],
-            datasets: [{
-                data: [totalIncome, totalExpenses],
-                backgroundColor: ['rgb(22, 163, 74)', 'rgb(220, 38, 38)'],
-                borderRadius: 6,
-                maxBarThickness: 100,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => ' ₱' + ctx.parsed.y.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-                    },
-                },
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { callback: (value) => '₱' + Number(value).toLocaleString('en-PH') },
-                },
-            },
-        },
-    });
-</script>
-<script>
 (function () {
     const csrfToken = {$jsCsrf};
     const canRefresh = {$jsCanRefresh};
@@ -719,6 +688,11 @@ JS;
     const body = document.getElementById('forecast-body');
     const meta = document.getElementById('forecast-meta');
     const note = document.getElementById('forecast-note');
+    const offlineBadge = document.getElementById('forecast-offline');
+    const breakdownStatus = document.getElementById('expense-breakdown-status');
+    const breakdownWrap = document.getElementById('expense-breakdown-chart');
+    const breakdownList = document.getElementById('expense-breakdown-list');
+    let breakdownChart = null;
     const riskBadge = document.getElementById('forecast-risk');
     const reallocation = document.getElementById('forecast-reallocation');
     const fundingRisk = document.getElementById('forecast-funding-risk');
@@ -739,6 +713,68 @@ JS;
     }
     function show(element, visible) { element.classList.toggle('hidden', !visible); }
     function showNote(message) { note.textContent = message || ''; show(note, Boolean(message)); }
+
+    function breakdownMessage(message) {
+        breakdownStatus.textContent = message;
+        show(breakdownStatus, Boolean(message));
+    }
+
+    function renderBreakdown(categories) {
+        if (breakdownChart) { breakdownChart.destroy(); breakdownChart = null; }
+        breakdownList.replaceChildren();
+        show(breakdownWrap, false); show(breakdownList, false);
+        if (!Array.isArray(categories) || categories.some((row) =>
+            !row || typeof row.category !== 'string' || !row.category.trim() ||
+            typeof row.total !== 'number' || !Number.isFinite(row.total) || row.total < 0
+        )) {
+            breakdownMessage('Expense breakdown is currently unavailable.'); return;
+        }
+        const positive = categories.filter((row) => row.total > 0).slice().sort((a, b) => b.total - a.total);
+        if (!positive.length) { breakdownMessage('No expense data for this period'); return; }
+        const displayed = positive.slice(0, 8).map((row) => ({ category: row.category, total: row.total }));
+        if (positive.length > 8) {
+            displayed.push({ category: 'Other categories', total: positive.slice(8).reduce((sum, row) => sum + row.total, 0) });
+        }
+        const total = displayed.reduce((sum, row) => sum + row.total, 0);
+        if (!Number.isFinite(total)) { breakdownMessage('Expense breakdown is currently unavailable.'); return; }
+        const colors = ['#1e3a8a', '#2563eb', '#0d9488', '#7c3aed', '#d97706', '#0891b2', '#be185d', '#475569', '#94a3b8'];
+        displayed.forEach(function (row, index) {
+            const item = document.createElement('li');
+            item.className = 'flex items-start gap-2 min-w-0';
+            const swatch = document.createElement('span');
+            swatch.className = 'mt-1 h-3 w-3 rounded-sm shrink-0';
+            swatch.style.backgroundColor = colors[index];
+            swatch.setAttribute('aria-hidden', 'true');
+            const label = document.createElement('span');
+            label.className = 'min-w-0 break-words text-slate-600';
+            label.textContent = row.category + ': ' + peso(row.total) + ' (' + (row.total / total * 100).toFixed(1) + '%)';
+            item.append(swatch, label);
+            breakdownList.append(item);
+        });
+        breakdownMessage('');
+        show(breakdownWrap, true); show(breakdownList, true);
+        breakdownChart = new Chart(document.getElementById('expenseBreakdownChart'), {
+            type: 'doughnut',
+            data: {
+                labels: displayed.map((row) => row.category),
+                datasets: [{ data: displayed.map((row) => row.total), backgroundColor: colors.slice(0, displayed.length), borderColor: '#ffffff', borderWidth: 2 }],
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, generateLabels: function (chart) {
+                        return Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart).map(function (label) {
+                            label.text = label.text.length > 32 ? label.text.slice(0, 29) + '…' : label.text;
+                            return label;
+                        });
+                    } } },
+                    tooltip: { callbacks: { label: function (ctx) {
+                        return ctx.label + ': ' + peso(ctx.parsed) + ' (' + (ctx.parsed / total * 100).toFixed(1) + '%)';
+                    } } },
+                },
+            },
+        });
+    }
 
     function renderChart(history, projection) {
         const labels = history.map((p) => monthLabel(p.month)).concat(projection.map((p) => monthLabel(p.month)));
@@ -763,7 +799,7 @@ JS;
     }
 
     function renderMeta(data) {
-        if (data.state === 'degraded') { meta.textContent = 'Trailing three-month average · AI advisory unavailable'; return; }
+        if (data.state === 'degraded') { meta.textContent = 'Projecting the next six months of outflow.'; return; }
         const generated = data.generated_at ? new Date(data.generated_at.replace(' ', 'T')) : null;
         const stamp = generated && !isNaN(generated) ? generated.toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
         meta.textContent = stamp ? 'Generated ' + stamp + ' · ' + (data.state === 'cached' ? 'cached for 24 hours' : 'just now') : 'Six-month projection · ' + (data.state === 'cached' ? 'cached for 24 hours' : 'just now');
@@ -783,18 +819,22 @@ JS;
     function render(payload, isRefresh) {
         show(loading, false);
         if (!payload.ok) {
+            breakdownMessage(isRefresh && breakdownChart ? 'Expense breakdown was not refreshed. Showing previously loaded data.' : 'Expense breakdown is currently unavailable.');
             if (isRefresh && !body.classList.contains('hidden')) { showNote(payload.error); return; }
+            show(offlineBadge, false);
             emptyDetail.textContent = payload.error || 'The forecast could not be loaded.';
             show(body, false); show(empty, true); return;
         }
         const data = payload.data;
+        renderBreakdown(data.categories);
+        show(offlineBadge, data.state === 'degraded');
         if (data.state === 'insufficient') {
             emptyDetail.textContent = 'Record expenses across at least two different months and the projection will appear here.';
             meta.textContent = 'Waiting on more history';
             show(body, false); show(empty, true); return;
         }
         show(empty, false); show(body, true);
-        showNote(data.note); renderMeta(data); renderChart(data.history, data.projection); renderAdvisory(data.advisory);
+        showNote(data.state === 'degraded' ? '' : data.note); renderMeta(data); renderChart(data.history, data.projection); renderAdvisory(data.advisory);
     }
 
     function load(isRefresh) {
