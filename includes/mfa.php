@@ -68,6 +68,7 @@ function mfa_check_code(PDO $pdo, int $userId, string $code): string
                 CASE WHEN MFA_Expires_At < NOW() THEN 1 ELSE 0 END AS is_expired
          FROM Users
          WHERE UserID = :user_id
+           AND Is_Active = 1
            AND MFA_Code IS NOT NULL
            AND MFA_Expires_At IS NOT NULL
          LIMIT 1'
@@ -99,6 +100,9 @@ function mfa_verify_code(PDO $pdo, int $userId, string $code): bool
 
 function mfa_issue_and_send(PDO $pdo, int $userId, string $email, string $fullName): bool
 {
+    $stmt = $pdo->prepare('SELECT Is_Active FROM Users WHERE UserID = ?');
+    $stmt->execute([$userId]);
+    if ((int) $stmt->fetchColumn() !== 1) { return false; }
     $code = mfa_generate_code();
     mfa_save_code($pdo, $userId, $code);
 

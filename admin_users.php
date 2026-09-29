@@ -15,10 +15,8 @@ require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/user_roles.php';
 require_once __DIR__ . '/includes/user_identities.php';
 
-if (empty($_SESSION['UserID'])) {
-    header('Location: login.php');
-    exit;
-}
+require_once __DIR__ . '/includes/require_role.php';
+require_login();
 
 // Role-based access control. A signed-in non-admin gets a plain refusal rather
 // than a redirect, so the denial is unambiguous.
@@ -53,86 +51,68 @@ if (($_SESSION['Role'] ?? '') !== 'Admin') {
     exit;
 }
 
+require_once __DIR__ . '/includes/users.php';
+function users_escape($value): string { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 $adminId = (int) $_SESSION['UserID'];
 $csrfToken = csrf_token();
-
 $errorMessage = '';
-$successMessage = '';
-
-// Repopulated after a rejected submission so the admin does not retype
-// everything. The password is deliberately never echoed back.
-$formFullName = '';
-$formEmail = '';
-$formRole = '';
-
-if (isset($_GET['created'])) {
-    $successMessage = 'User account created successfully.';
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'create_user') {
-    $formFullName = trim((string) ($_POST['full_name'] ?? ''));
-    $formEmail = trim((string) ($_POST['email'] ?? ''));
-    $formRole = (string) ($_POST['role'] ?? '');
-    $password = (string) ($_POST['password'] ?? '');
-
-    if (!csrf_verify($_POST['csrf_token'] ?? null)) {
-        $errorMessage = 'Your session expired. Please reload the page and try again.';
-    } elseif ($formFullName === '') {
-        $errorMessage = 'Full name is required.';
-    } elseif (filter_var($formEmail, FILTER_VALIDATE_EMAIL) === false) {
-        $errorMessage = 'Enter a valid email address.';
-    } elseif (!user_role_is_valid($formRole)) {
-        $errorMessage = 'Select a valid role.';
-    } elseif (strlen($password) < USER_PASSWORD_MIN_LENGTH) {
-        $errorMessage = 'The initial password must be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters.';
-    } else {
-        try {
-            $pdo->beginTransaction();
-            $stmt = $pdo->prepare(
-                'INSERT INTO Users
-                    (FullName, Role, Email, Password)
-                 VALUES
-                    (:full_name, :role, :email, :password)'
-            );
-            $stmt->execute([
-                'full_name' => $formFullName,
-                'role'      => $formRole,
-                'email'     => $formEmail,
-                'password'  => password_hash($password, PASSWORD_DEFAULT),
-            ]);
-
-            $newUserId = (int) $pdo->lastInsertId();
-            user_identity_create($pdo, $newUserId);
-            log_system_action(
-                $pdo,
-                $adminId,
-                AUDIT_ACTION_CREATE,
-                'Users',
-                $newUserId,
-                null,
-                [
-                    'full_name' => $formFullName,
-                    'email'     => $formEmail,
-                    'role'      => $formRole,
-                ]
-            );
-
-            $pdo->commit();
-            header('Location: admin_users.php?created=1');
-            exit;
-        } catch (PDOException $e) {
-            if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            // Users.Email is UNIQUE; a collision is an ordinary input mistake,
-            // not a server fault.
-            if ($e->getCode() === '23000') {
-                $errorMessage = 'An account with that email already exists.';
-            } else {
-                error_log('User creation failed: ' . $e->getMessage());
-                $errorMessage = 'The account could not be created. Please try again.';
-            }
+$successMessage = $_SESSION['users_success'] ?? '';
+unset($_SESSION['users_success']);
+$query = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 100) : '';
+$filterRole = is_string($_GET['role'] ?? null) && user_role_is_valid($_GET['role']) ? $_GET['role'] : '';
+$status = in_array($_GET['status'] ?? '', ['active', 'disabled', 'all'], true) ? $_GET['status'] : 'all';
+$listUrl = 'admin_users.php?' . http_build_query(['q' => $query, 'role' => $filterRole, 'status' => $status]);
+$editId = users_id($_GET['edit'] ?? null);
+$showForm = isset($_GET['new']) || $editId > 0;
+$formFullName = $formEmail = $formRole = '';
+$users = [];
+$totalUsers = 0;
+$unavailable = false;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $action = users_text($_POST, 'action');
+        $showForm = in_array($action, ['create_user', 'update_user'], true);
+        $editId = $action === 'update_user' ? users_id($_POST['user_id'] ?? null) : 0;
+        $formFullName = users_text($_POST, 'full_name');
+        $formEmail = users_text($_POST, 'email');
+        $formRole = users_text($_POST, 'role');
+        if (!csrf_verify(is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+            throw new InvalidArgumentException('Your session expired. Please reload the page and try again.');
         }
+        users_save($pdo, $adminId, $action, $_POST);
+        $_SESSION['users_success'] = ['create_user' => 'User account created.', 'update_user' => 'User account updated.',
+            'disable_user' => 'User account disabled. Historical records are preserved.', 'reactivate_user' => 'User account reactivated.'][$action];
+        header('Location: ' . $listUrl);
+        exit;
+    } catch (InvalidArgumentException $e) {
+        $errorMessage = $e->getMessage();
+    } catch (Throwable $e) {
+        error_log('User save failed: ' . $e->getMessage());
+        $errorMessage = 'The user account could not be saved. Please try again.';
     }
 }
+try {
+    if ($editId > 0) {
+        $editing = users_load($pdo, $editId);
+        if (!$editing) { $errorMessage = 'That user could not be found.'; $showForm = false; }
+        elseif ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $formFullName = $editing['FullName']; $formEmail = $editing['Email']; $formRole = $editing['Role'];
+        }
+    }
+    $conditions = []; $params = [];
+    if ($query !== '') { $conditions[] = '(LOCATE(?, FullName) > 0 OR LOCATE(?, Email) > 0)'; $params[] = $query; $params[] = $query; }
+    if ($filterRole !== '') { $conditions[] = 'Role = ?'; $params[] = $filterRole; }
+    if ($status !== 'all') { $conditions[] = 'Is_Active = ?'; $params[] = $status === 'active' ? 1 : 0; }
+    $stmt = $pdo->prepare('SELECT UserID, FullName, Email, Role, Is_Active, created_at FROM Users'
+        . ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') . ' ORDER BY FullName, UserID');
+    $stmt->execute($params); $users = $stmt->fetchAll();
+    $totalUsers = (int) $pdo->query('SELECT COUNT(*) FROM Users')->fetchColumn();
+} catch (PDOException $e) {
+    error_log('User lookup failed: ' . $e->getMessage());
+    $unavailable = true;
+    $errorMessage = 'User accounts are unavailable. Ask your administrator to verify the database migration.';
+}
+$fieldClass = 'w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 outline-none';
 
 $pendingResets = [];
 $resetsUnavailable = false;
@@ -165,21 +145,31 @@ $activePage = 'admin_users';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management — Atikha Financial System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (max-width: 767px) {
+            body.users-page > aside { position: static; width: 100%; }
+            body.users-page > aside nav { max-height: 12rem; }
+            body.users-page > .users-content { margin-left: 0; }
+            .users-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
+        }
+    </style>
 </head>
-<body class="min-h-screen min-w-[1024px] bg-slate-100">
+<body class="users-page min-h-screen bg-slate-100">
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
-    <div class="ml-64 flex flex-col min-h-screen">
+    <div class="users-content ml-64 min-w-0 flex flex-col min-h-screen">
         <?php include __DIR__ . '/includes/header_bar.php'; ?>
 
-        <main class="flex-1 p-8 space-y-8">
+        <main class="flex-1 min-w-0 p-4 md:p-8 space-y-6">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">User Management</h1>
-                <p class="text-slate-600 mt-2">Create authorized accounts and resolve password reset requests.</p>
+                <p class="text-slate-600 mt-2">Manage user accounts, roles, and password reset requests.</p>
             </div>
 
+            <?php if (!$unavailable): ?><a href="<?= users_escape($listUrl . '&new=1#user-form') ?>" class="inline-flex rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold px-5 py-2.5 text-sm">Add User</a><?php endif; ?>
+
             <?php if ($errorMessage !== ''): ?>
-                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+                <div role="alert" class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
                     <p class="text-sm text-red-600 font-medium">
                         <?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?>
                     </p>
@@ -187,7 +177,7 @@ $activePage = 'admin_users';
             <?php endif; ?>
 
             <?php if ($successMessage !== ''): ?>
-                <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
+                <div role="status" class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
                     <p class="text-sm text-emerald-700 font-medium">
                         <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
                     </p>
@@ -198,78 +188,75 @@ $activePage = 'admin_users';
                 <p id="resolve-banner-text" class="text-sm text-emerald-700 font-medium"></p>
             </div>
 
-            <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h2 class="text-lg font-semibold text-slate-900 mb-4">Create New User</h2>
-                <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" class="grid grid-cols-2 gap-4">
-                    <input type="hidden" name="action" value="create_user">
+            <?php if ($showForm && !$unavailable): ?>
+            <section id="user-form" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-slate-900 mb-4"><?= $editId ? 'Edit User' : 'Add User' ?></h2>
+                <form method="POST" action="<?= users_escape($listUrl) ?>" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <?= csrf_field() ?>
-                    <div>
-                        <label for="full_name" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                        <input
-                            type="text"
-                            id="full_name"
-                            name="full_name"
-                            required
-                            value="<?= htmlspecialchars($formFullName, ENT_QUOTES, 'UTF-8') ?>"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                            placeholder="Juan dela Cruz"
-                        >
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            required
-                            value="<?= htmlspecialchars($formEmail, ENT_QUOTES, 'UTF-8') ?>"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                            placeholder="name@atikha.org"
-                        >
-                    </div>
-                    <div>
-                        <label for="role" class="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                        <select
-                            id="role"
-                            name="role"
-                            required
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                        >
-                            <option value="" disabled <?= $formRole === '' ? 'selected' : '' ?>>Select a role</option>
-                            <?php foreach (USER_ROLE_LABELS as $roleValue => $roleLabel): ?>
-                                <option
-                                    value="<?= htmlspecialchars($roleValue, ENT_QUOTES, 'UTF-8') ?>"
-                                    <?= $formRole === $roleValue ? 'selected' : '' ?>
-                                >
-                                    <?= htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8') ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Initial Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            required
-                            minlength="<?= USER_PASSWORD_MIN_LENGTH ?>"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-slate-600 focus:ring-2 focus:ring-slate-600 focus:ring-offset-0 outline-none transition"
-                            placeholder="At least <?= USER_PASSWORD_MIN_LENGTH ?> characters"
-                        >
-                    </div>
-                    <div class="col-span-2 flex items-center gap-4">
-                        <button
-                            type="submit"
-                            class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 transition focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2"
-                        >
-                            Create User
-                        </button>
-                        <p class="text-xs text-slate-500">
-                            The password is hashed before storage and is never shown again. Share it with the user directly.
-                        </p>
+                    <input type="hidden" name="action" value="<?= $editId ? 'update_user' : 'create_user' ?>">
+                    <input type="hidden" name="user_id" value="<?= $editId ?>">
+                    <div><label for="full_name" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                        <input id="full_name" name="full_name" required maxlength="255" value="<?= users_escape($formFullName) ?>" class="<?= $fieldClass ?>"></div>
+                    <div><label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                        <input type="email" id="email" name="email" required maxlength="255" value="<?= users_escape($formEmail) ?>" class="<?= $fieldClass ?>"></div>
+                    <div><label for="role" class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                        <select id="role" name="role" required class="<?= $fieldClass ?>">
+                            <option value="">Select a role</option>
+                            <?php foreach (USER_ROLE_LABELS as $value => $label): ?><option value="<?= users_escape($value) ?>" <?= $formRole === $value ? 'selected' : '' ?>><?= users_escape($label) ?></option><?php endforeach; ?>
+                        </select></div>
+                    <div><label for="password" class="block text-sm font-medium text-slate-700 mb-1"><?= $editId ? 'New password (optional)' : 'Initial Password' ?></label>
+                        <input type="password" id="password" name="password" autocomplete="new-password" <?= $editId ? '' : 'required' ?> minlength="<?= USER_PASSWORD_MIN_LENGTH ?>" class="<?= $fieldClass ?>" aria-describedby="password-help">
+                        <p id="password-help" class="mt-1 text-xs text-slate-500"><?= $editId ? 'Leave blank to keep the current password. ' : '' ?>At least <?= USER_PASSWORD_MIN_LENGTH ?> characters.</p></div>
+                    <div class="md:col-span-2 flex items-center gap-4">
+                        <button class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold px-5 py-2.5">Save User</button>
+                        <a href="<?= users_escape($listUrl) ?>" class="text-sm text-slate-600 hover:underline">Cancel</a>
                     </div>
                 </form>
+            </section>
+            <?php endif; ?>
+
+            <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <form method="GET" action="admin_users.php" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="search" class="block text-sm font-medium text-slate-700 mb-1">Name or email</label><input id="search" name="q" maxlength="100" value="<?= users_escape($query) ?>" class="<?= $fieldClass ?>"></div>
+                    <div><label for="filter-role" class="block text-sm font-medium text-slate-700 mb-1">Role</label><select id="filter-role" name="role" class="<?= $fieldClass ?>"><option value="">All roles</option>
+                        <?php foreach (USER_ROLE_LABELS as $value => $label): ?><option value="<?= users_escape($value) ?>" <?= $filterRole === $value ? 'selected' : '' ?>><?= users_escape($label) ?></option><?php endforeach; ?>
+                    </select></div>
+                    <div><label for="filter-status" class="block text-sm font-medium text-slate-700 mb-1">Status</label><select id="filter-status" name="status" class="<?= $fieldClass ?>">
+                        <?php foreach (['all' => 'All users', 'active' => 'Active', 'disabled' => 'Disabled'] as $value => $label): ?><option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
+                    </select></div>
+                    <div class="flex items-end gap-4"><button class="rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold px-5 py-2.5">Filter</button><a href="admin_users.php" class="py-2.5 text-sm text-slate-600 hover:underline">Reset</a></div>
+                </form>
+                <?php if (!$unavailable): ?>
+                <div class="overflow-x-auto" tabindex="0" role="region" aria-label="User list">
+                    <table class="w-full text-sm text-left">
+                        <caption class="sr-only">User accounts</caption>
+                        <thead class="bg-slate-50 border-y border-slate-200"><tr>
+                            <?php foreach (['Full Name', 'Email', 'Role', 'Status', 'Created Date', 'Actions'] as $heading): ?><th scope="col" class="px-6 py-3 font-semibold text-slate-600 whitespace-nowrap"><?= $heading ?></th><?php endforeach; ?>
+                        </tr></thead>
+                        <tbody class="divide-y divide-slate-200">
+                        <?php foreach ($users as $user): ?>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 font-medium text-slate-900 break-words"><?= users_escape($user['FullName']) ?><?php if ((int) $user['UserID'] === $adminId): ?><span class="block text-xs text-slate-500">Your account</span><?php endif; ?></td>
+                                <td class="px-6 py-4 text-slate-600 break-words"><?= users_escape($user['Email']) ?></td>
+                                <td class="px-6 py-4 text-slate-600"><?= users_escape(user_role_label($user['Role'])) ?></td>
+                                <td class="px-6 py-4"><span class="inline-block rounded px-2 py-1 text-xs <?= $user['Is_Active'] ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' ?>"><?= $user['Is_Active'] ? 'Active' : 'Disabled' ?></span></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-slate-600"><?= users_escape(date('M j, Y', strtotime($user['created_at']))) ?></td>
+                                <td class="px-6 py-4"><div class="flex flex-wrap items-center gap-3">
+                                    <a class="text-blue-700 hover:underline" href="<?= users_escape($listUrl . '&edit=' . (int) $user['UserID'] . '#user-form') ?>">Edit</a>
+                                    <?php if ((int) $user['UserID'] !== $adminId): ?>
+                                    <form method="POST" action="<?= users_escape($listUrl) ?>" onsubmit="return confirm(this.dataset.confirm)" data-confirm="<?= $user['Is_Active'] ? 'Disable this user? Historical records will be preserved.' : 'Reactivate this user?' ?>">
+                                        <?= csrf_field() ?><input type="hidden" name="user_id" value="<?= (int) $user['UserID'] ?>"><input type="hidden" name="action" value="<?= $user['Is_Active'] ? 'disable_user' : 'reactivate_user' ?>">
+                                        <button class="text-slate-700 hover:underline"><?= $user['Is_Active'] ? 'Disable' : 'Reactivate' ?></button>
+                                    </form>
+                                    <?php endif; ?>
+                                </div></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (!$users): ?><tr><td colspan="6" class="px-6 py-10 text-center text-slate-500"><?= $totalUsers === 0 ? 'No user accounts yet.' : 'No users match these filters.' ?></td></tr><?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php endif; ?>
             </section>
 
             <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">

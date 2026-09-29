@@ -23,7 +23,7 @@ try {
     $stmt = $pdo->prepare(
         'SELECT UserID, FullName, Role, Email, Password
          FROM Users
-         WHERE Email = :email
+         WHERE Email = :email AND Is_Active = 1
          LIMIT 1'
     );
     $stmt->execute(['email' => $email]);

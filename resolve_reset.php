@@ -30,7 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     resolve_respond(false, null, 'This endpoint accepts POST requests only.', 405);
 }
 
-if (empty($_SESSION['UserID'])) {
+require_once __DIR__ . '/includes/user_session.php';
+try {
+    $sessionValid = user_session_validate($pdo);
+} catch (Throwable $e) {
+    error_log('Session validation failed: ' . $e->getMessage());
+    resolve_respond(false, null, 'Account access is temporarily unavailable. Please try again.', 503);
+}
+
+if (!$sessionValid) {
     resolve_respond(false, null, 'Your session expired. Please sign in again.', 401);
 }
 

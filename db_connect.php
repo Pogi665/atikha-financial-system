@@ -14,5 +14,6 @@ try {
     ]);
 } catch (PDOException $e) {
     error_log('Database connection failed: ' . $e->getMessage());
+    http_response_code(503);
     die('Unable to connect to the database. Please try again later.');
 }

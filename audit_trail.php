@@ -10,10 +10,8 @@ if (is_file(__DIR__ . '/config.php')) {
     require_once __DIR__ . '/config.php';
 }
 
-if (empty($_SESSION['UserID'])) {
-    header('Location: login.php');
-    exit;
-}
+require_once __DIR__ . '/includes/require_role.php';
+require_login();
 
 // Role-based access control. A signed-in non-admin gets a plain refusal rather
 // than a redirect, so the denial is unambiguous.

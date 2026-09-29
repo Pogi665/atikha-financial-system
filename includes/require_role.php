@@ -15,6 +15,19 @@ function require_login(): void
         header('Location: login.php');
         exit;
     }
+    global $pdo;
+    require_once __DIR__ . '/user_session.php';
+    try {
+        if (!isset($pdo)) { require __DIR__ . '/../db_connect.php'; }
+        if (!user_session_validate($pdo)) {
+            header('Location: login.php');
+            exit;
+        }
+    } catch (Throwable $e) {
+        error_log('Session validation failed: ' . $e->getMessage());
+        http_response_code(503);
+        exit('Account access is temporarily unavailable. Please try again.');
+    }
 }
 
 /**

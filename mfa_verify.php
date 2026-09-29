@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare(
             'SELECT UserID, FullName, Role, Email
              FROM Users
-             WHERE UserID = :user_id
+             WHERE UserID = :user_id AND Is_Active = 1
              LIMIT 1'
         );
         $stmt->execute(['user_id' => $pendingUserId]);

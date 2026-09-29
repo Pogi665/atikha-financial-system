@@ -1,10 +1,8 @@
 <?php
 session_start();
 
-if (empty($_SESSION['UserID'])) {
-    header('Location: login.php');
-    exit;
-}
+require_once __DIR__ . '/includes/require_role.php';
+require_login();
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/csrf.php';
