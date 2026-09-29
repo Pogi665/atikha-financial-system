@@ -306,28 +306,57 @@ if ($isExecutive):
 else:
 ?>
 
+<div class="bg-slate-50 p-6 rounded-xl space-y-8">
 <div>
     <h1 class="text-2xl font-bold text-slate-900">Financial Overview</h1>
     <p class="text-slate-600 mt-2">Real-time summary of incoming funds and expenses.</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Total Incoming Funds</p>
-        <p class="text-3xl font-bold text-green-600 mt-2"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
+    <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="m3 17 6-6 4 4 8-10M15 5h6v6" />
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-500">Total Incoming Funds</p>
+                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
+            </div>
+        </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Total Expenses</p>
-        <p class="text-3xl font-bold text-red-600 mt-2"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
+    <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-rose-100 text-rose-600">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="m3 7 6 6 4-4 8 10M15 19h6v-6" />
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-500">Total Expenses</p>
+                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
+            </div>
+        </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <p class="text-sm text-slate-500">Net Balance</p>
-        <p class="text-3xl font-bold text-blue-600 mt-2"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
+    <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-indigo-100 text-indigo-600">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v11H6a3 3 0 0 1-3-3V6" />
+                    <path d="M20 12h-4a2 2 0 0 0 0 4h4" />
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-500">Net Balance</p>
+                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
+            </div>
+        </div>
     </div>
 </div>
 
 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-4">
+    <div class="px-6 py-6 border-b border-slate-200 flex items-start justify-between gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900">Predictive Forecast</h2>
             <p id="forecast-meta" class="text-sm text-slate-500 mt-1">Projecting the next six months of outflow.</p>
@@ -370,34 +399,52 @@ else:
             </div>
         </div>
 
-        <div class="border-t border-slate-200 bg-slate-50 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-slate-900">AI Financial Advisory</h3>
-                <span id="forecast-risk" class="hidden rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"></span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget Reallocation</p>
-                    <p id="forecast-reallocation" class="text-sm text-slate-700 mt-2 leading-relaxed"></p>
-                </div>
-                <div class="bg-white rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Funding Risk</p>
-                    <p id="forecast-funding-risk" class="text-sm text-slate-700 mt-2 leading-relaxed"></p>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 
-<section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6" aria-labelledby="expense-breakdown-title">
-    <h2 id="expense-breakdown-title" class="text-lg font-semibold text-slate-900">Expense Breakdown</h2>
-    <p class="text-sm text-slate-500 mt-1 mb-4">Spending by category · last 12 completed months.</p>
-    <p id="expense-breakdown-status" class="text-sm text-slate-500" role="status">Loading expense breakdown…</p>
-    <div id="expense-breakdown-chart" class="hidden relative h-80 w-full">
-        <canvas id="expenseBreakdownChart" role="img" aria-label="Expense breakdown by category. Category amounts are listed below."></canvas>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div id="forecast-advisory" class="hidden lg:col-span-2 min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-slate-900">AI Financial Advisory</h3>
+            <span id="forecast-risk" class="hidden rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-wide"></span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="min-w-0 bg-slate-50 border border-slate-100 rounded-xl p-5 text-left">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    </div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Budget Reallocation</h3>
+                </div>
+                <p id="forecast-reallocation" class="text-sm text-slate-600 leading-relaxed break-words"></p>
+            </div>
+            <div class="min-w-0 bg-slate-50 border border-slate-100 rounded-xl p-5 text-left">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Z" /></svg>
+                    </div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Funding Risk</h3>
+                </div>
+                <p id="forecast-funding-risk" class="text-sm text-slate-600 leading-relaxed break-words"></p>
+            </div>
+        </div>
     </div>
-    <ul id="expense-breakdown-list" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm" aria-label="Expense category amounts"></ul>
-</section>
+
+    <section class="lg:col-span-1 min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6" aria-labelledby="expense-breakdown-title">
+        <div class="flex items-center justify-between mb-2">
+            <h2 id="expense-breakdown-title" class="text-base font-bold text-slate-800 truncate">Expense Breakdown</h2>
+            <a href="reports.php" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 whitespace-nowrap ml-2 shrink-0">View Report &rarr;</a>
+        </div>
+        <p class="text-xs text-slate-500 mb-4">Spending by category &middot; last 12 completed months.</p>
+        <p id="expense-breakdown-status" class="text-sm text-slate-500" role="status">Loading expense breakdown…</p>
+        <div id="expense-breakdown-chart" class="hidden relative h-64 w-full">
+            <canvas id="expenseBreakdownChart" role="img" aria-label="Expense breakdown by category. Category amounts are listed below."></canvas>
+        </div>
+        <ul id="expense-breakdown-list" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm" aria-label="Expense category amounts"></ul>
+    </section>
+</div>
+
+</div>
 
 <?php endif;
 
@@ -684,6 +731,7 @@ JS;
     const empty = document.getElementById('forecast-empty');
     const emptyDetail = document.getElementById('forecast-empty-detail');
     const body = document.getElementById('forecast-body');
+    const advisoryCard = document.getElementById('forecast-advisory');
     const meta = document.getElementById('forecast-meta');
     const note = document.getElementById('forecast-note');
     const offlineBadge = document.getElementById('forecast-offline');
@@ -696,7 +744,7 @@ JS;
     const fundingRisk = document.getElementById('forecast-funding-risk');
     const refreshButton = document.getElementById('btn-refresh-forecast');
     const riskClasses = {
-        LOW: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        LOW: 'bg-emerald-50 text-emerald-600 border-emerald-200',
         MEDIUM: 'bg-amber-50 text-amber-800 border-amber-300',
         HIGH: 'bg-red-50 text-red-700 border-red-300',
     };
@@ -709,7 +757,10 @@ JS;
         const parts = String(period).split('-');
         return new Date(Number(parts[0]), Number(parts[1]) - 1, 1).toLocaleDateString('en-PH', { month: 'short', year: '2-digit' });
     }
-    function show(element, visible) { element.classList.toggle('hidden', !visible); }
+    function show(element, visible) {
+        element.classList.toggle('hidden', !visible);
+        if (element === body) advisoryCard.classList.toggle('hidden', !visible);
+    }
     function showNote(message) { note.textContent = message || ''; show(note, Boolean(message)); }
 
     function breakdownMessage(message) {
@@ -735,7 +786,7 @@ JS;
         }
         const total = displayed.reduce((sum, row) => sum + row.total, 0);
         if (!Number.isFinite(total)) { breakdownMessage('Expense breakdown is currently unavailable.'); return; }
-        const colors = ['#1e3a8a', '#2563eb', '#0d9488', '#7c3aed', '#d97706', '#0891b2', '#be185d', '#475569', '#94a3b8'];
+        const colors = ['#4f46e5', '#0ea5e9', '#14b8a6', '#8b5cf6', '#06b6d4', '#10b981', '#a855f7', '#64748b', '#94a3b8'];
         displayed.forEach(function (row, index) {
             const item = document.createElement('li');
             item.className = 'flex items-start gap-2 min-w-0';
@@ -784,8 +835,8 @@ JS;
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Historical outflow', data: historical, borderColor: 'rgb(220, 38, 38)', backgroundColor: 'rgba(220, 38, 38, 0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true },
-                    { label: 'Projected outflow', data: projected, borderColor: 'rgb(79, 70, 229)', backgroundColor: 'rgba(79, 70, 229, 0.06)', borderWidth: 2, borderDash: [6, 4], pointRadius: 3, tension: 0.3, fill: true },
+                    { label: 'Historical outflow', data: historical, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true },
+                    { label: 'Projected outflow', data: projected, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.06)', borderWidth: 2, borderDash: [6, 4], pointRadius: 3, tension: 0.3, fill: true },
                 ],
             },
             options: {
@@ -806,7 +857,7 @@ JS;
     function renderAdvisory(advisory) {
         const level = advisory.risk_level;
         if (level && riskClasses[level]) {
-            riskBadge.className = 'rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ' + riskClasses[level];
+            riskBadge.className = 'rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-wide ' + riskClasses[level];
             riskBadge.textContent = level + ' risk';
             show(riskBadge, true);
         } else { show(riskBadge, false); }
