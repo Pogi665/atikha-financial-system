@@ -22,6 +22,12 @@ try {
     foreach (glob(__DIR__ . '/../migrations/*.sql') as $path) {
         if (!str_starts_with(basename($path), '011_')) { cli_sql_file($pdo, $path); }
     }
+    // Legacy bootstrap omits the reference fields already used by the ledger.
+    foreach (['Incoming_Funds', 'Expenses'] as $table) {
+        if (!$pdo->query("SHOW COLUMNS FROM $table LIKE 'Reference_Number'")->fetch()) {
+            $pdo->exec("ALTER TABLE $table ADD COLUMN Reference_Number VARCHAR(100) NULL");
+        }
+    }
     $id = bootstrap_admin($pdo, 'Fixture Admin', 'admin@example.invalid', bin2hex(random_bytes(24)));
     $pdo->exec("INSERT INTO Incoming_Funds (Source_Donor, Category, Amount, Date_Received, RecordedBy_UserID, Project_Code)
         VALUES ('Legacy donor', 'Donation', 100.10, '2025-01-31', $id, 'OLD')");
@@ -66,8 +72,47 @@ try {
     $filtered = ledger_view($pdo, array_replace($filters, ['page'=>1,'type'=>'Expense','category'=>'Custom spending']));
     ledger_test(array_column($filtered['rows'], 'remaining_balance') === ['-14.42','-14.92'], 'Filters do not remove hidden transactions from organization balances');
     ledger_test($filtered['completeness'] === ['affected'=>2,'missing_purpose'=>1,'unallocated'=>1], 'Completeness follows selected filters');
+    $defaults = ledger_parse_filters([]);
+    ledger_test($defaults['from'] === date('Y-m-01') && $defaults['to'] === date('Y-m-d'), 'Ordinary ledger retains current-month default');
+    $account = ledger_parse_filters(['filter_category'=>'Custom funding','filter_type'=>'Fund','category'=>'ignored','type'=>'Expense']);
+    ledger_test($account['from'] === '' && $account['to'] === '' && $account['type'] === 'Incoming' && $account['category'] === 'Custom funding', 'Account aliases take precedence and default to all history');
+    $accountView = ledger_view($pdo, $account);
+    ledger_test($accountView['total'] === 54 && $accountView['rows'][0]['txn_date'] === '2025-03-01', 'Account link includes historical months and paginates');
+    parse_str(http_build_query(array_replace($account, ['page'=>2])), $next);
+    $pageTwo = ledger_view($pdo, ledger_parse_filters($next));
+    ledger_test(count($pageTwo['rows']) === 4 && $pageTwo['rows'][3]['remaining_balance'] === '85.06', 'Canonical pagination preserves all-history account filter and balances');
+    $bounded = ledger_parse_filters(['filter_category'=>'Custom funding','filter_type'=>'Fund','from'=>'2025-02-01','to'=>'2025-02-28']);
+    ledger_test(ledger_view($pdo, $bounded)['total'] === 53, 'Explicit dates narrow account history');
+    $all = ledger_parse_filters(['from'=>'','to'=>'']);
+    ledger_test(ledger_view($pdo, $all)['total'] === 58, 'Clear Filter restores all transaction history');
+    ledger_test(ledger_period($pdo, '', '2025-01-31')['closing_balance'] === '75.05' && ledger_period($pdo, '2025-03-01', '')['opening_balance'] === '-14.42', 'Open date bounds preserve organization balances');
+    $pdo->exec("UPDATE Categories SET Is_Active=0 WHERE Name='Custom funding' AND Type='Fund'");
+    ledger_test(ledger_view($pdo, $account)['total'] === 54, 'Inactive account retains history');
+    foreach (['Shared name', 'shared name', 'Shared name ', 'Unicode 雪 & \'quoted\' %_', "x' OR 1=1 --"] as $name) {
+        $fund->execute(['Exact match', $name, 'Purpose', null, '1.00', '2025-03-02', $id]);
+        $expense->execute(['Exact match', $name, 'Purpose', null, '0.50', '2025-03-02', $id]);
+        foreach (['Fund'=>'Incoming','Expense'=>'Expense'] as $inputType=>$expectedType) {
+            $selection = ledger_parse_filters(['filter_category'=>$name,'filter_type'=>$inputType]);
+            $actual = ledger_view($pdo, $selection);
+            ledger_test($actual['total'] === 1 && $actual['rows'][0]['category'] === $name && $actual['rows'][0]['txn_type'] === $expectedType, 'Exact SQL category/type selection: ' . $inputType . ' ' . $name);
+        }
+    }
+    $baseline = ledger_period($pdo, '', '')['rows'];
+    foreach (['Shared name', 'shared name', 'Shared name '] as $name) {
+        $selection = ledger_parse_filters(['filter_category'=>$name,'filter_type'=>'Expense']);
+        ledger_test(ledger_view($pdo, $selection)['rows'] === array_reverse(ledger_filtered_rows($baseline, $selection)), 'SQL exact matching agrees with PHP and unfiltered balances: ' . $name);
+    }
+    ledger_test(ledger_view($pdo, array_replace($all, ['category'=>'No history']))['total'] === 0, 'Unknown or empty account returns no records');
+    foreach ([['filter_category'=>'Custom funding'], ['filter_type'=>'Fund'], ['filter_category'=>'','filter_type'=>'Expense'], ['filter_category'=>'x','filter_type'=>'Incoming'], ['filter_category'=>['x'],'filter_type'=>'Fund'], ['from'=>['bad']], ['from'=>'2025-02-30']] as $bad) {
+        try { ledger_parse_filters($bad); throw new RuntimeException('Malformed filter was accepted.'); }
+        catch (InvalidArgumentException $e) { ledger_test(true, 'Malformed filter rejected'); }
+    }
+    $pdo->beginTransaction();
+    ledger_view($pdo, $account);
+    ledger_test($pdo->inTransaction(), 'Ledger respects caller-owned transaction');
+    $pdo->rollBack();
     ledger_test(transaction_details_input(['purpose'=>'  ','project_code'=>'']) === null, 'Legacy edits require real purpose');
-    ledger_test(transaction_details_input(['purpose'=>'Real','project_code'=>'  ']) === ['purpose'=>'Real','project_code'=>null], 'Unallocated remains NULL');
+    ledger_test(transaction_details_input(['purpose'=>'Real','project_code'=>'  ']) === ['purpose'=>'Real','project_code'=>null,'reference_number'=>null], 'Unallocated remains NULL');
     ledger_test(transaction_details_input(['purpose'=>str_repeat('a',1001)]) === null && transaction_details_input(['purpose'=>'Real','project_code'=>str_repeat('a',51)]) === null, 'Overlength metadata rejected');
     ledger_test(transaction_details_input(['purpose'=>['bad']]) === null, 'Non-string purpose rejected');
     $pdo->exec('RENAME TABLE Expenses TO Expenses_unavailable');

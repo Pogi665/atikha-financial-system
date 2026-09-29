@@ -17,23 +17,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $activePage = 'financial_records';
 $flags = layout_role_flags();
 
-$filters = ledger_parse_filters($_GET);
+$filters = ledger_parse_filters([]);
+$filterError = '';
 $totalRows = 0;
 $records = [];
 $ledgerError = false;
 $completeness = ledger_completeness([]);
 
 try {
+    $filters = ledger_parse_filters($_GET);
     $view = ledger_view($pdo, $filters);
     $totalRows = $view['total'];
     $records = $view['rows'];
     $completeness = $view['completeness'];
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
+    $filterError = $e->getMessage();
 } catch (Throwable $e) {
     $ledgerError = true;
     error_log('Ledger query failed: ' . $e->getMessage());
 }
 
 $categoryOptions = ledger_category_options($pdo);
+if ($filters['category'] !== '' && !in_array($filters['category'], $categoryOptions, true)) {
+    $categoryOptions[] = $filters['category'];
+    sort($categoryOptions);
+}
+$filterSummary = [];
+if ($filters['category'] !== '') { $filterSummary[] = $filters['category']; }
+if ($filters['type'] !== '') { $filterSummary[] = $filters['type'] === 'Incoming' ? 'Incoming Funds' : 'Expenses'; }
+if ($filters['from'] !== '') { $filterSummary[] = 'From ' . $filters['from']; }
+if ($filters['to'] !== '') { $filterSummary[] = 'Through ' . $filters['to']; }
 $totalPages = max(1, (int) ceil($totalRows / LEDGER_PAGE_SIZE));
 
 layout_begin(
@@ -119,7 +133,15 @@ layout_begin(
         <p class="text-sm text-slate-500"><?= $ledgerError ? 'Unavailable' : (int) $totalRows ?> record<?= $totalRows === 1 ? '' : 's' ?></p>
     </div>
 
-    <?php if ($ledgerError): ?>
+    <?php if ($filterSummary || $filterError !== ''): ?>
+        <div class="flex flex-wrap items-center gap-3 p-4" role="status">
+            <?php if ($filterError === ''): ?><span class="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-900">Showing transactions for: <?= htmlspecialchars(implode(' — ', $filterSummary), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span><?php endif; ?>
+            <a href="financial_records.php?from=&amp;to=" class="text-sm text-blue-700 hover:underline">Clear Filter</a>
+        </div>
+    <?php endif; ?>
+    <?php if ($filterError !== ''): ?>
+        <p role="alert" class="p-4 text-red-700"><?= htmlspecialchars($filterError, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
+    <?php elseif ($ledgerError): ?>
         <p role="alert" class="p-4 text-red-700">Unable to load financial records. Please try again later.</p>
     <?php else: ?>
         <p class="text-sm text-slate-600">Balances represent the organization after each transaction, including transactions hidden by filters. They are not category budgets or project balances.</p>

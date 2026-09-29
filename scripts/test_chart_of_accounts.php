@@ -96,7 +96,7 @@ try {
     // Serve copies only: the production connector and sessions are never changed.
     $fixture = sys_get_temp_dir() . '/atikha_accounts_' . bin2hex(random_bytes(6));
     mkdir($fixture); mkdir("$fixture/includes"); mkdir("$fixture/assets"); mkdir("$fixture/assets/js"); mkdir("$fixture/sessions");
-    foreach (['admin_accounts.php', 'expenses.php', 'funds.php'] as $file) { copy(__DIR__ . '/../' . $file, "$fixture/$file"); }
+    foreach (['admin_accounts.php', 'financial_records.php', 'expenses.php', 'funds.php'] as $file) { copy(__DIR__ . '/../' . $file, "$fixture/$file"); }
     foreach (glob(__DIR__ . '/../includes/*.php') as $file) { copy($file, "$fixture/includes/" . basename($file)); }
     foreach (glob(__DIR__ . '/../assets/js/*.js') as $file) { copy($file, "$fixture/assets/js/" . basename($file)); }
     $connection = ['mysql:host=' . (getenv('ATIKHA_DB_HOST') ?: '127.0.0.1') . ';dbname=' . $db . ';charset=utf8mb4', getenv('ATIKHA_DB_USER') ?: 'root', getenv('ATIKHA_DB_PASSWORD') ?: ''];
@@ -132,6 +132,29 @@ try {
     account_test(account_load($pdo, $httpId)['Detail_Type'] === 'HTTP detail', 'HTTP metadata persisted');
     [ , $filtered ] = account_http('admin_accounts.php?q=HTTP&type=Fund&status=active');
     account_test(str_contains($filtered, 'HTTP income') && !str_contains($filtered, 'Test &lt;b&gt;'), 'Name and type filters applied');
+
+    foreach (['active', 'inactive'] as $status) {
+        [ , $accountsHtml ] = account_http('admin_accounts.php?status=' . $status);
+        preg_match_all('/href="(financial_records\.php\?[^\"]+)"/', $accountsHtml, $links);
+        account_test(count($links[1]) > 0, 'View Transactions available for ' . $status . ' accounts');
+        foreach ($links[1] as $link) {
+            [ $code, $report ] = account_http(html_entity_decode($link, ENT_QUOTES, 'UTF-8'));
+            account_test($code === 200 && str_contains($report, 'Showing transactions for:') && str_contains($report, 'Clear Filter'), 'Account action opens historical ledger');
+        }
+    }
+    $route = 'financial_records.php?' . http_build_query(['filter_category'=>'HTTP income','filter_type'=>'Fund']);
+    [ $code, $emptyReport ] = account_http($route);
+    account_test($code === 200 && str_contains($emptyReport, 'No records match') && str_contains($emptyReport, 'HTTP income — Incoming Funds'), 'Empty account retains filter badge');
+    account_save($pdo, $user, 'disable', ['account_id'=>$httpId]);
+    [ , $inactiveReport ] = account_http($route);
+    account_test(str_contains($inactiveReport, 'value="HTTP income" selected'), 'Inactive account stays selected in ledger dropdown');
+    $historicalRoute = 'financial_records.php?' . http_build_query(['filter_category'=>'Legacy income','filter_type'=>'Fund']);
+    [ $code, $historicalReport ] = account_http($historicalRoute);
+    account_test($code === 200 && str_contains($historicalReport, '2025-01-01') && !str_contains($historicalReport, 'No records match'), 'Account report includes old transactions');
+    [ $code, $invalidReport ] = account_http('financial_records.php?filter_category=missing');
+    account_test($code === 400 && str_contains($invalidReport, 'valid account type') && !str_contains($invalidReport, 'No records match'), 'Malformed filter produces readable HTTP 400');
+    [ $code, $allReport ] = account_http('financial_records.php?from=&to=');
+    account_test($code === 200 && str_contains($allReport, '2025-01-01') && !str_contains($allReport, 'Showing transactions for:'), 'Clear Filter shows all history without badge');
 
     foreach (['expenses.php' => ['Expenses', 'ExpenseID', $expenseId, 'payee', 'date_incurred', 'Legacy missing', 'Expense'],
               'funds.php' => ['Incoming_Funds', 'FundID', $fundId, 'source_donor', 'date_received', 'Legacy income', 'Fund']] as $page => $spec) {
