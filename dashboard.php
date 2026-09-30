@@ -28,6 +28,10 @@ $budgetUtil = ['spent' => 0.0, 'budgeted' => 0.0, 'pct' => 0.0, 'by_category' =>
 $budgetOverruns = [];
 $budgetAllocations = [];
 $budgetDataAvailable = false;
+$totalsAvailable = false;
+$cashFlowAvailable = false;
+$breakdownAvailable = false;
+$budgetUpcomingAvailable = false;
 $budgetUpcoming = [];
 $cashFlowSeries = [];
 $expenseBreakdown = ['labels' => [], 'amounts' => []];
@@ -43,26 +47,17 @@ try {
     $totalExpenses = (float) $stmt->fetch()['total'];
 
     $netBalance = $totalFunds - $totalExpenses;
+    $totalsAvailable = true;
 
     if ($isExecutive) {
         $budgetUtil = budget_utilization($pdo, $currentYear, $currentMonth);
         $budgetDataAvailable = true;
-        // Reuse the same monthly totals as the utilization KPI.
-        foreach ($budgetUtil['by_category'] as $row) {
-            if ($row['budgeted'] > 0 || $row['spent'] > 0) {
-                $budgetAllocations[] = [
-                    'category_name' => $row['category'],
-                    'allocated_amount' => $row['budgeted'],
-                    'utilized_amount' => $row['spent'],
-                    'remaining_balance' => round($row['budgeted'] - $row['spent'], 2),
-                ];
-            }
-        }
-        $budgetOverruns = budget_overrun_categories($pdo, $currentYear, $currentMonth);
         $budgetUpcoming = budget_upcoming_totals($pdo, 3);
+        $budgetUpcomingAvailable = true;
 
         $history = forecast_fetch_history($pdo);
         $cashFlowSeries = $history['series'];
+        $cashFlowAvailable = true;
 
         $start = date('Y-m-d', strtotime('-12 months'));
         $stmt = $pdo->prepare(
@@ -92,6 +87,7 @@ try {
             $amounts[] = round($other, 2);
         }
         $expenseBreakdown = ['labels' => $labels, 'amounts' => $amounts];
+        $breakdownAvailable = true;
     }
 } catch (PDOException $e) {
     error_log('Dashboard totals failed: ' . $e->getMessage());
@@ -111,198 +107,12 @@ if ($utilPct !== null) {
     }
 }
 
-layout_begin('Dashboard', $activePage, ['https://cdn.jsdelivr.net/npm/chart.js']);
+layout_begin('Dashboard', $activePage, ['https://cdn.jsdelivr.net/npm/chart.js'],
+    $isExecutive ? '<link rel="stylesheet" href="assets/css/management-dashboard.css?v=' . filemtime(__DIR__ . '/assets/css/management-dashboard.css') . '">' : '');
 
 if ($isExecutive):
-?>
+    include __DIR__ . '/includes/management_dashboard.php';
 
-<div>
-    <h1 class="text-2xl font-bold text-slate-900">Executive Dashboard</h1>
-    <p class="text-slate-600 mt-2">Leadership overview of financial health, cash flow, and predictive insights.</p>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-    <div class="exec-card min-w-0">
-        <p class="exec-kpi-label">Total Incoming Funds</p>
-        <p class="exec-kpi-value text-emerald-700 mt-2"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
-    </div>
-    <div class="exec-card min-w-0">
-        <p class="exec-kpi-label">Total Expenditures</p>
-        <p class="exec-kpi-value text-red-700 mt-2"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
-    </div>
-    <div class="exec-card min-w-0">
-        <p class="exec-kpi-label">Net Balance</p>
-        <p class="exec-kpi-value text-blue-900 mt-2"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
-    </div>
-    <div class="exec-card min-w-0">
-        <p class="exec-kpi-label">Current Budget Utilization</p>
-        <p class="exec-kpi-value <?= $utilColor ?> mt-2">
-            <?= $utilPct !== null ? htmlspecialchars(number_format($utilPct, 1) . '%', ENT_QUOTES, 'UTF-8') : '—' ?>
-        </p>
-        <p class="text-xs text-slate-500 mt-2">
-            <?= htmlspecialchars(format_peso($budgetUtil['spent']), ENT_QUOTES, 'UTF-8') ?>
-            of <?= htmlspecialchars(format_peso($budgetUtil['budgeted']), ENT_QUOTES, 'UTF-8') ?> budgeted this month
-        </p>
-    </div>
-</div>
-
-<section class="exec-card min-w-0" aria-labelledby="budget-monitoring-title">
-    <h2 id="budget-monitoring-title" class="exec-section-title">Budget Utilization &amp; Monitoring</h2>
-    <p class="text-sm text-slate-500 mt-2">
-        <?= htmlspecialchars(date('F Y', mktime(0, 0, 0, $currentMonth, 1, $currentYear)), ENT_QUOTES, 'UTF-8') ?>
-        &mdash; Calendar-month expenditures against allocated category budgets.
-    </p>
-
-    <div class="space-y-6 mt-6">
-        <?php if (!$budgetDataAvailable): ?>
-            <p class="text-sm text-red-700" role="status">Budget data is currently unavailable. Please try again later.</p>
-        <?php elseif (empty($budgetAllocations)): ?>
-            <p class="text-sm text-slate-500 italic">No budget data or expenses found for this month.</p>
-        <?php else: ?>
-            <?php foreach ($budgetAllocations as $index => $alloc):
-                $categoryName = htmlspecialchars($alloc['category_name'], ENT_QUOTES, 'UTF-8');
-                $spent = (float) $alloc['utilized_amount'];
-                $budget = (float) $alloc['allocated_amount'];
-                $remaining = (float) $alloc['remaining_balance'];
-                $percent = $budget > 0 ? ($spent / $budget) * 100 : null;
-                $barWidth = $percent !== null ? max(0, min(100, $percent)) : 100;
-                $widthValue = number_format($barWidth, 2, '.', '');
-                $percentLabel = $percent !== null ? number_format($percent, 2) . '% Utilized' : 'N/A';
-                $statusLabel = 'Under 75% utilized';
-                $colorClass = 'bg-green-500';
-                if ($percent === null) {
-                    $colorClass = 'bg-red-500';
-                    $statusLabel = 'No budget allocated';
-                } elseif ($percent >= 90) {
-                    $colorClass = 'bg-red-500';
-                    $statusLabel = '90% or above utilized';
-                } elseif ($percent >= 75) {
-                    $colorClass = 'bg-yellow-500';
-                    $statusLabel = '75% to below 90% utilized';
-                }
-                $progressText = $percentLabel . ' - ' . $statusLabel;
-            ?>
-            <div class="budget-item min-w-0">
-                <h3 id="budget-category-<?= (int) $index ?>" class="text-sm font-semibold text-slate-800 break-words"><?= $categoryName ?></h3>
-                <dl class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 mb-3 text-sm">
-                    <div class="min-w-0">
-                        <dt class="text-slate-500">Allocated</dt>
-                        <dd class="font-semibold text-slate-900 break-words"><?= htmlspecialchars(format_peso($budget), ENT_QUOTES, 'UTF-8') ?></dd>
-                    </div>
-                    <div class="min-w-0">
-                        <dt class="text-slate-500">Expenditures (Outflows)</dt>
-                        <dd class="font-semibold text-slate-900 break-words"><?= htmlspecialchars(format_peso($spent), ENT_QUOTES, 'UTF-8') ?></dd>
-                    </div>
-                    <div class="min-w-0">
-                        <dt class="text-slate-500">Remaining Balance</dt>
-                        <dd class="font-semibold <?= $remaining < 0 ? 'text-red-700' : 'text-slate-900' ?> break-words"><?= htmlspecialchars(format_peso($remaining), ENT_QUOTES, 'UTF-8') ?></dd>
-                    </div>
-                </dl>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden"
-                    role="progressbar" aria-labelledby="budget-category-<?= (int) $index ?>"
-                    aria-valuemin="0" aria-valuemax="100"
-                    <?php if ($percent !== null): ?>aria-valuenow="<?= $widthValue ?>"<?php endif; ?>
-                    aria-valuetext="<?= htmlspecialchars($progressText, ENT_QUOTES, 'UTF-8') ?>">
-                    <div class="<?= $colorClass ?> h-2.5 rounded-full" style="width: <?= $widthValue ?>%"></div>
-                </div>
-                <div class="flex flex-wrap justify-between gap-2 text-xs text-slate-600 mt-2">
-                    <span><?= htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8') ?></span>
-                    <span><?= htmlspecialchars($percentLabel, ENT_QUOTES, 'UTF-8') ?></span>
-                </div>
-                <?php if ($remaining < 0): ?>
-                    <p class="text-xs text-red-700 font-medium mt-2">Over budget by <?= htmlspecialchars(format_peso(abs($remaining)), ENT_QUOTES, 'UTF-8') ?></p>
-                <?php endif; ?>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-</section>
-
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-    <section class="exec-card overflow-hidden">
-        <h2 class="exec-section-title mb-4">Cash Flow</h2>
-        <p class="text-sm text-slate-500 mb-4">Monthly incoming funds vs. expenditures (last 12 months)</p>
-        <div class="exec-chart-wrap">
-            <canvas id="cashFlowChart"></canvas>
-        </div>
-    </section>
-    <section class="exec-card overflow-hidden">
-        <h2 class="exec-section-title mb-4">Expense Breakdown</h2>
-        <p class="text-sm text-slate-500 mb-4">Share of spending by category (trailing 12 months)</p>
-        <div class="exec-chart-wrap">
-            <canvas id="expenseDoughnut"></canvas>
-        </div>
-    </section>
-</div>
-
-<section class="exec-card overflow-hidden !p-0">
-    <div class="px-8 py-6 border-b border-slate-200 flex items-start justify-between gap-4">
-        <div>
-            <h2 class="exec-section-title">Predictive Analytics</h2>
-            <p id="exec-forecast-meta" class="text-sm text-slate-500 mt-1">Loading AI expense forecast and budget outlook…</p>
-        </div>
-        <div class="text-right shrink-0">
-            <button
-                type="button"
-                id="btn-refresh-forecast"
-                <?= $canRefresh && $aiConfigured ? '' : 'disabled' ?>
-                class="exec-btn-primary text-sm disabled:bg-slate-300 disabled:cursor-not-allowed"
-            >
-                Refresh Forecast
-            </button>
-            <?php if (!$aiConfigured): ?>
-                <p class="text-xs text-slate-400 mt-1.5">Add a Gemini API key to config.php</p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <div id="exec-forecast-loading" class="px-8 py-16 flex flex-col items-center justify-center gap-3">
-        <div class="h-8 w-8 rounded-full border-2 border-slate-200 border-t-blue-900 animate-spin"></div>
-        <p class="text-sm text-slate-500">Analyzing financial history…</p>
-    </div>
-
-    <div id="exec-forecast-empty" class="hidden px-8 py-16 text-center">
-        <p class="text-sm font-medium text-slate-700">Not enough history to forecast yet.</p>
-        <p id="exec-forecast-empty-detail" class="text-sm text-slate-500 mt-1"></p>
-    </div>
-
-    <div id="exec-forecast-body" class="hidden px-8 pb-8 space-y-6">
-        <div id="exec-forecast-note" class="hidden exec-alert-warning"></div>
-
-        <div id="exec-budget-alerts" class="space-y-2"></div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 bg-slate-50 rounded-xl border border-slate-200 p-6">
-                <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">Projected Outflow</h3>
-                <div id="exec-projection-table" class="space-y-2 text-sm"></div>
-                <div class="mt-4 pt-4 border-t border-slate-200">
-                    <p class="text-xs text-slate-500">Cash runway</p>
-                    <p id="exec-runway" class="text-lg font-semibold text-blue-900 mt-1">—</p>
-                </div>
-            </div>
-            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-50 rounded-xl border border-slate-200 p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget Reallocation</p>
-                        <span id="exec-forecast-risk" class="hidden rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"></span>
-                    </div>
-                    <p id="exec-forecast-reallocation" class="text-sm text-slate-700 leading-relaxed"></p>
-                </div>
-                <div class="bg-slate-50 rounded-xl border border-slate-200 p-6">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Funding Risk</p>
-                    <p id="exec-forecast-funding-risk" class="text-sm text-slate-700 leading-relaxed"></p>
-                </div>
-            </div>
-        </div>
-
-        <div id="exec-predictive-budget" class="bg-slate-50 rounded-xl border border-slate-200 p-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">Predictive Budget Comparison</h3>
-            <div id="exec-budget-compare" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm"></div>
-        </div>
-    </div>
-</section>
-
-<?php
 else:
 ?>
 
@@ -451,271 +261,19 @@ else:
 $scripts = '';
 
 if ($isExecutive) {
-    $jsCashFlow = json_encode($cashFlowSeries);
-    $jsBreakdown = json_encode($expenseBreakdown);
-    $jsOverruns = json_encode($budgetOverruns);
-    $jsUpcoming = json_encode($budgetUpcoming);
-    $jsByCategory = json_encode($budgetUtil['by_category']);
-    $jsCsrf = json_encode($csrfToken);
-    $jsCanRefresh = json_encode($canRefresh && $aiConfigured);
+    $managementData = json_encode([
+        'cashFlow' => $cashFlowSeries,
+        'cashFlowAvailable' => $cashFlowAvailable,
+        'breakdown' => $expenseBreakdown,
+        'breakdownAvailable' => $breakdownAvailable,
+        'budgetUpcoming' => $budgetUpcomingAvailable ? $budgetUpcoming : [],
+        'budgetByCategory' => $budgetDataAvailable ? $budgetUtil['by_category'] : [],
+        'csrfToken' => $csrfToken,
+        'canRefresh' => $canRefresh && $aiConfigured,
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE);
+    $scripts = '<script type="application/json" id="management-dashboard-data">' . $managementData . '</script>'
+        . '<script src="assets/js/management-dashboard.js?v=' . filemtime(__DIR__ . '/assets/js/management-dashboard.js') . '"></script>';
 
-    $scripts = <<<JS
-<script>
-(function () {
-    const cashFlow = {$jsCashFlow};
-    const breakdown = {$jsBreakdown};
-    const budgetOverruns = {$jsOverruns};
-    const budgetUpcoming = {$jsUpcoming};
-    const budgetByCategory = {$jsByCategory};
-
-    const monthLabels = cashFlow.map(function (p) {
-        const parts = String(p.month).split('-');
-        return new Date(Number(parts[0]), Number(parts[1]) - 1, 1)
-            .toLocaleDateString('en-PH', { month: 'short', year: '2-digit' });
-    });
-
-    new Chart(document.getElementById('cashFlowChart'), {
-        type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [
-                {
-                    label: 'Incoming Funds',
-                    data: cashFlow.map(function (p) { return p.inflow; }),
-                    backgroundColor: 'rgba(22, 163, 74, 0.85)',
-                    borderRadius: 4,
-                },
-                {
-                    label: 'Expenditures',
-                    data: cashFlow.map(function (p) { return p.outflow; }),
-                    backgroundColor: 'rgba(220, 38, 38, 0.85)',
-                    borderRadius: 4,
-                },
-            ],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: { padding: { top: 4, bottom: 4 } },
-            plugins: {
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: function (ctx) {
-                            return ' ' + ctx.dataset.label + ': ₱' + Number(ctx.parsed.y).toLocaleString('en-PH', { minimumFractionDigits: 2 });
-                        },
-                    },
-                },
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function (v) { return '₱' + Number(v).toLocaleString('en-PH'); },
-                    },
-                },
-            },
-        },
-    });
-
-    const doughnutColors = [
-        'rgb(30, 58, 138)', 'rgb(37, 99, 235)', 'rgb(59, 130, 246)',
-        'rgb(100, 116, 139)', 'rgb(148, 163, 184)', 'rgb(71, 85, 105)',
-        'rgb(51, 65, 85)', 'rgb(15, 23, 42)', 'rgb(203, 213, 225)',
-    ];
-
-    new Chart(document.getElementById('expenseDoughnut'), {
-        type: 'doughnut',
-        data: {
-            labels: breakdown.labels,
-            datasets: [{
-                data: breakdown.amounts,
-                backgroundColor: doughnutColors.slice(0, breakdown.labels.length),
-                borderWidth: 2,
-                borderColor: '#ffffff',
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12 } },
-            },
-        },
-    });
-
-    const csrfToken = {$jsCsrf};
-    const canRefresh = {$jsCanRefresh};
-
-    const loading = document.getElementById('exec-forecast-loading');
-    const empty = document.getElementById('exec-forecast-empty');
-    const emptyDetail = document.getElementById('exec-forecast-empty-detail');
-    const body = document.getElementById('exec-forecast-body');
-    const meta = document.getElementById('exec-forecast-meta');
-    const note = document.getElementById('exec-forecast-note');
-    const alerts = document.getElementById('exec-budget-alerts');
-    const projectionTable = document.getElementById('exec-projection-table');
-    const runway = document.getElementById('exec-runway');
-    const riskBadge = document.getElementById('exec-forecast-risk');
-    const reallocation = document.getElementById('exec-forecast-reallocation');
-    const fundingRisk = document.getElementById('exec-forecast-funding-risk');
-    const budgetCompare = document.getElementById('exec-budget-compare');
-    const refreshButton = document.getElementById('btn-refresh-forecast');
-
-    const riskClasses = {
-        LOW: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        MEDIUM: 'bg-amber-50 text-amber-800 border-amber-300',
-        HIGH: 'bg-red-50 text-red-700 border-red-300',
-    };
-
-    function peso(value) {
-        return '₱' + Number(value).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function monthLabel(period) {
-        const parts = String(period).split('-');
-        return new Date(Number(parts[0]), Number(parts[1]) - 1, 1)
-            .toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
-    }
-
-    function show(el, visible) { el.classList.toggle('hidden', !visible); }
-
-    function renderStaticAlerts() {
-        alerts.innerHTML = '';
-        budgetOverruns.forEach(function (row) {
-            const div = document.createElement('div');
-            div.className = 'exec-alert-over';
-            div.textContent = row.category + ' is over budget by ' + peso(row.over_by)
-                + ' (' + peso(row.spent) + ' spent vs ' + peso(row.budgeted) + ' budgeted).';
-            alerts.appendChild(div);
-        });
-    }
-
-    function renderBudgetCompare(projection) {
-        budgetCompare.innerHTML = '';
-        projection.slice(0, 3).forEach(function (point, index) {
-            const budgetTotal = budgetUpcoming[index] ? budgetUpcoming[index].total : 0;
-            const projected = point.projected_outflow;
-            const diff = projected - budgetTotal;
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg border border-slate-200 p-4';
-            card.innerHTML = '<p class="font-medium text-slate-900">' + monthLabel(point.month) + '</p>'
-                + '<p class="text-slate-600 mt-1">Projected: ' + peso(projected) + '</p>'
-                + '<p class="text-slate-600">Budget: ' + peso(budgetTotal) + '</p>'
-                + '<p class="mt-2 font-semibold ' + (diff > 0 ? 'text-red-700' : 'text-emerald-700') + '">'
-                + (diff > 0 ? 'Over by ' : 'Under by ') + peso(Math.abs(diff)) + '</p>';
-            budgetCompare.appendChild(card);
-        });
-    }
-
-    function renderTrendWarnings(categories) {
-        if (!Array.isArray(categories)) return;
-        const budgetMap = {};
-        budgetByCategory.forEach(function (row) { budgetMap[row.category] = row; });
-
-        categories.forEach(function (cat) {
-            if (cat.trend !== 'rising') return;
-            const budgetRow = budgetMap[cat.category];
-            if (!budgetRow || budgetRow.budgeted <= 0) return;
-            if (budgetRow.spent >= budgetRow.budgeted * 0.85) {
-                const div = document.createElement('div');
-                div.className = 'exec-alert-warning';
-                div.textContent = cat.category + ' is trending upward and approaching its monthly budget limit.';
-                alerts.appendChild(div);
-            }
-        });
-    }
-
-    function renderExecutive(data) {
-        show(loading, false);
-
-        if (data.state === 'insufficient') {
-            emptyDetail.textContent = 'Record expenses across at least two different months.';
-            show(body, false);
-            show(empty, true);
-            meta.textContent = 'Waiting on more history';
-            return;
-        }
-
-        show(empty, false);
-        show(body, true);
-        renderStaticAlerts();
-        renderTrendWarnings(data.categories);
-
-        if (data.note) {
-            note.textContent = data.note;
-            show(note, true);
-        } else {
-            show(note, false);
-        }
-
-        const topThree = (data.projection || []).slice(0, 3);
-        projectionTable.innerHTML = topThree.map(function (p) {
-            return '<div class="flex justify-between"><span>' + monthLabel(p.month) + '</span><span class="font-medium">' + peso(p.projected_outflow) + '</span></div>';
-        }).join('');
-
-        const runwayMonths = data.metrics && data.metrics.runway_months;
-        runway.textContent = runwayMonths != null ? runwayMonths + ' months at current burn' : 'Not available';
-
-        const advisory = data.advisory || {};
-        const level = advisory.risk_level;
-        if (level && riskClasses[level]) {
-            riskBadge.className = 'rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ' + riskClasses[level];
-            riskBadge.textContent = level + ' risk';
-            show(riskBadge, true);
-        } else {
-            show(riskBadge, false);
-        }
-
-        reallocation.textContent = advisory.reallocation_suggestion || 'No reallocation advice available.';
-        fundingRisk.textContent = advisory.funding_risk || 'No funding risk assessment available.';
-        renderBudgetCompare(data.projection || []);
-
-        meta.textContent = data.generated_at
-            ? 'Forecast generated ' + data.generated_at
-            : 'Six-month expense projection loaded';
-    }
-
-    function loadForecast(isRefresh) {
-        const requestBody = new URLSearchParams();
-        requestBody.set('action', isRefresh ? 'refresh' : 'load');
-        requestBody.set('csrf_token', csrfToken);
-
-        if (refreshButton) {
-            refreshButton.disabled = true;
-            refreshButton.textContent = isRefresh ? 'Refreshing…' : refreshButton.textContent;
-        }
-
-        fetch('forecast_ai.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: requestBody.toString(),
-        })
-            .then(function (r) { return r.json(); })
-            .catch(function () { return { ok: false, error: 'Forecast request failed.' }; })
-            .then(function (payload) {
-                if (refreshButton) {
-                    refreshButton.disabled = !canRefresh;
-                    refreshButton.textContent = 'Refresh Forecast';
-                }
-                if (!payload.ok) {
-                    emptyDetail.textContent = payload.error || 'Unable to load forecast.';
-                    show(body, false);
-                    show(empty, true);
-                    show(loading, false);
-                    return;
-                }
-                renderExecutive(payload.data);
-            });
-    }
-
-    if (refreshButton) {
-        refreshButton.addEventListener('click', function () { loadForecast(true); });
-    }
-    loadForecast(false);
-})();
-</script>
-JS;
 } else {
     $jsIncome = json_encode($totalFunds);
     $jsExpenses = json_encode($totalExpenses);

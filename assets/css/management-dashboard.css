@@ -1,0 +1,58 @@
+.management-dashboard { display:grid; gap:24px; color:#0f172a; font-size:14px; line-height:1.5; min-width:0; }
+.management-dashboard *, .management-dashboard *::before, .management-dashboard *::after { box-sizing:border-box; }
+.management-dashboard [hidden] { display:none !important; }
+.management-dashboard h1 { font-size:24px; font-weight:700; }
+.management-dashboard h2 { font-size:18px; font-weight:650; }
+.management-dashboard h3 { font-size:13px; font-weight:650; color:#475569; margin-bottom:8px; }
+.management-dashboard p { margin:8px 0; overflow-wrap:anywhere; }
+.management-dashboard .md-muted, .management-dashboard .md-caption { color:#64748b; }
+.management-dashboard .md-caption { font-size:12px; }
+.management-dashboard .md-card { min-width:0; padding:24px; border:1px solid #e2e8f0; border-radius:16px; background:#fff; box-shadow:0 1px 2px #0f172a06; }
+.management-dashboard .md-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.management-dashboard .md-kpi h2 { font-size:13px; font-weight:500; color:#64748b; }
+.management-dashboard .md-value { font-size:clamp(20px,2vw,30px); font-weight:700; letter-spacing:-.025em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.management-dashboard .md-income { color:#047857; }
+.management-dashboard .md-expense { color:#b91c1c; }
+.management-dashboard .md-position, .management-dashboard .md-runway { color:#1e3a8a; }
+.management-dashboard .md-warning { color:#92400e; }
+.management-dashboard .md-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.management-dashboard a, .management-dashboard summary { color:#1e3a8a; }
+.management-dashboard a { text-decoration:underline; text-underline-offset:3px; }
+.management-dashboard .md-attention-list { display:grid; gap:8px; margin:12px 0; padding:0; list-style:none; }
+.management-dashboard .md-attention-list li { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline; }
+.management-dashboard .md-status { font-size:12px; display:inline-block; white-space:normal; overflow-wrap:anywhere; }
+.management-dashboard .md-danger { color:#b91c1c; }
+.management-dashboard .md-neutral { color:#475569; }
+.management-dashboard .md-charts { display:grid; gap:24px; grid-template-columns:minmax(0,1fr); }
+.management-dashboard .md-chart { position:relative; height:280px; margin-top:16px; }
+.management-dashboard .md-category-list { list-style:none; padding:0; margin:16px 0; display:grid; gap:8px; font-size:12px; }
+.management-dashboard .md-category-list li { display:flex; justify-content:space-between; gap:12px; }
+.management-dashboard .md-category-list li > span { overflow-wrap:anywhere; min-width:0; }
+.management-dashboard .md-category-list strong { text-align:right; font-variant-numeric:tabular-nums; flex-shrink:0; }
+.management-dashboard details { margin-top:16px; }
+.management-dashboard summary { cursor:pointer; font-weight:600; padding:4px 0; }
+.management-dashboard .md-table-scroll { overflow-x:auto; margin-top:16px; }
+.management-dashboard table { width:100%; border-collapse:collapse; font-size:12px; }
+.management-dashboard th, .management-dashboard td { padding:12px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top; text-align:right; font-variant-numeric:tabular-nums; }
+.management-dashboard thead th { color:#475569; font-weight:600; background:#f8fafc; }
+.management-dashboard th:first-child { text-align:left; min-width:125px; max-width:230px; overflow-wrap:anywhere; }
+.management-dashboard td { white-space:nowrap; }
+.management-dashboard #md-budget-table td:last-child, .management-dashboard #md-budget-table th:last-child { text-align:left; min-width:150px; max-width:240px; white-space:normal; }
+.management-dashboard .md-bar { display:block; height:5px; width:80px; margin:6px 0 0 auto; background:#e2e8f0; border-radius:5px; overflow:hidden; }
+.management-dashboard .md-bar > span { display:block; height:100%; background:#059669; }
+.management-dashboard .md-bar.md-warning > span { background:#d97706; }
+.management-dashboard .md-bar.md-danger > span { background:#dc2626; }
+.management-dashboard .md-button { border:1px solid #1e3a8a; border-radius:8px; padding:9px 16px; background:#1e3a8a; color:white; font-weight:600; cursor:pointer; }
+.management-dashboard .md-button:hover { background:#1e40af; }
+.management-dashboard .md-button:disabled { background:#e2e8f0; border-color:#cbd5e1; color:#475569; cursor:not-allowed; }
+.management-dashboard .md-secondary { background:white; color:#1e3a8a; margin-top:16px; }
+.management-dashboard .md-secondary:hover { background:#eff6ff; }
+.management-dashboard :is(a,button,summary,[tabindex]):focus-visible { outline:3px solid #2563eb; outline-offset:4px; }
+.management-dashboard .md-findings { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:16px; }
+.management-dashboard .md-inset { padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; min-width:0; }
+.management-dashboard .md-runway { font-size:20px; font-weight:650; }
+.management-dashboard .md-projection-row { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin:8px 0; font-variant-numeric:tabular-nums; }
+.management-dashboard .md-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+@media (min-width:1280px) { .management-dashboard .md-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); } .management-dashboard .md-charts { grid-template-columns:minmax(0,3fr) minmax(0,2fr); } }
+@media (max-width:1100px) { .management-dashboard .md-findings { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:reduce) { .management-dashboard *, .management-dashboard *::before, .management-dashboard *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
