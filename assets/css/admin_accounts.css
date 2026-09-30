@@ -24,6 +24,9 @@
 .accounts-page .account-action-menu-button { display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: .375rem; padding: .375rem .625rem; color: #475569; font-size: .75rem; font-weight: 600; }
 .accounts-page .account-action-menu-button:hover { background: #f8fafc; }
 .accounts-page .account-action-menu { animation: accounts-menu-in .12s ease-out; }
+.account-action-menu-floating { position: fixed !important; z-index: 40 !important; display: block; min-width: 11rem; max-width: calc(100vw - 1rem); margin-top: 0 !important; margin-right: 0 !important; overflow: hidden; border: 1px solid #e2e8f0; border-radius: .5rem; background: #fff; box-shadow: 0 12px 28px rgb(15 23 42 / .18); }
+.account-action-menu-floating.hidden { display: none; }
+.account-action-menu-floating button { white-space: nowrap; }
 .accounts-page .status-pill { display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; padding: .25rem .6rem; font-size: .75rem; font-weight: 700; }
 .accounts-page .status-active { background: #ecfdf5; color: #047857; }
 .accounts-page .status-disabled { background: #f1f5f9; color: #64748b; }
@@ -43,9 +46,6 @@
 .accounts-page button:focus-visible, .accounts-page a:focus-visible, .accounts-page input:focus-visible, .accounts-page select:focus-visible, .accounts-page textarea:focus-visible { outline: 2px solid #475569; outline-offset: 2px; }
 @keyframes accounts-menu-in { from { opacity: 0; transform: translateY(-.25rem); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 767px) {
-    body.accounts-page > aside { position: static; width: 100%; }
-    body.accounts-page > aside nav { max-height: 12rem; }
-    body.accounts-page > .accounts-content { margin-left: 0; }
     .accounts-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
     .accounts-page .accounts-page-header { align-items: stretch; flex-direction: column; gap: 1rem; }
     .accounts-page .accounts-page-header > a { width: 100%; }

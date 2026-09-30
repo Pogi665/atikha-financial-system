@@ -190,7 +190,7 @@ $exportQuery = http_build_query(array_merge(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Trail — Atikha Financial System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/assets/css/tailwind.css') ?>">
 </head>
 <body class="min-h-screen min-w-[1024px] bg-slate-100">
     <?php include __DIR__ . '/includes/nav.php'; ?>

@@ -152,13 +152,10 @@ $activePage = 'admin_users';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management — Atikha Financial System</title>
-    <link rel="stylesheet" href="assets/css/tailwind.css">
-    <link rel="stylesheet" href="assets/css/admin_users.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/assets/css/tailwind.css') ?>">
+    <link rel="stylesheet" href="assets/css/admin_users.css?v=<?= filemtime(__DIR__ . '/assets/css/admin_users.css') ?>">
     <style>
         @media (max-width: 767px) {
-            body.users-page > aside { position: static; width: 100%; }
-            body.users-page > aside nav { max-height: 12rem; }
-            body.users-page > .users-content { margin-left: 0; }
             .users-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
         }
     </style>

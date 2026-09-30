@@ -128,9 +128,6 @@
 .users-page input:focus-visible,
 .users-page select:focus-visible { outline: 2px solid #475569; outline-offset: 2px; }
 @media (max-width: 767px) {
-    body.users-page > aside { position: static; width: 100%; }
-    body.users-page > aside nav { max-height: 12rem; }
-    body.users-page > .users-content { margin-left: 0; }
     .users-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
     .users-page .users-page-header { align-items: stretch; flex-direction: column; gap: 1rem; }
     .users-page .users-page-header > a { width: 100%; }

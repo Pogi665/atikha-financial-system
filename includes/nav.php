@@ -48,20 +48,10 @@ $sidebarClass = $navIsExecutive
     : 'fixed inset-y-0 left-0 w-64 bg-slate-800 text-slate-100 flex flex-col print:hidden';
 
 ?>
-<style>
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    /* Hide scrollbar for IE, Edge and Firefox */
-    .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-    }
-</style>
+<link rel="stylesheet" href="assets/css/sidebar.css?v=<?= filemtime(__DIR__ . '/../assets/css/sidebar.css') ?>">
 
-<aside class="<?= $sidebarClass ?>">
-    <div class="px-6 py-6 border-b border-slate-700">
+<aside class="app-sidebar <?= $sidebarClass ?>">
+    <div class="sidebar-brand">
         <h2 class="text-lg font-bold tracking-tight">Atikha Finance</h2>
         <p class="text-slate-400 text-xs mt-1">
             <?= $navIsExecutive ? 'Executive Suite' : 'Management System' ?>
@@ -92,8 +82,8 @@ $sidebarClass = $navIsExecutive
             </a>
 
             <!-- Books of Accounts Section -->
-            <div class="pt-5 pb-1">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-4">
+            <div class="sidebar-section">
+                <p>
                     Books of Accounts
                 </p>
             </div>
@@ -114,7 +104,7 @@ $sidebarClass = $navIsExecutive
                 Disbursements (CDB)
             </a>
             
-            <div class="pb-2"></div>
+            <div class="sidebar-spacer"></div>
         <?php endif; ?>
 
         <a href="reports.php" class="<?= nav_link_class('reports', $activePage, $navIsExecutive) ?>">

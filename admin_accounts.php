@@ -96,11 +96,12 @@ $filterSignature = sha1(http_build_query($filterArgs));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chart of Accounts — Atikha Financial System</title>
-    <link rel="stylesheet" href="assets/css/tailwind.css">
-    <link rel="stylesheet" href="assets/css/admin_accounts.css">
+    <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/assets/css/tailwind.css') ?>">
+    <link rel="stylesheet" href="assets/css/admin_accounts.css?v=<?= filemtime(__DIR__ . '/assets/css/admin_accounts.css') ?>">
 </head>
 <body class="accounts-page min-h-screen bg-slate-100" data-filter-signature="<?= accounts_escape($filterSignature) ?>">
     <?php include __DIR__ . '/includes/nav.php'; ?>
+    <div class="accounts-content ml-64 min-w-0 flex flex-col min-h-screen">
         <?php include __DIR__ . '/includes/header_bar.php'; ?>
         <main class="flex-1 min-w-0 p-4 md:p-8">
             <div class="accounts-page-header">
@@ -165,8 +166,10 @@ $filterSignature = sha1(http_build_query($filterArgs));
                             <?php foreach (['Account', 'Description', 'Status', 'Actions'] as $heading): ?><th scope="col" class="px-6 py-3 font-semibold text-slate-600 whitespace-nowrap"><?= $heading ?></th><?php endforeach; ?>
                         </tr></thead>
                         <?php foreach (['Fund' => 'Income', 'Expense' => 'Expense'] as $groupType => $label): $groupAccounts = $groupedAccounts[$groupType]; $groupId = strtolower($groupType) . '-accounts'; ?>
-                            <tbody id="<?= accounts_escape($groupId) ?>" data-account-group="<?= accounts_escape($groupType) ?>" class="divide-y divide-slate-200">
+                            <tbody>
                             <tr class="accounts-group-row"><th colspan="4" scope="rowgroup"><button type="button" class="accounts-group-toggle" data-group-toggle="<?= accounts_escape($groupType) ?>" aria-expanded="true" aria-controls="<?= accounts_escape($groupId) ?>"><span><?= $label ?></span><span class="accounts-group-count"><?= count($groupAccounts) ?></span><span class="accounts-group-chevron" aria-hidden="true">&#9662;</span></button></th></tr>
+                            </tbody>
+                            <tbody id="<?= accounts_escape($groupId) ?>" data-account-group="<?= accounts_escape($groupType) ?>" class="divide-y divide-slate-200">
                             <?php foreach ($groupAccounts as $account): $detail = trim((string) ($account['Detail_Type'] ?? '')); $description = trim((string) ($account['Description'] ?? '')); ?>
                                 <tr class="account-row">
                                     <td class="account-cell"><p class="break-words font-semibold text-slate-900"><?= accounts_escape($account['Name']) ?></p><?php if ($detail !== ''): ?><p class="mt-1 break-words text-xs text-slate-500"><?= accounts_escape($detail) ?></p><?php endif; ?></td>

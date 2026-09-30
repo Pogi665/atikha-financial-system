@@ -1,0 +1,48 @@
+/* Shared navigation baseline from before the admin page redesigns.
+   Keep this independent of page CSS and the CDN/compiled Tailwind loader. */
+.app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    width: 16rem;
+    background: #1e293b;
+    color: #f1f5f9;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+.app-sidebar.bg-slate-900 { background: #0f172a; }
+.app-sidebar, .app-sidebar * { box-sizing: border-box; }
+.app-sidebar > .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid #334155; }
+.app-sidebar .sidebar-brand > h2 { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.75rem; letter-spacing: -.025em; }
+.app-sidebar .sidebar-brand > p { margin: .25rem 0 0; color: #94a3b8; font-size: .75rem; line-height: 1rem; }
+.app-sidebar > nav { flex: 1 1 0%; padding: 1.5rem 1rem; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.app-sidebar > nav::-webkit-scrollbar { display: none; }
+.app-sidebar > nav > * { margin: 0; }
+.app-sidebar > nav > * + * { margin-top: .25rem; }
+.app-sidebar > nav > a {
+    display: flex;
+    align-items: center;
+    padding: .625rem 1rem;
+    border-radius: .5rem;
+    color: #cbd5e1;
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.25rem;
+    text-decoration: none;
+    transition: color .15s, background-color .15s;
+}
+.app-sidebar > nav > a > svg { display: block; width: 1.25rem; height: 1.25rem; margin-right: .75rem; }
+.app-sidebar > nav > a.group > svg { color: #94a3b8; }
+.app-sidebar > nav > a:hover { background: rgb(51 65 85 / .5); color: #fff; }
+.app-sidebar > nav > a.group:hover > svg { color: #fff; }
+.app-sidebar > nav > a.font-medium { color: #fff; font-weight: 500; }
+.app-sidebar > nav > a.bg-slate-700 { background: #334155; }
+.app-sidebar > nav > a.bg-blue-900 { background: #1e3a8a; }
+.app-sidebar > nav > a.bg-emerald-600 { background: #059669; }
+.app-sidebar .sidebar-section { padding: 1.25rem 0 .25rem; }
+.app-sidebar .sidebar-section > p { margin: 0; padding: 0 1rem; color: #94a3b8; font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .05em; text-transform: uppercase; }
+.app-sidebar .sidebar-spacer { padding-bottom: .5rem; }
+@media print { .app-sidebar { display: none; } }
