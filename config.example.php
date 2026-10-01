@@ -16,3 +16,7 @@ define('SMTP_PASSWORD', 'your-app-password');
 define('SMTP_FROM_EMAIL', 'noreply@atikha.org');
 define('SMTP_FROM_NAME', 'Atikha Financial System');
 define('SMTP_ENCRYPTION', 'tls'); // 'tls' or 'ssl'
+
+// External Email defaults From to SMTP_USERNAME. Set this only for an alias
+// explicitly authorized by the SMTP provider. Replies use the sending user's Email.
+// define('EXTERNAL_SMTP_FROM_EMAIL', 'approved-alias@example.com');

@@ -67,6 +67,12 @@ $sidebarClass = $navIsExecutive
             Financial Records
         </a>
         
+        <?php if ($navIsAdmin || $navIsExecutive): ?>
+            <a href="external_email.php" class="<?= nav_link_class('external_email', $activePage, $navIsExecutive) ?>">
+                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
+                External Email
+            </a>
+        <?php endif; ?>
         <?php if ($navCanUseWorkspace): ?>
             <a href="funds.php" class="<?= nav_link_class('funds', $activePage, $navIsExecutive) ?>">
                 <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
