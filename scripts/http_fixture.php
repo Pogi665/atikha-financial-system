@@ -3,8 +3,42 @@ require_once __DIR__.'/cli_common.php';
 require_once __DIR__.'/../includes/mfa.php';
 require_once __DIR__.'/../includes/csrf.php';
 try {
-    $o=getopt('',['database:','sessions:','email:','inspect','receipt','report-fixture','report-error:']);$db=$o['database']??'';
+    $o=getopt('',['database:','sessions:','email:','inspect','receipt','report-fixture','report-error:','records-fixture','test-login']);$db=$o['database']??'';
     cli_require((bool)preg_match('/\Aatikha_test_[a-z0-9_]+\z/',$db),'HTTP fixtures require disposable database.');$pdo=cli_db($db);
+    if (isset($o['records-fixture'])) {
+        require_once __DIR__ . '/../includes/user_identities.php';
+        require_once __DIR__ . '/../includes/ledger_query.php';
+        $owner = (int) $pdo->query("SELECT UserID FROM Users WHERE Email='admin@example.invalid'")->fetchColumn();
+        cli_require($owner > 0, 'Run the disposable ledger bootstrap first.');
+        cli_require((int) $pdo->query("SELECT COUNT(*) FROM Incoming_Funds WHERE Category='Browser shared'")->fetchColumn() === 0, 'Browser fixture already exists; use a fresh disposable database.');
+        $users = ['owner'=>$owner];
+        foreach (['other'=>'Admin', 'management'=>'Management', 'inactive'=>'Admin'] as $key=>$role) {
+            $stmt=$pdo->prepare('INSERT INTO Users (FullName,Role,Email,Password,Is_Active) VALUES (?,?,?,?,?)');
+            $stmt->execute(['Browser '.$key,$role,$key.'@example.invalid','not-a-login-hash',$key === 'inactive' ? 0 : 1]);
+            $users[$key]=(int)$pdo->lastInsertId(); user_identity_create($pdo,$users[$key]);
+        }
+        $pdo->exec("INSERT INTO Categories (Name,Type) VALUES ('Browser shared','Fund'),('Browser shared','Expense')");
+        $f=$pdo->prepare('INSERT INTO Incoming_Funds (Source_Donor,Category,Purpose,Project_Code,Reference_Number,Amount,Date_Received,RecordedBy_UserID) VALUES (?,?,?,?,?,?,?,?)');
+        $e=$pdo->prepare('INSERT INTO Expenses (Payee,Category,Purpose,Project_Code,Reference_Number,Amount,Date_Incurred,RecordedBy_UserID) VALUES (?,?,?,?,?,?,?,?)');
+        $ids=[]; $incoming=$expense=0;
+        for ($n=0;$n<61;$n++) {
+            $type=$n<31?'Incoming':'Expense';
+            $party='Browser record '.$n . ($n===0?' one-only':'') . ($n<10?' ten-match':'') . ($n<11?' eleven-match':'');
+            $purpose=in_array($n,[0,2],true)?null:($n===1?'Hiddenneedle <script> harmless':'Recorded purpose');
+            $project=in_array($n,[0,3],true)?null:($n===2?'Projectneedle':'PROJECT');
+            $cents=$n===0?10:($n===1?20:($n===2?200:($n+1)*100));
+            ($type==='Incoming'?$f:$e)->execute([$party,'Browser shared',$purpose,$project,$n===0?'FIND-LATE-REF':'REF-'.$n,ledger_decimal($cents),(new DateTimeImmutable('2024-01-01'))->modify('+'.$n.' days')->format('Y-m-d'),$owner]);
+            $ids[$n]=['type'=>$type,'id'=>(int)$pdo->lastInsertId()];
+            if($type==='Incoming'){$incoming+=$cents;}else{$expense+=$cents;}
+        }
+        $stmt=$pdo->prepare('INSERT INTO Receipts (ExpenseID,File_Path,Original_Filename,Mime_Type,UploadedBy_UserID) VALUES (?,?,?,?,?)');
+        $receipts=[];
+        foreach ([31=>['uploads/receipts/browser.png',$owner],32=>['uploads/receipts/browser.png',$users['other']],33=>['uploads/receipts/missing.png',$owner],34=>['uploads/receipts/../browser.png',$owner]] as $n=>[$path,$uploader]) {
+            $stmt->execute([$ids[$n]['id'],$path,'browser.png','image/png',$uploader]);$receipts[$n]=(int)$pdo->lastInsertId();
+        }
+        $pdo->exec("UPDATE Categories SET Is_Active=0 WHERE Name='Browser shared' AND Type='Fund'");
+        echo json_encode(['users'=>$users,'ids'=>$ids,'receipts'=>$receipts,'incoming_cents'=>(string)$incoming,'expense_cents'=>(string)$expense]); exit;
+    }
     if (isset($o['report-error'])) {
         cli_require(in_array($o['report-error'], ['on','off'], true), 'Expected on or off.');
         $pdo->exec($o['report-error'] === 'on' ? 'RENAME TABLE Expenses TO Expenses_unavailable' : 'RENAME TABLE Expenses_unavailable TO Expenses');
@@ -42,6 +76,10 @@ try {
     }
     cli_require(is_dir($o['sessions']??''),'Isolated session directory required.');
     session_save_path($o['sessions']);session_id(bin2hex(random_bytes(16)));session_start();
+    if (isset($o['test-login'])) {
+        $_SESSION=['UserID'=>(int)$user['UserID'],'Role'=>'Admin','FullName'=>'Fixture'];
+        $out=['session'=>session_id(),'csrf'=>csrf_token()];session_write_close();echo json_encode($out);exit;
+    }
     $code=mfa_generate_code();mfa_save_code($pdo,(int)$user['UserID'],$code);mfa_set_pending((int)$user['UserID'],mfa_mask_email($user['Email']));
     $out=['session'=>session_id(),'code'=>$code,'csrf'=>csrf_token()];session_write_close();echo json_encode($out);
 }catch(Throwable $e){fwrite(STDERR,$e->getMessage()."\n");exit(1);}

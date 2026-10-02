@@ -1,174 +1,95 @@
 <?php
 session_start();
-
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/require_role.php';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/ledger_query.php';
 require_once __DIR__ . '/includes/ledger_ui.php';
-
 require_login();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    http_response_code(405);
-    exit('This page is read-only.');
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    header('Allow: GET'); http_response_code(405); exit('This page is read-only.');
 }
-
-$activePage = 'financial_records';
 $flags = layout_role_flags();
-
-$filters = ledger_parse_filters([]);
+$context = 'records';
+$filters = ledger_records_filters([])['filters'];
+$records = $categoryOptions = [];
 $filterError = '';
-$totalRows = 0;
-$records = [];
 $ledgerError = false;
-$completeness = ledger_completeness([]);
-
 try {
-    $filters = ledger_parse_filters($_GET);
-    $view = ledger_view($pdo, $filters);
-    $totalRows = $view['total'];
-    $records = $view['rows'];
-    $completeness = $view['completeness'];
+    $parsed = ledger_records_filters($_GET);
+    $context = $parsed['context'];
+    $filters = $parsed['filters'];
+    $records = ledger_records_dataset($pdo, $filters, (int) $_SESSION['UserID'], $flags['role']);
+    $categoryOptions = ledger_records_category_options($pdo, $filters['type']);
 } catch (InvalidArgumentException $e) {
-    http_response_code(400);
-    $filterError = $e->getMessage();
+    http_response_code(400); $filterError = $e->getMessage();
+    if (isset($_GET['view']) && is_string($_GET['view']) && in_array($_GET['view'], ['crb', 'cdb'], true)) { $context = $_GET['view']; }
 } catch (Throwable $e) {
-    $ledgerError = true;
-    error_log('Ledger query failed: ' . $e->getMessage());
+    $ledgerError = true; error_log('Ledger query failed: ' . $e->getMessage());
 }
-
-$categoryOptions = ledger_category_options($pdo);
 if ($filters['category'] !== '' && !in_array($filters['category'], $categoryOptions, true)) {
-    $categoryOptions[] = $filters['category'];
-    sort($categoryOptions);
+    $categoryOptions[] = $filters['category']; sort($categoryOptions);
 }
-$filterSummary = [];
-if ($filters['category'] !== '') { $filterSummary[] = $filters['category']; }
-if ($filters['type'] !== '') { $filterSummary[] = $filters['type'] === 'Incoming' ? 'Incoming Funds' : 'Expenses'; }
-if ($filters['from'] !== '') { $filterSummary[] = 'From ' . $filters['from']; }
-if ($filters['to'] !== '') { $filterSummary[] = 'Through ' . $filters['to']; }
-$totalPages = max(1, (int) ceil($totalRows / LEDGER_PAGE_SIZE));
-
-layout_begin(
-    'Financial Records',
-    $activePage,
-    [],
-    '',
-    $flags['isExecutive']
-        ? 'min-h-screen min-w-[1024px] bg-slate-50 executive-theme'
-        : 'min-h-screen min-w-[1024px] bg-slate-50'
-);
+$title = ['crb' => 'Cash Receipts Book', 'cdb' => 'Cash Disbursements Book'][$context] ?? 'Financial Records';
+$activePage = ['crb' => 'crb', 'cdb' => 'cdb'][$context] ?? 'financial_records';
+$clearUrl = 'financial_records.php' . ($context === 'records' ? '' : '?view=' . $context);
+$escape = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$dateScope = $filters['from'] === '' && $filters['to'] === '' ? 'all'
+    : ($filters['from'] === date('Y-m-01') && $filters['to'] === date('Y-m-d') ? 'month' : 'custom');
+$summary = ['Date scope: ' . ($dateScope === 'all' ? 'All dates' : ($dateScope === 'month' ? 'This month through today' : 'Custom range'))];
+if ($filters['from'] !== '') { $summary[] = 'From ' . $filters['from']; }
+if ($filters['to'] !== '') { $summary[] = 'Through ' . $filters['to']; }
+if ($filters['category'] !== '') { $summary[] = $filters['category']; }
+if ($filters['type'] !== '') { $summary[] = $filters['type']; }
+$extraHead = '<link rel="stylesheet" href="assets/vendor/datatables/2.3.8/dataTables.dataTables.min.css"><link rel="stylesheet" href="assets/css/financial_records.css">';
+layout_begin($title, $activePage, [], $extraHead, 'min-h-screen min-w-[1024px] bg-slate-50 financial-records-page' . ($flags['isExecutive'] ? ' executive-theme' : ''));
 ?>
-
-<div>
-    <h1 class="text-2xl font-bold text-slate-900">Financial Records</h1>
-    <p class="text-slate-600 mt-2">
-        Unified read-only ledger of incoming funds and expenses, newest first.
-    </p>
+<div class="records-page" data-context="<?= $escape($context) ?>">
+<h1 class="text-2xl font-bold text-slate-900"><?= $escape($title) ?></h1>
+<p>Read-only recorded receipts and disbursements, newest first.</p>
+<section class="records-card <?= $flags['isExecutive'] ? 'exec-card' : '' ?>">
+<h2>Filter Records</h2>
+<form method="GET" action="financial_records.php" id="records-filters">
+<?php if ($context !== 'records'): ?><input type="hidden" name="view" value="<?= $escape($context) ?>"><?php endif; ?>
+<label>Date scope <select id="date-scope">
+<?php foreach (['all' => 'All dates', 'month' => 'This month through today', 'custom' => 'Custom range'] as $value => $label): ?>
+<option value="<?= $value ?>" <?= $dateScope === $value ? 'selected' : '' ?>><?= $label ?></option>
+<?php endforeach; ?>
+</select></label>
+<label>From <input type="date" id="from" name="from" value="<?= $escape($filters['from']) ?>"></label>
+<label>Through <input type="date" id="to" name="to" value="<?= $escape($filters['to']) ?>"></label>
+<?php if ($context === 'records'): ?>
+<label>Transaction type <select name="type" id="type">
+<?php foreach (['' => 'All', 'Incoming' => 'Incoming', 'Expense' => 'Expense'] as $value => $label): ?>
+<option value="<?= $value ?>" <?= $filters['type'] === $value ? 'selected' : '' ?>><?= $label ?></option>
+<?php endforeach; ?>
+</select></label>
+<?php endif; ?>
+<label>Category <select name="category" id="category"><option value="">All categories</option>
+<?php foreach ($categoryOptions as $category): ?>
+<option value="<?= $escape($category) ?>" <?= $filters['category'] === $category ? 'selected' : '' ?>><?= $escape($category) ?></option>
+<?php endforeach; ?>
+</select></label>
+<button type="submit">Apply Filters</button><a href="<?= $escape($clearUrl) ?>">Clear filters</a>
+</form>
+<?php if ($filterError === ''): ?><p class="records-filter-summary">Showing transactions for: <?= $escape(implode(" \u{2014} ", $summary)) ?></p><?php endif; ?>
+</section>
+<?php if ($filterError !== ''): ?>
+<p role="alert"><?= $escape($filterError) ?></p>
+<?php elseif ($ledgerError): ?>
+<p role="alert">Unable to load financial records. Please try again later.</p>
+<?php else: ?>
+<section class="records-summaries" aria-label="Matching transaction totals">
+<?php foreach (['incoming' => 'Total Receipts', 'expense' => 'Total Disbursements', 'net' => 'Net Recorded Cash Flow'] as $key => $label): ?>
+<?php if (($context === 'crb' && $key !== 'incoming') || ($context === 'cdb' && $key !== 'expense')) { continue; } ?>
+<div class="records-card"><h2><?= $label ?></h2><p id="records-total-<?= $key ?>">Calculating...</p></div>
+<?php endforeach; ?>
+</section>
+<section class="records-card <?= $flags['isExecutive'] ? 'exec-card' : '' ?>">
+<h2>Transactions</h2><p>Summaries and completeness follow all filters and search, across every page.</p>
+<?php ledger_records_table($context, $clearUrl); ?>
+</section>
+<script id="records-data" type="application/json"><?= json_encode(['rows' => $records, 'page' => $filters['page'], 'monthStart' => date('Y-m-01'), 'today' => date('Y-m-d')], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR) ?></script>
+<?php endif; ?>
 </div>
-
-<section class="<?= $flags['isExecutive'] ? 'exec-card' : 'bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6' ?>">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Filter Records</h2>
-    <form method="GET" action="financial_records.php" class="flex flex-wrap items-end gap-4">
-        <div>
-            <label for="from" class="block text-sm font-medium text-slate-700 mb-1">From</label>
-            <input
-                type="date"
-                id="from"
-                name="from"
-                value="<?= htmlspecialchars($filters['from'], ENT_QUOTES, 'UTF-8') ?>"
-                class="border border-slate-300 rounded-lg text-sm p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-            >
-        </div>
-        <div>
-            <label for="to" class="block text-sm font-medium text-slate-700 mb-1">To</label>
-            <input
-                type="date"
-                id="to"
-                name="to"
-                value="<?= htmlspecialchars($filters['to'], ENT_QUOTES, 'UTF-8') ?>"
-                class="border border-slate-300 rounded-lg text-sm p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-            >
-        </div>
-        <div>
-            <label for="type" class="block text-sm font-medium text-slate-700 mb-1">Transaction Type</label>
-            <select
-                id="type"
-                name="type"
-                class="border border-slate-300 rounded-lg text-sm p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-            >
-                <option value="" <?= $filters['type'] === '' ? 'selected' : '' ?>>All</option>
-                <option value="Incoming" <?= $filters['type'] === 'Incoming' ? 'selected' : '' ?>>Incoming</option>
-                <option value="Expense" <?= $filters['type'] === 'Expense' ? 'selected' : '' ?>>Expense</option>
-            </select>
-        </div>
-        <div>
-            <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
-            <select
-                id="category"
-                name="category"
-                class="border border-slate-300 rounded-lg text-sm p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
-            >
-                <option value="">All categories</option>
-                <?php foreach ($categoryOptions as $cat): ?>
-                    <option value="<?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>" <?= $filters['category'] === $cat ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cat, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <button
-            type="submit"
-            class="<?= $flags['isExecutive'] ? 'exec-btn-primary' : 'bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-4 py-2 text-sm transition-colors' ?>"
-        >
-            Apply Filters
-        </button>
-    </form>
-</section>
-
-<section class="<?= $flags['isExecutive'] ? 'exec-card' : 'bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden' ?>">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-slate-900">Ledger</h2>
-        <p class="text-sm text-slate-500"><?= $ledgerError ? 'Unavailable' : (int) $totalRows ?> record<?= $totalRows === 1 ? '' : 's' ?></p>
-    </div>
-
-    <?php if ($filterSummary || $filterError !== ''): ?>
-        <div class="flex flex-wrap items-center gap-3 p-4" role="status">
-            <?php if ($filterError === ''): ?><span class="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-900">Showing transactions for: <?= htmlspecialchars(implode(' — ', $filterSummary), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span><?php endif; ?>
-            <a href="financial_records.php?from=&amp;to=" class="text-sm text-blue-700 hover:underline">Clear Filter</a>
-        </div>
-    <?php endif; ?>
-    <?php if ($filterError !== ''): ?>
-        <p role="alert" class="p-4 text-red-700"><?= htmlspecialchars($filterError, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
-    <?php elseif ($ledgerError): ?>
-        <p role="alert" class="p-4 text-red-700">Unable to load financial records. Please try again later.</p>
-    <?php else: ?>
-        <p class="text-sm text-slate-600">Balances represent the organization after each transaction, including transactions hidden by filters. They are not category budgets or project balances.</p>
-        <?php ledger_completeness_notice($completeness); ledger_render_table($records); ?>
-    <?php endif; ?>
-
-    <?php if ($totalPages > 1): ?>
-        <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
-            <p class="text-sm text-slate-500">
-                Page <?= (int) $filters['page'] ?> of <?= $totalPages ?>
-            </p>
-            <div class="flex gap-2">
-                <?php if ($filters['page'] > 1): ?>
-                    <a
-                        href="?<?= htmlspecialchars(http_build_query(array_merge($filters, ['page' => $filters['page'] - 1])), ENT_QUOTES, 'UTF-8') ?>"
-                        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >Previous</a>
-                <?php endif; ?>
-                <?php if ($filters['page'] < $totalPages): ?>
-                    <a
-                        href="?<?= htmlspecialchars(http_build_query(array_merge($filters, ['page' => $filters['page'] + 1])), ENT_QUOTES, 'UTF-8') ?>"
-                        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >Next</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    <?php endif; ?>
-</section>
-
-<?php layout_end(); ?>
+<?php layout_end('<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script><script src="assets/vendor/datatables/2.3.8/dataTables.min.js"></script><script src="assets/js/financial_records.js"></script>'); ?>

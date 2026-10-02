@@ -88,7 +88,7 @@ try:
     email = 'management-'+secrets.token_hex(4)+'@example.invalid'
     newuser = {'action':'create_user', 'csrf_token':csrf, 'full_name':'Fixture Management', 'email':email, 'role':'Management', 'password':secrets.token_urlsafe(24)}
     status, body = request(admin, 'admin_users.php', newuser)
-    check('User account created successfully' in body, 'Admin creates Management through existing feature')
+    check('User account created.' in body, 'Admin creates Management through existing feature')
     newuser.update(email='invalid-'+email, role='Staff')
     status, body = request(admin, 'admin_users.php', newuser)
     check('Select a valid role' in body, 'Account creation rejects retired operational role')
@@ -163,17 +163,26 @@ try:
     for viewer, role in [(admin,'Admin'),(management,'Management')]:
         report = request(viewer,report_url)[1]
         (run / (role.lower()+'-report.html')).write_text(report,encoding='utf-8')
-        check(f'February {yr}' in report and 'Historical &lt;donor&gt;' in report and 'HTTP Fixture' not in report.split('Detailed Transaction Report',1)[1], role+' historical month selected')
-        check('Opening Organization Balance: '+chr(8369)+'75.05' in report and 'Closing Organization Balance: -'+chr(8369)+'14.93' in report, role+' opening and closing balances rendered')
+        check(f'February {yr}' in report and 'Historical &lt;donor&gt;' in report and 'HTTP Fixture' not in report.split('class="detailed-report',1)[1], role+' historical month selected')
+        check(re.search(r'CASH AND CASH EQUIVALENTS, BEGINNING</span>\s*<span>'+chr(8369)+r'75\.05',report) and re.search(r'CASH AND CASH EQUIVALENTS, END</span>\s*<span>-'+chr(8369)+r'14\.93',report), role+' existing opening and closing figures rendered')
         check('3 records need attention' in report and '2 missing Purpose' in report and '2 Unallocated' in report, role+' completeness counts visible')
         check('Purpose &lt;b&gt; &amp; verified' in report and 'SHARED' in report and 'Not specified' in report, role+' database metadata escaped and legacy shown')
         check('Panel fund' in report and 'Panel expense' in report and 'Organization Balance After Transaction' in report, role+' category consistency and balance label')
-        check(report.index('Incoming-'+str(historical['first'])) < report.index('Incoming-'+str(historical['fund'])) < report.index('Expense-'+str(historical['expense'])), role+' deterministic report order')
+        check(report.index('Incoming-'+str(historical['first'])) < report.index('Incoming-'+str(historical['fund'])) and 'Expense-'+str(historical['expense']) in report, role+' deterministic order within existing category groups')
         (run / (role.lower()+'-report.html')).write_text(report,encoding='utf-8')
     records = request(admin,f'financial_records.php?from={yr}-02-01&to={yr}-02-28')[1]
-    check('3 records need attention' in records and 'Purpose &lt;b&gt;' in records and 'Organization Balance After Transaction' in records, 'Financial Records matches detailed report')
+    dataset = json.loads(re.search(r'<script id="records-data" type="application/json">(.*?)</script>', records, re.S).group(1))['rows']
+    check(sum(row['missing_purpose'] or row['unallocated'] for row in dataset) == 3 and any(row['purpose']=='Purpose <b> & verified' for row in dataset), 'Financial Records dataset matches detailed report without losing metadata')
+    check('<tbody></tbody>' in records and 'colspan' not in records and 'rowspan' not in records, 'DataTables empty initialization has consistent columns')
+    for context, expected in [('crb','Incoming'),('cdb','Expense')]:
+        status, book = request(admin, 'financial_records.php?view='+context)
+        book_data = json.loads(re.search(r'<script id="records-data" type="application/json">(.*?)</script>', book, re.S).group(1))['rows']
+        check(status == 200 and all(row['txn_type']==expected for row in book_data) and 'id="type"' not in book, context+' enforces its fixed type')
+    check(request(admin,'financial_records.php?view=crb&type=Expense')[0] == 400, 'Conflicting book type rejected')
+    check('financial_records.php?view=crb' in report and 'financial_records.php?view=cdb' in report, 'Report quick links use explicit book contexts')
+    check(request(admin,'financial_records.php',{'from':''})[0] == 405, 'Records POST remains read-only')
     empty = request(admin,f'reports.php?month=04&year={yr}')[1]
-    check('No records match' in empty and empty.count('-'+chr(8369)+'14.93')==2 and 'records need attention' not in empty, 'Empty month carries balance without false completeness notice')
+    check('No transactions recorded for this period' in empty and empty.count('-'+chr(8369)+'14.93')==2 and 'records need attention' not in empty, 'Empty month carries prior figure without false completeness notice')
     legacy_fund = dict(fund, fund_id=historical['fund'], category='Panel fund',date_received=f'{yr}-02-01',amount='0.02',purpose='')
     legacy_expense = dict(expense,expense_id=historical['expense'],category='Panel expense',date_incurred=f'{yr}-02-28',amount='0.01',purpose='')
     check('Purpose is required' in request(admin,'funds.php',legacy_fund)[1] and 'Purpose is required' in request(admin,'expenses.php',legacy_expense)[1], 'Both legacy edit routes reject missing purpose')
@@ -181,12 +190,14 @@ try:
     fixture('--report-error=on')
     try:
         error_report = request(admin,report_url)[1]
-        check('Unable to generate this report' in error_report and 'Closing Organization Balance:' not in error_report and 'Net Income' not in error_report, 'Report database error suppresses totals')
+        check('Unable to generate this report' in error_report and 'CASH AND CASH EQUIVALENTS, END' not in error_report and 'class="detailed-report' not in error_report, 'Report database error suppresses totals')
         error_records = request(admin,'financial_records.php')[1]
         check('Unable to load financial records' in error_records and 'No records match' not in error_records, 'Financial Records distinguishes error from empty')
     finally:
         fixture('--report-error=off')
     bcsrf=token(admin,'board_messages.php')
+    draft = request(admin,'board_messages.php',{'csrf_token':'invalid','subject':'Draft <safe>','message_body':'Body & retained'})[1]
+    check('Draft &lt;safe&gt;' in draft and 'Body &amp; retained' in draft, 'Board validation preserves escaped draft')
     check('message was sent' in request(admin,'board_messages.php',{'csrf_token':bcsrf,'subject':'Fixture board message','message_body':'Isolated review test'})[1],'Admin sends board message')
     check('Fixture board message' in request(management,'board_inbox.php?filter=all')[1],'Management inbox shows submission')
     check('Incoming fund deleted' in request(admin,'funds.php',{'csrf_token':fcsrf,'action':'delete','fund_id':fid})[1],'Admin retains financial deletion')

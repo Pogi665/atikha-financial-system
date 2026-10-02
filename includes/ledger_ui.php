@@ -1,6 +1,41 @@
 <?php
 require_once __DIR__ . '/transaction_details.php';
 
+/** Separate renderer so reports retain their original table and print contract. */
+function ledger_records_table(string $context, string $clearUrl): void
+{
+    $escape = static fn ($value) => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $date = ['crb' => 'Date received', 'cdb' => 'Date incurred'][$context] ?? 'Date';
+    $party = ['crb' => 'Received from', 'cdb' => 'Paid to'][$context] ?? 'Source / payee';
+    ?>
+    <div class="records-completeness">
+        <p id="records-completeness-counts" role="status"></p>
+        <details><summary>About data completeness</summary>
+            <p>Missing purpose requires attention and displays as Not specified. Unallocated may be legitimate; confirm whether an internal project applies. Each affected transaction is counted once. Counts follow all active filters and search across every page.</p>
+        </details>
+    </div>
+    <p>Running figures are cumulative net recorded cash flow, including transactions hidden by filters. They are not verified cash available or bank balances.</p>
+    <div class="records-table-scroll">
+        <table id="records-table" class="display" aria-label="Transactions">
+            <thead><tr>
+                <?php foreach ([$date, 'Transaction type', 'Reference number', $party, 'Amount', 'View', 'Search fields', 'Chronological order'] as $label): ?>
+                    <th><?= $escape($label) ?></th>
+                <?php endforeach; ?>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <p id="records-page" role="status"></p>
+    <p id="records-empty-help" hidden>No records match. <a href="<?= $escape($clearUrl) ?>">Clear filters</a> to see all recorded dates in this view.</p>
+    <noscript><p role="alert">Enable JavaScript to search and view this table. No records are hidden by a server page limit.</p></noscript>
+    <dialog id="transaction-dialog" aria-labelledby="transaction-dialog-title">
+        <div class="records-dialog-heading"><h2 id="transaction-dialog-title">Transaction details</h2><button type="button" id="transaction-close">Close</button></div>
+        <dl id="transaction-details"></dl>
+        <div id="transaction-documents"></div>
+    </dialog>
+    <?php
+}
+
 function ledger_completeness_notice(array $counts): void
 {
     if ($counts['affected'] === 0) { return; }

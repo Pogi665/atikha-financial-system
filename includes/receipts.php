@@ -203,3 +203,25 @@ function receipt_public_url(string $storedPath): string
 {
     return RECEIPT_PUBLIC_DIR . '/' . basename($storedPath);
 }
+
+/** Caller must validate the active session. All three authorization conditions apply. */
+function load_transaction_receipt(PDO $pdo, int $receiptId, int $expenseId, int $userId, string $role): ?array
+{
+    if ($role !== 'Admin' || $userId <= 0 || $receiptId <= 0 || $expenseId <= 0) { return null; }
+    $stmt = $pdo->prepare('SELECT r.File_Path, r.Mime_Type FROM Receipts r
+        INNER JOIN Expenses e ON e.ExpenseID = r.ExpenseID
+        WHERE r.ReceiptID = :receipt AND r.ExpenseID = :expense AND r.UploadedBy_UserID = :user');
+    $stmt->execute(['receipt' => $receiptId, 'expense' => $expenseId, 'user' => $userId]);
+    return $stmt->fetch() ?: null;
+}
+
+/** Reject tampered paths and symlinks outside the receipt directory. */
+function transaction_receipt_path(string $storedPath): ?string
+{
+    if (!preg_match('~\Auploads/receipts/([a-zA-Z0-9_-]+\.(?:jpg|jpeg|png|webp|heic|heif))\z~D', $storedPath, $matches)) { return null; }
+    $root = realpath(RECEIPT_UPLOAD_DIR);
+    $resolved = realpath(RECEIPT_UPLOAD_DIR . DIRECTORY_SEPARATOR . $matches[1]);
+    if ($root === false || $resolved === false || !is_file($resolved) || !is_readable($resolved)) { return null; }
+    $prefix = $root . DIRECTORY_SEPARATOR;
+    return strncasecmp($resolved, $prefix, strlen($prefix)) === 0 ? $resolved : null;
+}

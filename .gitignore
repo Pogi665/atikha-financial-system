@@ -1,5 +1,7 @@
 node_modules/
 vendor/
+!assets/vendor/
+!assets/vendor/**
 
 # Local migration exports, verification manifests and restored upload copies.
 .migration-private/*

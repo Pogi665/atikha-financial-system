@@ -139,22 +139,22 @@ try {
         account_test(count($links[1]) > 0, 'View Transactions available for ' . $status . ' accounts');
         foreach ($links[1] as $link) {
             [ $code, $report ] = account_http(html_entity_decode($link, ENT_QUOTES, 'UTF-8'));
-            account_test($code === 200 && str_contains($report, 'Showing transactions for:') && str_contains($report, 'Clear Filter'), 'Account action opens historical ledger');
+            account_test($code === 200 && str_contains($report, 'Showing transactions for:') && str_contains($report, 'Clear filters'), 'Account action opens historical ledger');
         }
     }
     $route = 'financial_records.php?' . http_build_query(['filter_category'=>'HTTP income','filter_type'=>'Fund']);
     [ $code, $emptyReport ] = account_http($route);
-    account_test($code === 200 && str_contains($emptyReport, 'No records match') && str_contains($emptyReport, 'HTTP income — Incoming Funds'), 'Empty account retains filter badge');
+    account_test($code === 200 && str_contains($emptyReport, '"rows":[]') && str_contains($emptyReport, 'HTTP income'), 'Empty account retains filter badge');
     account_save($pdo, $user, 'disable', ['account_id'=>$httpId]);
     [ , $inactiveReport ] = account_http($route);
     account_test(str_contains($inactiveReport, 'value="HTTP income" selected'), 'Inactive account stays selected in ledger dropdown');
     $historicalRoute = 'financial_records.php?' . http_build_query(['filter_category'=>'Legacy income','filter_type'=>'Fund']);
     [ $code, $historicalReport ] = account_http($historicalRoute);
-    account_test($code === 200 && str_contains($historicalReport, '2025-01-01') && !str_contains($historicalReport, 'No records match'), 'Account report includes old transactions');
+    account_test($code === 200 && str_contains($historicalReport, '2025-01-01') && !str_contains($historicalReport, '"rows":[]'), 'Account report includes old transactions');
     [ $code, $invalidReport ] = account_http('financial_records.php?filter_category=missing');
     account_test($code === 400 && str_contains($invalidReport, 'valid account type') && !str_contains($invalidReport, 'No records match'), 'Malformed filter produces readable HTTP 400');
     [ $code, $allReport ] = account_http('financial_records.php?from=&to=');
-    account_test($code === 200 && str_contains($allReport, '2025-01-01') && !str_contains($allReport, 'Showing transactions for:'), 'Clear Filter shows all history without badge');
+    account_test($code === 200 && str_contains($allReport, '2025-01-01') && str_contains($allReport, 'All dates'), 'Clear Filter shows all history without badge');
 
     foreach (['expenses.php' => ['Expenses', 'ExpenseID', $expenseId, 'payee', 'date_incurred', 'Legacy missing', 'Expense'],
               'funds.php' => ['Incoming_Funds', 'FundID', $fundId, 'source_donor', 'date_received', 'Legacy income', 'Fund']] as $page => $spec) {

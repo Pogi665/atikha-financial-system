@@ -115,6 +115,42 @@ try {
     ledger_test(transaction_details_input(['purpose'=>'Real','project_code'=>'  ']) === ['purpose'=>'Real','project_code'=>null,'reference_number'=>null], 'Unallocated remains NULL');
     ledger_test(transaction_details_input(['purpose'=>str_repeat('a',1001)]) === null && transaction_details_input(['purpose'=>'Real','project_code'=>str_repeat('a',51)]) === null, 'Overlength metadata rejected');
     ledger_test(transaction_details_input(['purpose'=>['bad']]) === null, 'Non-string purpose rejected');
+    $recordsFilters = ledger_records_filters([])['filters'];
+    ledger_test($recordsFilters['from'] === '' && $recordsFilters['to'] === '', 'Record views default to all dates without changing legacy defaults');
+    $dataset = ledger_records_dataset($pdo, $recordsFilters, $id, 'Admin');
+    ledger_test(count($dataset) === count($baseline) && count($dataset) > 50, 'Complete dataset exceeds fifty rows without slicing');
+    ledger_test(array_column($dataset, 'remaining_balance') === array_reverse(array_column($baseline, 'remaining_balance')), 'Unsliced dataset retains all deterministic running figures');
+    ledger_test(count(array_unique(array_column($dataset, 'identity'))) === count($dataset), 'Composite identities distinguish overlapping IDs');
+    ledger_test($dataset[0]['recorded_by'] === 'Fixture Admin', 'Historical recorded-by name is retrievable');
+    foreach (['crb'=>'Incoming', 'cdb'=>'Expense'] as $context=>$type) {
+        $selection = ledger_records_filters(['view'=>$context])['filters'];
+        $book = ledger_records_dataset($pdo, $selection, $id, 'Admin');
+        ledger_test(array_unique(array_column($book, 'txn_type')) === [$type], 'Fixed book type: ' . $context);
+        $unchanged = true;
+        foreach ($book as $row) {
+            $original = array_values(array_filter($dataset, static fn ($item) => $item['identity'] === $row['identity']))[0];
+            $unchanged = $unchanged && $row['remaining_balance'] === $original['remaining_balance'];
+        }
+        ledger_test($unchanged, 'Book retains every hidden contribution: ' . $context);
+    }
+    foreach ([['view'=>'crb','type'=>'Expense'], ['view'=>'cdb','filter_category'=>'Custom funding','filter_type'=>'Fund'], ['view'=>['crb']], ['view'=>'unknown']] as $bad) {
+        try { ledger_records_filters($bad); throw new RuntimeException('Invalid view accepted.'); }
+        catch (InvalidArgumentException $e) { ledger_test(true, 'Conflicting or malformed view rejected'); }
+    }
+    ledger_test(ledger_records_dataset($pdo, array_replace($recordsFilters, ['category'=>'No history']), $id, 'Admin') === [], 'Empty dataset is an empty array');
+    ledger_test(in_array('Custom funding', ledger_records_category_options($pdo, 'Incoming'), true), 'Inactive historical category remains a reporting choice');
+    $receipt = $pdo->prepare("INSERT INTO Receipts (ExpenseID,File_Path,Original_Filename,Mime_Type,UploadedBy_UserID) VALUES (?, 'uploads/receipts/fixture.png', 'fixture.png', 'image/png', ?)");
+    $receiptExpenseId = (int) $pdo->query('SELECT MIN(ExpenseID) FROM Expenses')->fetchColumn();
+    $receipt->execute([$receiptExpenseId, $id]); $receiptId = (int) $pdo->lastInsertId();
+    ledger_test(load_transaction_receipt($pdo, $receiptId, $receiptExpenseId, $id, 'Admin') !== null, 'Owner Admin can retrieve associated receipt');
+    ledger_test(load_transaction_receipt($pdo, $receiptId, $receiptExpenseId, $id, 'Management') === null, 'Management denied even when uploader ID matches');
+    ledger_test(load_transaction_receipt($pdo, $receiptId, $receiptExpenseId, $id + 1, 'Admin') === null, 'Different Admin denied');
+    ledger_test(load_transaction_receipt($pdo, $receiptId, $receiptExpenseId + 1, $id, 'Admin') === null, 'Wrong expense association denied');
+    foreach (['../fixture.png','uploads/receipts/../../fixture.png','C:/fixture.png','uploads/board/fixture.png'] as $path) {
+        ledger_test(transaction_receipt_path($path) === null, 'Tampered receipt path rejected');
+    }
+    $pdo->beginTransaction(); ledger_records_dataset($pdo, $recordsFilters, $id, 'Admin');
+    ledger_test($pdo->inTransaction(), 'Dataset respects caller-owned snapshot'); $pdo->rollBack();
     $pdo->exec('RENAME TABLE Expenses TO Expenses_unavailable');
     try {
         ledger_period($pdo, '2025-02-01', '2025-02-28');

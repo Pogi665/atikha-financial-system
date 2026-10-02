@@ -244,3 +244,105 @@ function ledger_category_options(PDO $pdo): array
 
     return array_values($merged);
 }
+
+/** View-specific defaults; do not change the monthly defaults used by other callers. */
+function ledger_records_filters(array $get): array
+{
+    $context = $get['view'] ?? 'records';
+    if (!is_string($context) || !in_array($context, ['records', 'crb', 'cdb'], true)) {
+        throw new InvalidArgumentException('Choose a valid records view.');
+    }
+    $filters = ledger_parse_filters($get + ['from' => '', 'to' => '']);
+    $fixed = ['crb' => 'Incoming', 'cdb' => 'Expense'][$context] ?? '';
+    if ($fixed !== '') {
+        if (isset($get['type']) && trim($get['type']) !== '' && trim($get['type']) !== $fixed) {
+            throw new InvalidArgumentException('This book has a fixed transaction type. Clear filters to continue.');
+        }
+        if ($filters['type'] !== '' && $filters['type'] !== $fixed) {
+            throw new InvalidArgumentException('The account type does not match this book. Clear filters to continue.');
+        }
+        $filters['type'] = $fixed;
+    }
+    return ['context' => $context, 'filters' => $filters];
+}
+
+/** Complete matching dataset. Running figures are calculated before display filters. */
+function ledger_records_dataset(PDO $pdo, array $filters, int $userId, string $role): array
+{
+    require_once __DIR__ . '/user_identities.php';
+    require_once __DIR__ . '/receipts.php';
+    require_once __DIR__ . '/transaction_details.php';
+    $ownsTransaction = !$pdo->inTransaction();
+    if ($ownsTransaction) {
+        $pdo->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $pdo->beginTransaction();
+    }
+    try {
+        $rows = ledger_period($pdo, $filters['from'], $filters['to'])['rows'];
+        foreach ($rows as $index => &$row) { $row['chronology'] = $index; }
+        unset($row);
+        if ($filters['category'] !== '' || $filters['type'] !== '') {
+            $matches = ledger_matching_records($pdo, $filters);
+            $rows = array_values(array_filter($rows, static fn ($row) => isset($matches[$row['txn_type'] . ':' . $row['record_id']])));
+        }
+        $actors = $documents = [];
+        $identityTable = user_identity_table($pdo); // Fixed, internally selected table name.
+        foreach (['Incoming' => ['Incoming_Funds', 'FundID'], 'Expense' => ['Expenses', 'ExpenseID']] as $type => [$table, $idColumn]) {
+            $ids = array_column(array_filter($rows, static fn ($row) => $row['txn_type'] === $type), 'record_id');
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+                $stmt = $pdo->prepare("SELECT t.$idColumn AS id, i.FullName FROM $table t LEFT JOIN $identityTable i ON i.UserID = t.RecordedBy_UserID WHERE t.$idColumn IN ($placeholders)");
+                $stmt->execute($chunk);
+                foreach ($stmt as $actor) { $actors[$type . ':' . $actor['id']] = $actor['FullName']; }
+                if ($type === 'Expense') {
+                    $stmt = $pdo->prepare("SELECT ReceiptID, ExpenseID, UploadedBy_UserID, Original_Filename, Mime_Type FROM Receipts WHERE ExpenseID IN ($placeholders) ORDER BY ReceiptID");
+                    $stmt->execute($chunk);
+                    foreach ($stmt as $receipt) {
+                        $expenseId = (int) $receipt['ExpenseID'];
+                        $documents[$expenseId]['linked'] = true;
+                        // Session validation is performed by the page before calling this helper.
+                        if ($role === 'Admin' && (int) $receipt['UploadedBy_UserID'] === $userId) {
+                            $documents[$expenseId]['files'][] = [
+                                'name' => transaction_detail_label($receipt['Original_Filename'], 'Supporting receipt'),
+                                'previewable' => in_array($receipt['Mime_Type'], ['image/jpeg', 'image/png', 'image/webp'], true),
+                                'url' => 'transaction_attachment.php?type=Expense&id=' . $expenseId . '&receipt_id=' . (int) $receipt['ReceiptID'],
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+        foreach ($rows as &$row) {
+            $row['identity'] = $row['txn_type'] . ':' . $row['record_id'];
+            $row['amount_cents'] = (string) ledger_cents($row['amount']);
+            $row['running_cents'] = (string) ledger_cents($row['remaining_balance']);
+            $row['recorded_by'] = $actors[$row['identity']] ?? null;
+            $row['missing_purpose'] = trim($row['purpose'] ?? '') === '';
+            $row['unallocated'] = trim($row['project_code'] ?? '') === '';
+            $row['documents'] = $row['txn_type'] === 'Expense' ? ($documents[$row['record_id']]['files'] ?? []) : [];
+            $row['document_status'] = $row['documents'] ? '' : (isset($documents[$row['record_id']]) && $row['txn_type'] === 'Expense' ? 'Supporting document access restricted.' : 'No supporting document linked.');
+        }
+        unset($row);
+        if ($ownsTransaction) { $pdo->commit(); }
+        return array_reverse($rows);
+    } catch (Throwable $e) {
+        if ($ownsTransaction && $pdo->inTransaction()) { $pdo->rollBack(); }
+        throw $e;
+    }
+}
+
+/** Reporting choices include inactive historical names; entry eligibility is unchanged. */
+function ledger_records_category_options(PDO $pdo, string $type): array
+{
+    require_once __DIR__ . '/categories.php';
+    $options = $type === 'Incoming' ? fetch_category_names_safe($pdo, CATEGORY_TYPE_FUND)
+        : ($type === 'Expense' ? fetch_category_names_safe($pdo, CATEGORY_TYPE_EXPENSE) : ledger_category_options($pdo));
+    $tables = $type === 'Incoming' ? ['Incoming_Funds'] : ($type === 'Expense' ? ['Expenses'] : ['Incoming_Funds', 'Expenses']);
+    foreach ($tables as $table) {
+        foreach ($pdo->query("SELECT DISTINCT BINARY Category AS Category FROM $table") as $row) {
+            if (!in_array($row['Category'], $options, true)) { $options[] = $row['Category']; }
+        }
+    }
+    sort($options);
+    return $options;
+}

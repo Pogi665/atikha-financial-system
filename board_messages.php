@@ -18,17 +18,24 @@ $activePage = 'board_messages';
 
 $errorMessage = '';
 $successMessage = '';
+$subject = is_string($_POST['subject'] ?? null) ? $_POST['subject'] : '';
+$messageBody = is_string($_POST['message_body'] ?? null) ? $_POST['message_body'] : '';
+$reselectAttachment = false;
 
 if (isset($_GET['sent'])) {
     $successMessage = 'Your message was sent to Management for review.';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!csrf_verify($_POST['csrf_token'] ?? null)) {
+    $reselectAttachment = isset($_FILES['attachment']) && ($_FILES['attachment']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+    if ($_POST === [] && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+        $errorMessage = 'The server could not receive this request. Reduce the attachment size and re-enter your draft if it was not received.';
+        $reselectAttachment = true;
+    } elseif (!csrf_verify($_POST['csrf_token'] ?? null)) {
         $errorMessage = 'Your session expired. Please try again.';
     } else {
-        $subject = isset($_POST['subject']) ? trim((string) $_POST['subject']) : '';
-        $messageBody = isset($_POST['message_body']) ? trim((string) $_POST['message_body']) : '';
+        $subject = trim($subject);
+        $messageBody = trim($messageBody);
 
         if ($subject === '' || $messageBody === '') {
             $errorMessage = 'Please enter both a subject and message body.';
@@ -116,8 +123,9 @@ $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-eme
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Message the Board — Atikha Financial System</title>
     <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/assets/css/tailwind.css') ?>">
+    <link rel="stylesheet" href="assets/css/board_attachment_preview.css">
 </head>
-<body class="min-h-screen min-w-[1024px] bg-slate-50">
+<body class="min-h-screen min-w-[1024px] bg-slate-50 board-preview-page">
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
     <div class="ml-64 flex flex-col min-h-screen">
@@ -132,6 +140,7 @@ $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-eme
             <?php if ($errorMessage !== ''): ?>
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
                     <p class="text-sm text-red-600 font-medium"><?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?></p>
+                    <?php if ($reselectAttachment): ?><p>Please reselect your attachment. Browsers cannot restore a file selection after a server response.</p><?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -144,25 +153,31 @@ $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-eme
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                     <h2 class="text-lg font-semibold text-slate-900 mb-4">Compose Message</h2>
-                    <form method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" enctype="multipart/form-data" class="space-y-4">
+                    <form id="board-compose" method="POST" action="<?= htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>" enctype="multipart/form-data" class="space-y-4">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                         <div>
                             <label for="subject" class="block text-sm font-medium text-slate-700 mb-1">Subject</label>
-                            <input type="text" id="subject" name="subject" required maxlength="255" class="<?= $fieldClass ?>" placeholder="Brief subject line">
+                            <input type="text" id="subject" name="subject" required maxlength="255" value="<?= htmlspecialchars($subject, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="<?= $fieldClass ?>" placeholder="Brief subject line">
                         </div>
 
                         <div>
                             <label for="message_body" class="block text-sm font-medium text-slate-700 mb-1">Message Body</label>
-                            <textarea id="message_body" name="message_body" required rows="8" class="<?= $fieldClass ?>" placeholder="Write your message to Management..."></textarea>
+                            <textarea id="message_body" name="message_body" required rows="8" class="<?= $fieldClass ?>" placeholder="Write your message to Management..."><?= htmlspecialchars($messageBody, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
                         </div>
 
                         <div>
                             <label for="attachment" class="block text-sm font-medium text-slate-700 mb-1">
-                                Attachment <span class="text-slate-400 font-normal">(optional, max 8 MB)</span>
+                                Attachment <span class="text-slate-400 font-normal">(optional, max 8 MiB)</span>
                             </label>
-                            <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png" class="block w-full text-sm text-slate-600">
+                            <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png" aria-describedby="attachment-error" class="block w-full text-sm text-slate-600">
                             <p class="text-xs text-slate-500 mt-1">PDF, JPG, PNG, DOC, or DOCX</p>
+                            <p id="attachment-error" role="alert" hidden></p>
+                            <div id="attachment-preview" aria-live="polite" hidden></div>
+                            <div id="attachment-actions" hidden>
+                                <button type="button" id="attachment-replace">Replace</button>
+                                <button type="button" id="attachment-remove">Remove</button>
+                            </div>
                         </div>
 
                         <button type="submit" class="<?= $primaryButtonClass ?>">Send to Management</button>
@@ -202,5 +217,11 @@ $primaryButtonClass = 'inline-flex items-center justify-center rounded-lg bg-eme
     </div>
 
     <script src="assets/js/notifications.js"></script>
+    <dialog id="attachment-enlarge" aria-labelledby="attachment-enlarge-title">
+        <h2 id="attachment-enlarge-title">Attachment preview</h2>
+        <button type="button" id="attachment-enlarge-close">Close</button>
+        <img id="attachment-enlarge-image" alt="Selected attachment">
+    </dialog>
+    <script src="assets/js/board_attachment_preview.js"></script>
 </body>
 </html>

@@ -185,10 +185,10 @@ $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover
         <div class="border-l border-slate-200 pl-6">
             <h2 class="text-lg font-semibold text-slate-900 mb-4">Print Books of Accounts</h2>
             <div class="flex flex-col gap-3">
-                <a href="financial_records.php?type=Incoming" class="inline-flex justify-center items-center rounded-lg border border-emerald-600 text-emerald-700 bg-white font-semibold py-2 px-4 hover:bg-emerald-50 transition shadow-sm">
+                <a href="financial_records.php?view=crb" class="inline-flex justify-center items-center rounded-lg border border-emerald-600 text-emerald-700 bg-white font-semibold py-2 px-4 hover:bg-emerald-50 transition shadow-sm">
                     Cash Receipts Book (CRB) &rarr;
                 </a>
-                <a href="financial_records.php?type=Expense" class="inline-flex justify-center items-center rounded-lg border border-rose-600 text-rose-700 bg-white font-semibold py-2 px-4 hover:bg-rose-50 transition shadow-sm">
+                <a href="financial_records.php?view=cdb" class="inline-flex justify-center items-center rounded-lg border border-rose-600 text-rose-700 bg-white font-semibold py-2 px-4 hover:bg-rose-50 transition shadow-sm">
                     Cash Disbursements Book (CDB) &rarr;
                 </a>
             </div>
