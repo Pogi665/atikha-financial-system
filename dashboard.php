@@ -93,6 +93,22 @@ try {
     error_log('Dashboard totals failed: ' . $e->getMessage());
 }
 
+// Admin trends are independent of the all-time totals and forecast service.
+if (!$isExecutive) {
+    require_once __DIR__ . '/includes/dashboard_query.php';
+    $kpiMonths = forecast_month_window(6);
+    $kpiPeriod = (new DateTimeImmutable($kpiMonths[0] . '-01'))->format('M Y')
+        . ' – ' . (new DateTimeImmutable(end($kpiMonths) . '-01'))->format('M Y');
+    $kpiSeries = [];
+    $kpiTrendsAvailable = false;
+    try {
+        $kpiSeries = dashboard_kpi_series($pdo, $kpiMonths);
+        $kpiTrendsAvailable = true;
+    } catch (Throwable $e) {
+        error_log('Dashboard KPI trends failed: ' . $e->getMessage());
+    }
+}
+
 $csrfToken = csrf_token();
 
 $utilPct = $budgetUtil['pct'];
@@ -124,44 +140,46 @@ else:
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
-        <div class="flex items-center gap-4">
-            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                    <path d="m3 17 6-6 4 4 8-10M15 5h6v6" />
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-500">Total Incoming Funds</p>
-                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
-            </div>
+        <p class="text-sm font-semibold text-slate-500">Total Incoming Funds</p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
+        <p id="kpi-income-caption" class="text-xs text-slate-500 mt-4">Monthly incoming funds · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
+        <div id="kpi-income-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
+            <canvas id="kpiIncomeChart" role="img" aria-labelledby="kpi-income-caption" aria-describedby="kpi-income-values"></canvas>
         </div>
+        <p id="kpi-income-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
+        <ul id="kpi-income-values" class="sr-only">
+            <?php foreach ($kpiSeries as $point): ?>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['income']), ENT_QUOTES, 'UTF-8') ?></li>
+            <?php endforeach; ?>
+        </ul>
     </div>
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
-        <div class="flex items-center gap-4">
-            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-rose-100 text-rose-600">
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                    <path d="m3 7 6 6 4-4 8 10M15 19h6v-6" />
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-500">Total Expenses</p>
-                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
-            </div>
+        <p class="text-sm font-semibold text-slate-500">Total Expenses</p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
+        <p id="kpi-expenses-caption" class="text-xs text-slate-500 mt-4">Monthly expenses · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
+        <div id="kpi-expenses-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
+            <canvas id="kpiExpensesChart" role="img" aria-labelledby="kpi-expenses-caption" aria-describedby="kpi-expenses-values"></canvas>
         </div>
+        <p id="kpi-expenses-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
+        <ul id="kpi-expenses-values" class="sr-only">
+            <?php foreach ($kpiSeries as $point): ?>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['expenses']), ENT_QUOTES, 'UTF-8') ?></li>
+            <?php endforeach; ?>
+        </ul>
     </div>
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
-        <div class="flex items-center gap-4">
-            <div class="h-12 w-12 shrink-0 rounded-full flex items-center justify-center bg-indigo-100 text-indigo-600">
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                    <path d="M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v11H6a3 3 0 0 1-3-3V6" />
-                    <path d="M20 12h-4a2 2 0 0 0 0 4h4" />
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-500">Net Balance</p>
-                <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
-            </div>
+        <p class="text-sm font-semibold text-slate-500">Net Balance</p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
+        <p id="kpi-balance-caption" class="text-xs text-slate-500 mt-4">Month-end balance · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
+        <div id="kpi-balance-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
+            <canvas id="kpiBalanceChart" role="img" aria-labelledby="kpi-balance-caption" aria-describedby="kpi-balance-values"></canvas>
         </div>
+        <p id="kpi-balance-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
+        <ul id="kpi-balance-values" class="sr-only">
+            <?php foreach ($kpiSeries as $point): ?>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['balance']), ENT_QUOTES, 'UTF-8') ?></li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 </div>
 
@@ -279,9 +297,64 @@ if ($isExecutive) {
     $jsExpenses = json_encode($totalExpenses);
     $jsCsrf = json_encode($csrfToken);
     $jsCanRefresh = json_encode($canRefresh && $aiConfigured);
+    $jsKpiSeries = json_encode($kpiSeries, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE);
 
     $scripts = <<<JS
 <script>
+(function () {
+    const series = {$jsKpiSeries};
+    const charts = [
+        { key: 'income', id: 'kpiIncomeChart', label: 'Monthly incoming funds', color: '#059669', fill: 'rgba(5, 150, 105, 0.08)' },
+        { key: 'expenses', id: 'kpiExpensesChart', label: 'Monthly expenses', color: '#e11d48', fill: 'rgba(225, 29, 72, 0.08)' },
+        { key: 'balance', id: 'kpiBalanceChart', label: 'Month-end balance', color: '#4f46e5', fill: 'rgba(79, 70, 229, 0.08)' },
+    ];
+    charts.forEach(function (chart) {
+        const canvas = document.getElementById(chart.id);
+        const wrap = document.getElementById('kpi-' + chart.key + '-chart');
+        const status = document.getElementById('kpi-' + chart.key + '-status');
+        if (!canvas || !wrap || !status) return;
+        try {
+            if (typeof Chart !== 'function' || !Array.isArray(series) || series.length !== 6 ||
+                series.some((point) => !point || !/^\d{4}-\d{2}$/.test(point.month) ||
+                    typeof point[chart.key] !== 'number' || !Number.isFinite(point[chart.key]))) {
+                throw new Error('KPI trend unavailable');
+            }
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: series.map(function (point) {
+                        const parts = point.month.split('-');
+                        return new Date(Number(parts[0]), Number(parts[1]) - 1, 1)
+                            .toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
+                    }),
+                    datasets: [{ label: chart.label, data: series.map((point) => point[chart.key]),
+                        borderColor: chart.color, backgroundColor: chart.fill, borderWidth: 2,
+                        tension: 0, fill: true, pointRadius: 0, pointHoverRadius: 0, pointHitRadius: 8 }],
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: {
+                        label: (ctx) => ctx.dataset.label + ': ₱' + Number(ctx.parsed.y)
+                            .toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                    } } },
+                    scales: {
+                        x: { display: false, grid: { display: false }, border: { display: false } },
+                        y: { display: false, grid: { display: false }, border: { display: false } },
+                    },
+                },
+            });
+        } catch (error) {
+            if (typeof Chart === 'function' && typeof Chart.getChart === 'function') {
+                const partial = Chart.getChart(canvas);
+                if (partial) partial.destroy();
+            }
+            wrap.classList.add('hidden');
+            status.classList.remove('hidden');
+        }
+    });
+})();
+
 (function () {
     const csrfToken = {$jsCsrf};
     const canRefresh = {$jsCanRefresh};

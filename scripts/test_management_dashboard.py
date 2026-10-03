@@ -68,6 +68,8 @@ if ($action==='init') {
  echo json_encode(['funds'=>$pdo->query('SELECT SUM(Amount) FROM Incoming_Funds')->fetchColumn(),'expenses'=>$pdo->query('SELECT SUM(Amount) FROM Expenses')->fetchColumn()]);
 } elseif ($action==='budgets-off') { $pdo->exec('RENAME TABLE Budgets TO Budgets_unavailable'); }
 elseif ($action==='budgets-on') { $pdo->exec('RENAME TABLE Budgets_unavailable TO Budgets'); }
+elseif ($action==='expenses-date-off') { $pdo->exec('ALTER TABLE Expenses CHANGE Date_Incurred Date_unavailable DATE NOT NULL'); }
+elseif ($action==='expenses-date-on') { $pdo->exec('ALTER TABLE Expenses CHANGE Date_unavailable Date_Incurred DATE NOT NULL'); }
 elseif ($action==='cache-count') { echo $pdo->query('SELECT COUNT(*) FROM forecast_cache')->fetchColumn(); }
 ''', encoding='utf-8')
 
@@ -133,6 +135,31 @@ try:
     fixture_call('budgets-on')
     _, admin_body = request('dashboard.php', admin)
     check('Financial Overview' in admin_body and 'management-dashboard.css' not in admin_body and 'management-dashboard.js' not in admin_body, 'Admin excludes Management assets')
+    (run / 'admin.html').write_text(admin_body, encoding='utf-8')
+    sparkline_series = json.loads(re.search(r'const series = (.*?);', admin_body).group(1))
+    check(len(sparkline_series) == 6 and sum(point['expenses'] for point in sparkline_series) == 900,
+          'Admin six-month expense trends exclude the current month')
+    check(all(point['income'] == 0 for point in sparkline_series) and sparkline_series[-1]['balance'] == -900,
+          'Admin closed-month balance excludes current incoming funds')
+    cards = admin_body.split('<div class="grid grid-cols-1 md:grid-cols-3 gap-6">', 1)[1].split('<section', 1)[0]
+    check(cards.count('<canvas') == 3 and '<svg' not in cards and cards.count('relative h-16 w-full') == 3,
+          'Admin replaces only the three card icons with 64px chart containers')
+    check(cards.count('<li>') == 18 and cards.count('aria-describedby="kpi-') == 3,
+          'All eighteen monthly values have server-rendered accessible alternatives')
+    check(all('₱' + format(value, ',.2f') in cards for value in [float(totals['funds']), float(totals['expenses']), float(totals['funds'])-float(totals['expenses'])]),
+          'Admin large totals retain all-time recorded amounts')
+    fixture_call('expenses-date-off')
+    try:
+        _, trend_failure = request('dashboard.php', admin)
+        failed_cards = trend_failure.split('<div class="grid grid-cols-1 md:grid-cols-3 gap-6">', 1)[1].split('<section', 1)[0]
+        check('const series = [];' in trend_failure and failed_cards.count('relative h-16 w-full mt-4 hidden') == 3,
+              'Trend failure hides canvases and does not serialize fabricated zeros')
+        check(all(re.search(r'id="kpi-' + key + r'-status"[^>]*class="[^"]*mt-4">Trend unavailable', failed_cards)
+                  for key in ['income', 'expenses', 'balance']), 'Trend failure displays three unavailable states')
+        check(all('₱' + format(value, ',.2f') in failed_cards for value in [float(totals['funds']), float(totals['expenses']), float(totals['funds'])-float(totals['expenses'])]),
+              'Trend query failure preserves valid all-time totals')
+    finally:
+        fixture_call('expenses-date-on')
     code, response = request('forecast_ai.php', fields={'action':'load','csrf_token':'fixture-csrf'})
     check(json.loads(response)['data']['state'] == 'degraded', 'Missing key returns baseline')
     code, _ = request('forecast_ai.php', fields={'action':'refresh','csrf_token':'wrong'})

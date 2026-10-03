@@ -24,7 +24,7 @@ $csrfToken = csrf_token();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Atikha Financial System</title>
-    <link href="assets/css/tailwind.css" rel="stylesheet">
+    <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
@@ -107,7 +107,7 @@ $csrfToken = csrf_token();
                                 name="email"
                                 required
                                 autocomplete="username"
-                                class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
+                                class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 caret-black cursor-text placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
                                 placeholder="you@atikha.org"
                             >
                         </div>
@@ -121,7 +121,7 @@ $csrfToken = csrf_token();
                                     name="password"
                                     required
                                     autocomplete="current-password"
-                                    class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-10 text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60 [&::-ms-reveal]:hidden"
+                                    class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-10 text-slate-900 caret-black cursor-text placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60 [&::-ms-reveal]:hidden"
                                     placeholder="••••••••"
                                 >
                                 <button
@@ -184,7 +184,7 @@ $csrfToken = csrf_token();
                                 name="email"
                                 required
                                 autocomplete="email"
-                                class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
+                                class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 caret-black cursor-text placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
                                 placeholder="you@atikha.org"
                             >
                         </div>

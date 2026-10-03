@@ -100,7 +100,7 @@ $csrfToken = csrf_token();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Login — Atikha Financial System</title>
-    <link href="assets/css/tailwind.css" rel="stylesheet">
+    <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
@@ -171,7 +171,7 @@ $csrfToken = csrf_token();
                             pattern="[0-9]{6}"
                             maxlength="6"
                             autocomplete="one-time-code"
-                            class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-lg tracking-[0.35em] text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
+                            class="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-lg tracking-[0.35em] text-slate-900 caret-black cursor-text placeholder-slate-400 shadow-sm transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/60"
                             placeholder="000000"
                         >
                     </div>
