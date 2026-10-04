@@ -16,6 +16,14 @@ $navRole = $_SESSION['Role'] ?? '';
 $navIsAdmin = $navRole === 'Admin';
 $navIsExecutive = $navRole === 'Management';
 $navCanUseWorkspace = in_array($navRole, ['Admin'], true);
+$navCanScanReceipt = false;
+if ($navCanUseWorkspace) {
+    require_once __DIR__ . '/receipt_ocr.php';
+    // layout_begin() includes this file inside its own scope.
+    $navConnection = $pdo ?? $GLOBALS['pdo'] ?? null;
+    try { $navCanScanReceipt = $navConnection instanceof PDO && receipt_enabled($navConnection); }
+    catch (Throwable $e) { error_log('Receipt navigation unavailable.'); }
+}
 
 $navRoleLabel = htmlspecialchars(user_role_label($navRole), ENT_QUOTES, 'UTF-8');
 
@@ -78,6 +86,12 @@ $sidebarClass = $navIsExecutive
                 <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h3m2 0h3"/></svg>
                 General Journal
             </a>
+            <?php if ($navCanScanReceipt): ?>
+            <a href="ocr_expense.php" class="<?= nav_link_class('ocr_expense', $activePage, $navIsExecutive) ?>">
+                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h3"/></svg>
+                Scan Receipt
+            </a>
+            <?php endif; ?>
 
             <!-- Books of Accounts Section -->
             <div class="sidebar-section">

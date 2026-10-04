@@ -233,6 +233,9 @@ function accounting_records(PDO $pdo, array $filters): array
         }
         foreach ($journals as &$j) { $j['debit_cents']=(string)$j['debit_cents']; $j['credit_cents']=(string)$j['credit_cents']; } unset($j);
         foreach ($rows as &$r) { $r['debit_cents']=(string)accounting_cents($r['debit_amount']); $r['credit_cents']=(string)accounting_cents($r['credit_amount']); } unset($r);
+        require_once __DIR__.'/receipt_ocr.php';
+        $attachments=receipt_journal_metadata($pdo,array_keys($journals));
+        foreach($journals as $id=>&$journal){$journal['attachments']=$attachments[$id]??[];}unset($journal);
         return ['rows'=>$rows,'journals'=>$journals];
     });
 }

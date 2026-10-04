@@ -147,11 +147,12 @@ try:
         before=counts();res=ctx.request.post(base+'/general_journal.php',form=data,max_redirects=0)
         check(res.status==303 and counts()==before,'HTTP retry remains idempotent')
         data['description']='Changed';check(ctx.request.post(base+'/general_journal.php',form=data,max_redirects=0).status==409,'HTTP changed replay returns conflict')
-        for route in ['funds.php','expenses.php','ocr_expense.php']:
+        for route in ['funds.php','expenses.php']:
             get=ctx.request.get(base+'/'+route,max_redirects=0)
             check(get.status==302 and get.headers['location']=='general_journal.php',route+' GET redirects to journal')
             check(ctx.request.post(base+'/'+route,form={'action':'create'},max_redirects=0).status==410,route+' POST retired before writes')
-        check(ctx.request.post(base+'/ocr_extract.php',form={},max_redirects=0).status==410,'OCR API retired before upload or external calls')
+        check(ctx.request.get(base+'/ocr_expense.php',max_redirects=0).status==503,'OCR workspace fails closed before Phase 4 deployment')
+        check(ctx.request.post(base+'/ocr_extract.php',form={},max_redirects=0).status==503,'OCR API fails closed before Phase 4 deployment')
         data=payload()
         for entity in ['fund','expense']:
             check(ctx.request.post(base+'/review_actions.php',form={'csrf_token':data['csrf_token'],'action':'send_for_review','entity_type':entity,'entity_id':'1'},max_redirects=0).status==410,entity+' review writes retired')

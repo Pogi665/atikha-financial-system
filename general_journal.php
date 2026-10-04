@@ -5,6 +5,7 @@ require_login();
 require_role(['Admin'], 'General Journal');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/journal.php';
+require_once __DIR__ . '/includes/receipt_ocr.php';
 require_once __DIR__ . '/includes/layout.php';
 
 function journal_escape($value): string
@@ -26,6 +27,7 @@ $form = ['entry_date' => journal_today(), 'reference' => '', 'description' => ''
 $blank = ['account_id' => '', 'fund_project_id' => '', 'debit_amount' => '', 'credit_amount' => ''];
 $lines = [$blank, $blank];
 $key = '';
+$receiptView = null; $receiptFields = []; $currencyConfirmed = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach (['entry_date' => 32, 'reference' => 100, 'description' => 2000] as $field => $limit) {
         $form[$field] = journal_form_text($_POST, $field, $limit);
@@ -58,6 +60,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 try {
     journal_require_schema($pdo);
     $accounts = journal_accounts($pdo);
+    $receiptRaw = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
+    if (array_key_exists('receipt_id', $receiptRaw)) {
+        $receiptId = journal_id(journal_string($receiptRaw, 'receipt_id'));
+        $receiptView = receipt_review($pdo, $receiptId, (int) $_SESSION['UserID']);
+        $r = $receiptView['receipt']; $a = $receiptView['attempt']; $d = $receiptView['data'];
+        $receiptFields = ['receipt_id'=>(string)$r['ReceiptID'],'receipt_attempt_id'=>(string)$a['id'],
+            'receipt_hash'=>$r['File_SHA256'],'intake_signature'=>$receiptView['intake_signature']];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            foreach ($receiptFields as $field => $expected) {
+                if (!is_string($_POST[$field] ?? null) || !hash_equals($expected, $_POST[$field])) {
+                    throw new JournalProblem('Receipt proposal changed. Reopen this receipt from Scan Receipt and review it again.',409);
+                }
+            }
+            $currencyConfirmed = ($_POST['confirmed_currency'] ?? null) === 'PHP';
+        } else {
+            $form = ['entry_date'=>$d['transaction_date']??'','reference'=>$d['reference']??'','description'=>''];
+            $amount = ($d['currency']??null) === 'PHP' ? ($d['total_amount']??'') : '';
+            $lines = [
+                ['account_id'=>isset($d['suggested_debit_account_id'])?(string)$d['suggested_debit_account_id']:'',
+                    'fund_project_id'=>'','debit_amount'=>$amount,'credit_amount'=>''],
+                ['account_id'=>'','fund_project_id'=>'','debit_amount'=>'','credit_amount'=>$amount]
+            ];
+        }
+    }
+} catch (JournalProblem $e) {
+    http_response_code($e->status); $unavailable = true; $error = $e->getMessage();
 } catch (Throwable $e) {
     error_log('Journal setup unavailable: ' . $e->getMessage());
     http_response_code(503); $unavailable = true;
@@ -107,8 +135,24 @@ layout_begin('General Journal', 'general_journal', [], '<link rel="stylesheet" h
 <?php if (!$unavailable): ?>
 <form id="journal-form" method="post" action="general_journal.php">
     <?= csrf_field() ?><input type="hidden" name="submission_key" value="<?= journal_escape($key) ?>">
+    <?php if ($receiptView !== null): ?>
+    <?php foreach ($receiptFields as $field=>$value): ?><input type="hidden" name="<?= journal_escape($field) ?>" value="<?= journal_escape($value) ?>"><?php endforeach; ?>
+    <section class="journal-receipt-review" aria-label="Receipt evidence review">
+        <div><img src="receipt_attachment.php?receipt_id=<?= (int)$receiptView['receipt']['ReceiptID'] ?>" alt="Original receipt evidence">
+            <a target="_blank" rel="noopener" href="receipt_attachment.php?receipt_id=<?= (int)$receiptView['receipt']['ReceiptID'] ?>">Open original receipt</a></div>
+        <div><h2>Receipt review</h2><p><?= journal_escape($receiptView['data']['merchant']??'Merchant needs review') ?></p>
+            <p>Extracted total: <?= journal_escape($receiptView['data']['total_amount']??'Needs review') ?> · Currency: <?= journal_escape($receiptView['data']['currency']??'Needs review') ?></p>
+            <p>Printed date: <?= journal_escape($receiptView['data']['date_text']??'Needs review') ?></p>
+            <p>Choose the actual credit account. Enter the business purpose yourself. No journal has been posted yet.</p>
+            <?php if ($receiptView['attempt']['state']==='Failed'): ?><p class="journal-alert">Automatic extraction failed. Enter all details manually.</p><?php endif; ?>
+            <?php if (($receiptView['data']['confidence']??0)<RECEIPT_LOW_CONFIDENCE): ?><p>Low extraction confidence. Verify every field; this is not an authenticity check.</p><?php endif; ?>
+            <?php foreach ($receiptView['data']['warnings']??[] as $warning): ?><p><?= journal_escape($warning) ?></p><?php endforeach; ?>
+            <label><input id="receipt-currency-confirmed" type="checkbox" name="confirmed_currency" value="PHP" required <?= $currencyConfirmed?'checked':'' ?>> I verified that the journal amounts are in PHP. No currency conversion is performed.</label>
+        </div>
+    </section>
+    <?php endif; ?>
     <div class="journal-header-fields">
-        <div><label for="entry-date">Entry Date</label><input id="entry-date" name="entry_date" type="date" min="1000-01-01" max="9999-12-31" required value="<?= journal_escape($form['entry_date']) ?>"><small>Defaults to today in Asia/Manila.</small></div>
+        <div><label for="entry-date">Entry Date</label><input id="entry-date" name="entry_date" type="date" min="1000-01-01" max="9999-12-31" required value="<?= journal_escape($form['entry_date']) ?>"><small><?= $receiptView?'Verify the receipt date; unclear dates require manual entry.':'Defaults to today in Asia/Manila.' ?></small></div>
         <div><label for="journal-reference">Reference (optional)</label><input id="journal-reference" name="reference" maxlength="100" value="<?= journal_escape($form['reference']) ?>"></div>
         <div class="journal-description"><label for="journal-description">Description</label><textarea id="journal-description" name="description" required maxlength="2000" rows="3"><?= journal_escape($form['description']) ?></textarea></div>
     </div>

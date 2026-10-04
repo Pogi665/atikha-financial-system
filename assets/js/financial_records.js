@@ -41,6 +41,14 @@
         const container=document.getElementById('transaction-documents');container.replaceChildren();const t=document.createElement('table');t.className='journal-detail-lines';
         const head=document.createElement('thead'),hr=document.createElement('tr');['Account','Fund / Project ID','Debit','Credit'].forEach(v=>{const th=document.createElement('th');th.textContent=v;hr.append(th);});head.append(hr);t.append(head);
         const body=document.createElement('tbody');j.lines.forEach(r=>{const tr=document.createElement('tr');[account(r),r.fund_project_id??'Not tagged',money(r.debit_amount.replace('.','')),money(r.credit_amount.replace('.',''))].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});body.append(tr);});t.append(body);container.append(t);
+        (j.attachments || []).forEach(a=>{
+            const article=document.createElement('article');article.className='journal-receipt';
+            const heading=document.createElement('h3');heading.textContent=a.name;article.append(heading);
+            const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' ? '+a.size+' bytes ? SHA-256 '+a.sha256;article.append(meta);
+            const link=document.createElement('a');link.href=a.url;link.target='_blank';link.rel='noopener';link.textContent='View receipt';article.append(link);
+            const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' ? ',download);
+            container.append(article);
+        });
         dialog.showModal();document.getElementById('transaction-close').focus();
     });
 }());

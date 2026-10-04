@@ -25,3 +25,7 @@
 .journal-page .journal-alert, .journal-page .journal-success {padding:1rem;border-radius:.5rem;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;}
 .journal-page .journal-success {background:#ecfdf5;border-color:#a7f3d0;color:#047857;}
 @media(max-width:900px) {.journal-page .journal-header-fields {grid-template-columns:1fr;} .journal-page .journal-totals {gap:1rem;flex-wrap:wrap;} .journal-page main {padding:1rem;} .journal-page .journal-line-controls {flex-wrap:wrap;} }
+
+.journal-receipt-review{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;padding:1.5rem;border:1px solid #cbd5e1;border-radius:1rem;background:#fff;margin-bottom:1.5rem}.journal-receipt-review img{display:block;max-height:45vh;max-width:100%;object-fit:contain;margin:auto}.journal-receipt-review p{margin:.7rem 0}.journal-receipt-review h2{font-weight:700}.journal-receipt-review input[type=checkbox]{width:auto}.journal-receipt-review a{color:#1d4ed8;text-decoration:underline}@media(max-width:1100px){.journal-receipt-review{grid-template-columns:1fr}}
+
+.journal-receipt-review{overflow-wrap:anywhere}

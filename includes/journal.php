@@ -159,6 +159,13 @@ function journal_post(PDO $pdo, int $userId, array $post): array
     if (!journal_submission_valid($key)) { throw new JournalProblem('This entry form expired. Reload it and try again.', 400); }
     journal_require_schema($pdo);
     $input = journal_input($post);
+    $receiptContext = null; $receiptReview = null;
+    if (array_intersect(['receipt_id','receipt_attempt_id','receipt_hash','intake_signature','confirmed_currency'], array_keys($post))) {
+        require_once __DIR__ . '/receipt_ocr.php';
+        $receiptContext = receipt_post_context($post);
+        $input['receipt_context'] = $receiptContext;
+        $input['receipt_context']['review_signature'] = journal_string($post, 'intake_signature');
+    }
     $hash = hash('sha256', json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
     if ($pdo->inTransaction()) { throw new LogicException('Journal posting must own its transaction.'); }
     $pdo->beginTransaction();
@@ -171,6 +178,9 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         }
         $existing = journal_existing($pdo, $key, $userId, $hash);
         if ($existing) { $pdo->commit(); return $existing; }
+        if ($receiptContext !== null) {
+            $receiptReview = receipt_lock_for_post($pdo, $userId, $receiptContext, journal_string($post, 'intake_signature'));
+        }
         $ids = array_values(array_unique(array_column($input['lines'], 'account_id')));
         sort($ids, SORT_NUMERIC);
         $stmt = $pdo->prepare('SELECT CategoryID, Name, Account_Type, Normal_Balance, Is_Active, Is_Cash_Account FROM Categories
@@ -202,6 +212,7 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         }
         $audit = ['entry_date' => $input['entry_date'], 'reference' => $input['reference'],
             'description' => $input['description'], 'status' => 'posted', 'posted_by_user_id' => $userId, 'lines' => $auditLines];
+        if ($receiptReview !== null) { $audit['receipt_evidence'] = receipt_link_post($pdo, $id, $receiptReview, $input); }
         if (!log_system_action($pdo, $userId, AUDIT_ACTION_CREATE, 'General Journal', $id, null, $audit, 'general_journal.php')) {
             throw new RuntimeException('Journal audit record could not be saved.');
         }
@@ -212,6 +223,9 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         if ($e instanceof PDOException && (int) ($e->errorInfo[1] ?? 0) === 1062) {
             $existing = journal_existing($pdo, $key, $userId, $hash);
             if ($existing) { return $existing; }
+            if ($receiptContext !== null && receipt_duplicate($pdo, $receiptContext['file_hash'])) {
+                throw new JournalProblem('Identical receipt evidence was already posted by another request.', 409);
+            }
         }
         throw $e;
     }

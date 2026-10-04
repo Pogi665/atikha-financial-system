@@ -7,17 +7,17 @@
  * AJAX upload endpoint) so both go through the same hardened upload path.
  */
 
-const RECEIPT_UPLOAD_DIR = __DIR__ . '/../uploads/receipts';
+// CLI/isolated HTTP fixtures may define a private evidence root before loading.
+if (!defined('RECEIPT_UPLOAD_DIR')) { define('RECEIPT_UPLOAD_DIR', __DIR__ . '/../uploads/receipts'); }
 const RECEIPT_PUBLIC_DIR = 'uploads/receipts';
 const MAX_RECEIPT_BYTES = 8 * 1024 * 1024;
+const MAX_RECEIPT_PIXELS = 20000000;
 
 // Real MIME types, read from the file contents rather than the client's header.
 const ALLOWED_RECEIPT_MIMES = [
     'image/jpeg' => 'jpg',
     'image/png'  => 'png',
     'image/webp' => 'webp',
-    'image/heic' => 'heic',
-    'image/heif' => 'heif',
 ];
 
 /**
@@ -80,7 +80,7 @@ function store_uploaded_receipt(array $file): array
     }
 
     // 3. Size bounds.
-    $size = (int) ($file['size'] ?? 0);
+    $size = (int) @filesize($tmpPath);
     if ($size <= 0) {
         $result['error'] = 'The uploaded file is empty. Please try again.';
 
@@ -111,31 +111,46 @@ function store_uploaded_receipt(array $file): array
         }
     }
     if (!isset(ALLOWED_RECEIPT_MIMES[$mime])) {
-        $result['error'] = 'Only JPG, PNG, WEBP or HEIC images are accepted.';
+        $result['error'] = 'Only JPG, PNG or WebP images are accepted. Convert HEIC/HEIF first.';
 
         return $result;
     }
 
-    // 5. Independent confirmation that the bytes actually decode as an image.
-    //    HEIC is exempt because getimagesize() cannot parse it on most builds.
-    if (!in_array($mime, ['image/heic', 'image/heif'], true)) {
+    // Bound dimensions BEFORE GD allocates decoded pixels.
+    {
         $dimensions = @getimagesize($tmpPath);
         if ($dimensions === false
             || empty($dimensions[0])
             || empty($dimensions[1])
             || (int) $dimensions[0] < 32
             || (int) $dimensions[1] < 32
+            || (int) $dimensions[0] > intdiv(MAX_RECEIPT_PIXELS, (int) $dimensions[1])
         ) {
             $result['error'] = 'That file is not a readable image. Please upload a clear receipt photo.';
 
             return $result;
         }
+        if (!function_exists('imagecreatefromstring')) {
+            $result['error'] = 'Receipt image validation is unavailable. Contact your administrator.';
+            return $result;
+        }
+        $decoded = @imagecreatefromstring((string) file_get_contents($tmpPath));
+        if ($decoded === false) {
+            $result['error'] = 'That image could not be decoded. Upload a readable receipt photo.';
+            return $result;
+        }
+        imagedestroy($decoded);
     }
 
     if (!is_dir(RECEIPT_UPLOAD_DIR) && !@mkdir(RECEIPT_UPLOAD_DIR, 0755, true) && !is_dir(RECEIPT_UPLOAD_DIR)) {
         error_log('Unable to create receipt upload directory: ' . RECEIPT_UPLOAD_DIR);
         $result['error'] = 'The server could not store the image. Please contact your administrator.';
 
+        return $result;
+    }
+    if (!is_file(RECEIPT_UPLOAD_DIR . '/.htaccess')
+        || !str_contains((string) file_get_contents(RECEIPT_UPLOAD_DIR . '/.htaccess'), 'Require all denied')) {
+        $result['error'] = 'Protected receipt storage is unavailable. Contact your administrator.';
         return $result;
     }
 
@@ -159,10 +174,11 @@ function store_uploaded_receipt(array $file): array
         'ok'          => true,
         'error'       => '',
         'path'        => RECEIPT_PUBLIC_DIR . '/' . $filename,
-        'public_path' => RECEIPT_PUBLIC_DIR . '/' . $filename,
+        'public_path' => '',
         'mime'        => $mime,
         'size'        => $size,
         'original'    => substr($originalName, 0, 255),
+        'sha256'      => hash_file('sha256', $destination),
     ];
 }
 

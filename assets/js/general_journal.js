@@ -67,9 +67,11 @@
         const date = document.getElementById('entry-date');
         const description = document.getElementById('journal-description');
         const reference = document.getElementById('journal-reference');
+        const currency = document.getElementById('receipt-currency-confirmed');
         valid = valid && /^\d{4}-\d{2}-\d{2}$/.test(date.value) && date.validity.valid
             && description.value.trim() !== '' && Array.from(description.value.trim()).length <= 2000
-            && Array.from(reference.value.trim()).length <= 100 && debits > 0n && debits === credits;
+            && Array.from(reference.value.trim()).length <= 100 && debits > 0n && debits === credits
+            && (!currency || currency.checked);
         submit.disabled = !valid || submitting;
         message.textContent = submitting ? 'Posting entry…' : valid ? 'Entry is balanced and ready to post.' : 'Complete the header and every line. Debits and Credits must be equal and greater than zero.';
         return valid;
