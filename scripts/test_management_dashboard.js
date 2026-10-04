@@ -22,24 +22,24 @@ root.querySelector = selector => get(selector.replace(/^#/, ''));
 root.querySelectorAll = () => extras;
 get('md-budget-toggle').dataset.count = '8';
 const input = {
-    cashFlow: [{ month: '2026-08', inflow: 100, outflow: 40 }], cashFlowAvailable: true,
+    cashFlow: [{ month: '2026-08', income: 100, expenses: 40 }], cashFlowAvailable: true,
     breakdown: { labels: ['Category', 'Other'], amounts: [75, 25] }, breakdownAvailable: true,
     budgetUpcoming: [{ year: 2026, month: 10, total: 200 }, { year: 2026, month: 9, total: 100 }],
     budgetByCategory: [{ category: 'Category', budgeted: 100, spent: 125 }], csrfToken: 'token', canRefresh: true,
 };
 get('management-dashboard-data').textContent = JSON.stringify(input);
 const good = {
-    state: 'cached', as_of: '2026-09-30', generated_at: '2026-09-30 08:00:00',
-    projection: [{ month: '2026-08', projected_outflow: 50 }, { month: '2026-09', projected_outflow: 150 }, { month: '2026-10', projected_outflow: 150 }],
-    metrics: { runway_months: 3.5, net_position: 350, recent_avg_outflow: 100 },
-    advisory: { reallocation_suggestion: 'Consider category A. However, review restrictions first. Preserve this final sentence.', funding_risk: 'Funding is concentrated. Check the existing agreements.', risk_level: 'MEDIUM' },
+    version: 2, basis: 'net_expenses_v1', state: 'cached', as_of: '2026-09-30', generated_at: '2026-09-30 08:00:00',
+    projection: [{ month: '2026-08', projected_expenses: 50 }, { month: '2026-09', projected_expenses: 150 }, { month: '2026-10', projected_expenses: 150 }],
+    metrics: { runway_months: 3.5, net_position: 350, recent_avg_expenses: 100 },
+    advisory: { reallocation_suggestion: 'Consider category A. However, review restrictions first. Preserve this final sentence.', funding_risk: 'Funding is concentrated. Check the existing agreements.', risk_level: 'UNKNOWN' },
     categories: [{ category: 'Category', trend: 'rising' }],
 };
 const replies = [
     { ok: true, payload: { ok: true, data: good } },
     { ok: false, payload: { ok: false, error: 'Please wait before recalculating.' } },
     { throw: new Error('Network failed.') },
-    { ok: true, payload: { ok: true, data: { ...good, projection: [{ month: 'broken', projected_outflow: 'NaN' }] } } },
+    { ok: true, payload: { ok: true, data: { ...good, projection: [{ month: 'broken', projected_expenses: 'NaN' }] } } },
     { ok: true, payload: { ok: true, data: { ...good, state: 'fresh' } } },
 ];
 const charts = [];
@@ -73,9 +73,9 @@ const text = node => node.textContent + node.children.map(text).join(' ');
     check(comparisons[0].includes('unavailable') && !comparisons[0].includes('Recorded budget: ₱0'), 'Unmatched cached month is unavailable');
     check(comparisons[1].includes('Recorded budget: ₱100.00') && comparisons[2].includes('Recorded budget: ₱200.00'), 'Budget matching uses month keys despite reordered input');
     check(get('md-reallocation-excerpt').textContent === 'Consider category A. However, review restrictions first.', 'Excerpt preserves full sentences and qualification');
-    check(get('md-reallocation').textContent === good.advisory.reallocation_suggestion && get('md-risk').textContent.includes('MEDIUM'), 'Full advice and risk retained');
+    check(get('md-reallocation').textContent === good.advisory.reallocation_suggestion && get('md-risk').textContent.includes('No risk assessment'), 'Full advice and risk retained');
     check(!text(root).includes(good.generated_at) && !get('md-forecast-status').textContent.includes(good.generated_at), 'Unverified clock not rendered');
-    check(get('md-freshness-detail').textContent.includes('may predate'), 'Cached response scope explained');
+    check(get('md-freshness-detail').textContent.includes('match the returned'), 'Cached response scope explained');
     const original = text(get('md-budget-compare'));
     for (const failure of ['throttle', 'network', 'invalid response']) {
         get('md-refresh').listeners.click(); await flush();

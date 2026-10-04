@@ -43,258 +43,49 @@ if (!$sessionValid) {
     review_respond(false, null, 'Your session expired. Please sign in again.', 401);
 }
 
-if (!csrf_verify($_POST['csrf_token'] ?? null)) {
+if (!csrf_verify(is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
     review_respond(false, null, 'Your session expired. Please reload the page and try again.', 400);
 }
 
 $userId = (int) $_SESSION['UserID'];
 $role = (string) ($_SESSION['Role'] ?? '');
-$action = (string) ($_POST['action'] ?? '');
-$entityType = (string) ($_POST['entity_type'] ?? '');
-$entityId = (int) ($_POST['entity_id'] ?? 0);
-$reviewNotes = isset($_POST['review_notes']) ? trim((string) $_POST['review_notes']) : '';
-$reportMonth = (int) ($_POST['report_month'] ?? 0);
-$reportYear = (int) ($_POST['report_year'] ?? 0);
-
-if ($action === 'send_for_review') {
-    if (!in_array($role, REVIEW_WORKSPACE_ROLES, true)) {
-        review_respond(false, null, 'Sending items for review is restricted to System Administrators.', 403);
-    }
-
-    if ($entityType === 'report') {
-        if ($reportMonth < 1 || $reportMonth > 12 || $reportYear < 2000) {
-            review_respond(false, null, 'Invalid report period.', 400);
-        }
-
-        $result = report_snapshot_upsert($pdo, $reportMonth, $reportYear, $userId);
-        if (!$result['ok']) {
-            review_respond(false, null, $result['error'], 500);
-        }
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_REQUEST,
-            'Reports',
-            $result['report_id'],
-            null,
-            ['report_month' => $reportMonth, 'report_year' => $reportYear]
-        );
-
-        review_respond(true, [
-            'entity_type'   => 'report',
-            'entity_id'     => $result['report_id'],
-            'review_status' => 'Requested',
-        ], '');
-    }
-
-    if ($entityId <= 0) {
-        review_respond(false, null, 'Invalid record.', 400);
-    }
-
-    if ($entityType === 'expense') {
-        $stmt = $pdo->prepare(
-            'SELECT ExpenseID, Payee, Category, Amount, Review_Status
-             FROM Expenses WHERE ExpenseID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That expense could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Expenses SET Review_Status = :status, Review_Notes = NULL WHERE ExpenseID = :id'
-        );
-        $update->execute(['status' => 'Requested', 'id' => $entityId]);
-
-        notification_notify_management(
-            $pdo,
-            'Expense review requested: ' . $row['Payee'] . ' (₱' . number_format((float) $row['Amount'], 2) . ').',
-            'management_reviews.php?entity=expense&id=' . $entityId
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_REQUEST,
-            'Expenses',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Requested']
-        );
-
-        review_respond(true, ['entity_type' => 'expense', 'entity_id' => $entityId, 'review_status' => 'Requested'], '');
-    }
-
-    if ($entityType === 'fund') {
-        $stmt = $pdo->prepare(
-            'SELECT FundID, Source_Donor, Category, Amount, Review_Status
-             FROM Incoming_Funds WHERE FundID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That incoming fund could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Incoming_Funds SET Review_Status = :status, Review_Notes = NULL WHERE FundID = :id'
-        );
-        $update->execute(['status' => 'Requested', 'id' => $entityId]);
-
-        notification_notify_management(
-            $pdo,
-            'Incoming fund review requested: ' . $row['Source_Donor'] . ' (₱' . number_format((float) $row['Amount'], 2) . ').',
-            'management_reviews.php?entity=fund&id=' . $entityId
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_REQUEST,
-            'Incoming_Funds',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Requested']
-        );
-
-        review_respond(true, ['entity_type' => 'fund', 'entity_id' => $entityId, 'review_status' => 'Requested'], '');
-    }
-
-    review_respond(false, null, 'Unknown entity type.', 400);
+$action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
+$entityType = is_string($_POST['entity_type'] ?? null) ? $_POST['entity_type'] : '';
+if (in_array($entityType, ['fund', 'expense'], true)) {
+    review_respond(false, null, 'Legacy transaction reviews have been retired. Use General Journal.', 410);
 }
-
-if ($action === 'mark_reviewed') {
-    if (!in_array($role, REVIEW_MANAGEMENT_ROLES, true)) {
-        review_respond(false, null, 'Marking items as reviewed is restricted to Management.', 403);
-    }
-
-    if ($entityId <= 0) {
-        review_respond(false, null, 'Invalid record.', 400);
-    }
-
-    $notesValue = $reviewNotes !== '' ? $reviewNotes : null;
-
-    if ($entityType === 'expense') {
-        $stmt = $pdo->prepare(
-            'SELECT ExpenseID, Payee, RecordedBy_UserID, Review_Status
-             FROM Expenses WHERE ExpenseID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That expense could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Expenses
-             SET Review_Status = :status, Review_Notes = :notes
-             WHERE ExpenseID = :id'
-        );
-        $update->execute(['status' => 'Reviewed', 'notes' => $notesValue, 'id' => $entityId]);
-
-        notification_create(
-            $pdo,
-            (int) $row['RecordedBy_UserID'],
-            null,
-            'Your expense "' . $row['Payee'] . '" has been reviewed by Management.',
-            'expenses.php'
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_COMPLETE,
-            'Expenses',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Reviewed', 'review_notes' => $notesValue]
-        );
-
-        review_respond(true, ['entity_type' => 'expense', 'entity_id' => $entityId, 'review_status' => 'Reviewed'], '');
-    }
-
-    if ($entityType === 'fund') {
-        $stmt = $pdo->prepare(
-            'SELECT FundID, Source_Donor, RecordedBy_UserID, Review_Status
-             FROM Incoming_Funds WHERE FundID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That incoming fund could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Incoming_Funds
-             SET Review_Status = :status, Review_Notes = :notes
-             WHERE FundID = :id'
-        );
-        $update->execute(['status' => 'Reviewed', 'notes' => $notesValue, 'id' => $entityId]);
-
-        notification_create(
-            $pdo,
-            (int) $row['RecordedBy_UserID'],
-            null,
-            'Your incoming fund "' . $row['Source_Donor'] . '" has been reviewed by Management.',
-            'funds.php'
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_COMPLETE,
-            'Incoming_Funds',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Reviewed', 'review_notes' => $notesValue]
-        );
-
-        review_respond(true, ['entity_type' => 'fund', 'entity_id' => $entityId, 'review_status' => 'Reviewed'], '');
-    }
-
-    if ($entityType === 'report') {
-        $stmt = $pdo->prepare(
-            'SELECT ReportID, Report_Month, Report_Year, SubmittedBy_UserID, Review_Status
-             FROM Reports WHERE ReportID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That report could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Reports
-             SET Review_Status = :status, Review_Notes = :notes
-             WHERE ReportID = :id'
-        );
-        $update->execute(['status' => 'Reviewed', 'notes' => $notesValue, 'id' => $entityId]);
-
-        $periodLabel = date('F Y', mktime(0, 0, 0, (int) $row['Report_Month'], 1, (int) $row['Report_Year']));
-        notification_create(
-            $pdo,
-            (int) $row['SubmittedBy_UserID'],
-            null,
-            'Your monthly report for ' . $periodLabel . ' has been reviewed by Management.',
-            'reports.php?month=' . str_pad((string) $row['Report_Month'], 2, '0', STR_PAD_LEFT) . '&year=' . $row['Report_Year']
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_COMPLETE,
-            'Reports',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Reviewed', 'review_notes' => $notesValue]
-        );
-
-        review_respond(true, ['entity_type' => 'report', 'entity_id' => $entityId, 'review_status' => 'Reviewed'], '');
-    }
-
-    if ($entityType === 'board') {
+if ($entityType === 'report') {
+    review_respond(false, null, 'Legacy summary reports are read-only. Submit a frozen Trial Balance revision.', 410);
+}
+if ($entityType === 'trial_balance') {
+    try {
+        if ($action === 'send_for_review') {
+            $result = report_snapshot_submit($pdo, $userId, $_POST);
+            $status = 'Requested';
+        } elseif ($action === 'mark_reviewed') {
+            $result = report_snapshot_review($pdo, $userId, $_POST);
+            $status = 'Reviewed';
+        } else { review_respond(false, null, 'Unknown review action.', 400); }
+        review_respond(true, ['entity_type'=>'trial_balance','entity_id'=>$result['id'],
+            'review_status'=>$status,'duplicate'=>$result['duplicate'],'warning'=>$result['warning'],
+            'snapshot_url'=>'reports.php?snapshot_id='.$result['id']], '');
+    } catch (ReportProblem $e) { review_respond(false, null, $e->getMessage(), $e->status); }
+    catch (InvalidArgumentException $e) { review_respond(false, null, $e->getMessage(), 400); }
+    catch (Throwable $e) { error_log('Trial Balance review failed: '.$e->getMessage()); review_respond(false, null, 'Unable to save the Trial Balance review. No partial changes were saved.', 503); }
+}
+if ($action !== 'mark_reviewed' || $entityType !== 'board') {
+    review_respond(false, null, 'Unknown review action or entity.', 400);
+}
+if (!in_array($role, REVIEW_MANAGEMENT_ROLES, true)) {
+    review_respond(false, null, 'Marking items as reviewed is restricted to Management.', 403);
+}
+if (!is_string($_POST['entity_id'] ?? null) || !ctype_digit($_POST['entity_id']) || (int)$_POST['entity_id'] < 1
+    || (isset($_POST['review_notes']) && !is_string($_POST['review_notes']))) {
+    review_respond(false, null, 'Invalid review record or notes.', 400);
+}
+$entityId=(int)$_POST['entity_id'];
+$reviewNotes=trim($_POST['review_notes']??'');
+$notesValue=$reviewNotes!==''?$reviewNotes:null;
         $stmt = $pdo->prepare(
             'SELECT CommunicationID, Subject, Sender_UserID, Review_Status
              FROM Board_Communications WHERE CommunicationID = :id'
@@ -331,9 +122,3 @@ if ($action === 'mark_reviewed') {
         );
 
         review_respond(true, ['entity_type' => 'board', 'entity_id' => $entityId, 'review_status' => 'Reviewed'], '');
-    }
-
-    review_respond(false, null, 'Unknown entity type.', 400);
-}
-
-review_respond(false, null, 'Unknown action.', 400);

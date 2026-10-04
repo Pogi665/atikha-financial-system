@@ -12,6 +12,8 @@ require_once __DIR__ . '/includes/require_role.php';
 
 require_login();
 require_role(['Admin'], 'The Financial Operational Workspace');
+require_once __DIR__ . '/includes/legacy_entry_guard.php';
+legacy_entry_guard();
 
 $categoriesUnavailable = false;
 $categories = [];

@@ -1,13 +1,13 @@
 <?php
 // Management-only presentation. All amounts originate in dashboard read helpers.
 $escape = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-$money = static fn ($value) => $escape(format_peso((float) $value));
+$money = static fn ($value) => $escape(accounting_money((string) $value));
 $periodLabel = date('F Y', mktime(0, 0, 0, $currentMonth, 1, $currentYear));
 $budgetRows = $budgetDataAvailable ? $budgetUtil['by_category'] : [];
 foreach ($budgetRows as &$row) {
     $allocation = (float) $row['budgeted'];
     $spent = (float) $row['spent'];
-    $row['remaining'] = round($allocation - $spent, 2);
+    $row['remaining'] = accounting_decimal(accounting_add(accounting_cents($row['budgeted']),-accounting_cents($row['spent'])));
     $row['utilization'] = $allocation > 0 ? $spent / $allocation * 100 : null;
     $row['priority'] = 5;
     $row['tone'] = 'neutral';
@@ -16,12 +16,12 @@ foreach ($budgetRows as &$row) {
         $row['status'] = 'Negative recorded budget';
         $row['priority'] = 4;
     } elseif ($allocation == 0) {
-        $row['status'] = $spent > 0 ? 'No budget allocated · ' . format_peso($spent) . ' spent'
+        $row['status'] = $spent > 0 ? 'No budget allocated · ' . accounting_money($row['spent']) . ' spent'
             : ($spent == 0 ? 'No allocation or spending' : 'No budget allocated · negative recorded spending');
         if ($spent > 0) { $row['priority'] = 0; $row['tone'] = 'danger'; }
     } elseif ($row['utilization'] > 100) {
         $row['priority'] = 1; $row['tone'] = 'danger';
-        $row['status'] = 'Over budget by ' . format_peso(abs($row['remaining']));
+        $row['status'] = 'Over budget by ' . accounting_money(accounting_decimal(abs(accounting_cents($row['remaining']))));
     } elseif ($row['utilization'] >= 90) {
         $row['priority'] = 2; $row['tone'] = 'warning';
         $row['status'] = $row['utilization'] == 100 ? 'Fully utilized' : 'Approaching budget · 90% or above';
@@ -50,11 +50,11 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
     </div>
 
     <div class="md-kpis">
-        <?php foreach ([['Total Incoming Funds', $totalFunds, 'income'], ['Total Expenditures', $totalExpenses, 'expense'], ['Recorded Net Position', $netBalance, 'position']] as [$label, $value, $tone]): ?>
+        <?php foreach ([['Total Income', $totalFunds, 'income'], ['Total Expenses', $totalExpenses, 'expense'], ['Total Assets', $netBalance, 'position']] as [$label, $value, $tone]): ?>
         <section class="md-card md-kpi">
             <h2><?= $escape($label) ?></h2>
             <p class="md-value md-<?= $tone ?>"><?= $totalsAvailable ? $money($value) : 'Unavailable' ?></p>
-            <p class="md-caption">All recorded transactions<?= $tone === 'position' ? ' · incoming funds minus expenditures' : '' ?></p>
+            <p class="md-caption">Posted balances through <?= $escape($today) ?> · Asia/Manila</p>
         </section>
         <?php endforeach; ?>
         <section class="md-card md-kpi">
@@ -84,37 +84,37 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
 
     <div class="md-charts">
         <section class="md-card" aria-labelledby="md-cash-title">
-            <h2 id="md-cash-title">Cash Flow</h2>
+            <h2 id="md-cash-title">Income and Expenses</h2>
             <p class="md-caption"><?= $escape($cashPeriod) ?><?= $cashPeriod ? ' · 12 completed calendar months' : '' ?></p>
             <p id="md-cash-status" role="status"><?= !$cashFlowAvailable ? 'Cash flow data is currently unavailable.' : '' ?></p>
-            <div class="md-chart" id="md-cash-wrap" hidden><canvas id="md-cash-chart" role="img" aria-label="Monthly incoming funds and expenditures. Exact amounts are in the table below."></canvas></div>
+            <div class="md-chart" id="md-cash-wrap" hidden><canvas id="md-cash-chart" role="img" aria-label="Monthly recognized income and net expenses. Exact amounts are in the table below."></canvas></div>
             <?php if ($cashFlowAvailable): ?>
             <details><summary>Monthly recorded amounts</summary>
-                <div class="md-table-scroll" role="region" aria-label="Monthly cash flow amounts" tabindex="0"><table>
-                    <caption class="md-sr-only">Cash Flow · <?= $escape($cashPeriod) ?></caption>
-                    <thead><tr><th scope="col">Month</th><th scope="col">Incoming Funds</th><th scope="col">Expenditures</th></tr></thead>
-                    <tbody><?php foreach ($cashFlowSeries as $point): ?><tr><th scope="row"><?= $escape($point['month']) ?></th><td><?= $money($point['inflow']) ?></td><td><?= $money($point['outflow']) ?></td></tr><?php endforeach; ?></tbody>
+                <div class="md-table-scroll" role="region" aria-label="Monthly income/expense amounts" tabindex="0"><table>
+                    <caption class="md-sr-only">Income and Expenses · <?= $escape($cashPeriod) ?></caption>
+                    <thead><tr><th scope="col">Month</th><th scope="col">Income</th><th scope="col">Net Expenses</th></tr></thead>
+                    <tbody><?php foreach ($cashFlowSeries as $point): ?><tr><th scope="row"><?= $escape($point['month']) ?></th><td><?= $money($point['income_decimal']) ?></td><td><?= $money($point['expenses_decimal']) ?></td></tr><?php endforeach; ?></tbody>
                 </table></div>
             </details><?php endif; ?>
         </section>
         <section class="md-card" aria-labelledby="md-expense-title">
             <h2 id="md-expense-title">Expense Breakdown</h2>
-            <p class="md-caption">Recorded expenses from <?= $escape(date('d M Y', strtotime('-12 months'))) ?></p>
+            <p class="md-caption">Net expenses · <?= $escape($cashPeriod) ?> · 12 completed months</p>
             <p id="md-expense-status" role="status"><?= !$breakdownAvailable ? 'Expense breakdown is currently unavailable.' : '' ?></p>
             <div class="md-chart" id="md-expense-wrap" hidden><canvas id="md-expense-chart" role="img" aria-label="Expense category shares. Category amounts and percentages are listed below."></canvas></div>
             <?php $breakdownTotal = array_sum($expenseBreakdown['amounts']); $validShares = $breakdownTotal > 0 && !array_filter($expenseBreakdown['amounts'], static fn ($v) => $v < 0); ?>
             <ul class="md-category-list" id="md-category-list">
                 <?php foreach ($expenseBreakdown['labels'] as $index => $label): ?>
-                <li><span><?= $escape($label) ?></span><strong><?= $money($expenseBreakdown['amounts'][$index]) ?> <span class="md-muted"><?= $validShares ? '(' . $escape(number_format($expenseBreakdown['amounts'][$index] / $breakdownTotal * 100, 1)) . '%)' : '(share N/A)' ?></span></strong></li>
+                <li><span><?= $escape($label) ?></span><strong><?= $money($expenseBreakdown['decimals'][$index]) ?> <span class="md-muted"><?= $validShares ? '(' . $escape(number_format($expenseBreakdown['amounts'][$index] / $breakdownTotal * 100, 1)) . '%)' : '(share N/A)' ?></span></strong></li>
                 <?php endforeach; ?>
             </ul>
-            <details><summary>About this expense period</summary><p>This view includes recorded expenses dated from the date shown, without an upper date cutoff. Future-dated records, if present, are included. It differs from Cash Flow’s completed-month period. The eight largest categories are shown separately; additional positive combined spending is shown as Other. Percentages use the displayed category amounts.</p></details>
+            <details><summary>About this expense period</summary><p>Posted Expense debits minus credits in the twelve completed months shown. Future dates and the incomplete current month are excluded. Negative category balances remain visible; shares are unavailable for signed amounts.</p></details>
         </section>
     </div>
 
     <section class="md-card" aria-labelledby="md-budget-title">
         <div class="md-heading"><h2 id="md-budget-title" tabindex="-1">Budget monitoring</h2><span class="md-caption"><?= $escape($periodLabel) ?> · Recorded budget</span></div>
-        <p class="md-caption">Calendar-month expenditures against recorded category budgets.</p>
+        <p class="md-caption">Current-month net expenses through today against recorded category budgets.</p>
         <?php if (!$budgetDataAvailable): ?><p role="status">Budget data is currently unavailable.</p>
         <?php elseif (!$budgetRows): ?><p>No recorded budgets or expenses for this month.</p>
         <?php else: ?>
@@ -148,9 +148,9 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
         <p id="md-forecast-status" role="status" aria-live="polite">Loading forecast…</p>
         <div id="md-forecast-body" hidden>
             <div class="md-findings">
-                <section class="md-inset"><h3>Projected outflow</h3><div id="md-projection"></div><h3>Estimated runway</h3><p id="md-runway" class="md-runway"></p><p class="md-caption">Based on recorded net position and recent outflow.</p></section>
+                <section class="md-inset"><h3>Projected Net Expenses</h3><div id="md-projection"></div><h3>Estimated runway</h3><p id="md-runway" class="md-runway"></p><p class="md-caption">Cash runway cannot be inferred from recognized expenses.</p></section>
                 <section class="md-inset"><h3>Budget observations</h3><p id="md-reallocation-excerpt"></p><details><summary>Full budget advice</summary><p id="md-reallocation"></p></details></section>
-                <section class="md-inset"><h3>Funding observations</h3><p id="md-funding-excerpt"></p><details><summary>Full funding advice and risk</summary><p id="md-risk"></p><p id="md-funding"></p></details></section>
+                <section class="md-inset"><h3>Income / expense coverage</h3><p id="md-funding-excerpt"></p><details><summary>Full coverage observations</summary><p id="md-risk"></p><p id="md-funding"></p></details></section>
             </div>
             <details><summary>Forecast assumptions and supporting figures</summary><p id="md-assumptions"></p><p id="md-forecast-note"></p><p id="md-freshness-detail"></p><ul id="md-trend-warnings"></ul><div id="md-all-projections"></div></details>
             <details open><summary>Predictive budget comparison</summary><div id="md-budget-compare" class="md-findings"></div></details>

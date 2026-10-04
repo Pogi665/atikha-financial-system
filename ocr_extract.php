@@ -58,6 +58,8 @@ if (!in_array($_SESSION['Role'] ?? '', OCR_WORKSPACE_ROLES, true)) {
     ocr_respond(false, null, 'Scanning receipts is restricted to System Administrators.', 403);
 }
 
+ocr_respond(false, null, 'Receipt scanning has been retired. Use General Journal.', 410);
+
 if (!csrf_verify($_POST['csrf_token'] ?? null)) {
     ocr_respond(false, null, 'Your session expired. Please reload the page and try again.', 400);
 }

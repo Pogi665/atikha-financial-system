@@ -34,9 +34,9 @@
         const cash = data.cashFlow;
         const amounts = data.breakdown.amounts;
         const total = amounts.reduce((sum, value) => sum + value, 0);
-        const cashEmpty = !cash.some(point => point.inflow !== 0 || point.outflow !== 0);
+        const cashEmpty = !cash.some(point => point.income !== 0 || point.expenses !== 0);
         const validShares = total > 0 && amounts.every(value => Number.isFinite(value) && value >= 0);
-        if (data.cashFlowAvailable && cashEmpty) el('md-cash-status').textContent = 'No recorded cash flow in these completed months.';
+        if (data.cashFlowAvailable && cashEmpty) el('md-cash-status').textContent = 'No recorded income/expenses in these completed months.';
         if (data.breakdownAvailable && !validShares) el('md-expense-status').textContent = amounts.some(value => value < 0)
             ? 'Category shares are unavailable for signed amounts. Recorded amounts are listed below.' : 'No expense data for this period.';
         if (typeof Chart === 'undefined') {
@@ -49,8 +49,8 @@
             new Chart(el('md-cash-chart'), {
                 type: 'bar',
                 data: { labels: cash.map(point => month(point.month)), datasets: [
-                    { label: 'Incoming Funds', data: cash.map(point => point.inflow), backgroundColor: '#16a34a', borderRadius: 3 },
-                    { label: 'Expenditures', data: cash.map(point => point.outflow), backgroundColor: '#ef4444', borderRadius: 3 },
+                    { label: 'Income', data: cash.map(point => point.income), backgroundColor: '#16a34a', borderRadius: 3 },
+                    { label: 'Net Expenses', data: cash.map(point => point.expenses), backgroundColor: '#ef4444', borderRadius: 3 },
                 ] },
                 options: { responsive: true, maintainAspectRatio: false, animation: reducedMotion ? false : undefined,
                     plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + peso(ctx.parsed.y) } } },
@@ -106,7 +106,7 @@
             const row = document.createElement('div');
             row.className = 'md-projection-row';
             const label = document.createElement('span'); label.textContent = month(point.month);
-            const amount = document.createElement('strong'); amount.textContent = peso(point.projected_outflow);
+            const amount = document.createElement('strong'); amount.textContent = peso(point.projected_expenses);
             row.append(label, amount); parent.appendChild(row);
         });
     }
@@ -127,20 +127,16 @@
         const advisory = result.advisory || {};
         projectionRows(el('md-projection'), projection.slice(0, 3));
         projectionRows(el('md-all-projections'), projection);
-        el('md-runway').textContent = metrics.runway_months != null ? metrics.runway_months + ' months at recent outflow' : 'Not available';
+        el('md-runway').textContent = 'Unavailable — no cash-payment forecast';
         el('md-reallocation-excerpt').textContent = excerpt(advisory.reallocation_suggestion, 'No budget advice available.');
         el('md-funding-excerpt').textContent = excerpt(advisory.funding_risk, 'No funding assessment available.');
         el('md-reallocation').textContent = advisory.reallocation_suggestion || 'No budget advice available.';
         el('md-funding').textContent = advisory.funding_risk || 'No funding assessment available.';
         el('md-risk').textContent = ['LOW', 'MEDIUM', 'HIGH'].includes(advisory.risk_level) ? 'AI risk assessment: ' + advisory.risk_level : 'No risk assessment available.';
-        el('md-assumptions').textContent = 'Runway divides positive all-time recorded net position ('
-            + (Number.isFinite(metrics.net_position) ? peso(metrics.net_position) : 'unavailable')
-            + ') by average outflow over the last three completed months ('
-            + (Number.isFinite(metrics.recent_avg_outflow) ? peso(metrics.recent_avg_outflow) : 'unavailable')
-            + ' per month). It is unavailable when either is not positive. This does not verify bank cash or unrestricted funds. Projections start with a full-month estimate for the first month shown. The baseline repeats the trailing three-month average; AI projections may differ.';
+        el('md-assumptions').textContent = 'Projections estimate signed recognized expenses, including credits and reversals, rather than cash payments. The baseline repeats the trailing three completed months. Month-to-date is incomplete and can decrease. Cash runway, donor concentration and solvency ratings are unavailable.';
         el('md-forecast-note').textContent = result.note || '';
         el('md-freshness-detail').textContent = (result.as_of ? 'History as-of date: ' + result.as_of + '. ' : '')
-            + (result.state === 'cached' ? 'Cached projections and advice may predate the metrics returned with this response. ' : '')
+            + (result.state === 'cached' ? 'Cached inputs match the returned accounting basis and fingerprint. ' : '')
             + 'Recorded cards, charts, and budget comparisons use the page-load snapshot.';
         const trends = el('md-trend-warnings'); trends.replaceChildren();
         (result.categories || []).forEach(category => {
@@ -156,10 +152,10 @@
         projection.slice(0, 3).forEach(point => {
             const card = document.createElement('div'); card.className = 'md-inset';
             const heading = document.createElement('h3'); heading.textContent = month(point.month); card.appendChild(heading);
-            paragraph(card, 'Projected: ' + peso(point.projected_outflow));
+            paragraph(card, 'Projected: ' + peso(point.projected_expenses));
             if (budgetMap.has(point.month)) {
                 const budget = budgetMap.get(point.month);
-                const difference = point.projected_outflow - budget;
+                const difference = point.projected_expenses - budget;
                 paragraph(card, 'Recorded budget: ' + peso(budget));
                 paragraph(card, difference === 0 ? 'Matches recorded budget' : (difference > 0 ? 'Projected above by ' : 'Projected below by ') + peso(Math.abs(difference)), difference > 0 ? 'md-expense' : 'md-income');
             } else paragraph(card, 'Recorded budget unavailable for this period.');
@@ -182,8 +178,9 @@
             const payload = await response.json();
             if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || 'Unable to load forecast.');
             const result = payload.data;
+            if(result.version!==2||result.basis!=='net_expenses_v1')throw new Error('Unsupported forecast accounting basis.');
             if (result.state !== 'insufficient' && (!Array.isArray(result.projection) || !result.projection.every(point =>
-                /^\d{4}-(0[1-9]|1[0-2])$/.test(point.month) && Number.isFinite(point.projected_outflow)))) throw new Error('The forecast response could not be displayed.');
+                /^\d{4}-(0[1-9]|1[0-2])$/.test(point.month) && Number.isFinite(point.projected_expenses)))) throw new Error('The forecast response could not be displayed.');
             render(result);
             lastSuccess = result;
         } catch (error) {

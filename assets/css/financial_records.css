@@ -1,4 +1,7 @@
 .financial-records-page .records-page { color: #334155; }
+.financial-records-page #records-table { min-width: 900px; }
+.financial-records-page .journal-detail-lines { width: 100%; margin-top: 1rem; border-collapse: collapse; font-size: .875rem; }
+.financial-records-page .journal-detail-lines th, .financial-records-page .journal-detail-lines td { padding: .6rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
 .financial-records-page .records-page > * + * { margin-top: 1.25rem; }
 .financial-records-page .records-card { background: #fff; border: 1px solid #e2e8f0; border-radius: .8rem; padding: 1.25rem; }
 .financial-records-page .records-card h2 { font-weight: 600; color: #0f172a; margin-bottom: .75rem; }

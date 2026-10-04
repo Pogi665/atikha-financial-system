@@ -36,7 +36,7 @@ function nav_link_class(string $page, string $activePage, bool $executive = fals
         return $activeExecutive;
     }
 
-    if (in_array($page, ['funds', 'expenses', 'ocr_expense'], true)) {
+    if (in_array($page, ['general_journal'], true)) {
         return $activeWorkspace;
     }
 
@@ -74,17 +74,9 @@ $sidebarClass = $navIsExecutive
             </a>
         <?php endif; ?>
         <?php if ($navCanUseWorkspace): ?>
-            <a href="funds.php" class="<?= nav_link_class('funds', $activePage, $navIsExecutive) ?>">
-                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg>
-                Incoming Funds
-            </a>
-            <a href="expenses.php" class="<?= nav_link_class('expenses', $activePage, $navIsExecutive) ?>">
-                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path></svg>
-                Expenses
-            </a>
-            <a href="ocr_expense.php" class="<?= nav_link_class('ocr_expense', $activePage, $navIsExecutive) ?>">
-                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                Scan Receipt
+            <a href="general_journal.php" class="<?= nav_link_class('general_journal', $activePage, $navIsExecutive) ?>">
+                <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h3m2 0h3"/></svg>
+                General Journal
             </a>
 
             <!-- Books of Accounts Section -->

@@ -62,3 +62,7 @@
     .accounts-page .accounts-overlay, .accounts-page .accounts-dialog, .accounts-page .account-row, .accounts-page .accounts-group-chevron { transition: none; }
     .accounts-page .account-action-menu { animation: none; }
 }
+
+.accounts-page .account-accounting-tags { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem; font-size:.75rem; color:#475569; }
+.accounts-page .account-accounting-tags span { background:#f1f5f9; border-radius:.25rem; padding:.15rem .4rem; }
+.accounts-page .accounts-form-grid > p { grid-column:1/-1; }

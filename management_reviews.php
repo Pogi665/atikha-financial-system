@@ -8,6 +8,7 @@ require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/notifications.php';
 require_once __DIR__ . '/includes/require_role.php';
 require_once __DIR__ . '/includes/review_ui.php';
+require_once __DIR__ . '/includes/report_snapshots.php';
 
 require_login();
 require_role(['Management'], 'Review Queue');
@@ -31,42 +32,15 @@ $pendingReports = [];
 $pendingBoard = [];
 
 try {
-    $expenseSql = 'SELECT e.ExpenseID, e.Date_Incurred, e.Payee, e.Category, e.Amount,
-                          e.Review_Status, e.Review_Notes, u.FullName AS SubmitterName
-                   FROM Expenses e
-                   INNER JOIN Users u ON u.UserID = e.RecordedBy_UserID';
-    if ($filter === 'pending') {
-        $expenseSql .= " WHERE e.Review_Status = 'Requested'";
-    } else {
-        $expenseSql .= " WHERE e.Review_Status IN ('Requested','Reviewed')";
+    if (report_snapshot_available($pdo)) {
+        $reportSql = "SELECT s.id AS ReportID,s.report_month AS Report_Month,s.report_year AS Report_Year,
+            s.revision,s.total_debits,s.total_credits,s.review_status AS Review_Status,s.review_notes AS Review_Notes,
+            s.captured_at AS Created_At,u.FullName AS SubmitterName
+            FROM trial_balance_snapshots s JOIN user_identities u ON u.UserID=s.submitted_by_user_id";
+        if ($filter === 'pending') { $reportSql .= " WHERE s.review_status='Requested'"; }
+        $reportSql .= ' ORDER BY s.report_year DESC,s.report_month DESC,s.revision DESC LIMIT 100';
+        $pendingReports = $pdo->query($reportSql)->fetchAll() ?: [];
     }
-    $expenseSql .= ' ORDER BY e.Date_Incurred DESC, e.ExpenseID DESC LIMIT 100';
-    $pendingExpenses = $pdo->query($expenseSql)->fetchAll() ?: [];
-
-    $fundSql = 'SELECT f.FundID, f.Date_Received, f.Source_Donor, f.Category, f.Amount,
-                       f.Review_Status, f.Review_Notes, u.FullName AS SubmitterName
-                FROM Incoming_Funds f
-                INNER JOIN Users u ON u.UserID = f.RecordedBy_UserID';
-    if ($filter === 'pending') {
-        $fundSql .= " WHERE f.Review_Status = 'Requested'";
-    } else {
-        $fundSql .= " WHERE f.Review_Status IN ('Requested','Reviewed')";
-    }
-    $fundSql .= ' ORDER BY f.Date_Received DESC, f.FundID DESC LIMIT 100';
-    $pendingFunds = $pdo->query($fundSql)->fetchAll() ?: [];
-
-    $reportSql = 'SELECT r.ReportID, r.Report_Month, r.Report_Year, r.Total_Revenue,
-                         r.Total_Expenses, r.Net_Income, r.Review_Status, r.Review_Notes,
-                         r.Created_At, u.FullName AS SubmitterName
-                  FROM Reports r
-                  INNER JOIN Users u ON u.UserID = r.SubmittedBy_UserID';
-    if ($filter === 'pending') {
-        $reportSql .= " WHERE r.Review_Status = 'Requested'";
-    } else {
-        $reportSql .= " WHERE r.Review_Status IN ('Requested','Reviewed')";
-    }
-    $reportSql .= ' ORDER BY r.Report_Year DESC, r.Report_Month DESC LIMIT 100';
-    $pendingReports = $pdo->query($reportSql)->fetchAll() ?: [];
 
     $boardSql = 'SELECT b.CommunicationID, b.Subject, b.Message_Body, b.File_Path,
                         b.Review_Status, b.Created_At, u.FullName AS SubmitterName
@@ -128,7 +102,7 @@ layout_begin('Review Queue', $activePage);
     <section class="<?= $cardClass ?> mt-6">
         <h2 class="text-lg font-semibold text-slate-900 mb-4">Expenses</h2>
         <?php if ($pendingExpenses === []): ?>
-            <p class="text-sm text-slate-500 italic">No expense review items.</p>
+            <p class="text-sm text-slate-500 italic">Legacy expense reviews are retired; journal entries are posted through General Journal.</p>
         <?php else: ?>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -177,7 +151,7 @@ layout_begin('Review Queue', $activePage);
     <section class="<?= $cardClass ?>">
         <h2 class="text-lg font-semibold text-slate-900 mb-4">Incoming Funds</h2>
         <?php if ($pendingFunds === []): ?>
-            <p class="text-sm text-slate-500 italic">No incoming fund review items.</p>
+            <p class="text-sm text-slate-500 italic">Legacy fund reviews are retired; journal entries are posted through General Journal.</p>
         <?php else: ?>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -226,14 +200,14 @@ layout_begin('Review Queue', $activePage);
     <section class="<?= $cardClass ?>">
         <h2 class="text-lg font-semibold text-slate-900 mb-4">Monthly Reports</h2>
         <?php if ($pendingReports === []): ?>
-            <p class="text-sm text-slate-500 italic">No report review items.</p>
+            <p class="text-sm text-slate-500 italic">No Trial Balance review items. Migration 017 is required for new submissions.</p>
         <?php else: ?>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-left">
                             <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600">Period</th>
-                            <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600">Net Income</th>
+                            <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600">Trial Balance Totals</th>
                             <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600">Submitted By</th>
                             <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600">Status</th>
                             <th class="px-4 py-2 text-xs font-semibold uppercase text-slate-600 text-right">Action</th>
@@ -244,20 +218,20 @@ layout_begin('Review Queue', $activePage);
                             <?php
                             $rowId = (int) $row['ReportID'];
                             $periodLabel = date('F Y', mktime(0, 0, 0, (int) $row['Report_Month'], 1, (int) $row['Report_Year']));
-                            $highlight = $highlightEntity === 'report' && $highlightId === $rowId;
+                            $highlight = $highlightEntity === 'trial_balance' && $highlightId === $rowId;
                             ?>
                             <tr class="border-b border-slate-100 <?= $highlight ? 'bg-amber-50' : '' ?>">
                                 <td class="px-4 py-3">
-                                    <a href="reports.php?month=<?= str_pad((string) $row['Report_Month'], 2, '0', STR_PAD_LEFT) ?>&year=<?= (int) $row['Report_Year'] ?>" class="text-blue-800 hover:underline font-medium">
-                                        <?= htmlspecialchars($periodLabel, ENT_QUOTES, 'UTF-8') ?>
+                                    <a href="reports.php?snapshot_id=<?= $rowId ?>" class="text-blue-800 hover:underline font-medium">
+                                        <?= htmlspecialchars($periodLabel . ' · revision ' . $row['revision'], ENT_QUOTES, 'UTF-8') ?>
                                     </a>
                                 </td>
-                                <td class="px-4 py-3"><?= htmlspecialchars(format_peso((float) $row['Net_Income']), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars(accounting_money($row['total_debits']) . ' Dr / ' . accounting_money($row['total_credits']) . ' Cr', ENT_QUOTES, 'UTF-8') ?></td>
                                 <td class="px-4 py-3"><?= htmlspecialchars($row['SubmitterName'], ENT_QUOTES, 'UTF-8') ?></td>
                                 <td class="px-4 py-3"><?= review_render_status_badge((string) $row['Review_Status']) ?></td>
                                 <td class="px-4 py-3 text-right">
                                     <?php if ($row['Review_Status'] === 'Requested'): ?>
-                                        <button type="button" class="js-mark-reviewed <?= $btnPrimary ?>" data-entity-type="report" data-entity-id="<?= $rowId ?>">
+                                        <button type="button" class="js-mark-reviewed <?= $btnPrimary ?>" data-entity-type="trial_balance" data-entity-id="<?= $rowId ?>">
                                             Mark as Reviewed
                                         </button>
                                     <?php elseif (!empty($row['Review_Notes'])): ?>

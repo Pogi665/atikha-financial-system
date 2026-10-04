@@ -21,9 +21,9 @@ $isExecutive = $flags['isExecutive'];
 $canRefresh = $flags['canRefresh'];
 $aiConfigured = gemini_is_configured();
 
-$totalFunds = 0.0;
-$totalExpenses = 0.0;
-$netBalance = 0.0;
+$totalFunds = '0.00';
+$totalExpenses = '0.00';
+$netBalance = '0.00';
 $budgetUtil = ['spent' => 0.0, 'budgeted' => 0.0, 'pct' => 0.0, 'by_category' => []];
 $budgetOverruns = [];
 $budgetAllocations = [];
@@ -36,78 +36,36 @@ $budgetUpcoming = [];
 $cashFlowSeries = [];
 $expenseBreakdown = ['labels' => [], 'amounts' => []];
 
-$currentYear = (int) date('Y');
-$currentMonth = (int) date('n');
-
+$today=accounting_today();
+$currentYear=(int)substr($today,0,4);$currentMonth=(int)substr($today,5,2);
+$kpiMonths=accounting_months(6);$kpiSeries=[];$kpiTrendsAvailable=false;
+$historyMonths=accounting_months(12);$breakdownRows=[];
+$kpiPeriod=(new DateTimeImmutable($kpiMonths[0].'-01'))->format('M Y').' – '.(new DateTimeImmutable(end($kpiMonths).'-01'))->format('M Y');
+require_once __DIR__.'/includes/dashboard_query.php';
 try {
-    $stmt = $pdo->query('SELECT COALESCE(SUM(Amount), 0) AS total FROM Incoming_Funds');
-    $totalFunds = (float) $stmt->fetch()['total'];
-
-    $stmt = $pdo->query('SELECT COALESCE(SUM(Amount), 0) AS total FROM Expenses');
-    $totalExpenses = (float) $stmt->fetch()['total'];
-
-    $netBalance = $totalFunds - $totalExpenses;
-    $totalsAvailable = true;
-
-    if ($isExecutive) {
-        $budgetUtil = budget_utilization($pdo, $currentYear, $currentMonth);
-        $budgetDataAvailable = true;
-        $budgetUpcoming = budget_upcoming_totals($pdo, 3);
-        $budgetUpcomingAvailable = true;
-
-        $history = forecast_fetch_history($pdo);
-        $cashFlowSeries = $history['series'];
-        $cashFlowAvailable = true;
-
-        $start = date('Y-m-d', strtotime('-12 months'));
-        $stmt = $pdo->prepare(
-            'SELECT Category, SUM(Amount) AS Total
-             FROM Expenses
-             WHERE Date_Incurred >= :start
-             GROUP BY Category
-             ORDER BY Total DESC'
-        );
-        $stmt->execute(['start' => $start]);
-        $rows = $stmt->fetchAll();
-
-        $labels = [];
-        $amounts = [];
-        $other = 0.0;
-        foreach ($rows as $index => $row) {
-            $amount = (float) $row['Total'];
-            if ($index < 8) {
-                $labels[] = (string) $row['Category'];
-                $amounts[] = round($amount, 2);
-            } else {
-                $other += $amount;
-            }
+    accounting_read($pdo,function()use($pdo,$isExecutive,$today,$currentYear,$currentMonth,$kpiMonths,$historyMonths,
+        &$totalFunds,&$totalExpenses,&$netBalance,&$totalsAvailable,&$budgetUtil,&$budgetDataAvailable,&$budgetUpcoming,&$budgetUpcomingAvailable,
+        &$cashFlowSeries,&$cashFlowAvailable,&$breakdownRows,&$expenseBreakdown,&$breakdownAvailable,&$kpiSeries,&$kpiTrendsAvailable){
+        try{$k=accounting_kpis($pdo,$today);$totalFunds=$k['income'];$totalExpenses=$k['expenses'];$netBalance=$k['assets'];$totalsAvailable=true;}
+        catch(Throwable $e){error_log('Dashboard KPIs: '.$e->getMessage());}
+        if($isExecutive){
+            try{$budgetUtil=budget_utilization($pdo,$currentYear,$currentMonth);$budgetDataAvailable=true;}
+            catch(Throwable $e){error_log('Dashboard budget: '.$e->getMessage());}
+            try{$budgetUpcoming=budget_upcoming_totals($pdo,3);$budgetUpcomingAvailable=true;}
+            catch(Throwable $e){error_log('Dashboard upcoming budget: '.$e->getMessage());}
+            try{$cashFlowSeries=accounting_monthly($pdo,$historyMonths);$cashFlowAvailable=true;}
+            catch(Throwable $e){error_log('Dashboard monthly activity: '.$e->getMessage());}
+        }else{
+            try{$kpiSeries=dashboard_kpi_series($pdo,$kpiMonths);$kpiTrendsAvailable=true;}
+            catch(Throwable $e){error_log('Dashboard trends: '.$e->getMessage());}
         }
-        if ($other > 0) {
-            $labels[] = 'Other';
-            $amounts[] = round($other, 2);
-        }
-        $expenseBreakdown = ['labels' => $labels, 'amounts' => $amounts];
-        $breakdownAvailable = true;
-    }
-} catch (PDOException $e) {
-    error_log('Dashboard totals failed: ' . $e->getMessage());
-}
-
-// Admin trends are independent of the all-time totals and forecast service.
-if (!$isExecutive) {
-    require_once __DIR__ . '/includes/dashboard_query.php';
-    $kpiMonths = forecast_month_window(6);
-    $kpiPeriod = (new DateTimeImmutable($kpiMonths[0] . '-01'))->format('M Y')
-        . ' – ' . (new DateTimeImmutable(end($kpiMonths) . '-01'))->format('M Y');
-    $kpiSeries = [];
-    $kpiTrendsAvailable = false;
-    try {
-        $kpiSeries = dashboard_kpi_series($pdo, $kpiMonths);
-        $kpiTrendsAvailable = true;
-    } catch (Throwable $e) {
-        error_log('Dashboard KPI trends failed: ' . $e->getMessage());
-    }
-}
+        try{
+            $breakdownRows=accounting_expenses($pdo,$historyMonths[0].'-01',substr($today,0,7).'-01');
+            $expenseBreakdown=['labels'=>array_column($breakdownRows,'category'),'amounts'=>array_map(static fn($r)=>(float)$r['total'],$breakdownRows),'decimals'=>array_column($breakdownRows,'total')];
+            $breakdownAvailable=true;
+        }catch(Throwable $e){error_log('Dashboard expense breakdown: '.$e->getMessage());}
+    });
+}catch(Throwable $e){$totalsAvailable=$budgetDataAvailable=$cashFlowAvailable=$breakdownAvailable=$kpiTrendsAvailable=false;error_log('Dashboard snapshot: '.$e->getMessage());}
 
 $csrfToken = csrf_token();
 
@@ -135,27 +93,27 @@ else:
 <div class="bg-slate-50 p-6 rounded-xl space-y-8">
 <div>
     <h1 class="text-2xl font-bold text-slate-900">Financial Overview</h1>
-    <p class="text-slate-600 mt-2">Real-time summary of incoming funds and expenses.</p>
+    <p class="text-slate-600 mt-2">Posted account balances through <?= htmlspecialchars($today, ENT_QUOTES, 'UTF-8') ?> (Asia/Manila).</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
-        <p class="text-sm font-semibold text-slate-500">Total Incoming Funds</p>
-        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($totalFunds), ENT_QUOTES, 'UTF-8') ?></p>
-        <p id="kpi-income-caption" class="text-xs text-slate-500 mt-4">Monthly incoming funds · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
+        <p class="text-sm font-semibold text-slate-500">Total Income</p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars($totalsAvailable ? accounting_money($totalFunds) : 'Unavailable', ENT_QUOTES, 'UTF-8') ?></p>
+        <p id="kpi-income-caption" class="text-xs text-slate-500 mt-4">Monthly income · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
         <div id="kpi-income-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
             <canvas id="kpiIncomeChart" role="img" aria-labelledby="kpi-income-caption" aria-describedby="kpi-income-values"></canvas>
         </div>
         <p id="kpi-income-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
         <ul id="kpi-income-values" class="sr-only">
             <?php foreach ($kpiSeries as $point): ?>
-            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['income']), ENT_QUOTES, 'UTF-8') ?></li>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . accounting_money($point['income_decimal']), ENT_QUOTES, 'UTF-8') ?></li>
             <?php endforeach; ?>
         </ul>
     </div>
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
         <p class="text-sm font-semibold text-slate-500">Total Expenses</p>
-        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($totalExpenses), ENT_QUOTES, 'UTF-8') ?></p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars($totalsAvailable ? accounting_money($totalExpenses) : 'Unavailable', ENT_QUOTES, 'UTF-8') ?></p>
         <p id="kpi-expenses-caption" class="text-xs text-slate-500 mt-4">Monthly expenses · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
         <div id="kpi-expenses-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
             <canvas id="kpiExpensesChart" role="img" aria-labelledby="kpi-expenses-caption" aria-describedby="kpi-expenses-values"></canvas>
@@ -163,21 +121,21 @@ else:
         <p id="kpi-expenses-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
         <ul id="kpi-expenses-values" class="sr-only">
             <?php foreach ($kpiSeries as $point): ?>
-            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['expenses']), ENT_QUOTES, 'UTF-8') ?></li>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . accounting_money($point['expenses_decimal']), ENT_QUOTES, 'UTF-8') ?></li>
             <?php endforeach; ?>
         </ul>
     </div>
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
-        <p class="text-sm font-semibold text-slate-500">Net Balance</p>
-        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars(format_peso($netBalance), ENT_QUOTES, 'UTF-8') ?></p>
-        <p id="kpi-balance-caption" class="text-xs text-slate-500 mt-4">Month-end balance · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
+        <p class="text-sm font-semibold text-slate-500">Total Assets</p>
+        <p class="text-xl xl:text-2xl font-black tracking-tighter text-slate-800 mt-1 break-words"><?= htmlspecialchars($totalsAvailable ? accounting_money($netBalance) : 'Unavailable', ENT_QUOTES, 'UTF-8') ?></p>
+        <p id="kpi-balance-caption" class="text-xs text-slate-500 mt-4">Month-end assets · <?= htmlspecialchars($kpiPeriod, ENT_QUOTES, 'UTF-8') ?></p>
         <div id="kpi-balance-chart" class="relative h-16 w-full mt-4<?= $kpiTrendsAvailable ? '' : ' hidden' ?>">
             <canvas id="kpiBalanceChart" role="img" aria-labelledby="kpi-balance-caption" aria-describedby="kpi-balance-values"></canvas>
         </div>
         <p id="kpi-balance-status" role="status" class="text-xs text-slate-500 mt-4<?= $kpiTrendsAvailable ? ' hidden' : '' ?>">Trend unavailable</p>
         <ul id="kpi-balance-values" class="sr-only">
             <?php foreach ($kpiSeries as $point): ?>
-            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . format_peso($point['balance']), ENT_QUOTES, 'UTF-8') ?></li>
+            <li><?= htmlspecialchars((new DateTimeImmutable($point['month'] . '-01'))->format('M Y') . ': ' . accounting_money($point['balance_decimal']), ENT_QUOTES, 'UTF-8') ?></li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -187,7 +145,7 @@ else:
     <div class="px-6 py-6 border-b border-slate-200 flex items-start justify-between gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900">Predictive Forecast</h2>
-            <p id="forecast-meta" class="text-sm text-slate-500 mt-1">Projecting the next six months of outflow.</p>
+            <p id="forecast-meta" class="text-sm text-slate-500 mt-1">Projecting the next six months of net recognized expenses.</p>
             <span id="forecast-offline" role="status" class="hidden inline-block mt-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">Trailing 3-Month Baseline (Offline Mode)</span>
         </div>
         <?php if ($canRefresh): ?>
@@ -215,7 +173,7 @@ else:
     <div id="forecast-empty" class="hidden px-6 py-16 text-center">
         <p class="text-sm font-medium text-slate-700">Not enough history to forecast yet.</p>
         <p id="forecast-empty-detail" class="text-sm text-slate-500 mt-1">
-            Record expenses across at least two different months and the projection will appear here.
+            Record positive net expenses in at least two completed months and the projection will appear here.
         </p>
     </div>
 
@@ -251,7 +209,7 @@ else:
                     <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style="background-color: #e0f2fe; color: #0284c7;">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     </div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Funding Risk</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 m-0">Income / Expense Coverage</h3>
                 </div>
                 <p id="forecast-funding-risk" class="text-sm text-slate-600 leading-relaxed break-words"></p>
             </div>
@@ -297,6 +255,7 @@ if ($isExecutive) {
     $jsExpenses = json_encode($totalExpenses);
     $jsCsrf = json_encode($csrfToken);
     $jsCanRefresh = json_encode($canRefresh && $aiConfigured);
+    $jsBreakdown = json_encode($breakdownAvailable ? array_map(static fn($r)=>['category'=>$r['category'],'total'=>(float)$r['total'],'total_decimal'=>$r['total']],$breakdownRows) : null, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT);
     $jsKpiSeries = json_encode($kpiSeries, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE);
 
     $scripts = <<<JS
@@ -304,9 +263,9 @@ if ($isExecutive) {
 (function () {
     const series = {$jsKpiSeries};
     const charts = [
-        { key: 'income', id: 'kpiIncomeChart', label: 'Monthly incoming funds', color: '#059669', fill: 'rgba(5, 150, 105, 0.08)' },
+        { key: 'income', id: 'kpiIncomeChart', label: 'Monthly income', color: '#059669', fill: 'rgba(5, 150, 105, 0.08)' },
         { key: 'expenses', id: 'kpiExpensesChart', label: 'Monthly expenses', color: '#e11d48', fill: 'rgba(225, 29, 72, 0.08)' },
-        { key: 'balance', id: 'kpiBalanceChart', label: 'Month-end balance', color: '#4f46e5', fill: 'rgba(79, 70, 229, 0.08)' },
+        { key: 'balance', id: 'kpiBalanceChart', label: 'Month-end assets', color: '#4f46e5', fill: 'rgba(79, 70, 229, 0.08)' },
     ];
     charts.forEach(function (chart) {
         const canvas = document.getElementById(chart.id);
@@ -400,74 +359,34 @@ if ($isExecutive) {
     }
 
     function renderBreakdown(categories) {
-        if (breakdownChart) { breakdownChart.destroy(); breakdownChart = null; }
-        breakdownList.replaceChildren();
-        show(breakdownWrap, false); show(breakdownList, false);
-        if (!Array.isArray(categories) || categories.some((row) =>
-            !row || typeof row.category !== 'string' || !row.category.trim() ||
-            typeof row.total !== 'number' || !Number.isFinite(row.total) || row.total < 0
-        )) {
-            breakdownMessage('Expense breakdown is currently unavailable.'); return;
-        }
-        const positive = categories.filter((row) => row.total > 0).slice().sort((a, b) => b.total - a.total);
-        if (!positive.length) { breakdownMessage('No expense data for this period'); return; }
-        const displayed = positive.slice(0, 8).map((row) => ({ category: row.category, total: row.total }));
-        if (positive.length > 8) {
-            displayed.push({ category: 'Other categories', total: positive.slice(8).reduce((sum, row) => sum + row.total, 0) });
-        }
-        const total = displayed.reduce((sum, row) => sum + row.total, 0);
-        if (!Number.isFinite(total)) { breakdownMessage('Expense breakdown is currently unavailable.'); return; }
-        const colors = ['#4f46e5', '#0ea5e9', '#14b8a6', '#8b5cf6', '#06b6d4', '#10b981', '#a855f7', '#64748b', '#94a3b8'];
-        displayed.forEach(function (row, index) {
-            const item = document.createElement('li');
-            item.className = 'flex items-start gap-2 min-w-0';
-            const swatch = document.createElement('span');
-            swatch.className = 'mt-1 h-3 w-3 rounded-sm shrink-0';
-            swatch.style.backgroundColor = colors[index];
-            swatch.setAttribute('aria-hidden', 'true');
-            const label = document.createElement('span');
-            label.className = 'min-w-0 break-words text-slate-600';
-            label.textContent = row.category + ': ' + peso(row.total) + ' (' + (row.total / total * 100).toFixed(1) + '%)';
-            item.append(swatch, label);
-            breakdownList.append(item);
-        });
-        breakdownMessage('');
-        show(breakdownWrap, true); show(breakdownList, true);
-        breakdownChart = new Chart(document.getElementById('expenseBreakdownChart'), {
-            type: 'doughnut',
-            data: {
-                labels: displayed.map((row) => row.category),
-                datasets: [{ data: displayed.map((row) => row.total), backgroundColor: colors.slice(0, displayed.length), borderColor: '#ffffff', borderWidth: 2 }],
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '65%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, generateLabels: function (chart) {
-                        return Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart).map(function (label) {
-                            label.text = label.text.length > 32 ? label.text.slice(0, 29) + '…' : label.text;
-                            return label;
-                        });
-                    } } },
-                    tooltip: { callbacks: { label: function (ctx) {
-                        return ctx.label + ': ' + peso(ctx.parsed) + ' (' + (ctx.parsed / total * 100).toFixed(1) + '%)';
-                    } } },
-                },
-            },
-        });
+        breakdownList.replaceChildren(); show(breakdownWrap,false); show(breakdownList,false);
+        if (!Array.isArray(categories)) { breakdownMessage('Expense breakdown is currently unavailable.'); return; }
+        const rows=categories.filter(r=>r.total!==0);
+        if(!rows.length){breakdownMessage('No expense data for these completed months.');return;}
+        const total=rows.reduce((sum,r)=>sum+r.total,0), signed=rows.some(r=>r.total<0);
+        const exact=value=>{const c=BigInt(value.replace('.','')),a=c<0n?-c:c;return(c<0n?'-':'')+'₱'+(a/100n).toLocaleString('en-PH')+'.'+String(a%100n).padStart(2,'0');};
+        rows.forEach(r=>{const li=document.createElement('li');li.textContent=r.category+': '+exact(r.total_decimal)+(!signed&&total>0?' ('+(r.total/total*100).toFixed(1)+'%)':'');breakdownList.append(li);});
+        show(breakdownList,true);
+        if(signed||total<=0){breakdownMessage('Category shares are unavailable for signed amounts. Exact amounts are listed below.');return;}
+        if(typeof Chart!=='function'){breakdownMessage('Chart unavailable. Exact amounts remain listed below.');return;}
+        const displayed=rows.slice(0,8);if(rows.length>8)displayed.push({category:'Other categories',total:rows.slice(8).reduce((sum,r)=>sum+r.total,0)});
+        breakdownMessage('');show(breakdownWrap,true);
+        breakdownChart=new Chart(document.getElementById('expenseBreakdownChart'),{type:'doughnut',data:{labels:displayed.map(r=>r.category),datasets:[{data:displayed.map(r=>r.total),backgroundColor:['#4f46e5','#0ea5e9','#14b8a6','#8b5cf6','#06b6d4','#10b981','#a855f7','#64748b','#94a3b8']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
     }
 
     function renderChart(history, projection) {
+        if(typeof Chart!=='function'){showNote('Forecast chart unavailable.');return;}
         const labels = history.map((p) => monthLabel(p.month)).concat(projection.map((p) => monthLabel(p.month)));
-        const historical = history.map((p) => p.outflow).concat(projection.map(() => null));
-        const projected = history.map((p, i) => (i === history.length - 1 ? p.outflow : null)).concat(projection.map((p) => p.projected_outflow));
+        const historical = history.map((p) => p.expenses).concat(projection.map(() => null));
+        const projected = history.map((p, i) => (i === history.length - 1 ? p.expenses : null)).concat(projection.map((p) => p.projected_expenses));
         if (forecastChart) forecastChart.destroy();
         forecastChart = new Chart(document.getElementById('forecastChart'), {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Historical outflow', data: historical, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true },
-                    { label: 'Projected outflow', data: projected, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.06)', borderWidth: 2, borderDash: [6, 4], pointRadius: 3, tension: 0.3, fill: true },
+                    { label: 'Historical Net Expenses', data: historical, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.08)', borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true },
+                    { label: 'Projected Net Expenses', data: projected, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.06)', borderWidth: 2, borderDash: [6, 4], pointRadius: 3, tension: 0.3, fill: true },
                 ],
             },
             options: {
@@ -479,10 +398,7 @@ if ($isExecutive) {
     }
 
     function renderMeta(data) {
-        if (data.state === 'degraded') { meta.textContent = 'Projecting the next six months of outflow.'; return; }
-        const generated = data.generated_at ? new Date(data.generated_at.replace(' ', 'T')) : null;
-        const stamp = generated && !isNaN(generated) ? generated.toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
-        meta.textContent = stamp ? 'Generated ' + stamp + ' · ' + (data.state === 'cached' ? 'cached for 24 hours' : 'just now') : 'Six-month projection · ' + (data.state === 'cached' ? 'cached for 24 hours' : 'just now');
+        meta.textContent='Six-month net-expense projection · '+(data.state==='cached'?'matching cached inputs':data.state==='degraded'?'trailing three-month baseline':'new forecast')+' · history through '+data.as_of;
     }
 
     function renderAdvisory(advisory) {
@@ -499,22 +415,21 @@ if ($isExecutive) {
     function render(payload, isRefresh) {
         show(loading, false);
         if (!payload.ok) {
-            breakdownMessage(isRefresh && breakdownChart ? 'Expense breakdown was not refreshed. Showing previously loaded data.' : 'Expense breakdown is currently unavailable.');
             if (isRefresh && !body.classList.contains('hidden')) { showNote(payload.error); return; }
             show(offlineBadge, false);
             emptyDetail.textContent = payload.error || 'The forecast could not be loaded.';
             show(body, false); show(empty, true); return;
         }
         const data = payload.data;
-        renderBreakdown(data.categories);
+        if(data.version!==2||data.basis!=='net_expenses_v1'||!Array.isArray(data.projection)||data.projection.some(p=>!Number.isFinite(p.projected_expenses))) { showNote('The forecast response is invalid.');return; }
         show(offlineBadge, data.state === 'degraded');
         if (data.state === 'insufficient') {
-            emptyDetail.textContent = 'Record expenses across at least two different months and the projection will appear here.';
+            emptyDetail.textContent = 'Record positive net expenses in at least two completed months and the projection will appear here.';
             meta.textContent = 'Waiting on more history';
             show(body, false); show(empty, true); return;
         }
         show(empty, false); show(body, true);
-        showNote(data.state === 'degraded' ? '' : data.note); renderMeta(data); renderChart(data.history, data.projection); renderAdvisory(data.advisory);
+        showNote(data.note); renderMeta(data); renderChart(data.history, data.projection); renderAdvisory(data.advisory);
     }
 
     function load(isRefresh) {
@@ -532,6 +447,7 @@ if ($isExecutive) {
     }
 
     if (refreshButton) refreshButton.addEventListener('click', function () { showNote(''); load(true); });
+    try { renderBreakdown({$jsBreakdown}); } catch(error) { breakdownMessage('Chart unavailable. Recorded amounts remain listed below.'); }
     load(false);
 })();
 </script>

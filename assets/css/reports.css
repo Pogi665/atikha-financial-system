@@ -1,0 +1,19 @@
+.reports-page > .statement-page { margin-top: 1.5rem; }
+.reports-page a { color: #1e40af; text-decoration: underline; }
+.reports-page .trial-table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+.reports-page .trial-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.reports-page .trial-table th, .reports-page .trial-table td { padding: .7rem .8rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.reports-page .trial-table .trial-amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.reports-page .trial-section, .reports-page .trial-table thead { background: #f8fafc; }
+.reports-page .trial-subtotal, .reports-page .trial-table tfoot { font-weight: 700; }
+.reports-page .trial-table tfoot { border-top: 2px solid #1e3a8a; }
+@media print {
+ @page { size: A4 landscape; margin: 12mm; }
+ .no-print, .app-sidebar, header, nav, #review-flash { display: none !important; }
+ main { margin: 0 !important; padding: 0 !important; }
+ .reports-page .statement-page { box-shadow: none; border: 0; padding: 0; }
+ .reports-page .trial-table-wrap { overflow: visible; }
+ .reports-page .trial-table thead { display: table-header-group; }
+ .reports-page .trial-table tfoot { display: table-row-group; }
+ .reports-page .trial-table tr { break-inside: avoid; }
+}

@@ -34,6 +34,7 @@ function run(input = series, chartMode = 'ok') {
     };
     if (chartMode !== 'missing') context.Chart = Chart;
     const rendered = script.replace('{$jsKpiSeries}', JSON.stringify(input))
+        .replace('{$jsBreakdown}', 'null')
         .replace('{$jsCsrf}', '"fixture-token"').replace('{$jsCanRefresh}', 'false');
     vm.runInNewContext(rendered, context);
     return { nodes, charts, requests, partials };

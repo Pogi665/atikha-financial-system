@@ -6,6 +6,10 @@ require_role(['Admin'], 'Chart of Accounts');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/accounts.php';
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
+    header('Allow: GET, POST'); http_response_code(405); exit;
+}
+header('Cache-Control: no-store');
 
 function accounts_escape($value): string
 {
@@ -20,10 +24,11 @@ unset($_SESSION['accounts_success']);
 $unavailable = false;
 $editId = account_id($_GET, 'edit');
 $showForm = isset($_GET['new']) || $editId > 0;
-$form = ['name' => '', 'type' => '', 'detail_type' => '', 'description' => ''];
+$form = ['name' => '', 'account_type' => '', 'account_code' => '', 'normal_balance' => 'Debit', 'is_cash_account' => '0', 'detail_type' => '', 'description' => ''];
+$accountingLocked = $codeLocked = false;
 $query = mb_substr(account_text($_GET, 'q'), 0, 100);
 $type = account_text($_GET, 'type');
-if (!in_array($type, ['Fund', 'Expense'], true)) { $type = ''; }
+if (!in_array($type, ACCOUNT_TYPES, true)) { $type = ''; }
 $status = account_text($_GET, 'status');
 if (!in_array($status, ['active', 'inactive', 'all'], true)) { $status = 'active'; }
 
@@ -39,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         account_save($pdo, (int) $_SESSION['UserID'], $action, $_POST);
         $_SESSION['accounts_success'] = ['create' => 'Account created.', 'update' => 'Account details updated.',
             'disable' => 'Account disabled. Historical records are preserved.', 'enable' => 'Account reactivated.'][$action];
-        header('Location: admin_accounts.php?' . http_build_query(['q' => $query, 'type' => $type, 'status' => $status]));
+        header('Location: admin_accounts.php?' . http_build_query(['q' => $query, 'type' => $type, 'status' => $status]), true, 303);
         exit;
     } catch (InvalidArgumentException $e) {
         $errorMessage = $e->getMessage();
@@ -51,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $accounts = [];
 $totalAccounts = 0;
-$groupedAccounts = ['Fund' => [], 'Expense' => []];
+$groupedAccounts = array_fill_keys(ACCOUNT_TYPES, []);
 try {
     if ($editId > 0) {
         $editing = account_load($pdo, $editId);
@@ -60,8 +65,18 @@ try {
             $showForm = false;
         } else {
             $form['name'] = $editing['Name'];
-            $form['type'] = $editing['Type'];
+            $form['account_type'] = $editing['Account_Type'];
+            $accountingLocked = account_has_posted_lines($pdo, $editId);
+            $codeLocked = $accountingLocked && $editing['Account_Code'] !== null;
+            if ($codeLocked) { $form['account_code'] = $editing['Account_Code']; }
+            if ($accountingLocked) {
+                $form['normal_balance'] = $editing['Normal_Balance'];
+                $form['is_cash_account'] = (string) $editing['Is_Cash_Account'];
+            }
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                $form['account_code'] = $editing['Account_Code'] ?? '';
+                $form['normal_balance'] = $editing['Normal_Balance'];
+                $form['is_cash_account'] = (string) $editing['Is_Cash_Account'];
                 $form['detail_type'] = $editing['Detail_Type'] ?? '';
                 $form['description'] = $editing['Description'] ?? '';
             }
@@ -69,19 +84,20 @@ try {
     }
     $conditions = [];
     $params = [];
-    if ($query !== '') { $conditions[] = 'LOCATE(?, Name) > 0'; $params[] = $query; }
-    if ($type !== '') { $conditions[] = 'Type = ?'; $params[] = $type; }
+    if ($query !== '') { $conditions[] = '(LOCATE(?, Name) > 0 OR LOCATE(?, Account_Code) > 0)'; $params[] = $query; $params[] = $query; }
+    if ($type !== '') { $conditions[] = 'Account_Type = ?'; $params[] = $type; }
     if ($status !== 'all') { $conditions[] = 'Is_Active = ?'; $params[] = $status === 'active' ? 1 : 0; }
-    $stmt = $pdo->prepare('SELECT CategoryID, Name, Type, Detail_Type, Description, Is_Active FROM Categories'
-        . ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') . " ORDER BY Type = 'Fund' DESC, Name ASC");
+    $stmt = $pdo->prepare('SELECT CategoryID, Name, Account_Type, Account_Code, Normal_Balance, Is_Cash_Account, Detail_Type, Description, Is_Active FROM Categories'
+        . ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') . " ORDER BY FIELD(Account_Type,'Asset','Liability','Equity','Income','Expense'), Name ASC");
     $stmt->execute($params);
     $accounts = $stmt->fetchAll();
     foreach ($accounts as $account) {
-        $groupedAccounts[$account['Type']][] = $account;
+        $groupedAccounts[$account['Account_Type']][] = $account;
     }
     $totalAccounts = (int) $pdo->query('SELECT COUNT(*) FROM Categories')->fetchColumn();
 } catch (PDOException $e) {
     error_log('Chart of Accounts lookup failed: ' . $e->getMessage());
+    http_response_code(503);
     $unavailable = true;
     $errorMessage = 'Accounts are unavailable. Ask your system administrator to verify the database and Chart of Accounts migration.';
 }
@@ -108,7 +124,7 @@ $filterSignature = sha1(http_build_query($filterArgs));
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Administration</p>
                     <h1 class="mt-2 text-2xl font-bold text-slate-900">Chart of Accounts</h1>
-                    <p class="mt-2 text-sm text-slate-600">Manage income and expense accounts used in transaction categories.</p>
+                    <p class="mt-2 text-sm text-slate-600">Manage accounts for double-entry journal posting.</p>
                     <p class="mt-3 text-sm text-slate-500"><span class="font-semibold text-slate-700"><?= $totalAccounts ?></span> total accounts <span class="text-slate-400">&middot;</span> <span class="font-semibold text-slate-700"><?= count($accounts) ?></span> matching current filters</p>
                 </div>
                 <?php if (!$unavailable): ?>
@@ -121,7 +137,7 @@ $filterSignature = sha1(http_build_query($filterArgs));
             <?php if ($showForm && !$unavailable): ?>
             <div id="account-modal" class="accounts-overlay is-open" data-open-modal="account" aria-hidden="false">
                 <div class="accounts-dialog" role="dialog" aria-modal="true" aria-labelledby="account-modal-title" aria-describedby="account-modal-description">
-                    <div class="accounts-dialog-header"><div><h2 id="account-modal-title" class="text-lg font-semibold text-slate-900"><?= $editId > 0 ? 'Edit Account' : 'Add New Account' ?></h2><p id="account-modal-description" class="mt-1 text-sm text-slate-500"><?= $editId > 0 ? 'Update the optional details without changing the historical account identity.' : 'Create an account for future income or expense entries.' ?></p></div><button type="button" class="accounts-dialog-close" data-close-account-modal aria-label="Close account form">&times;</button></div>
+                    <div class="accounts-dialog-header"><div><h2 id="account-modal-title" class="text-lg font-semibold text-slate-900"><?= $editId > 0 ? 'Edit Account' : 'Add New Account' ?></h2><p id="account-modal-description" class="mt-1 text-sm text-slate-500"><?= $editId > 0 ? 'Update account details while preserving its historical identity.' : 'Create an account for future journal entries.' ?></p></div><button type="button" class="accounts-dialog-close" data-close-account-modal aria-label="Close account form">&times;</button></div>
                 <form id="account-form" method="POST" action="<?= accounts_escape($listUrl) ?>" class="accounts-form-grid" data-account-form>
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="<?= $editId > 0 ? 'update' : 'create' ?>">
@@ -130,13 +146,25 @@ $filterSignature = sha1(http_build_query($filterArgs));
                     <div><label for="account-name" class="accounts-label">Account Name <?= $editId > 0 ? '<span class="accounts-lock" aria-label="Locked">&#128274;</span>' : '' ?></label>
                         <input id="account-name" name="name" required maxlength="100" value="<?= accounts_escape($form['name']) ?>" <?= $editId > 0 ? 'readonly aria-describedby="account-identity-help"' : '' ?> class="<?= $fieldClass ?>"></div>
                     <div><label for="account-type" class="accounts-label">Account Type <?= $editId > 0 ? '<span class="accounts-lock" aria-label="Locked">&#128274;</span>' : '' ?></label>
-                        <select id="account-type" name="type" required <?= $editId > 0 ? 'disabled aria-describedby="account-identity-help"' : '' ?> class="<?= $fieldClass ?>">
+                        <select id="account-type" name="account_type" required <?= $editId > 0 ? 'disabled aria-describedby="account-identity-help"' : '' ?> class="<?= $fieldClass ?>">
                             <option value="">Select account type</option>
-                            <?php foreach (['Fund' => 'Income', 'Expense' => 'Expense'] as $value => $label): ?>
-                            <option value="<?= $value ?>" <?= $form['type'] === $value ? 'selected' : '' ?>><?= $label ?></option>
+                            <?php foreach (ACCOUNT_TYPES as $value): ?>
+                            <option value="<?= $value ?>" <?= $form['account_type'] === $value ? 'selected' : '' ?>><?= $value ?></option>
                             <?php endforeach; ?>
                         </select></div>
                     <?php if ($editId > 0): ?><p id="account-identity-help" class="md:col-span-2 text-xs text-slate-500">Name and type identify historical transactions and cannot be changed. Disable this account and create a replacement if needed.</p><?php endif; ?>
+                    <div><label for="account-code" class="accounts-label">Account Code (optional)</label>
+                        <input id="account-code" name="account_code" maxlength="30" value="<?= accounts_escape($form['account_code']) ?>" <?= $codeLocked ? 'readonly' : '' ?> class="<?= $fieldClass ?>"></div>
+                    <div><label for="normal-balance" class="accounts-label">Normal Balance</label>
+                        <select id="normal-balance" name="normal_balance" required <?= $accountingLocked ? 'disabled' : '' ?> class="<?= $fieldClass ?>">
+                            <?php foreach (['Debit', 'Credit'] as $value): ?><option value="<?= $value ?>" <?= $form['normal_balance'] === $value ? 'selected' : '' ?>><?= $value ?></option><?php endforeach; ?>
+                        </select><?php if ($accountingLocked): ?><input type="hidden" name="normal_balance" value="<?= accounts_escape($editing['Normal_Balance']) ?>"><?php endif; ?></div>
+                    <div><label for="cash-account" class="accounts-label">Cash Account</label>
+                        <select id="cash-account" name="is_cash_account" required <?= $accountingLocked ? 'disabled' : '' ?> class="<?= $fieldClass ?>">
+                            <option value="0" <?= $form['is_cash_account'] === '0' ? 'selected' : '' ?>>No</option>
+                            <option value="1" <?= $form['is_cash_account'] === '1' ? 'selected' : '' ?>>Yes (Asset accounts only)</option>
+                        </select><?php if ($accountingLocked): ?><input type="hidden" name="is_cash_account" value="<?= (int) $editing['Is_Cash_Account'] ?>"><?php endif; ?></div>
+                    <p class="md:col-span-2 text-xs text-slate-500">Normal balance and cash status are locked after the first posted entry. An unassigned code may then be assigned once.</p>
                     <div><label for="detail-type" class="accounts-label">Detail Type (optional)</label>
                         <input id="detail-type" name="detail_type" maxlength="100" value="<?= accounts_escape($form['detail_type']) ?>" class="<?= $fieldClass ?>"></div>
                     <div><label for="description" class="accounts-label">Description (optional)</label>
@@ -151,7 +179,7 @@ $filterSignature = sha1(http_build_query($filterArgs));
                 <form method="GET" action="admin_accounts.php" class="accounts-filter-toolbar">
                     <div><label for="search" class="accounts-label">Search</label><input id="search" name="q" maxlength="100" value="<?= accounts_escape($query) ?>" class="<?= $fieldClass ?>" placeholder="Search accounts"></div>
                     <div><label for="filter-type" class="accounts-label">Account Type</label><select id="filter-type" name="type" class="<?= $fieldClass ?>"><option value="">All types</option>
-                        <?php foreach (['Fund' => 'Income', 'Expense' => 'Expense'] as $value => $label): ?><option value="<?= $value ?>" <?= $type === $value ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
+                        <?php foreach (ACCOUNT_TYPES as $value): ?><option value="<?= $value ?>" <?= $type === $value ? 'selected' : '' ?>><?= $value ?></option><?php endforeach; ?>
                     </select></div>
                     <div><label for="filter-status" class="accounts-label">Status</label><select id="filter-status" name="status" class="<?= $fieldClass ?>">
                         <?php foreach (['active' => 'Active', 'inactive' => 'Inactive', 'all' => 'All accounts'] as $value => $label): ?><option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
@@ -161,26 +189,26 @@ $filterSignature = sha1(http_build_query($filterArgs));
                 <?php if (!$unavailable): ?>
                 <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Account list">
                     <table class="w-full text-sm text-left">
-                        <caption class="sr-only">Income and expense accounts</caption>
+                        <caption class="sr-only">Chart of Accounts</caption>
                         <thead class="bg-slate-50 border-y border-slate-200"><tr>
                             <?php foreach (['Account', 'Description', 'Status', 'Actions'] as $heading): ?><th scope="col" class="px-6 py-3 font-semibold text-slate-600 whitespace-nowrap"><?= $heading ?></th><?php endforeach; ?>
                         </tr></thead>
-                        <?php foreach (['Fund' => 'Income', 'Expense' => 'Expense'] as $groupType => $label): $groupAccounts = $groupedAccounts[$groupType]; $groupId = strtolower($groupType) . '-accounts'; ?>
+                        <?php foreach (ACCOUNT_TYPES as $groupType): $label = $groupType; $groupAccounts = $groupedAccounts[$groupType]; $groupId = strtolower($groupType) . '-accounts'; ?>
                             <tbody>
                             <tr class="accounts-group-row"><th colspan="4" scope="rowgroup"><button type="button" class="accounts-group-toggle" data-group-toggle="<?= accounts_escape($groupType) ?>" aria-expanded="true" aria-controls="<?= accounts_escape($groupId) ?>"><span><?= $label ?></span><span class="accounts-group-count"><?= count($groupAccounts) ?></span><span class="accounts-group-chevron" aria-hidden="true">&#9662;</span></button></th></tr>
                             </tbody>
                             <tbody id="<?= accounts_escape($groupId) ?>" data-account-group="<?= accounts_escape($groupType) ?>" class="divide-y divide-slate-200">
                             <?php foreach ($groupAccounts as $account): $detail = trim((string) ($account['Detail_Type'] ?? '')); $description = trim((string) ($account['Description'] ?? '')); ?>
                                 <tr class="account-row">
-                                    <td class="account-cell"><p class="break-words font-semibold text-slate-900"><?= accounts_escape($account['Name']) ?></p><?php if ($detail !== ''): ?><p class="mt-1 break-words text-xs text-slate-500"><?= accounts_escape($detail) ?></p><?php endif; ?></td>
+                                    <td class="account-cell"><p class="break-words font-semibold text-slate-900"><?= accounts_escape($account['Name']) ?></p><div class="account-accounting-tags"><span><?= accounts_escape($account['Account_Code'] ?? 'Code unassigned') ?></span><span><?= accounts_escape($account['Normal_Balance']) ?> normal</span><?php if ($account['Is_Cash_Account']): ?><span>Cash</span><?php endif; ?></div><?php if ($detail !== ''): ?><p class="mt-1 break-words text-xs text-slate-500"><?= accounts_escape($detail) ?></p><?php endif; ?></td>
                                     <td class="account-cell break-words whitespace-pre-wrap text-slate-600"><?= $description !== '' ? accounts_escape($description) : '<span class="text-slate-400">&mdash;</span>' ?></td>
                                     <td class="account-cell"><span class="status-pill <?= $account['Is_Active'] ? 'status-active' : 'status-disabled' ?>"><span class="status-dot" aria-hidden="true"></span><?= $account['Is_Active'] ? 'Active' : 'Disabled' ?></span></td>
-                                    <td class="account-cell"><div class="flex flex-wrap items-center gap-2"><a class="account-edit-button" href="<?= accounts_escape($listUrl . '&edit=' . (int) $account['CategoryID']) ?>" data-modal-opener="edit">Edit</a><a class="account-transactions-link" href="<?= accounts_escape('financial_records.php?' . http_build_query(['filter_category' => $account['Name'], 'filter_type' => $account['Type']])) ?>">View Transactions</a><div class="relative"><button type="button" class="account-action-menu-button" aria-haspopup="true" aria-expanded="false" aria-label="More actions for <?= accounts_escape($account['Name']) ?>">More <span aria-hidden="true">&#9662;</span></button><div class="account-action-menu hidden absolute right-0 z-20 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"><form method="POST" action="<?= accounts_escape($listUrl) ?>" data-status-form data-account-name="<?= accounts_escape($account['Name']) ?>" data-status-action="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><?= csrf_field() ?><input type="hidden" name="account_id" value="<?= (int) $account['CategoryID'] ?>"><input type="hidden" name="action" value="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"><?= $account['Is_Active'] ? 'Disable account' : 'Enable account' ?></button></form></div></div></div></td>
+                                    <td class="account-cell"><div class="flex flex-wrap items-center gap-2"><a class="account-edit-button" href="<?= accounts_escape($listUrl . '&edit=' . (int) $account['CategoryID']) ?>" data-modal-opener="edit">Edit</a><div class="relative"><button type="button" class="account-action-menu-button" aria-haspopup="true" aria-expanded="false" aria-label="More actions for <?= accounts_escape($account['Name']) ?>">More <span aria-hidden="true">&#9662;</span></button><div class="account-action-menu hidden absolute right-0 z-20 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"><form method="POST" action="<?= accounts_escape($listUrl) ?>" data-status-form data-account-name="<?= accounts_escape($account['Name']) ?>" data-status-action="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><?= csrf_field() ?><input type="hidden" name="account_id" value="<?= (int) $account['CategoryID'] ?>"><input type="hidden" name="action" value="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"><?= $account['Is_Active'] ? 'Disable account' : 'Enable account' ?></button></form></div></div></div></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
                         <?php endforeach; ?>
-                        <?php if (!$accounts): ?><tbody><tr><td colspan="4" class="px-6 py-10 text-center text-slate-500"><p><?= $totalAccounts === 0 ? 'No accounts yet. Add your first income or expense account.' : 'No accounts match these filters.' ?></p><?php if ($totalAccounts > 0): ?><a href="admin_accounts.php" class="mt-3 inline-flex text-sm font-semibold text-slate-700 underline">Reset filters</a><?php endif; ?></td></tr></tbody><?php endif; ?>
+                        <?php if (!$accounts): ?><tbody><tr><td colspan="4" class="px-6 py-10 text-center text-slate-500"><p><?= $totalAccounts === 0 ? 'No accounts yet. Add your first account.' : 'No accounts match these filters.' ?></p><?php if ($totalAccounts > 0): ?><a href="admin_accounts.php" class="mt-3 inline-flex text-sm font-semibold text-slate-700 underline">Reset filters</a><?php endif; ?></td></tr></tbody><?php endif; ?>
                     </table>
                 </div>
                 <?php endif; ?>

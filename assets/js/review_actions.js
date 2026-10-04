@@ -50,14 +50,18 @@
                 entity_type: button.dataset.entityType,
                 entity_id: button.dataset.entityId || '',
                 report_month: button.dataset.reportMonth || '',
-                report_year: button.dataset.reportYear || ''
+                report_year: button.dataset.reportYear || '',
+                source_fingerprint: button.dataset.sourceFingerprint || '',
+                submission_key: button.dataset.submissionKey || ''
             }).then(function (payload) {
                 if (!payload.ok) {
                     showFlash(payload.error || 'Unable to send for review.', true);
                     button.disabled = false;
                     return;
                 }
-                window.location.reload();
+                if (payload.data?.warning) window.alert(payload.data.warning);
+                if (payload.data?.snapshot_url) window.location.assign(payload.data.snapshot_url);
+                else window.location.reload();
             });
         });
     });
@@ -82,6 +86,7 @@
                     button.disabled = false;
                     return;
                 }
+                if (payload.data?.warning) window.alert(payload.data.warning);
                 window.location.reload();
             });
         });

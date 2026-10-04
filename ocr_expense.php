@@ -30,6 +30,8 @@ if (is_file(__DIR__ . '/config.php')) {
 
 require_login();
 require_role(['Admin'], 'Scan Receipt');
+require_once __DIR__ . '/includes/legacy_entry_guard.php';
+legacy_entry_guard();
 
 $csrfToken = csrf_token();
 $userId = (int) $_SESSION['UserID'];

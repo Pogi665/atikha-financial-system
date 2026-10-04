@@ -270,4 +270,19 @@
         if (event.key !== 'Escape' || activeOverlay) return;
         closeMenu(openMenu, true);
     });
+    var accountingType = document.getElementById('account-type');
+    var normalBalance = document.getElementById('normal-balance');
+    var cashAccount = document.getElementById('cash-account');
+    function syncAccountingType(defaultNormal) {
+        if (!accountingType || !normalBalance || !cashAccount) return;
+        if (defaultNormal && !normalBalance.disabled) {
+            normalBalance.value = ['Asset', 'Expense'].includes(accountingType.value) ? 'Debit' : 'Credit';
+        }
+        cashAccount.querySelector('option[value="1"]').disabled = accountingType.value !== 'Asset';
+        if (!cashAccount.disabled && accountingType.value !== 'Asset') cashAccount.value = '0';
+    }
+    if (accountingType) {
+        accountingType.addEventListener('change', function () { syncAccountingType(true); });
+        syncAccountingType(false);
+    }
 })();

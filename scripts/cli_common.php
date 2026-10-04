@@ -28,7 +28,12 @@ function cli_sql_file(PDO $pdo, string $path): void
         if (str_ends_with(rtrim($buffer), $delimiter)) {
             $sql = substr(rtrim($buffer), 0, -strlen($delimiter));
             // Old migrations hardcode the live USE; the caller already selected the target.
-            if (!preg_match('/^\s*(USE\s|CREATE DATABASE\s)/i', $sql)) { $pdo->exec($sql); }
+            if (!preg_match('/^\s*(USE\s|CREATE DATABASE\s)/i', $sql)) {
+                // Migrations may include verification SELECTs or CALL result sets.
+                // Drain them before executing the next statement on this connection.
+                $statement = $pdo->query($sql);
+                $statement->closeCursor();
+            }
             $buffer = '';
         }
     }
