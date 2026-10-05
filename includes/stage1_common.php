@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/stage2_common.php';
 /** Shared serialization barrier. Guards remain enforced with the UI flag off. */
 function stage1_schema(PDO $pdo): bool
 {

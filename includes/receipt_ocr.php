@@ -271,7 +271,7 @@ function receipt_discard(PDO $pdo,int $userId,int $id,array $post): void
     if(!$removed){throw new JournalProblem('Receipt discarded, but its file could not be removed. Contact your administrator.',500);}
 }
 /** No storage paths or raw model output are exposed in history responses. */
-function receipt_journal_metadata(PDO $pdo,array $ids): array
+function receipt_journal_evidence_internal(PDO $pdo,array $ids): array
 {
     if(!$ids||!receipt_schema_available($pdo)){return [];}
     $out=[];
@@ -291,5 +291,13 @@ function receipt_journal_metadata(PDO $pdo,array $ids): array
             foreach($documents as &$document){$document['review']=$reviews[$document['id']]??null;}unset($document);
         }unset($documents);
     }
+    return $out;
+}
+
+/** Viewer projection: calculate coverage with the internal reader before redacting. */
+function receipt_journal_metadata(PDO $pdo,array $ids,?string $role=null): array
+{
+    $out=receipt_journal_evidence_internal($pdo,$ids);
+    if((stage1_schema($pdo)||stage2_tables($pdo))&&!stage2_private_viewer($pdo))foreach(stage2_sensitive_journals($pdo,$ids) as $id=>$_)unset($out[$id]);
     return $out;
 }

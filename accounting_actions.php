@@ -13,7 +13,7 @@ try{
         $action=journal_string($_GET,'action');
         if($action==='lists'){$result=workspace_lists($pdo,$uid);}
         elseif($action==='draft'){
-            $d=workspace_draft($pdo,$uid,journal_id(journal_string($_GET,'draft_id')));$result=workspace_draft_public($d);
+            $d=workspace_draft($pdo,$uid,journal_id(journal_string($_GET,'draft_id')));workspace_ordinary($d);$result=workspace_draft_public($d);
             if($d['state']==='Posted'){
                 $s=$pdo->prepare('SELECT party_snapshot FROM journal_entries WHERE id=?');$s->execute([$d['posted_journal_id']]);$snapshot=$s->fetchColumn();
                 $result['posted_party']=$snapshot===null?null:json_decode($snapshot,true,32,JSON_THROW_ON_ERROR);
@@ -38,6 +38,7 @@ try{
             $r=json_decode($raw,true,64,JSON_THROW_ON_ERROR);if(!is_array($r)){throw new JournalProblem('Invalid request.',400);}
         }else{$r=$_POST;}
         workspace_guard($pdo,$uid,$r);$action=journal_string($r,'action');
+        if(in_array($action,['save','review','post','attach','remove','discard','upload'],true)&&journal_string($r,'draft_id',true)!==''){workspace_ordinary(workspace_draft($pdo,$uid,journal_id(journal_string($r,'draft_id'))));}
         $result=match($action){
             'save'=>workspace_save($pdo,$uid,$r), 'review'=>workspace_review($pdo,$uid,$r), 'post'=>workspace_post($pdo,$uid,$r),
             'master'=>workspace_master_save($pdo,$uid,$r),

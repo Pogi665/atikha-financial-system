@@ -275,7 +275,7 @@ function accounting_records(PDO $pdo, array $filters): array
 {
     return accounting_read($pdo,function () use ($pdo,$filters) {
         require_once __DIR__.'/receipt_ocr.php';
-        $stage1=stage1_enabled($pdo);$completeBook=$stage1&&$filters['context']!=='records';
+        $hasStage1=stage1_schema($pdo);$stage1=stage1_enabled($pdo);$completeBook=$stage1&&$filters['context']!=='records';
         $where=["j.status='posted'"]; $params=[];
         if ($filters['from']!=='') { $where[]='j.entry_date>=:start'; $params['start']=$filters['from']; }
         if ($filters['to']!=='') { $where[]='j.entry_date<:end'; $params['end']=accounting_next_day($filters['to']); }
@@ -290,7 +290,7 @@ function accounting_records(PDO $pdo, array $filters): array
             $where[]="c.Account_Type='Asset' AND c.Is_Cash_Account=1";
             $where[]=$filters['context']==='crb' ? 'l.debit_amount>0' : 'l.credit_amount>0';
         }
-        $metadata=$stage1?",COALESCE(j.source_book,'Legacy General Journal') AS source_book,j.transaction_kind,j.party_snapshot,l.project_code_snapshot,l.project_name_snapshot,c.Is_Cash_Account AS is_cash_account":'';
+        $metadata=$hasStage1?",COALESCE(j.source_book,'Legacy General Journal') AS source_book,j.transaction_kind,j.party_snapshot,l.project_code_snapshot,l.project_name_snapshot,c.Is_Cash_Account AS is_cash_account":'';
         $projection="SELECT j.id AS journal_id,j.entry_date,j.reference,j.description,j.posted_by_user_id,
             u.FullName AS posted_by,l.id AS line_id,l.account_id,c.Name AS account_name,c.Account_Code AS account_code,
             c.Account_Type AS account_type,l.debit_amount,l.credit_amount,l.fund_project_id $metadata
@@ -313,21 +313,27 @@ function accounting_records(PDO $pdo, array $filters): array
         foreach ($journals as &$j) { $j['debit_cents']=(string)$j['debit_cents']; $j['credit_cents']=(string)$j['credit_cents']; } unset($j);
         foreach ($rows as &$r) { $r['debit_cents']=(string)accounting_cents($r['debit_amount']); $r['credit_cents']=(string)accounting_cents($r['credit_amount']); } unset($r);
         require_once __DIR__.'/receipt_ocr.php';
-        $attachments=receipt_journal_metadata($pdo,array_keys($journals));
+        $attachments=receipt_journal_evidence_internal($pdo,array_keys($journals));
+        $privateAllowed=stage2_private_viewer($pdo);$sensitive=($hasStage1||stage2_tables($pdo))?stage2_sensitive_journals($pdo,array_keys($journals)):[];
         foreach($journals as $id=>&$journal){
             $journal['attachments']=$attachments[$id]??[];
-            if($stage1){
+            if($hasStage1){
                 $eligible=['debit'=>0,'credit'=>0];$covered=['debit'=>0,'credit'=>0];$legacy=$journal['header']['source_book']==='Legacy General Journal';
                 foreach($journal['lines'] as $line){if(!(int)$line['is_cash_account']){foreach(['debit','credit'] as $side){$eligible[$side]=accounting_add($eligible[$side],accounting_cents($line[$side.'_amount']));}}}
                 foreach($journal['attachments'] as $attachment){$review=$attachment['review']??null;
                     if(!$review||$review['purpose']==='legacy'){$legacy=true;}
                     elseif($review['purpose']==='amount'){$side=$review['support_side'];$covered[$side]=accounting_add($covered[$side],accounting_cents($review['accepted_amount']));}
                 }
-                $sides=['CRB'=>['credit'],'CDB'=>['debit']][$journal['header']['source_book']]??['debit','credit'];$denominator=$supported=0;
+                $kind=$journal['header']['transaction_kind'];
+                if($kind==='advance_liquidation'){$eligible['credit']=0;$covered['credit']=0;}
+                elseif(in_array($kind,['advance_release','advance_return'],true)){$eligible=['debit'=>0,'credit'=>0];$covered=['debit'=>0,'credit'=>0];}
+                $sides=$kind==='advance_liquidation'?['debit']:(['CRB'=>['credit'],'CDB'=>['debit']][$journal['header']['source_book']]??['debit','credit']);$denominator=$supported=0;
                 foreach($sides as $side){$denominator=accounting_add($denominator,$eligible[$side]);$supported=accounting_add($supported,$covered[$side]);}
                 $status=$legacy?'Legacy coverage not recorded':($denominator===0?'Not applicable':($supported===$denominator?'Fully covered':($supported>0?'Partially covered':'No monetary support')));
+                if($kind==='advance_return')$status='Return proof confirmed';elseif($kind==='advance_release')$status=$journal['attachments']?'Supporting proof reviewed':'Optional proof not supplied';
                 $journal['evidence_coverage']=['status'=>$status];foreach($sides as $side){$journal['evidence_coverage'][$side]=['eligible'=>accounting_decimal($eligible[$side]),'covered'=>$legacy?null:accounting_decimal($covered[$side])];}
             }
+            if(!$privateAllowed&&isset($sensitive[$id]))$journal['attachments']=[];
         }unset($journal);
         return ['rows'=>$rows,'journals'=>$journals,'completeBook'=>$completeBook];
     });

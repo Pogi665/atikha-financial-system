@@ -28,6 +28,9 @@ if ($navCanUseWorkspace) {
     catch (Throwable $e) { error_log('Accounting navigation unavailable.'); }
 }
 
+$navStage2=false;
+if($navIsAdmin||$navIsExecutive){require_once __DIR__.'/stage1_common.php';$navConnection=$pdo??$GLOBALS['pdo']??null;try{$navStage2=$navConnection instanceof PDO&&stage2_enabled($navConnection);}catch(Throwable $e){error_log('Advance navigation unavailable.');}}
+
 $navRoleLabel = htmlspecialchars(user_role_label($navRole), ENT_QUOTES, 'UTF-8');
 
 function nav_link_class(string $page, string $activePage, bool $executive = false): string
@@ -122,6 +125,7 @@ $sidebarClass = $navIsExecutive
             <div class="sidebar-spacer"></div>
         <?php endif; ?>
 
+        <?php if($navStage2): ?><a href="cash_advances.php" class="<?= nav_link_class('cash_advances',$activePage,$navIsExecutive) ?>">Cash advances</a><?php endif; ?>
         <a href="reports.php" class="<?= nav_link_class('reports', $activePage, $navIsExecutive) ?>">
             <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
             Reports

@@ -18,6 +18,7 @@ try {
     $allowed=$r&&$r['ExpenseID']===null&&$r['OCR_Status']!=='Discarded'&&(
         ($r['JournalEntryID']===null&&$journal===null&&$role==='Admin'&&(int)$r['UploadedBy_UserID']===(int)$_SESSION['UserID'])
         ||($r['JournalEntryID']!==null&&$journal===(int)$r['JournalEntryID']&&$r['journal_status']==='posted'&&in_array($role,['Admin','Management'],true)));
+    if($allowed&&$r['JournalEntryID']!==null&&(stage1_schema($pdo)||stage2_tables($pdo))&&isset(stage2_sensitive_journals($pdo,[(int)$r['JournalEntryID']])[(int)$r['JournalEntryID']])&&!stage2_private_viewer($pdo))$allowed=false;
     if(!$allowed){throw new JournalProblem('Evidence not found or access restricted.',404);}
     $path=receipt_file_verify($r);
     if(!isset(ALLOWED_RECEIPT_MIMES[$r['Mime_Type']])){throw new JournalProblem('Evidence unavailable.',415);}
