@@ -113,5 +113,38 @@ try{
     ap($pdo,$now,[[$a['Expense'],'2.00','0.00'],[$a['Bank'],'0.00','2.00']]);ap($pdo,accounting_next_day($now),[[$a['Expense'],'3.00','0.00'],[$a['Bank'],'0.00','3.00']]);ac(accounting_cents(budget_mtd_spent($pdo,$y,$m))===accounting_add($before,200),'Current budget spending stops at Manila today');
     $pdo->exec("CREATE TRIGGER phase3_fail_notification BEFORE INSERT ON Notifications FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Synthetic notification failure'");$notify=report_snapshot_submit($pdo,$uid,request_for($pdo,2026,9));$pdo->exec('DROP TRIGGER phase3_fail_notification');ac($notify['warning']!==''&&report_snapshot_load_id($pdo,$notify['id'])!==null,'Notification failure warns after preserving committed snapshot');
     $input=request_for($pdo,2026,9);$pdo->exec('UPDATE Users SET Is_Active=0 WHERE UserID='.$uid);reject(fn()=>report_snapshot_submit($pdo,$uid,$input),'Inactive submitter rejected',401);$pdo->exec('UPDATE Users SET Is_Active=1 WHERE UserID='.$uid);
+    // Financial Records validation and boundaries use only this guarded disposable DB.
+    $choices=accounting_accounts($pdo);
+    $parse=static fn(array $get)=>accounting_records_request($get,$choices,'2026-10-01');
+    $default=$parse([]);ac(!$default['errors']&&$default['filters']['from']==='2026-10-01'&&$default['filters']['to']==='2026-10-01'&&$default['dateMode']==='default','Records month rollover defaults are calculated once');
+    foreach ([['from'=>'','to'=>''],['from'=>'2024-02-29'],['to'=>'2024-03-01']] as $get) {
+        $r=$parse($get);ac(!$r['errors']&&$r['dateMode']==='explicit'&&$r['filters']['from']===($get['from']??'')&&$r['filters']['to']===($get['to']??''),'Explicit blanks and one-sided dates stay distinct from defaults');
+    }
+    foreach ([['from'=>'2024-02-30'],['to'=>'garbage'],['from'=>'2024-03-01','to'=>'2024-02-29'],['from'=>[]],['type'=>[]],['account_id'=>[]],['account_id'=>'0'],['account_id'=>'4294967296'],['account_id'=>'4294967295'],['account_id'=>(string)$a['Wallet'],'type'=>'Expense'],['sort'=>'6:asc'],['sort'=>'0:desc,0:asc'],['page'=>'0'],['search'=>[]],['view'=>'unknown'],['format'=>'xml']] as $get) {
+        ac((bool)$parse($get)['errors'],'Invalid record request is rejected: '.json_encode($get));
+    }
+    $bad=$parse(['from'=>'bad date','to'=>'2024-02-29']);ac($bad['draft']['from']==='bad date'&&isset($bad['errors']['from']),'Rejected date text is preserved');
+    $legacy=$parse(['filter_category'=>'Fixture Revenue','filter_type'=>'Fund']);ac(!$legacy['errors']&&$legacy['filters']['account_id']===(string)$a['Revenue']&&$legacy['filters']['type']==='Income'&&$legacy['dateMode']==='default','Legacy exact name and Fund alias retain monthly default');
+    ac((bool)$parse(['filter_category'=>'Fixture Revenue','filter_type'=>'Fund','account_id'=>(string)$a['Wallet']])['errors'],'Conflicting legacy and explicit account IDs are rejected');
+    ac((bool)$parse(['filter_category'=>'missing'])['errors'],'Unavailable legacy names are rejected');
+    $state=$parse(['search'=>'Synthetic','sort'=>'4:asc,0:desc','page'=>'2','period'=>'all']);ac(!$state['errors']&&$state['state']['order']===[[4,'asc'],[0,'desc']]&&$state['notice']!==''&&$state['dateMode']==='default','Table state validates and obsolete Period does not broaden dates');
+    $reset=$parse(['reset'=>'1','from'=>'2024-02-29','to'=>'','account_id'=>(string)$a['Wallet'],'type'=>'Asset','search'=>'Synthetic','page'=>'9','sort'=>'4:desc']);
+    ac(!$reset['errors']&&$reset['filters']['from']==='2026-10-01'&&$reset['filters']['to']==='2026-10-01'&&$reset['filters']['type']===''&&$reset['filters']['account_id']===''&&$reset['state']['search']===''&&$reset['state']['page']===1&&$reset['state']['order']===[[4,'desc']],'Reset uses fresh defaults, clears search, and retains sorting');
+    $pdo->beginTransaction();
+    try {
+        $pdo->exec('UPDATE Categories SET Is_Active=0 WHERE CategoryID='.$a['Wallet']);
+        $historical=accounting_records_request(['from'=>'','to'=>'','account_id'=>(string)$a['Wallet'],'type'=>'Asset'],accounting_accounts($pdo),'2026-10-01');
+        ac(!$historical['errors']&&count(accounting_records($pdo,$historical['filters'])['rows'])>0,'Inactive historical account remains eligible for posted-line inspection');
+        foreach (['2024-02-28','2024-02-29','2024-03-01','2024-03-02'] as $day) {
+            $s=$pdo->prepare("INSERT INTO journal_entries (entry_date,description,status) VALUES (?,'Date boundary fixture','posted')");$s->execute([$day]);$id=$pdo->lastInsertId();
+            $s=$pdo->prepare('INSERT INTO journal_entry_lines (journal_entry_id,account_id,debit_amount,credit_amount) VALUES (?,?,?,?)');
+            $s->execute([$id,$a['Wallet'],'1.00','0.00']);$s->execute([$id,$a['Capital'],'0.00','1.00']);
+        }
+        $range=$parse(['from'=>'2024-02-29','to'=>'2024-03-01','account_id'=>(string)$a['Wallet']]);
+        ac(array_column(accounting_records($pdo,$range['filters'])['rows'],'entry_date')===['2024-03-01','2024-02-29'],'Both date boundaries included and following day excluded');
+        $same=$parse(['from'=>'2024-02-29','to'=>'2024-02-29','account_id'=>(string)$a['Wallet']]);ac(count(accounting_records($pdo,$same['filters'])['rows'])===1,'Same-day leap-date range includes its complete day');
+        $upper=$parse(['to'=>'2024-02-29','account_id'=>(string)$a['Wallet']]);ac(count(accounting_records($pdo,$upper['filters'])['rows'])===2,'To-only query includes all earlier dates');
+        $lower=$parse(['from'=>'2024-03-02','account_id'=>(string)$a['Wallet']]);$lines=accounting_records($pdo,$lower['filters'])['rows'];ac($lines&&!array_filter($lines,static fn($r)=>$r['entry_date']<'2024-03-02'),'From-only query includes every later date');
+    } finally { $pdo->rollBack(); }
     echo "PASS: Disposable database retained for browser tests: $db\n";
 }catch(Throwable $e){fwrite(STDERR,$e->getMessage()."\n");exit(1);}

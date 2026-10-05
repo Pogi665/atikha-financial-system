@@ -38,3 +38,36 @@
 @media (max-width: 600px) { .financial-records-page #transaction-details { grid-template-columns: 1fr; } }
 
 .journal-receipt{padding:1rem;border:1px solid #cbd5e1;border-radius:.5rem;margin-top:1rem;overflow-wrap:anywhere}.journal-receipt h3{font-weight:700}.journal-receipt a{color:#1d4ed8;text-decoration:underline}
+
+/* Main Financial Records only; retain the cash-book and shared shell layout. */
+.records-filter-redesign #records-filters { display: block; }
+.records-filter-redesign #records-results > section + section { margin-top: 1.25rem; }
+.records-filter-redesign .records-filter-fields { display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 1fr) minmax(11rem, 1fr) minmax(18rem, 2fr); gap: 1rem; align-items: start; }
+.records-filter-redesign .records-filter-field { min-width: 0; }
+.records-filter-redesign #records-filters label { display: block; margin-bottom: .35rem; }
+.records-filter-redesign #records-filters input, .records-filter-redesign #records-filters select { width: 100%; max-width: none; height: 42px; box-sizing: border-box; background: #fff; font-size: .875rem; color: #334155; }
+.records-filter-redesign .records-filter-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.records-filter-redesign #records-filters .records-filter-actions button { height: 42px; }
+.records-filter-redesign #records-filters #records-apply { background: #059669; border-color: #059669; color: #fff; }
+.records-filter-redesign #records-filters #records-reset, .records-filter-redesign #records-filters .records-account-toggle { background: #fff; border-color: #cbd5e1; color: #334155; }
+.financial-records-page.records-filter-redesign #records-filters .records-account-toggle, .financial-records-page.records-filter-redesign #records-filters .records-clear-rejected-date { background: #fff; color: #334155; }
+.records-filter-redesign #records-filters .records-clear-rejected-date { margin-top: .35rem; padding: .2rem .4rem; font-size: .8rem; }
+.records-filter-redesign #records-filters #records-apply:hover { background: #047857; }
+.records-filter-redesign #records-filters #records-reset:hover { background: #f1f5f9; }
+.records-filter-redesign #records-filters .records-field-error, .records-filter-redesign #records-filter-errors, .records-filter-redesign #records-load-error { color: #b91c1c; overflow-wrap: anywhere; }
+.records-filter-redesign #records-filters .records-field-error { margin: .35rem 0 0; }
+.records-filter-redesign #records-filters [aria-invalid="true"] { border-color: #b91c1c; }
+.records-filter-redesign #records-draft-status { color: #92400e; font-weight: 600; }
+.records-filter-redesign .records-account-combo { position: relative; }
+.records-filter-redesign #records-filters #records-account-search { padding-right: 2.5rem; }
+.records-filter-redesign #records-filters .records-account-toggle { position: absolute; right: 1px; top: 1px; height: 40px; border: 0; border-left: 1px solid #cbd5e1; border-radius: 0 .4rem .4rem 0; padding: 0 .65rem; }
+.records-filter-redesign #records-account-options { position: absolute; z-index: 30; top: calc(100% + .25rem); left: 0; right: 0; max-height: 18rem; overflow-y: auto; padding: .25rem; background: #fff; border: 1px solid #cbd5e1; border-radius: .4rem; box-shadow: 0 6px 18px rgb(15 23 42 / .12); }
+.records-filter-redesign #records-account-options li { padding: .6rem; font-size: .875rem; overflow-wrap: anywhere; }
+.records-filter-redesign #records-account-options [role="option"] { cursor: pointer; }
+.records-filter-redesign #records-account-options [role="option"]:hover, .records-filter-redesign #records-account-options .is-active { background: #ecfdf5; color: #065f46; }
+.records-filter-redesign #records-account-options [aria-selected="true"] { font-weight: 600; }
+.records-filter-redesign #records-filters input:focus-visible, .records-filter-redesign #records-filters select:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.records-filter-redesign [hidden] { display: none !important; }
+.records-filter-redesign #records-filters p:empty, .records-filter-redesign #records-load-error:empty, .records-filter-redesign #records-period-notice:empty { display: none; }
+@media (max-width: 1250px) { .records-filter-redesign .records-filter-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .records-filter-redesign .records-filter-fields { grid-template-columns: minmax(0, 1fr); } }

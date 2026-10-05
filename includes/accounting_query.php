@@ -200,6 +200,77 @@ function accounting_records_filters(array $get): array
     $page=$get['page']??'1'; if (!ctype_digit($page)||(int)$page<1||(int)$page>1000000) { throw new InvalidArgumentException('Invalid page.'); }
     return ['context'=>$context,'from'=>$from,'to'=>$to,'type'=>$type,'account_id'=>$account,'page'=>(int)$page];
 }
+/** Main Financial Records request only; cash-book parsing remains unchanged. */
+function accounting_records_request(array $get, array $accounts, string $today): array
+{
+    accounting_date($today);
+    $defaults = ['from'=>substr($today,0,7).'-01','to'=>$today];
+    $errors = [];
+    foreach (['view','from','to','type','account_id','page','search','sort','reset','format','category','filter_category','filter_type','period'] as $key) {
+        if (array_key_exists($key,$get) && !is_string($get[$key])) {
+            $errors[$key] = 'Choose a single valid value.';
+        }
+    }
+    $value = static fn(string $key, string $default=''): string => isset($get[$key]) && is_string($get[$key]) ? $get[$key] : $default;
+    if ($value('view','records') !== 'records') { $errors['view']='Invalid ledger view.'; }
+    if (!in_array($value('format','html'),['html','json'],true)) { $errors['format']='Invalid response format.'; }
+    if (!in_array($value('reset','0'),['0','1'],true)) { $errors['reset']='Invalid reset request.'; }
+    $reset = $value('reset') === '1';
+    $explicit = !$reset && (array_key_exists('from',$get) || array_key_exists('to',$get));
+    $draft = ['from'=>$explicit?$value('from'):$defaults['from'], 'to'=>$explicit?$value('to'):$defaults['to'],
+        'type'=>$reset?'':$value('type'), 'account_id'=>$reset?'':$value('account_id')];
+    if ($draft['type']==='Incoming') { $draft['type']='Income'; }
+    foreach (['from'=>'From','to'=>'To'] as $key=>$label) {
+        if ($draft[$key] !== '') {
+            try { accounting_date($draft[$key]); }
+            catch (InvalidArgumentException $e) { $errors[$key]="$label must be a valid date between 1000-01-01 and 9998-12-31. Rejected value: ".$draft[$key]; }
+        }
+    }
+    if (!isset($errors['from']) && !isset($errors['to']) && $draft['from']!=='' && $draft['to']!=='' && $draft['from']>$draft['to']) {
+        $errors['to']='To must be on or after From.';
+    }
+    if ($draft['type']!=='' && !in_array($draft['type'],ACCOUNTING_TYPES,true)) { $errors['type']='Choose a valid account type.'; }
+    $byId=[];
+    foreach ($accounts as $account) { $byId[(string)$account['CategoryID']]=$account; }
+    if (!$reset && (array_key_exists('category',$get)||array_key_exists('filter_category',$get)||array_key_exists('filter_type',$get))) {
+        $name=$value('filter_category',$value('category'));
+        $legacyType=$value('filter_type',$draft['type']);
+        $legacyType=['Fund'=>'Income','Incoming'=>'Income'][$legacyType]??$legacyType;
+        $matches=array_values(array_filter($accounts,static fn($a)=>$a['Name']===$name&&($legacyType===''||$a['Account_Type']===$legacyType)));
+        if ($name==='' || count($matches)!==1 || ($legacyType!==''&&!in_array($legacyType,ACCOUNTING_TYPES,true))
+            || (isset($get['category'],$get['filter_category']) && $value('category')!==$name)) {
+            $errors['account_id']='This account link is ambiguous or unavailable. Select an account by ID.';
+        } else {
+            $match=$matches[0];
+            if (($draft['account_id']!=='' && $draft['account_id']!==(string)$match['CategoryID'])
+                || ($draft['type']!=='' && $draft['type']!==$match['Account_Type'])) {
+                $errors['account_id']='The account link conflicts with the selected account or type.';
+            } else { $draft['account_id']=(string)$match['CategoryID']; $draft['type']=$match['Account_Type']; }
+        }
+    }
+    if ($draft['account_id']!=='') {
+        $id=$draft['account_id'];
+        if (!ctype_digit($id) || strlen($id)>10 || (int)$id<1 || (int)$id>4294967295) {
+            $errors['account_id']='Choose a valid account identifier.';
+        } elseif (!isset($byId[$id])) { $errors['account_id']='Account not found. Select an available account.'; }
+        elseif ($draft['type']!=='' && $byId[$id]['Account_Type']!==$draft['type']) { $errors['account_id']='This account does not match the selected type.'; }
+    }
+    $page=$reset?'1':$value('page','1');
+    if (!ctype_digit($page) || strlen($page)>7 || (int)$page<1 || (int)$page>1000000) { $errors['page']='Invalid page.'; }
+    $search=$reset?'':$value('search');
+    if (!mb_check_encoding($search,'UTF-8') || mb_strlen($search)>1000) { $errors['search']='Search must contain valid text of at most 1,000 characters.'; }
+    $sort=$value('sort','0:desc'); $order=[];
+    foreach (explode(',',$sort) as $pair) {
+        if (!preg_match('/\A([0-5]):(asc|desc)\z/',$pair,$m) || isset($order[(int)($m[1]??-1)])) {
+            $errors['sort']='Invalid table sorting.'; break;
+        }
+        $order[(int)$m[1]]=[$m[1]+0,$m[2]];
+    }
+    $filters=$draft+['context'=>'records','page'=>isset($errors['page'])?1:(int)$page];
+    return ['filters'=>$filters,'draft'=>$draft,'errors'=>$errors,'defaults'=>$defaults,
+        'dateMode'=>$explicit?'explicit':'default','state'=>['search'=>$search,'order'=>array_values($order),'page'=>$filters['page']],
+        'notice'=>array_key_exists('period',$get)?'Period is no longer used. The date filters shown here apply.':''];
+}
 function accounting_records(PDO $pdo, array $filters): array
 {
     return accounting_read($pdo,function () use ($pdo,$filters) {
