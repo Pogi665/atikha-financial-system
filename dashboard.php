@@ -93,7 +93,6 @@ else:
 <div class="bg-slate-50 p-6 rounded-xl space-y-8">
 <div>
     <h1 class="text-2xl font-bold text-slate-900">Financial Overview</h1>
-    <p class="text-slate-600 mt-2">Posted account balances through <?= htmlspecialchars($today, ENT_QUOTES, 'UTF-8') ?> (Asia/Manila).</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

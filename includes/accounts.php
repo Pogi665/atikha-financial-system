@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/categories.php';
 require_once __DIR__ . '/logger.php';
+require_once __DIR__ . '/stage1_common.php';
 
 const ACCOUNT_TYPES = ['Asset', 'Liability', 'Equity', 'Income', 'Expense'];
 
@@ -59,6 +60,7 @@ function account_save(PDO $pdo, int $userId, string $action, array $input): int
         if (!$user || $user['Role'] !== 'Admin' || (int) $user['Is_Active'] !== 1) {
             throw new InvalidArgumentException('Account management is restricted to active System Administrators.');
         }
+        stage1_write_lock($pdo);
         $before = null;
         if ($action === 'create') {
             $name = account_text($input, 'name');
@@ -79,9 +81,20 @@ function account_save(PDO $pdo, int $userId, string $action, array $input): int
             if ($before === null) {
                 throw new InvalidArgumentException('That account could not be found.');
             }
+            $designated = false;
+            if (stage1_schema($pdo)) {
+                $control = $pdo->prepare('SELECT account_id FROM advance_control_designations WHERE account_id=?');
+                $control->execute([$id]); $designated = $control->fetchColumn() !== false;
+            }
+            if ($designated && $action === 'disable') {
+                throw new InvalidArgumentException('Remove the unused advance designation with an audited reason before disabling this account.');
+            }
             if ($action === 'update') {
                 // Names and types are historical identifiers, never editable here.
                 [$code, $normal, $cash] = account_accounting_fields($input, $before['Account_Type']);
+                if ($designated && ($normal !== $before['Normal_Balance'] || $cash !== (int)$before['Is_Cash_Account'])) {
+                    throw new InvalidArgumentException('Normal balance and cash classification are locked while this account is designated for advances.');
+                }
                 if (account_has_posted_lines($pdo, $id)
                     && (($before['Account_Code'] !== null && $code !== $before['Account_Code'])
                         || $normal !== $before['Normal_Balance'] || $cash !== (int) $before['Is_Cash_Account'])) {
@@ -101,6 +114,7 @@ function account_save(PDO $pdo, int $userId, string $action, array $input): int
             'Chart of Accounts', $id, $before, $after, 'admin_accounts.php?status=all')) {
             throw new RuntimeException('The audit entry could not be saved.');
         }
+        stage1_write_changed($pdo);
         $pdo->commit();
         return $id;
     } catch (Throwable $e) {

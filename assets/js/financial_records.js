@@ -29,6 +29,20 @@
         controller?.draw();
     }
     table.on('draw',totals);totals();
+    if(!main&&data.completeBook){
+        // Match journals first, retain all their lines and exact totals.
+        const original=document.querySelector('.dt-search input'),search=original.cloneNode(true);
+        original.replaceWith(search);search.setAttribute('aria-label','Search complete cash-book entries');
+        search.addEventListener('input',()=>{
+            const terms=search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean),ids=new Set();
+            Object.entries(data.journals).forEach(([id,j])=>{
+                const h=j.header,party=h.party_snapshot?JSON.parse(h.party_snapshot):null;
+                const hay=[h.entry_date,h.reference,h.description,party?.name,j.evidence_coverage?.status,...j.lines.flatMap(l=>[account(l),l.project_code_snapshot,l.project_name_snapshot,money(l.debit_amount.replace('.','')),money(l.credit_amount.replace('.',''))])].join(' ').toLocaleLowerCase();
+                if(terms.every(term=>hay.includes(term)))ids.add(String(id));
+            });
+            table.search((_text,row)=>ids.has(String(row.journal_id))).page(0).draw();
+        });
+    }
     const scope=document.getElementById('date-scope'),from=document.getElementById('from'),to=document.getElementById('to');
     function dates(){if(scope.value==='all'){from.value=to.value='';}if(scope.value==='month'){from.value=data.monthStart;to.value=data.today;}from.readOnly=to.readOnly=scope.value!=='custom';}
     if(scope){scope.addEventListener('change',dates);dates();}
@@ -126,12 +140,53 @@
             if(state.page>1)url.searchParams.set('page',String(state.page));return url;
         }
         function writeUrl(method='replaceState'){if(applied&&!committing)history[method](null,'',urlFor(applied,dateMode,tableState()));}
-        function draw(){
-            if(!applied){summary.textContent='No filters have been applied successfully.';mark();return;}
-            const dates=applied.from&&applied.to?applied.from+' through '+applied.to:applied.from?'On or after '+applied.from:applied.to?'On or before '+applied.to:'All dates';
-            const a=find(applied.account_id);
-            summary.textContent='Applied: '+dates+' · Account type: '+(applied.type||'All types')+' · Account: '+(a?accountLabel(a):'All accounts')+(table.search()?' · Table search: '+table.search():'');
-            mark();writeUrl();
+        function draw() {
+            summary.replaceChildren();
+
+            if (!applied) {
+                const message = document.createElement('span');
+                message.className = 'text-sm text-slate-500';
+                message.textContent = 'No filters have been applied successfully.';
+                summary.append(message);
+                mark();
+                return;
+            }
+
+            const dates = applied.from && applied.to
+                ? applied.from + ' through ' + applied.to
+                : applied.from
+                    ? 'On or after ' + applied.from
+                    : applied.to
+                        ? 'On or before ' + applied.to
+                        : 'All dates';
+
+            const a = find(applied.account_id);
+            const filters = [
+                'Dates: ' + dates,
+                'Account type: ' + (applied.type || 'All types'),
+                'Account: ' + (a ? accountLabel(a) : 'All accounts')
+            ];
+
+            if (table.search()) {
+                filters.push('Table search: ' + table.search());
+            }
+
+            const heading = document.createElement('span');
+            heading.className = 'text-xs font-medium text-slate-500';
+            heading.textContent = 'Applied:';
+            summary.append(heading);
+
+            filters.forEach(value => {
+                const badge = document.createElement('span');
+                badge.className =
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full ' +
+                    'text-xs font-medium bg-blue-100 text-blue-800';
+                badge.textContent = value;
+                summary.append(badge);
+            });
+
+            mark();
+            writeUrl();
         }
         function clientErrors(){
             const errors={};const values=draft();
@@ -206,13 +261,16 @@
         const button=event.target.closest('.records-view');if(!button)return;const row=table.row(button.closest('tr')).data();if(!row)return;
         const j=data.journals[row.journal_id];opener=button;dialog.dataset.transaction=String(row.journal_id);
         const details=document.getElementById('transaction-details');details.replaceChildren();
+        if(row.source_book){const party=row.party_snapshot?JSON.parse(row.party_snapshot):null;[['Originating book',row.source_book],['Payer / payee',party?.name||'Not recorded']].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});}
+        if(j.evidence_coverage){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent='Evidence coverage';dd.textContent=j.evidence_coverage.status;Object.entries(j.evidence_coverage).forEach(([side,value])=>{if(side!=='status'&&value.covered!==null)dd.append(' · '+side+': PHP '+value.covered+' supported of PHP '+value.eligible);});details.append(dt,dd);}
         [['Journal ID',row.journal_id],['Date',row.entry_date],['Reference',label(row.reference)],['Description',row.description],['Posted by',label(row.posted_by)],['Total Debits',money(j.debit_cents)],['Total Credits',money(j.credit_cents)],['Difference',money(BigInt(j.debit_cents)-BigInt(j.credit_cents))]].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});
         const container=document.getElementById('transaction-documents');container.replaceChildren();const t=document.createElement('table');t.className='journal-detail-lines';
         const head=document.createElement('thead'),hr=document.createElement('tr');['Account','Fund / Project ID','Debit','Credit'].forEach(v=>{const th=document.createElement('th');th.textContent=v;hr.append(th);});head.append(hr);t.append(head);
-        const body=document.createElement('tbody');j.lines.forEach(r=>{const tr=document.createElement('tr');[account(r),r.fund_project_id??'Not tagged',money(r.debit_amount.replace('.','')),money(r.credit_amount.replace('.',''))].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});body.append(tr);});t.append(body);container.append(t);
+        const body=document.createElement('tbody');j.lines.forEach(r=>{const tr=document.createElement('tr');[account(r),r.project_name_snapshot?(r.project_code_snapshot+' · '+r.project_name_snapshot):(r.fund_project_id??'Organization operations'),money(r.debit_amount.replace('.','')),money(r.credit_amount.replace('.',''))].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});body.append(tr);});t.append(body);container.append(t);
         (j.attachments || []).forEach(a=>{
             const article=document.createElement('article');article.className='journal-receipt';
             const heading=document.createElement('h3');heading.textContent=a.name;article.append(heading);
+            if(a.review){const p=document.createElement('p');p.textContent=a.review.purpose==='amount'?'Reviewed monetary evidence: PHP '+a.review.accepted_amount+' accepted of PHP '+a.review.declared_amount+'; supports '+a.review.support_side+' lines.':a.review.purpose==='legacy'?'Legacy evidence — no monetary review was recorded.':'Reviewed informational document — no monetary coverage.';article.append(p);}
             const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' ? '+a.size+' bytes ? SHA-256 '+a.sha256;article.append(meta);
             const link=document.createElement('a');link.href=a.url;link.target='_blank';link.rel='noopener';link.textContent='View receipt';article.append(link);
             const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' ? ',download);

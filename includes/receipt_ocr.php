@@ -1,6 +1,7 @@
 <?php
 /** OCR evidence intake. No financial INSERTs belong in this service. */
-if (is_file(__DIR__ . '/../config.php')) { require_once __DIR__ . '/../config.php'; }
+if (!(PHP_SAPI==='cli' && defined('ATIKHA_ISOLATED_TEST') && ATIKHA_ISOLATED_TEST===true)
+    && is_file(__DIR__ . '/../config.php')) { require_once __DIR__ . '/../config.php'; }
 require_once __DIR__ . '/journal.php';
 require_once __DIR__ . '/receipts.php';
 require_once __DIR__ . '/gemini_client.php';
@@ -68,6 +69,7 @@ function receipt_owned(PDO $pdo, int $id, int $userId, bool $lock = false): arra
 function receipt_file_verify(array $r): string
 {
     $path = transaction_receipt_path($r['File_Path']);
+    if($path){clearstatcache(true,$path);}
     if (!$path || !hash_equals($r['File_SHA256'], (string) hash_file('sha256', $path))
         || filesize($path) !== (int) $r['File_Size']
         || (new finfo(FILEINFO_MIME_TYPE))->file($path) !== $r['Mime_Type']) {
@@ -134,6 +136,7 @@ function receipt_extract(PDO $pdo, int $userId, int $id, array $post): array
     $pdo->beginTransaction();
     try {
         receipt_actor_lock($pdo, $userId); $r = receipt_owned($pdo, $id, $userId, true);
+        stage1_reserved_guard($pdo, $id);
         if ($r['JournalEntryID'] !== null) { throw new JournalProblem('Posted evidence cannot be reprocessed.', 409); }
         $path = receipt_file_verify($r);
         $s = $pdo->prepare('SELECT * FROM receipt_ocr_attempts WHERE request_key=?'); $s->execute([$key]);
@@ -192,6 +195,7 @@ function receipt_intake_signature(array $r, array $a): string
 function receipt_review(PDO $pdo, int $id, int $userId): array
 {
     receipt_require_schema($pdo); $r = receipt_owned($pdo, $id, $userId);
+    stage1_reserved_guard($pdo, $id);
     if ($r['JournalEntryID'] !== null) { throw new JournalProblem('Receipt already belongs to journal #' . (int) $r['JournalEntryID'] . '.', 409); }
     receipt_file_verify($r); $a = receipt_latest_attempt($pdo, $id);
     if (!$a || $a['state'] === 'Pending') { throw new JournalProblem('Extraction is not complete. Return to Scan Receipt to retry.', 409); }
@@ -219,6 +223,7 @@ function receipt_post_context(array $post): ?array
 function receipt_lock_for_post(PDO $pdo, int $userId, array $context, string $signature): array
 {
     receipt_require_schema($pdo); $r = receipt_owned($pdo,$context['receipt_id'],$userId,true);
+    stage1_reserved_guard($pdo, (int)$r['ReceiptID']);
     if ($r['JournalEntryID'] !== null) { throw new JournalProblem('This receipt has already been posted.',409); }
     receipt_file_verify($r); $a = receipt_latest_attempt($pdo,(int)$r['ReceiptID']);
     if (!$a || (int)$a['id'] !== $context['attempt_id'] || $a['state'] === 'Pending'
@@ -236,6 +241,9 @@ function receipt_link_post(PDO $pdo, int $id, array $review, array $input): arra
     $s=$pdo->prepare('UPDATE Receipts SET JournalEntryID=?,Posted_File_SHA256=File_SHA256 WHERE ReceiptID=? AND JournalEntryID IS NULL AND OCR_Status<>\'Discarded\'');
     $s->execute([$id,$r['ReceiptID']]);
     if ($s->rowCount()!==1) { throw new JournalProblem('Receipt could not be linked.',409); }
+    if(stage1_schema($pdo)){
+        $pdo->prepare("INSERT INTO posted_evidence_associations(journal_id,receipt_id,purpose) VALUES(?,?,'legacy')")->execute([$id,$r['ReceiptID']]);
+    }
     $debits=0; foreach($input['lines'] as $line){$debits+=journal_amount($line['debit_amount']);}
     $d=$review['data']; $original=['entry_date'=>$d['transaction_date']??null,'reference'=>$d['reference']??null,'total_amount'=>$d['total_amount']??null,'debit_account_id'=>$d['suggested_debit_account_id']??null,'currency'=>$d['currency']??null];
     $debitAccounts=array_values(array_column(array_filter($input['lines'],static fn($l)=>journal_amount($l['debit_amount'])>0),'account_id'));
@@ -250,6 +258,7 @@ function receipt_discard(PDO $pdo,int $userId,int $id,array $post): void
     receipt_request_guard($pdo,$userId,$post); $pdo->beginTransaction();
     try {
         receipt_actor_lock($pdo,$userId); $r=receipt_owned($pdo,$id,$userId,true);
+        stage1_reserved_guard($pdo, $id);
         if($r['JournalEntryID']!==null){throw new JournalProblem('Posted evidence cannot be discarded.',409);}
         $path=transaction_receipt_path($r['File_Path']); $a=receipt_latest_attempt($pdo,$id);
         if($a&&$a['state']==='Pending'){$pdo->prepare("UPDATE receipt_ocr_attempts SET state='Failed',completed_at=UTC_TIMESTAMP(),error_message='Receipt discarded' WHERE id=?")->execute([$a['id']]);}
@@ -274,6 +283,13 @@ function receipt_journal_metadata(PDO $pdo,array $ids): array
         foreach($s as $r){$out[$r['JournalEntryID']][]=['id'=>(int)$r['ReceiptID'],'name'=>$r['Original_Filename']?:'Supporting receipt','mime'=>$r['Mime_Type'],
             'size'=>(int)$r['File_Size'],'sha256'=>$r['File_SHA256'],'uploaded_by'=>$r['uploaded_by'],
             'url'=>'receipt_attachment.php?receipt_id='.(int)$r['ReceiptID'].'&journal_id='.(int)$r['JournalEntryID']];}
+    }
+    if(stage1_schema($pdo)){
+        foreach($out as $journal=>&$documents){
+            $s=$pdo->prepare('SELECT receipt_id,purpose,support_side,declared_amount,accepted_amount,exclusion_reason,reviewed_at FROM posted_evidence_associations WHERE journal_id=?');$s->execute([$journal]);$reviews=[];
+            foreach($s as $review){$reviews[(int)$review['receipt_id']]=$review;}
+            foreach($documents as &$document){$document['review']=$reviews[$document['id']]??null;}unset($document);
+        }unset($documents);
     }
     return $out;
 }

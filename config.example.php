@@ -1,4 +1,7 @@
 <?php
+// Stage 1 UI/API remains disabled until migration 019 is separately deployed.
+// Manual image evidence works independently of OCR_JOURNAL_ENABLED.
+define('STAGE1_WORKSPACE_ENABLED', false);
 /**
  * Example configuration — copy to config.php and fill in real values.
  *

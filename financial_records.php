@@ -50,28 +50,73 @@ $context=$filters['context'];$title=['crb'=>'Cash Receipts Book','cdb'=>'Cash Di
 $activePage=['crb'=>'crb','cdb'=>'cdb'][$context]??'financial_records';
 $clearUrl='financial_records.php?from=&to='.($context!=='records'?'&view='.$context:'');
 $scope=$filters['from']===''&&$filters['to']===''?'all':($filters['from']===substr(accounting_today(),0,7).'-01'&&$filters['to']===accounting_today()?'month':'custom');
-layout_begin($title,$activePage,[], '<link rel="stylesheet" href="assets/vendor/datatables/2.3.8/dataTables.dataTables.min.css"><link rel="stylesheet" href="assets/css/financial_records.css?v='.filemtime(__DIR__.'/assets/css/financial_records.css').'">','min-h-screen min-w-[1024px] bg-slate-50 financial-records-page'.($mainView?' records-filter-redesign':'').($flags['isExecutive']?' executive-theme':''));
+layout_begin($title,$activePage,[], '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"><link rel="stylesheet" href="assets/vendor/datatables/2.3.8/dataTables.dataTables.min.css"><link rel="stylesheet" href="assets/css/financial_records.css?v='.filemtime(__DIR__.'/assets/css/financial_records.css').'">','min-h-screen min-w-[1024px] bg-slate-50 financial-records-page'.($mainView?' records-filter-redesign':'').($flags['isExecutive']?' executive-theme':''));
 ?>
-<div class="records-page" data-context="<?= $escape($context) ?>"><h1 class="text-2xl font-bold text-slate-900"><?= $escape($title) ?></h1>
-<p>Read-only posted journal lines, newest first. Dates use Asia/Manila.</p>
+<div class="records-page" data-context="<?= $escape($context) ?>">
+    <header>
+        <h1 class="text-2xl font-bold text-slate-900">
+            <?= $escape($title) ?>
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+            Read-only posted journal lines, newest first. Dates use Asia/Manila.
+        </p>
+    </header>
+<?php if(!$mainView&&$flags['isAdmin']&&stage1_enabled($pdo)): ?>
+<p class="my-4"><a class="records-view" href="<?= $context==='crb'?'cash_receipt.php':'cash_disbursement.php' ?>">+ New <?= $context==='crb'?'cash receipt':'cash payment' ?></a> · <a href="accounting_drafts.php">My drafts</a></p>
+<p class="text-sm text-slate-500">Complete entries assigned to this book. Filters and search retain all lines of matching journals. Debit and credit totals include both sides; they are not cash-only totals. Older unclassified entries remain in Journal History.</p>
+<?php endif; ?>
 <section class="records-card <?= $flags['isExecutive']?'exec-card':'' ?>"><h2>Filter Records</h2>
 <?php if($mainView): ?>
 <form method="GET" id="records-filters" action="financial_records.php" novalidate>
 <div class="records-filter-fields">
-<?php foreach(['from'=>'From','to'=>'To'] as $key=>$label): ?>
-<div class="records-filter-field"><label for="<?= $key ?>"><?= $label ?></label><input type="date" id="<?= $key ?>" name="<?= $key ?>" min="1000-01-01" max="9998-12-31" value="<?= $escape($filters[$key]) ?>" aria-describedby="records-date-help <?= $key ?>-error" aria-invalid="<?= isset($request['errors'][$key])?'true':'false' ?>"><p class="records-field-error" id="<?= $key ?>-error"><?= $escape($request['errors'][$key]??'') ?></p></div>
+<?php
+$dateHelp = 'Leave From blank for all earlier dates, To blank for all later dates, or both blank for all dates.';
+?>
+<?php foreach (['from' => 'From', 'to' => 'To'] as $key => $label): ?>
+    <div class="records-filter-field">
+        <label for="<?= $key ?>">
+            <?= $label ?>
+            <i
+                class="fas fa-info-circle ml-1 text-xs text-slate-400 cursor-help"
+                title="<?= $escape($dateHelp) ?>"
+                aria-hidden="true"
+            ></i>
+        </label>
+
+        <span id="<?= $key ?>-help" class="sr-only">
+            <?= $escape($dateHelp) ?>
+        </span>
+
+        <input
+            type="date"
+            id="<?= $key ?>"
+            name="<?= $key ?>"
+            min="1000-01-01"
+            max="9998-12-31"
+            value="<?= $escape($filters[$key]) ?>"
+            aria-describedby="<?= $key ?>-help <?= $key ?>-error"
+            aria-invalid="<?= isset($request['errors'][$key]) ? 'true' : 'false' ?>"
+        >
+
+        <p class="records-field-error" id="<?= $key ?>-error">
+            <?= $escape($request['errors'][$key] ?? '') ?>
+        </p>
+    </div>
 <?php endforeach; ?>
 <div class="records-filter-field"><label for="type">Account type</label><select name="type" id="type" aria-describedby="type-error"><option value="">All types</option><?php if($filters['type']!==''&&!in_array($filters['type'],ACCOUNTING_TYPES,true)): ?><option selected value="<?= $escape($filters['type']) ?>"><?= $escape($filters['type']) ?> (invalid)</option><?php endif; ?><?php foreach(ACCOUNTING_TYPES as $type): ?><option <?= $filters['type']===$type?'selected':'' ?>><?= $type ?></option><?php endforeach; ?></select><p class="records-field-error" id="type-error"><?= $escape($request['errors']['type']??'') ?></p></div>
 <div class="records-filter-field records-account-field"><label id="account-label" for="account_id">Account</label><select name="account_id" id="account_id" aria-describedby="account_id-error"><option value="">All accounts</option><?php if($filters['account_id']!==''&&!in_array($filters['account_id'],array_map('strval',array_column($accounts,'CategoryID')),true)): ?><option selected value="<?= $escape($filters['account_id']) ?>"><?= $escape($filters['account_id']) ?> (unavailable)</option><?php endif; ?><?php foreach($accounts as $a): ?><option value="<?= (int)$a['CategoryID'] ?>" <?= $filters['account_id']===(string)$a['CategoryID']?'selected':'' ?>><?= $escape(($a['Account_Code']?:'#'.$a['CategoryID']).' · '.$a['Name'].' · '.$a['Account_Type'].(!(int)$a['Is_Active']?' (inactive)':'')) ?></option><?php endforeach; ?></select><p class="records-field-error" id="account_id-error"><?= $escape($request['errors']['account_id']??'') ?></p><p id="records-account-message" role="status"></p></div>
 </div>
-<p id="records-date-help">Leave From blank for all earlier dates, To blank for all later dates, or both blank for all dates.</p>
 <div class="records-filter-actions"><button type="submit" id="records-apply">Apply filters</button><button type="button" id="records-reset">Reset</button></div>
 <p id="records-draft-status" role="status" aria-live="polite"></p>
 <p id="records-request-status" role="status" aria-live="polite"></p>
 <p id="records-filter-errors" role="alert"><?= $escape($filterError) ?><?php foreach($request['errors'] as $key=>$message){if(!in_array($key,['from','to','type','account_id'],true)){echo ' '.$escape($message);}} ?></p>
 </form>
 <p id="records-period-notice"><?= $escape($request['notice']) ?></p>
-<p class="records-filter-summary" id="records-applied-summary"></p>
+<div
+    id="records-applied-summary"
+    class="records-filter-summary mt-3 flex flex-wrap items-center gap-2"
+    aria-label="Applied filters"
+></div>
 <?php else: ?>
 <form method="GET" id="records-filters" action="financial_records.php">
 <?php if($context!=='records'): ?><input type="hidden" name="view" value="<?= $escape($context) ?>"><?php endif; ?>

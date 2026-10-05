@@ -1,6 +1,8 @@
 <?php
 /** Mutation tests ONLY on explicit atikha_test_phase4_* databases/private files. */
 require_once __DIR__.'/cli_common.php';
+// Worker JSON must never be polluted by production configuration or constants.
+define('ATIKHA_ISOLATED_TEST',true);
 $opts=getopt('',['database:','worker:']);$db=$opts['database']??'';
 cli_require(is_string($db)&&(bool)preg_match('/\Aatikha_test_phase4_[a-z0-9]+\z/D',$db),'Explicit disposable atikha_test_phase4_* database required.');
 $private=__DIR__.'/../.migration-private';

@@ -1,0 +1,16 @@
+<?php
+session_start();require_once __DIR__.'/db_connect.php';require_once __DIR__.'/includes/require_role.php';require_login();require_role(['Admin'],'Accounting Setup');
+require_once __DIR__.'/includes/accounting_workspace.php';require_once __DIR__.'/includes/layout.php';
+try{workspace_guard($pdo,(int)$_SESSION['UserID']);$lists=workspace_lists($pdo,(int)$_SESSION['UserID']);}catch(JournalProblem $e){http_response_code($e->status);exit(htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8'));}
+layout_begin('Accounting Setup','accounting_setup',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css">');
+?>
+<div class="accounting-workspace"><header class="aw-header"><div><p class="aw-eyebrow">ACCOUNTING CONFIGURATION</p><h1>Accounting setup</h1><p>Manage projects, payers/payees and accounts reserved for advances.</p></div><a href="admin_accounts.php">Chart of Accounts</a></header><p id="setup-error" role="alert"></p><p id="setup-status" role="status"></p>
+<div class="aw-master-list">
+<?php foreach(['projects'=>'Projects','parties'=>'Parties'] as $kind=>$label): ?>
+<section class="aw-card"><h2><?= $label ?></h2><form data-master="<?= $kind ?>"><input type="hidden" name="id"><input type="hidden" name="revision"><label>Name<input name="name" required maxlength="100"></label>
+<?php if($kind==='projects'): ?><label>Project code<input name="code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,29}"></label><?php else: ?><label>Party type<select name="party_type"><option value="person">Person</option><option value="organization">Organization</option></select></label><label>Reference<input name="reference" maxlength="100"></label><?php endif; ?>
+<label>Description<textarea name="description" maxlength="2000"></textarea></label><label>Status<select name="is_active"><option value="1">Active</option><option value="0">Inactive</option></select></label><div class="aw-actions"><button type="button" data-reset>New record</button><button type="submit" class="aw-primary">Save</button></div></form><div class="aw-table-wrap"><table class="aw-table"><thead><tr><th>Code / name</th><th>Status</th><th>Action</th></tr></thead><tbody id="setup-<?= $kind ?>"></tbody></table></div></section>
+<?php endforeach; ?></div>
+<section class="aw-card"><h2>Advance-control designations</h2><p class="aw-help">Designate only unused, active, noncash Asset accounts with Debit normal balance. Ordinary entries cannot use these accounts. Remove an unused designation with a reason before disabling or reclassifying its account.</p><form id="setup-control" class="aw-controls"><label>Account<select name="account_id" id="setup-control-account"></select></label><label>Action<select name="operation"><option value="add">Designate</option><option value="remove">Remove designation</option></select></label><label>Reason<input name="reason" required maxlength="2000"></label><button>Apply designation change</button></form><p id="setup-controls-list"></p></section></div>
+<script id="setup-data" type="application/json"><?= json_encode(['csrf_token'=>csrf_token(),'lists'=>$lists],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script>
+<?php layout_end('<script src="assets/js/accounting_setup.js"></script>'); ?>

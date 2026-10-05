@@ -7,6 +7,10 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/journal.php';
 require_once __DIR__ . '/includes/receipt_ocr.php';
 require_once __DIR__ . '/includes/layout.php';
+// Preserve the existing scalar OCR proposal/review flow for eligible unreserved images.
+if ($_SERVER['REQUEST_METHOD']==='GET' && !isset($_GET['receipt_id']) && stage1_enabled($pdo)) {
+    $workspaceBook='GJ'; require __DIR__.'/includes/accounting_entry_page.php'; exit;
+}
 
 function journal_escape($value): string
 {

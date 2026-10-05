@@ -17,12 +17,15 @@ $navIsAdmin = $navRole === 'Admin';
 $navIsExecutive = $navRole === 'Management';
 $navCanUseWorkspace = in_array($navRole, ['Admin'], true);
 $navCanScanReceipt = false;
+$navStage1 = false;
 if ($navCanUseWorkspace) {
     require_once __DIR__ . '/receipt_ocr.php';
     // layout_begin() includes this file inside its own scope.
     $navConnection = $pdo ?? $GLOBALS['pdo'] ?? null;
     try { $navCanScanReceipt = $navConnection instanceof PDO && receipt_enabled($navConnection); }
     catch (Throwable $e) { error_log('Receipt navigation unavailable.'); }
+    try { $navStage1 = $navConnection instanceof PDO && stage1_enabled($navConnection); }
+    catch (Throwable $e) { error_log('Accounting navigation unavailable.'); }
 }
 
 $navRoleLabel = htmlspecialchars(user_role_label($navRole), ENT_QUOTES, 'UTF-8');
@@ -143,6 +146,10 @@ $sidebarClass = $navIsExecutive
         <?php endif; ?>
         
         <?php if ($navIsAdmin): ?>
+            <?php if ($navStage1): ?>
+            <a href="accounting_drafts.php" class="<?= nav_link_class('accounting_drafts', $activePage) ?>">My Drafts</a>
+            <a href="accounting_setup.php" class="<?= nav_link_class('accounting_setup', $activePage) ?>">Accounting Setup</a>
+            <?php endif; ?>
             <a href="admin_users.php" class="<?= nav_link_class('admin_users', $activePage, $navIsExecutive) ?>">
                 <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 User Management

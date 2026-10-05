@@ -17,6 +17,8 @@ class JournalProblem extends RuntimeException
     }
 }
 
+require_once __DIR__ . '/stage1_common.php';
+
 function journal_today(): string
 {
     return (new DateTimeImmutable('today', new DateTimeZone('Asia/Manila')))->format('Y-m-d');
@@ -176,6 +178,7 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         if (!$actor || (int) $actor['Is_Active'] !== 1 || $actor['Role'] !== 'Admin') {
             throw new JournalProblem('Posting entries is restricted to active System Administrators.', 403);
         }
+        stage1_write_lock($pdo);
         $existing = journal_existing($pdo, $key, $userId, $hash);
         if ($existing) { $pdo->commit(); return $existing; }
         if ($receiptContext !== null) {
@@ -198,9 +201,20 @@ function journal_post(PDO $pdo, int $userId, array $post): array
                 throw new JournalProblem('An account is unavailable or inactive. Review the selected accounts.');
             }
         }
+        stage1_control_guard($pdo, $ids);
+        if (stage1_schema($pdo)) {
+            foreach ($input['lines'] as $line) {
+                if ($line['fund_project_id'] !== null) {
+                    // New tagged entries must use the durable reviewed-draft flow.
+                    throw new JournalProblem('Project allocations require the new saved-draft workspace.');
+                }
+            }
+        }
+        $stage1Fields=stage1_schema($pdo)?', source_book, transaction_kind':'';
+        $stage1Values=stage1_schema($pdo)?", 'GJ', 'ordinary'":'';
         $stmt = $pdo->prepare("INSERT INTO journal_entries
-            (entry_date, reference, description, status, submission_key, submission_hash, posted_by_user_id)
-            VALUES (?, ?, ?, 'posted', ?, ?, ?)");
+            (entry_date, reference, description, status, submission_key, submission_hash, posted_by_user_id $stage1Fields)
+            VALUES (?, ?, ?, 'posted', ?, ?, ? $stage1Values)");
         $stmt->execute([$input['entry_date'], $input['reference'], $input['description'], $key, $hash, $userId]);
         $id = (int) $pdo->lastInsertId();
         $stmt = $pdo->prepare('INSERT INTO journal_entry_lines
@@ -216,6 +230,7 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         if (!log_system_action($pdo, $userId, AUDIT_ACTION_CREATE, 'General Journal', $id, null, $audit, 'general_journal.php')) {
             throw new RuntimeException('Journal audit record could not be saved.');
         }
+        stage1_write_changed($pdo);
         $pdo->commit();
         return ['id' => $id, 'duplicate' => false];
     } catch (Throwable $e) {

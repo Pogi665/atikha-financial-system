@@ -50,7 +50,7 @@ def record_filter_checks(page,context):
     page.goto(base+'/financial_records.php?from=&to=');page.wait_for_selector('button.records-view')
     initial=state()
     check(page.locator('#date-scope').count()==0 and not page.locator('#from').get_attribute('readonly'),'Main view removes scope and leaves dates editable')
-    check(page.locator('.records-filter-fields label').all_text_contents()==['From','To','Account type','Account'],'Four filter fields retain their requested order')
+    check([' '.join(text.split()) for text in page.locator('.records-filter-fields label').all_text_contents()]==['From','To','Account type','Account'],'Four filter fields retain their requested order')
     heights=page.locator('#from,#to,#type,#records-account-search').evaluate_all('es=>es.map(e=>e.getBoundingClientRect().height)')
     check(heights==[42,42,42,42],'All filter controls have aligned 42px heights')
     check(page.locator('#records-apply').evaluate('e=>getComputedStyle(e).backgroundColor')=='rgb(5, 150, 105)','Apply is green')
