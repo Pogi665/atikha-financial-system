@@ -24,3 +24,20 @@
  .app-sidebar,header.app-topbar,.aw-no-print,#aw-status,#aw-error,#aw-master-dialog,#aw-upload,.aw-upload,#aw-upload-retry,#aw-existing,#aw-attach,#aw-save,#aw-review,#aw-post,#aw-back,#aw-add-line,[data-new-master],#aw-confirm-proof,.aw-record-toggle,.aw-record-choices{display:none!important}
  main{margin:0!important;padding:0!important}.accounting-workspace{max-width:none;margin:0;padding:0}.aw-card{box-shadow:none;border:1px solid #ddd;margin:12px 0;break-inside:avoid}.aw-table-wrap{overflow:visible}.aw-columns{display:block}.aw-document img{max-height:220px;object-fit:contain}.aw-record-selector input,input,textarea,select{border:0!important;background:transparent!important;color:#000!important}body{background:white!important}.aw-header{display:block}
 }
+.accounting-workspace .aw-document-warning{padding:12px;border:1px solid #d97706;border-radius:8px;background:#fffbeb;color:#78350f;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.advance-register .ca-register-scope{font-size:13px;line-height:1.6;color:#475569;overflow-wrap:anywhere}
+@media print{.advance-register .ca-register-scope{color:#000}.advance-register .aw-card{break-inside:auto}.advance-register thead{display:table-header-group}.advance-register tr{break-inside:avoid}#ca-status,#ca-error{display:none!important}}
+/* Correction comparison reuses the existing workspace and visible selectors. */
+.aw-reverse-only #aw-entry .aw-grid > label:not(:first-child):not(.aw-correction-field),
+.aw-reverse-only #aw-entry > label,.aw-reverse-only #aw-entry .aw-section-heading,
+.aw-reverse-only #aw-entry > .aw-help,.aw-reverse-only #aw-lines,
+.aw-reverse-only #aw-entry .aw-totals,.aw-reverse-only .aw-columns > aside {display:none;}
+#aw-original .aw-table,#aw-review-content .aw-table{width:100%;}
+#aw-original{overflow-x:auto;}
+#aw-correction-eligibility:not(:empty){padding:12px;background:#f1f5f9;border-radius:8px;}
+
+/* Posted correction comparisons share workspace spacing and print without navigation. */
+.correction-details .correction-journal{margin-top:1.5rem;border-top:1px solid #e2e8f0;padding-top:1rem}
+.correction-details .correction-navigation{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.correction-details p,.correction-details td{overflow-wrap:anywhere}
+@media print{.correction-details .correction-navigation{display:none}.correction-details .aw-card{box-shadow:none;border:0;margin:1rem 0;padding:0;break-inside:auto}.correction-details .aw-table-wrap{overflow:visible}.correction-details h2,.correction-details h3{break-after:avoid}.correction-details tr{break-inside:avoid}.correction-details thead{display:table-header-group}}

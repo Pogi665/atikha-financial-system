@@ -333,8 +333,18 @@ function accounting_records(PDO $pdo, array $filters): array
                 if($kind==='advance_return')$status='Return proof confirmed';elseif($kind==='advance_release')$status=$journal['attachments']?'Supporting proof reviewed':'Optional proof not supplied';
                 $journal['evidence_coverage']=['status'=>$status];foreach($sides as $side){$journal['evidence_coverage'][$side]=['eligible'=>accounting_decimal($eligible[$side]),'covered'=>$legacy?null:accounting_decimal($covered[$side])];}
             }
-            if(!$privateAllowed&&isset($sensitive[$id]))$journal['attachments']=[];
+            if($hasStage1&&$journal['header']['transaction_kind']==='correction_reversal')$journal['evidence_coverage']=['status'=>'Reversal — original evidence referenced; no new claim'];
+            if(!$privateAllowed){
+                if(isset($sensitive[$id]))$journal['attachments']=[];
+                else $journal['attachments']=array_values(array_filter($journal['attachments'],fn($d)=>!stage3_receipt_sensitive($pdo,$d['id'])));
+            }
         }unset($journal);
+        require_once __DIR__.'/journal_corrections.php';
+        $corrections=correction_metadata($pdo,array_keys($journals));
+        $entryEnabled=stage3_enabled($pdo);$advanceEnabled=stage2_enabled($pdo);$advanceTargets=[];
+        if($entryEnabled&&$journals){$ids=array_keys($journals);$s=$pdo->prepare('SELECT journal_id FROM cash_advance_operations WHERE journal_id IN ('.implode(',',array_fill(0,count($ids),'?')).')');$s->execute($ids);$advanceTargets=array_fill_keys($s->fetchAll(PDO::FETCH_COLUMN),true);}
+        foreach($journals as $id=>&$journal){$journal['correction_entry_available']=$entryEnabled&&(!isset($advanceTargets[$id])||$advanceEnabled);$journal['corrections']=$corrections[(int)$id]??[];$journal['correction_eligible']=($journal['header']['transaction_kind']??'')!=='correction_reversal'&&!array_filter($journal['corrections'],fn($c)=>$c['role']==='Corrected original');}unset($journal);
+        foreach($rows as &$row){$row['correction_search']=implode(' ',array_map(fn($c)=>'Correction #'.$c['id'].' '.$c['role'].' '.$c['accounting_date'].' '.$c['reason'],$corrections[(int)$row['journal_id']]??[]));}unset($row);
         return ['rows'=>$rows,'journals'=>$journals,'completeBook'=>$completeBook];
     });
 }

@@ -55,10 +55,25 @@ function gemini_receipt_image(string $path,string $mime): ?array
     $bytes=file_get_contents($path);
     return $bytes===false?null:['bytes'=>$bytes,'mime'=>$mime];
 }
+/** Public guidance only. Never return the provider body, credentials or request details. */
+function gemini_receipt_failure_message(array $call): string
+{
+    $response=json_decode(is_string($call['raw']??null)?$call['raw']:'',true);
+    $code=is_array($response)?($response['error']['code']??null):null;
+    if($code===503){return 'The AI service is busy right now. Your image is saved. Try again later or enter the details manually.';}
+    if($code===429){return 'The AI service request limit was reached. Your image is saved. Wait before retrying or enter the details manually.';}
+    if(in_array($code,[400,401,403,404],true)){return 'The AI service could not accept this request. Ask your system administrator to check the AI configuration. You can enter the details manually.';}
+    $error=is_string($call['error']??null)?$call['error']:'';
+    if(str_contains($error,'certificate')){return 'The connection to the AI service could not be verified. Ask your system administrator to check the connection. You can enter the details manually.';}
+    if(str_contains($error,'too long')||str_contains($error,'timeout')){return 'The AI service took too long to respond. Your image is saved. Try again later or enter the details manually.';}
+    if(str_contains($error,'not configured')||str_contains($error,'cURL extension')){return 'Automatic reading is not configured on this installation. You can enter the details manually.';}
+    if(str_contains($error,'Could not reach')){return 'The AI service could not be reached. Your image is saved. Check your connection or enter the details manually.';}
+    return 'Automatic reading is unavailable. Your image is saved. Try again later or enter the details manually.';
+}
 function gemini_extract_receipt(string $absPath,string $mimeType,array $accounts): array
 {
     $fail=static fn(string $error,string $raw='')=>['ok'=>false,'data'=>null,'raw'=>$raw,'error'=>$error];
-    if(!gemini_is_configured()){return $fail('AI extraction is unavailable. Enter the journal manually.');}
+    if(!gemini_is_configured()){return $fail('Automatic reading is not configured on this installation. You can enter the details manually.');}
     $image=gemini_receipt_image($absPath,$mimeType);
     if(!$image){return $fail('Receipt image unavailable.');}
     $payload=['systemInstruction'=>['parts'=>[['text'=>gemini_receipt_system_prompt($accounts)]]],
@@ -66,7 +81,7 @@ function gemini_extract_receipt(string $absPath,string $mimeType,array $accounts
             ['inline_data'=>['mime_type'=>$image['mime'],'data'=>base64_encode($image['bytes'])]]]]],
         'generationConfig'=>['temperature'=>0,'responseMimeType'=>'application/json','responseSchema'=>gemini_receipt_schema()]];
     $call=gemini_request($payload,60,10);
-    if(!$call['ok']){return $fail('Automatic extraction is unavailable. Enter the journal manually.',$call['raw']);}
+    if(!$call['ok']){return $fail(gemini_receipt_failure_message($call),$call['raw']);}
     $parsed=gemini_decode_json_string($call['text']);
     if(!$parsed['ok']||array_is_list($parsed['data'])||($parsed['data']['schema_version']??null)!==GEMINI_RECEIPT_VERSION){
         return $fail('Extraction returned an invalid response. Enter the journal manually.',$call['raw']);

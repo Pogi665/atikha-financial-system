@@ -2,7 +2,7 @@
 
 Delivered on October 6, 2026, against the Stage 1 source baseline `c74ddfe`.
 
-**Implementation complete; working deployment and full working-system acceptance pending.** The user authorized implementation after reviewing the revised Stage 2 plan. Migration 020 was applied only to explicitly guarded disposable databases. The working `atikha_finance` database remains before 020, and working `config.php` was not changed. Nothing was committed or pushed.
+**Implementation, working migration and activation complete; full working-system acceptance pending.** The user authorized implementation after reviewing the revised Stage 2 plan. At initial delivery, migration 020 had been applied only to explicitly guarded disposable databases, the working `atikha_finance` database remained before 020, and working `config.php` had not changed. Subsequent user-run working deployment and explicitly delegated activation are recorded below. This delivery did not commit or push the implementation.
 
 ## Delivered behavior
 
@@ -67,9 +67,18 @@ Screenshots and print-media output were visually inspected. They establish the t
 
 ## Working preflight and pending deployment
 
-The read-only preflight against `atikha_finance` passed with no problems, `writes_performed=false`, `deployment_state="020 not applied"` and `schema_ready_for_020=true`. This verifies the inspected database/schema/data prerequisites; it does not establish that a backup restores correctly or that the working workflows have passed acceptance.
+Before working migration, the read-only preflight against `atikha_finance` passed with no problems, `writes_performed=false`, `deployment_state="020 not applied"` and `schema_ready_for_020=true`. This verified the inspected database/schema/data prerequisites; it did not establish that a backup restores correctly or that the working workflows had passed acceptance.
 
 The earlier Stage 1 SQL export/file-copy evidence and waived restoration rehearsal belong to Stage 1. They are not current Stage 2 backup/restoration evidence. No Stage 2 restoration rehearsal has been recorded.
+
+### Subsequent working deployment: October 6, 2026
+
+- The user supplied a screenshot of `C:\Users\ACER\Documents\Atikha Backups\Before020\atikha_finance_before_020.sql`, showing a 73,390-byte SQL export. File existence/size is user-demonstrated evidence, not a verified restoration.
+- The user ran Robocopy from the working application folder to `C:\Users\ACER\Documents\Atikha Backups\Before020\app`. The reported summary shows 20,287 files copied, 813.16 MB, zero failures, zero mismatches and zero extras; completion was October 6, 2026 at 03:11:04. This includes the application/configuration and protected receipt files by copying the application tree, excluding junction traversal. The copy has not been independently restored.
+- The user chose to defer restoration rehearsal and remaining acceptance testing to final integration, then imported migration 020 into the working database and reported success. The earlier rehearsal recommendation remains recovery guidance; rehearsal is pending, not passed.
+- Post-migration read-only preflight independently reports `deployment_state="020 already applied"`, `schema_complete=true`, `schema_ready_for_020=false`, no problems and `writes_performed=false`. The false ready-for-020 result is expected after successful migration; do not rerun 020.
+- Read-only preservation comparison passes for all 16 pre-existing tables: counts and SHA-256 hashes of all original columns match the captured pre-migration baseline. This includes 2 journals, 4 journal lines, 32 accounts, 3 users, 6 historical identities, 1 receipt, 2 OCR attempts, 25 audit records, 1 party and 2 drafts. Newly added draft columns are deliberately excluded from the original-column hashes. No synthetic working postings were created. Private baseline/comparison artifacts are in `.migration-private/stage2-working-deployment/`.
+- After the user explicitly delegated enabling, working `config.php` was updated to define `STAGE2_ADVANCES_ENABLED` as true alongside the existing true Stage 1 flag. PHP syntax validation passed, and the read-only schema preflight again reported complete 020 with no problems. The user subsequently confirmed that the new Cash Advances menu is visible in the working system. This is user-confirmed navigation evidence; full working-system functional and role acceptance remain deferred. Migration/preservation/configuration/navigation verification does not complete deferred functional acceptance or later financial-statement integration.
 
 Deployment sequence, after the user's separate instruction:
 
@@ -85,4 +94,36 @@ Deployment sequence, after the user's separate instruction:
 
 Disabling the Stage 2 flag hides its workflows; it does not undo schema or financial records. Existing advance journals, operation links, confirmations, reservations, account guards and confidentiality remain. Database rollback requires restoring a verified backup together with matching protected files/application state and accounting for legitimate records created after that backup. Do not delete posted advances to simulate rollback.
 
-**Completion boundary:** Stage 2 implementation and focused disposable verification are complete. Working migration/activation, current-data recovery rehearsal, full working-system acceptance and later-stage reporting remain separate pending work.
+**Completion boundary:** Stage 2 implementation, focused disposable verification, working migration/preservation verification and explicitly authorized configuration activation are complete. Current-data recovery rehearsal, full working-system acceptance and later-stage reporting remain separate pending work.
+
+## Completion supplement: October 6, 2026
+
+After a read-only review of the approved Stage 2 scope, the user authorized this small supplement before Stage 3 Checkpoint 4. It completes the missing pre-post explanation and clarifies existing UI/documentation; it does not extend the accounting model.
+
+- Liquidation shows that a posted image's unused or excluded amount cannot support another liquidation. A partially accepted monetary document also shows its exact excluded amount while editing and after draft resume. Fully accepted or invalid amounts do not show a fabricated excluded amount. This does not change separately validated Stage 3 correction-lineage reuse.
+- Supporting-document help now describes full expenditure/eligible-asset debit coverage for liquidation, optional reviewed informational release proof, and required reviewed return proof/confirmation. Ordinary-entry wording remains intact. Evidence amounts, allocations, payloads, review validation and posting rules remain authoritative and unchanged.
+- The register shows its successfully applied employee, originating project, control account, settlement status, overdue and search filters alongside the authoritative as-of heading. Printed output keeps these labels, identifies the current page and row range, and explicitly states that printing includes only that page. Totals are labelled as covering all matching advances across all pages; reconciliation retains its separate full-account basis.
+- Unsaved filter changes, failed refreshes and older responses cannot change the printed scope or replace the last successful results. Print is unavailable until the register has successfully loaded. No full-register export was added.
+- The README now states **64-bit PHP 8.1 or later** and the preflight-required extensions, distinguishing the application requirement from Composer's less restrictive dependency constraint.
+
+Changed supplement files: `includes/accounting_entry_page.php`, `assets/js/accounting_workspace.js`, `cash_advances.php`, `assets/js/cash_advances.js`, `assets/css/accounting_workspace.css`, `scripts/test_stage2_browser.py`, `README.md`, this report, and the project status/decisions documents. Earlier uncommitted Stage 3 Checkpoints 1-3 remain preserved. No working database query/write, migration, local configuration change, new dependency, Tailwind build, commit or push was performed for the supplement.
+
+### Supplement verification
+
+Final command:
+
+```powershell
+python scripts/test_stage2_browser.py --database=atikha_test_stage1_s2supp20261006b --browser=msedge
+```
+
+- **169 backend checks passed:** 96 Stage 2 checks and 73 Stage 1 regressions, through the existing guarded bootstrap.
+- **56 Edge browser/HTTP checks passed:** the prior 41 scenarios plus 15 supplement checks. These include optional/required workflow help, full/partial/invalid document amounts, resumed partial evidence, unchanged PHP 8,000 liquidation coverage from a PHP 10,000 document with PHP 2,000 excluded, failed-refresh preservation, applied filters, both 25-row page boundaries, unapplied changes, print-media visibility, and deliberately late responses that ignore cancellation.
+- Existing release/liquidation/return posting, confirmation, privacy with UI flags on/off, owner restrictions and durable retry checks passed in that disposable installation. External requests were blocked and OCR stayed disabled.
+- PHP syntax passed for the shared entry template and register page; JavaScript syntax passed for both changed scripts; Python syntax and `git diff --check` passed.
+- Screenshots at 1366x768 and 1920x1080, plus print media, were captured. Laptop liquidation/register and desktop print screenshots were visually inspected. The 40-result/two-page renderer cases use explicit browser response fixtures with repeated sample rows, not 40 newly posted advances; their screenshots establish scope/label rendering, not account reconciliation or real financial totals. Real journal/register rules are covered separately by the disposable backend/workflow checks.
+
+Private final artifacts: `.migration-private/stage1-core-5f6a007cad/stage2-fixture.json` and `.migration-private/stage2-browser-14351015a5/`, including `liquidation-1366.png`, `liquidation-1920.png`, `register-supplement-1366.png`, `register-supplement-1920.png`, and `register-supplement-print-1920.png`.
+
+The sandbox could not import the existing private Playwright dependencies; the approved elevated rerun used the same isolated runner. An initial browser run caught a duplicated currency prefix in the new warning; it was corrected before the passing final run. Expected injected audit failures belong to the backend rollback tests and are not unresolved application errors.
+
+**Supplement implementation and focused isolated verification are complete.** The working database/configuration were untouched, and no separate migration or activation is needed for these source changes. Current-data restoration rehearsal, broad working-system acceptance, Chrome/physical printing, Stage 3 Checkpoints 4-5 and later reporting remain pending. This run used the Stage 1/2 migrated disposable schema; it is not the deferred full-regression run on the fully integrated Stage 3 schema.

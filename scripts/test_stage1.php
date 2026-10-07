@@ -44,8 +44,14 @@ try{
     $income=account_save($p,$uid,'create',['name'=>'Stage1 Donations','account_type'=>'Income','account_code'=>'S400','normal_balance'=>'Credit','is_cash_account'=>'0']);
     $advance=account_save($p,$uid,'create',['name'=>'Stage1 Cash Advance Employees','account_type'=>'Asset','account_code'=>'S120','normal_balance'=>'Debit','is_cash_account'=>'0']);
     $legacy=request(['submission_key'=>journal_submission_key(),'entry_date'=>journal_today(),'description'=>'Legacy preserved','reference'=>'','form_complete'=>'1','line_count'=>'2','lines'=>[['account_id'=>(string)$bank,'debit_amount'=>'1.00'],['account_id'=>(string)$income,'credit_amount'=>'1.00']]]);
-    $old=journal_post($p,$uid,$legacy);$before=counts($p);st(!stage1_enabled($p),'Workspace unavailable before 019');
-    cli_sql_file($p,__DIR__.'/../migrations/019_stage1_foundation.sql');st(stage1_enabled($p)&&counts($p)===$before,'019 preserves financial and audit history');
+    $old=journal_post($p,$uid,$legacy);$stage1LegacyPost=$old;$stage1LegacyRequest=$legacy;$stage1LegacySession=$_SESSION;$before=counts($p);
+    if(getenv('ATIKHA_TEST_INTEGRATED')!=='1')st(!stage1_enabled($p),'Workspace unavailable before 019');
+    cli_sql_file($p,__DIR__.'/../migrations/019_stage1_foundation.sql');
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){
+        cli_sql_file($p,__DIR__.'/../migrations/020_stage2_advances.sql');cli_sql_file($p,__DIR__.'/../migrations/021_journal_corrections.sql');
+        cli_require(stage3_schema($p)&&stage2_schema($p)&&stage1_schema($p),'Integrated schema must be complete before operational tests.');
+        echo "PROFILE: integrated operational schema 019/020/021 ready; legacy row prepared before migration\n";
+    }else st(stage1_enabled($p)&&counts($p)===$before,'019 preserves financial and audit history');
     st($p->query('SELECT source_book FROM journal_entries WHERE id='.$old['id'])->fetchColumn()===null,'Existing book remains unknown');st(journal_post($p,$uid,$legacy)['duplicate'],'Legacy submission hash remains compatible');
     $party=workspace_master_save($p,$uid,request(['kind'=>'parties','name'=>'Synthetic NGO training supplier','party_type'=>'organization','reference'=>'','description'=>'Dummy capstone fixture','is_active'=>'1']));
     $project=workspace_master_save($p,$uid,request(['kind'=>'projects','name'=>'Synthetic community training','code'=>'DEMO-A','description'=>'Dummy capstone fixture','is_active'=>'1']));

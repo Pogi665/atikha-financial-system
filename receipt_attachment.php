@@ -12,13 +12,15 @@ try {
     receipt_require_schema($pdo);
     $id=journal_id(journal_string($_GET,'receipt_id'));
     $journal=journal_id(journal_string($_GET,'journal_id',true),true);
+    $draft=journal_id(journal_string($_GET,'draft_id',true),true);
+    if($journal!==null&&$draft!==null)throw new JournalProblem('Choose one evidence context.',400);
+    $draftAllowed=false;if($draft!==null){require_once __DIR__.'/includes/correction_drafts.php';$draftAllowed=correction_draft_download_allowed($pdo,(int)$_SESSION['UserID'],$draft,$id);}
     $s=$pdo->prepare('SELECT r.*,j.status AS journal_status FROM Receipts r LEFT JOIN journal_entries j ON j.id=r.JournalEntryID WHERE r.ReceiptID=?');
     $s->execute([$id]);$r=$s->fetch();
     $role=$_SESSION['Role'];
     $allowed=$r&&$r['ExpenseID']===null&&$r['OCR_Status']!=='Discarded'&&(
-        ($r['JournalEntryID']===null&&$journal===null&&$role==='Admin'&&(int)$r['UploadedBy_UserID']===(int)$_SESSION['UserID'])
-        ||($r['JournalEntryID']!==null&&$journal===(int)$r['JournalEntryID']&&$r['journal_status']==='posted'&&in_array($role,['Admin','Management'],true)));
-    if($allowed&&$r['JournalEntryID']!==null&&(stage1_schema($pdo)||stage2_tables($pdo))&&isset(stage2_sensitive_journals($pdo,[(int)$r['JournalEntryID']])[(int)$r['JournalEntryID']])&&!stage2_private_viewer($pdo))$allowed=false;
+        ($draft!==null?$draftAllowed:(($r['JournalEntryID']===null&&$journal===null&&$role==='Admin'&&(int)$r['UploadedBy_UserID']===(int)$_SESSION['UserID'])
+        ||($r['JournalEntryID']!==null&&$journal!==null&&receipt_posted_download_allowed($pdo,$id,$journal)))));
     if(!$allowed){throw new JournalProblem('Evidence not found or access restricted.',404);}
     $path=receipt_file_verify($r);
     if(!isset(ALLOWED_RECEIPT_MIMES[$r['Mime_Type']])){throw new JournalProblem('Evidence unavailable.',415);}

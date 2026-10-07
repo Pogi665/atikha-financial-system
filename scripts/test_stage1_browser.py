@@ -7,11 +7,19 @@ from pathlib import Path
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
-parser=argparse.ArgumentParser();parser.add_argument('--database',required=True);parser.add_argument('--browser',default='msedge');args=parser.parse_args()
-if not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('New disposable Stage 1 database required')
+parser=argparse.ArgumentParser();parser.add_argument('--database');parser.add_argument('--fixture');parser.add_argument('--browser',default='msedge');args=parser.parse_args()
 php=shutil.which('php') or r'C:\xampp\php\php.exe'
-bootstrap=subprocess.check_output([php,str(root/'scripts/test_stage1.php'),'--database='+args.database],text=True);print(bootstrap,end='')
-evidence=Path(re.search(r'Private evidence: (.+)',bootstrap).group(1).strip())/'receipts'
+if args.fixture:
+    if args.database:parser.error('Choose database or fixture, not both')
+    path=Path(args.fixture).resolve()
+    if not path.is_relative_to(root/'.migration-private'):parser.error('Private fixture required')
+    fixture=json.loads(path.read_text());args.database=fixture['database'];evidence=Path(fixture['receipt_root']).resolve()
+    if not evidence.is_relative_to(root/'.migration-private'):parser.error('Private evidence required')
+else:
+    if not args.database or not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('New disposable Stage 1 database required')
+    bootstrap=subprocess.check_output([php,str(root/'scripts/test_stage1.php'),'--database='+args.database],text=True);print(bootstrap,end='')
+    evidence=Path(re.search(r'Private evidence: (.+)',bootstrap).group(1).strip())/'receipts'
+if not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('Disposable Stage 1 database required')
 run=root/'.migration-private'/('stage1-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
 for path in root.glob('*.php'):
     if path.name not in ['db_connect.php','config.php']:shutil.copy2(path,app/path.name)
@@ -207,7 +215,7 @@ try:
         for email in ['other@example.invalid','management@example.invalid']:
             c,s=context(email);res=c.request.get(base+'/accounting_actions.php?action=draft&draft_id='+draft_id);check(res.status==(404 if email.startswith('other') else 403),'Owner and Management API restrictions: '+email);c.close()
         anon,_=context();check(anon.request.get(base+'/accounting_actions.php?action=lists').status==401,'Anonymous API access rejected');anon.close()
-        page.goto(base+'/accounting_setup.php');page.wait_for_selector('#setup-projects tr');check(page.locator('#setup-controls-list').inner_text().endswith('Stage1 Cash Advance Employees'),'Setup shows designated account');page.screenshot(path=str(run/'setup-1366.png'),full_page=True)
+        page.goto(base+'/accounting_setup.php');page.wait_for_selector('#setup-projects tr');check('Stage1 Cash Advance Employees' in page.locator('#setup-controls-list').inner_text(),'Setup shows designated account');page.screenshot(path=str(run/'setup-1366.png'),full_page=True)
         config(enabled=False);check(ctx.request.get(base+'/cash_receipt.php').status==503,'Disabled feature fails closed');page.goto(base+'/general_journal.php');check(page.locator('#journal-form').count()==1,'Flag off preserves legacy General Journal');config()
         check(not errors,'No uncaught browser errors: '+str(errors));browser.close()
     print('Stage 1 browser checks:',checks);print('Browser artifacts:',run)

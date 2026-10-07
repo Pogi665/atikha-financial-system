@@ -63,7 +63,7 @@ layout_begin($title,$activePage,[], '<link rel="stylesheet" href="https://cdnjs.
     </header>
 <?php if(!$mainView&&$flags['isAdmin']&&stage1_enabled($pdo)): ?>
 <p class="my-4"><a class="records-view" href="<?= $context==='crb'?'cash_receipt.php':'cash_disbursement.php' ?>">+ New <?= $context==='crb'?'cash receipt':'cash payment' ?></a> · <a href="accounting_drafts.php">My drafts</a></p>
-<p class="text-sm text-slate-500">Complete entries assigned to this book. Filters and search retain all lines of matching journals. Debit and credit totals include both sides; they are not cash-only totals. Older unclassified entries remain in Journal History.</p>
+<p class="text-sm text-slate-500">Gross originating book activity. Filters and search retain all lines of matching journals. Totals include original and replacement entries; linked General Journal reversals offset originals in the ledger. Book totals alone are not the corrected net cash amount. Older unclassified entries remain in Journal History.</p>
 <?php endif; ?>
 <section class="records-card <?= $flags['isExecutive']?'exec-card':'' ?>"><h2>Filter Records</h2>
 <?php if($mainView): ?>
@@ -139,6 +139,6 @@ $dateHelp = 'Leave From blank for all earlier dates, To blank for all later date
 <dialog id="transaction-dialog" aria-labelledby="transaction-dialog-title"><div class="records-dialog-heading"><h2 id="transaction-dialog-title">Complete Journal Entry</h2><button type="button" id="transaction-close">Close</button></div><dl id="transaction-details"></dl><div id="transaction-documents" class="records-table-scroll"></div></dialog>
 </section>
 <?php if($mainView): ?></div><noscript><p role="alert">Enable JavaScript to search and view journal lines.</p></noscript><?php endif; ?>
-<script id="records-data" type="application/json"><?= json_encode($mainView?$response:$data+['page'=>$filters['page'],'monthStart'=>substr(accounting_today(),0,7).'-01','today'=>accounting_today()],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE|JSON_THROW_ON_ERROR) ?></script>
+<script id="records-data" type="application/json"><?= json_encode(['correctionsEnabled'=>$flags['isAdmin']&&stage3_enabled($pdo)]+($mainView?$response:$data+['page'=>$filters['page'],'monthStart'=>substr(accounting_today(),0,7).'-01','today'=>accounting_today()]),JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE|JSON_THROW_ON_ERROR) ?></script>
 <?php endif; ?></div>
 <?php layout_end('<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script><script src="assets/vendor/datatables/2.3.8/dataTables.min.js"></script><script src="assets/js/financial_records.js?v='.filemtime(__DIR__.'/assets/js/financial_records.js').'"></script>'); ?>

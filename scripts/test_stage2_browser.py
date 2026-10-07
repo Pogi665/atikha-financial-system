@@ -2,16 +2,24 @@
 Production config, sessions and uploads are never copied. All external requests blocked.
 """
 import argparse, hashlib, json, os, re, secrets, shutil, socket, struct, subprocess, sys, time, zlib
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse, parse_qsl
 from pathlib import Path
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
-parser=argparse.ArgumentParser();parser.add_argument('--database',required=True);parser.add_argument('--browser',default='msedge');args=parser.parse_args()
-if not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('New disposable Stage 1 database required')
+parser=argparse.ArgumentParser();parser.add_argument('--database');parser.add_argument('--fixture');parser.add_argument('--browser',default='msedge');args=parser.parse_args()
 php=shutil.which('php') or r'C:\xampp\php\php.exe'
-bootstrap=subprocess.check_output([php,str(root/'scripts/test_stage2.php'),'--database='+args.database],text=True);print(bootstrap,end='')
-fixture=json.loads(Path(re.search(r'Stage 2 fixture: (.+)',bootstrap).group(1).strip()).read_text())
+if args.fixture:
+    if args.database:parser.error('Choose a new database or an existing disposable fixture, not both')
+    path=Path(args.fixture).resolve()
+    if not path.is_relative_to(root/'.migration-private'):parser.error('Private disposable fixture required')
+    fixture=json.loads(path.read_text());args.database=fixture['database']
+    if not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('Disposable Stage 1 database required')
+else:
+    if not args.database or not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',args.database):parser.error('New disposable Stage 1 database required')
+    bootstrap=subprocess.check_output([php,str(root/'scripts/test_stage2.php'),'--database='+args.database],text=True);print(bootstrap,end='')
+    fixture=json.loads(Path(re.search(r'Stage 2 fixture: (.+)',bootstrap).group(1).strip()).read_text())
+
 evidence=Path(fixture['receipt_root'])
 run=root/'.migration-private'/('stage2-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
 for path in root.glob('*.php'):
@@ -75,6 +83,7 @@ try:
         bank=str(fixture['bank']);employee=str(fixture['employee']);control=str(fixture['control']);training=str(fixture['training']);tax=str(fixture['tax']);project=str(fixture['project'])
         page.goto(base+'/cash_advance_entry.php');ready()
         check(page.locator('#aw-lines').is_hidden(),'Release hides editable allocation lines')
+        check('release proof is optional' in page.locator('#aw-evidence-help').inner_text() and 'Missing or partial' not in page.locator('#aw-evidence-help').inner_text(),'Release explains its optional informational evidence policy')
         choose_record(page.locator('#aw-party'),employee);choose_record(page.locator('#aw-default-project'),project);choose_record(page.locator('#aw-control-account'),control);choose_record(page.locator('#aw-cash-account'),bank)
         page.locator('#aw-purpose').fill('Synthetic NGO field visit advance');page.locator('#aw-cash-amount').fill('10000.00');today=page.locator('#aw-date').input_value();page.locator('#aw-due-date').fill(today)
         page.locator('[data-new-master="parties"]').click();page.locator('#aw-master-form [name="name"]').fill('Synthetic additional NGO coordinator');page.locator('#aw-master-form button.aw-primary').click();page.wait_for_selector('#aw-master-dialog',state='hidden');check(page.locator('#aw-party-search').evaluate('(el)=>el===document.activeElement'),'Inline person creation restores focus to visible selector');choose_record(page.locator('#aw-party'),employee)
@@ -86,6 +95,8 @@ try:
         check(page.locator('#aw-control-account-search').is_disabled(),'Posted release selector is read only')
         page.goto(base+'/cash_advance_entry.php?draft_id='+draft_id);ready();page.wait_for_selector('#aw-posted:not([hidden])');check('already posted' in page.locator('#aw-posted-message').inner_text(),'Reopening a posted advance draft recovers its navigation')
         page.goto(base+'/cash_advance_entry.php?workflow_kind=advance_liquidation&advance_id='+aid);ready();check(page.locator('#aw-party-search').is_disabled(),'Settlement fixes original employee identity')
+        check(page.locator('#aw-liquidation-reuse-warning').is_visible() and 'cannot support another liquidation' in page.locator('#aw-liquidation-reuse-warning').inner_text(),'Liquidation explains unused-image restriction before review or posting')
+        check('fully cover every expenditure' in page.locator('#aw-evidence-help').inner_text() and 'Missing or partial' not in page.locator('#aw-evidence-help').inner_text(),'Liquidation footer states full expenditure coverage instead of ordinary partial support')
         page.locator('#aw-purpose').fill('Supported NGO training expenses');choose_record(page.locator('[data-line] [data-field="account_id"]'),training);page.locator('[data-line] [data-field="debit_amount"]').fill('8000.00');save();liq_id=re.search(r'draft_id=(\d+)',page.url).group(1)
         page.locator('#aw-review').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0");check('Fully cover' in page.locator('#aw-error').inner_text(),'Missing liquidation evidence fails visibly and retains draft')
         uploads_before=int(sql('SELECT COUNT(*) n FROM Receipts')[0]['n']);lost=[False]
@@ -97,12 +108,20 @@ try:
         page.locator('#aw-upload').set_input_files({'name':'Synthetic liquidation proof.png','mimeType':'image/png','buffer':png()});page.wait_for_selector('#aw-upload-retry:not([hidden])');page.locator('#aw-upload-retry').click();page.wait_for_selector('[data-document]');page.unroute('**/cash_advance_actions.php',lose_upload)
         check(int(sql('SELECT COUNT(*) n FROM Receipts')[0]['n'])==uploads_before+1,'v3 lost upload response retries one reserved document without losing advance context')
         page.locator('[data-doc-field="purpose"]').select_option('amount');page.locator('[data-doc-field="declared_amount"]').fill('8000.00');page.locator('[data-doc-field="accepted_amount"]').fill('8000.00');page.locator('[data-allocation]').fill('8000.00');proof_review();save()
+        check(page.locator('[data-partial-warning]').is_hidden(),'Fully accepted image has no excluded-amount warning')
+        page.locator('[data-doc-field="declared_amount"]').fill('10000.00')
+        check(page.locator('[data-partial-warning]').is_visible() and '\u20b12,000.00' in page.locator('[data-partial-warning]').inner_text(),'Partial acceptance shows exact unused amount without changing financial allocations')
+        page.locator('[data-doc-field="declared_amount"]').fill('invalid')
+        check(page.locator('[data-partial-warning]').is_hidden(),'Invalid document amount never displays a fabricated unused amount')
+        page.locator('[data-doc-field="declared_amount"]').fill('10000.00');page.locator('[data-doc-field="exclusion_reason"]').fill('Synthetic personal costs excluded');proof_review();save()
         page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+liq_id+'"]');check(row.locator('a').get_attribute('href')=='cash_advance_entry.php?draft_id='+liq_id and 'Advance liquidation' in row.inner_text(),'My Drafts labels and resumes v3 liquidation')
         row.locator('a').click();ready();check(page.locator('[data-doc-field="accepted_amount"]').input_value()=='8000.00','Resume retains manual evidence and allocations')
+        check('\u20b12,000.00' in page.locator('[data-partial-warning]').inner_text(),'Resumed liquidation retains partial-document explanation')
         review();check('debit: PHP 8000.00 supported of PHP 8000.00' in page.locator('.aw-coverage').inner_text(),'Liquidation review uses gross expenditure coverage only')
         page.screenshot(path=str(run/'liquidation-1366.png'),full_page=True);page.set_viewport_size({'width':1920,'height':1080});page.screenshot(path=str(run/'liquidation-1920.png'),full_page=True);page.set_viewport_size({'width':1366,'height':768});post()
         check(page.locator('#aw-posted-link').count()==0 and page.locator('#aw-history-link').count()==1,'Liquidation shows Journal History once')
         page.goto(base+'/cash_advance_entry.php?workflow_kind=advance_return&advance_id='+aid);ready();page.locator('#aw-purpose').fill('Return unused outreach cash');choose_record(page.locator('#aw-cash-account'),bank);page.locator('#aw-cash-amount').fill('2000.00');save();upload();proof_review();save();page.locator('#aw-confirm-proof').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Proof confirmed')")
+        check('confirmation are required' in page.locator('#aw-evidence-help').inner_text() and 'Monetary evidence allocations are not used' in page.locator('#aw-evidence-help').inner_text(),'Return footer describes proof and confirmation requirements')
         page.locator('#aw-cash-amount').fill('1500.00');save();check('not been confirmed' in page.locator('#aw-proof-status').inner_text(),'Changing the return amount clears bound proof confirmation')
         page.locator('#aw-review').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0");check('Confirm the proof' in page.locator('#aw-error').inner_text(),'Changed return requires explicit confirmation again')
         page.locator('#aw-cash-amount').fill('2000.00');save();page.locator('#aw-confirm-proof').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Proof confirmed')");review()
@@ -110,8 +129,42 @@ try:
         page.goto(base+'/cash_advances.php?advance_id='+aid);page.wait_for_selector('.ca-operation');check('PHP 0.00' in page.locator('#advance-register').inner_text() and page.locator('.ca-operation').count()==3,'Detail shows release/liquidation/return and settled balance')
         page.emulate_media(media='print');page.screenshot(path=str(run/'detail-print-1366.png'),full_page=True);check(page.locator('.app-sidebar').is_hidden(),'Print view hides application navigation');page.emulate_media(media='screen')
         page.goto(base+'/cash_advances.php');page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')");check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Register fits 1366px laptop without page overflow');page.screenshot(path=str(run/'register-1366.png'),full_page=True);page.set_viewport_size({'width':1920,'height':1080});page.screenshot(path=str(run/'register-1920.png'),full_page=True)
-        page.locator('[name="party_id"]').select_option(employee);page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')");check('Register PHP 10000.00' in page.locator('#ca-reconciliation').inner_text(),'Filtered register keeps full-account reconciliation')
-        previous=page.locator('#ca-rows').inner_text();page.route('**/cash_advance_actions.php?*',lambda route:route.fulfill(status=503,content_type='application/json',body=json.dumps({'ok':False,'error':'fixture temporary failure'})));page.locator('[name="search"]').fill('unapplied');page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-error').textContent.includes('previously')");check(page.locator('#ca-rows').inner_text()==previous,'Failed register refresh preserves prior results');page.unroute('**/cash_advance_actions.php?*')
+        expected=ctx.request.get(base+'/cash_advance_actions.php?'+urlencode({'action':'register','as_of':today})).json()['result']['reconciliation']
+        page.locator('[name="party_id"]').select_option(employee)
+        with page.expect_response('**/cash_advance_actions.php?*') as filtered_response:page.locator('#ca-filters button').click()
+        filtered=filtered_response.value.json()['result']['reconciliation'];page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')");check(filtered==expected and all(r['ok'] for r in filtered),'Filtered register keeps full-account reconciliation')
+        previous=page.locator('#ca-rows').inner_text();scope=page.locator('#ca-print-scope').inner_text();labels=page.locator('#ca-applied-filters').inner_text()
+        page.route('**/cash_advance_actions.php?*',lambda route:route.fulfill(status=503,content_type='application/json',body=json.dumps({'ok':False,'error':'fixture temporary failure'})));page.locator('[name="search"]').fill('unapplied');page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-error').textContent.includes('previously')");check(page.locator('#ca-rows').inner_text()==previous,'Failed register refresh preserves prior results');page.unroute('**/cash_advance_actions.php?*')
+        check(page.locator('#ca-print-scope').inner_text()==scope and page.locator('#ca-applied-filters').inner_text()==labels and not page.locator('#ca-print').is_disabled(),'Failed refresh preserves printable applied scope and labels')
+        # Response fixtures exercise the real renderer's multi-page print contract without seeding 40 advances.
+        register=ctx.request.get(base+'/cash_advance_actions.php?'+urlencode({'action':'register','as_of':today})).json()['result']
+        def register_fixture(route):
+            query=dict(parse_qsl(urlparse(route.request.url).query))
+            result={**register,'page':int(query.get('page','1')),'pages':2,'count':40}
+            result['rows']=[dict(register['rows'][0]) for _ in range(25 if result['page']==1 else 15)]
+            route.fulfill(status=200,content_type='application/json',body=json.dumps({'ok':True,'result':result}))
+        page.route('**/cash_advance_actions.php?*',register_fixture)
+        page.locator('[name="project_id"]').select_option(project);page.locator('[name="control_account_id"]').select_option(control);page.locator('[name="status"]').select_option('partially_settled');page.locator('[name="overdue"]').select_option('1');page.locator('[name="search"]').fill('field <visit>');page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-totals-basis').textContent.includes('40')")
+        labels=page.locator('#ca-applied-filters').inner_text()
+        check(all(term in labels for term in ['Employee:','Originating project:','Control account: Account #'+control,'Settlement status: Partially settled','Overdue: Overdue','Search: field <visit>']),'Printed summary records all applied filters as safe text')
+        check('rows 1-25 of 40' in page.locator('#ca-print-scope').inner_text() and 'all 40 matching advances (all pages)' in page.locator('#ca-totals-basis').inner_text(),'First page distinguishes printed rows from all-matching totals')
+        page.locator('[name="search"]').fill('unsaved filter');check(page.locator('#ca-applied-filters').inner_text()==labels,'Unsaved filter edits do not change printed applied labels')
+        page.locator('#ca-next').click();page.wait_for_function("document.getElementById('ca-print-scope').textContent.includes('rows 26-40')")
+        check(page.locator('#ca-rows tr').count()==15 and page.locator('#ca-applied-filters').inner_text()==labels and 'Changes not applied' in page.locator('#ca-filter-status').inner_text(),'Pagination retains applied filters and explicitly labels the current page')
+        for width,height in [(1366,768),(1920,1080)]:
+            page.set_viewport_size({'width':width,'height':height});page.screenshot(path=str(run/f'register-supplement-{width}.png'),full_page=True)
+        page.emulate_media(media='print');check(page.locator('#ca-filters').is_hidden() and page.locator('#ca-page').is_hidden() and page.locator('#ca-print-scope').is_visible() and page.locator('#ca-applied-filters').is_visible() and page.locator('#ca-totals-basis').is_visible(),'Printed register retains filters, row scope and totals basis while hiding controls')
+        page.screenshot(path=str(run/'register-supplement-print-1920.png'),full_page=True);page.emulate_media(media='screen');page.unroute('**/cash_advance_actions.php?*',register_fixture)
+        # Ignore cancellation deliberately to confirm an older response cannot replace any displayed scope.
+        page.evaluate("""() => {window.registerFetch=window.fetch;window.registerPending=[];window.fetch=(url,options)=>String(url).includes('action=register')?new Promise(resolve=>window.registerPending.push(resolve)):window.registerFetch(url,options);} """)
+        page.locator('[name="search"]').fill('older');page.locator('#ca-filters button').click();page.locator('[name="search"]').fill('newer');page.locator('#ca-filters button').click();page.wait_for_function('window.registerPending.length===2')
+        newest={**register,'rows':[],'count':0,'page':1,'pages':1}
+        page.evaluate('(result)=>window.registerPending[1](new Response(JSON.stringify({ok:true,result}),{status:200}))',newest);page.wait_for_function("document.getElementById('ca-applied-filters').textContent.includes('Search: newer')")
+        page.evaluate('(result)=>window.registerPending[0](new Response(JSON.stringify({ok:true,result}),{status:200}))',register)
+        # Next event-loop task runs after the deliberately late response's fetch/json continuations.
+        page.evaluate('()=>new Promise(resolve=>setTimeout(resolve,0))')
+        check('Search: newer' in page.locator('#ca-applied-filters').inner_text() and 'rows 0-0 of 0' in page.locator('#ca-print-scope').inner_text() and 'all 0 matching' in page.locator('#ca-totals-basis').inner_text(),'Stale response cannot overwrite newer empty results, print labels or totals basis')
+        page.evaluate('()=>{window.fetch=window.registerFetch;delete window.registerPending;delete window.registerFetch;}')
         # Legacy public mutation endpoints reject every v3 evidence action before any write.
         saved=ctx.request.get(base+'/cash_advance_actions.php?action=draft&draft_id='+liq_id).json()['result'];identity={'draft_id':liq_id,'revision':str(saved['revision'])};receipt=saved['payload']['documents'][0]['receipt_id']
         for action in ['attach','remove','discard']:

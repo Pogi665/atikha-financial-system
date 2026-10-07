@@ -4,12 +4,27 @@
     let sequence=0,controller=null,applied=null,current=1,pages=1;
     const node=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
     $('ca-print').addEventListener('click',()=>window.print());
+    if(form)$('ca-print').disabled=true;
+    function filterSummary(snapshot){
+        const labels={party_id:'Employee',project_id:'Originating project',control_account_id:'Control account',status:'Settlement status',overdue:'Overdue'};
+        const parts=Object.entries(labels).map(([key,label])=>{
+            const option=Array.from(form.elements.namedItem(key).options).find(o=>o.value===snapshot[key]);
+            return label+': '+(option?.textContent||snapshot[key]||'All');
+        });
+        parts.push('Search: '+(snapshot.search||'None'));
+        return 'Applied filters - '+parts.join(' · ');
+    }
+    function printScope(result){
+        const first=result.rows.length?(result.page-1)*25+1:0,last=result.rows.length?first+result.rows.length-1:0;
+        $('ca-print-scope').textContent='Current page only - Page '+result.page+' of '+result.pages+'; rows '+first+'-'+last+' of '+result.count+' matching advances. Printing includes this page, not the full register.';
+        $('ca-totals-basis').textContent='Totals for all '+result.count+' matching advances (all pages)';
+    }
     function reconciliation(rows){const panel=$('ca-reconciliation');panel.replaceChildren();rows.forEach(r=>{const p=node('p',r.account_name+' · Register PHP '+r.register_balance+' · Ledger PHP '+r.ledger_balance+' · Difference PHP '+r.difference+' · '+(r.ok?'Reconciled':'Integrity discrepancy'));p.className=r.ok?'ca-ok':'ca-discrepancy';panel.append(p);r.errors.forEach(e=>panel.append(node('p',e)));});if(!rows.length)panel.append(node('p','No designated control accounts. Accounting Setup can designate unused eligible accounts.'));}
     function mark(){if(form)$('ca-filter-status').textContent=!applied||Object.entries(Object.fromEntries(new FormData(form))).some(([k,v])=>applied[k]!==v)?'Changes not applied.':'';}
     async function load(page=1,useApplied=false){if(!form.reportValidity())return;const request=++sequence,snapshot=useApplied&&applied?{...applied}:Object.fromEntries(new FormData(form));controller?.abort();controller=new AbortController();$('ca-status').textContent='Loading advances…';$('ca-error').textContent='';$('ca-rows').setAttribute('aria-busy','true');
         try{const res=await fetch('cash_advance_actions.php?'+new URLSearchParams({action:'register',...snapshot,page:String(page)}),{credentials:'same-origin',cache:'no-store',signal:controller.signal});const data=await res.json();if(request!==sequence)return;if(!res.ok||!data.ok)throw new Error(data.error||'Could not load advances.');const d=data.result,fragment=document.createDocumentFragment();
             d.rows.forEach(r=>{const tr=document.createElement('tr'),first=document.createElement('td'),a=node('a',r.number);a.href='cash_advances.php?'+new URLSearchParams({advance_id:String(r.id),as_of:d.as_of});first.append(a,node('p',r.employee));tr.append(first);[r.release_date+' · '+r.project,r.released,r.liquidated,r.returned,r.outstanding,r.due_date+' · '+r.status.replaceAll('_',' ')+' · '+r.overdue_days+' days overdue ('+r.aging_bucket+')'].forEach(v=>tr.append(node('td',v)));fragment.append(tr);});
-            if(!d.rows.length){const tr=document.createElement('tr'),td=node('td','No posted advances match these filters.');td.colSpan=7;tr.append(td);fragment.append(tr);}$('ca-rows').replaceChildren(fragment);$('ca-totals').replaceChildren();Object.entries(d.totals).forEach(([k,v])=>{const span=node('span',k[0].toUpperCase()+k.slice(1)+' ');span.append(node('strong','PHP '+v));$('ca-totals').append(span);});reconciliation(d.reconciliation);$('ca-basis').textContent='POSTED advances · As of '+d.as_of;$('ca-notice').textContent=d.restatement_notice;current=d.page;pages=d.pages;$('ca-page').textContent='Page '+current+' of '+pages+' · '+d.count+' matching advances';$('ca-prev').disabled=current<=1;$('ca-next').disabled=current>=pages;applied=snapshot;mark();$('ca-status').textContent='Advance register loaded.';
+            if(!d.rows.length){const tr=document.createElement('tr'),td=node('td','No posted advances match these filters.');td.colSpan=7;tr.append(td);fragment.append(tr);}$('ca-rows').replaceChildren(fragment);$('ca-totals').replaceChildren();Object.entries(d.totals).forEach(([k,v])=>{const span=node('span',k[0].toUpperCase()+k.slice(1)+' ');span.append(node('strong','PHP '+v));$('ca-totals').append(span);});reconciliation(d.reconciliation);$('ca-basis').textContent='POSTED advances · As of '+d.as_of;$('ca-notice').textContent=d.restatement_notice;current=d.page;pages=d.pages;$('ca-page').textContent='Page '+current+' of '+pages+' · '+d.count+' matching advances';$('ca-prev').disabled=current<=1;$('ca-next').disabled=current>=pages;applied=snapshot;$('ca-applied-filters').textContent=filterSummary(snapshot);printScope(d);$('ca-print').disabled=false;mark();$('ca-status').textContent='Advance register loaded.';
         }catch(e){if(request!==sequence||e.name==='AbortError')return;$('ca-error').textContent=(applied?'The previously loaded register remains visible. ':'')+e.message;$('ca-status').textContent='';mark();}finally{if(request===sequence)$('ca-rows').setAttribute('aria-busy','false');}}
     if(form){form.addEventListener('input',mark);form.addEventListener('change',mark);form.addEventListener('submit',e=>{e.preventDefault();load();});$('ca-prev').addEventListener('click',()=>load(current-1,true));$('ca-next').addEventListener('click',()=>load(current+1,true));load();}
     else reconciliation(config.detail.reconciliation);

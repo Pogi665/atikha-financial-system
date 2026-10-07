@@ -14,6 +14,10 @@ function workspace_guard(PDO $pdo, int $uid, ?array $request = null): void
     if (!$u || $u['Role']!=='Admin' || (int)$u['Is_Active']!==1) { throw new JournalProblem('An active System Administrator is required.',403); }
 }
 function workspace_json($v): string { return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR); }
+function workspace_noncorrection(array $d): void
+{
+    if((int)$d['payload_version']===4||($d['workflow_kind']??'ordinary')==='correction')throw new JournalProblem('Use the correction workspace for this draft.',409);
+}
 /** Staff-facing saved dates are Manila dates; persisted draft timestamps remain UTC. */
 function workspace_drafts(PDO $pdo,int $uid,array $request): array
 {
@@ -33,7 +37,8 @@ function workspace_drafts(PDO $pdo,int $uid,array $request): array
         $where[]='updated_at '.($name==='from'?'>=':'<').' ?';$args[]=$utc;
     }}
     $workflow=stage2_schema($pdo)?'workflow_kind':"'ordinary' AS workflow_kind";
-    $s=$pdo->prepare('SELECT '.$workflow.',id,source_book,revision,updated_at,JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.entry_date\')) entry_date,JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.description\')) description FROM journal_drafts WHERE '.implode(' AND ',$where).' ORDER BY updated_at DESC,id DESC');
+    $correction=stage3_schema($pdo)?'correction_mode,correction_target_journal_id':"NULL AS correction_mode,NULL AS correction_target_journal_id";
+    $s=$pdo->prepare('SELECT '.$workflow.','.$correction.',id,source_book,revision,updated_at,JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.entry_date\')) entry_date,COALESCE(JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.replacement.description\')),JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.description\')),JSON_UNQUOTE(JSON_EXTRACT(payload,\'$.reason\'))) description FROM journal_drafts WHERE '.implode(' AND ',$where).' ORDER BY updated_at DESC,id DESC');
     $s->execute($args);$rows=$s->fetchAll();
     foreach($rows as &$row){
         $saved=DateTimeImmutable::createFromFormat('!Y-m-d H:i:s',$row['updated_at'],new DateTimeZone('UTC'));
@@ -64,6 +69,7 @@ function workspace_draft(PDO $pdo,int $uid,int $id,bool $lock=false): array
     $kind=$r['workflow_kind']??'ordinary';$v=(int)$r['payload_version'];
     if($v===2){workspace_ordinary($r);if(($r['advance_id']??null)!==null)throw new JournalProblem('Draft context is inconsistent.',409);}
     elseif($v===3){$books=['advance_release'=>'CDB','advance_liquidation'=>'GJ','advance_return'=>'CRB'];if(!isset($books[$kind])||$r['source_book']!==$books[$kind]||($kind!=='advance_release'&&$r['advance_id']===null)||($kind==='advance_release'&&(($r['state']==='Posted')!==($r['advance_id']!==null))))throw new JournalProblem('Advance draft context is inconsistent.',409);}
+    elseif($v===4){if($kind!=='correction'||empty($r['correction_target_journal_id'])||!in_array($r['correction_mode']??null,['reverse_only','reverse_replace'],true))throw new JournalProblem('Correction draft context is inconsistent.',409);}
     else{throw new JournalProblem('This draft uses an unsupported payload version. Contact your administrator.',409);}
     $r['payload']=json_decode($r['payload'],true,64,JSON_THROW_ON_ERROR);return $r;
 }
@@ -118,7 +124,7 @@ function workspace_payload(array $p): array
 function workspace_document_ids(array $p): array {$ids=array_map('intval',array_column($p['documents'],'receipt_id'));sort($ids,SORT_NUMERIC);return $ids;}
 function workspace_draft_public(array $d): array
 {
-    return array_intersect_key($d,array_flip(['id','source_book','payload_version','payload','revision','submission_key','state','posted_journal_id','updated_at','workflow_kind','advance_id','return_confirmation']));
+    return array_intersect_key($d,array_flip(['id','source_book','payload_version','payload','revision','submission_key','state','posted_journal_id','updated_at','workflow_kind','advance_id','return_confirmation','correction_target_journal_id','correction_mode']));
 }
 function workspace_save(PDO $pdo,int $uid,array $request): array
 {
@@ -249,6 +255,7 @@ function workspace_canonical_documents(array $documents): array
 
 function workspace_resources(PDO $pdo,int $uid,array $d,array $input,?array $original=null): array
 {
+    if((int)$d['payload_version']===4){require_once __DIR__.'/correction_drafts.php';return correction_resources($pdo,$uid,$d,$input);}
     $party=null;$projects=[];$receipts=[];$accounts=[];
     // Master locks before evidence, then sorted account rows. All configuration writers share the barrier.
     if($input['party_id']!==null){
@@ -374,7 +381,7 @@ function workspace_attach(PDO $pdo,int $uid,array $r,int $receiptId): array
 {
     workspace_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));
     return workspace_tx($pdo,$uid,function()use($pdo,$uid,$r,$id,$receiptId){
-        $d=workspace_draft($pdo,$uid,$id,true);workspace_revision($d,$r);$p=$d['payload'];
+        $d=workspace_draft($pdo,$uid,$id,true);workspace_noncorrection($d);workspace_revision($d,$r);$p=$d['payload'];
         if(count($p['documents'])>=20){throw new JournalProblem('A draft supports up to 20 images.');}
         $receipt=receipt_owned($pdo,$receiptId,$uid,true);stage1_reserved_guard($pdo,$receiptId);
         if($receipt['JournalEntryID']!==null||$receipt['OCR_Status']==='Pending'||receipt_duplicate($pdo,$receipt['File_SHA256'])){throw new JournalProblem('Document is posted or still processing.',409);}
@@ -391,7 +398,7 @@ function workspace_remove_or_discard(PDO $pdo,int $uid,array $r,bool $discard): 
     workspace_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));
     $receiptId=$discard?null:journal_id(journal_string($r,'receipt_id'));
     return workspace_tx($pdo,$uid,function()use($pdo,$uid,$r,$id,$receiptId,$discard){
-        $d=workspace_draft($pdo,$uid,$id,true);workspace_revision($d,$r);$p=$d['payload'];$ids=workspace_document_ids($p);
+        $d=workspace_draft($pdo,$uid,$id,true);workspace_noncorrection($d);workspace_revision($d,$r);$p=$d['payload'];$ids=workspace_document_ids($p);
         if(!$discard&&!in_array($receiptId,$ids,true)){throw new JournalProblem('Document is not in this draft.',404);}
         foreach($ids as $doc){if(!$discard&&$doc!==$receiptId){continue;}$receipt=receipt_owned($pdo,$doc,$uid,true);
             $s=$pdo->prepare('SELECT draft_id FROM draft_evidence_reservations WHERE receipt_id=?');$s->execute([$doc]);
@@ -409,11 +416,12 @@ function workspace_remove_or_discard(PDO $pdo,int $uid,array $r,bool $discard): 
 function workspace_upload(PDO $pdo,int $uid,array $r,array $file): array
 {
     workspace_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));$key=journal_string($r,'upload_key');
+    workspace_noncorrection(workspace_draft($pdo,$uid,$id));
     if(!preg_match('/\A[a-f0-9]{64}\z/',$key)){throw new JournalProblem('Invalid upload key.');}
     $stored=store_uploaded_receipt($file);if(!$stored['ok']){throw new JournalProblem($stored['error'],400);}
     $path=transaction_receipt_path($stored['path']);$keep=false;
     try{return workspace_tx($pdo,$uid,function()use($pdo,$uid,$r,$id,$key,$stored,&$keep){
-        $d=workspace_draft($pdo,$uid,$id,true);$p=$d['payload'];
+        $d=workspace_draft($pdo,$uid,$id,true);workspace_noncorrection($d);$p=$d['payload'];
         $s=$pdo->prepare('SELECT r.ReceiptID,r.UploadedBy_UserID,r.File_SHA256,v.draft_id FROM Receipts r LEFT JOIN draft_evidence_reservations v ON v.receipt_id=r.ReceiptID WHERE r.Upload_Key=?');$s->execute([$key]);
         if($old=$s->fetch()){
             if((int)$old['UploadedBy_UserID']!==$uid||(int)$old['draft_id']!==$id||!hash_equals($old['File_SHA256'],$stored['sha256'])){throw new JournalProblem('Upload key was used with different contents.',409);}

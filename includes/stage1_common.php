@@ -28,6 +28,12 @@ function stage1_write_changed(PDO $pdo): void
 }
 function stage1_reserved_guard(PDO $pdo, int $receiptId): void
 {
+    $state=stage3_schema_state($pdo);
+    if($state['state']==='partial')throw new JournalProblem('Correction schema is incomplete. Evidence changes are unavailable.',503);
+    if($state['complete']){
+        $s=$pdo->prepare('SELECT draft_id FROM correction_evidence_reservations WHERE receipt_id=?');$s->execute([$receiptId]);
+        if($id=$s->fetchColumn())throw new JournalProblem('This posted image is reserved to correction draft #'.(int)$id.'.',409);
+    }
     if (!stage1_schema($pdo)) { return; }
     $s = $pdo->prepare('SELECT draft_id FROM draft_evidence_reservations WHERE receipt_id=?'); $s->execute([$receiptId]);
     if ($id = $s->fetchColumn()) {

@@ -2,6 +2,7 @@
     'use strict';
     const payload=document.getElementById('records-data');if(!payload)return;
     let data=JSON.parse(payload.textContent);
+    const correctionsEnabled=Boolean(data.correctionsEnabled);
     const main=document.querySelector('.records-page').dataset.context==='records';
     let controller=null;
     const money=value=>{const c=BigInt(value),a=c<0n?-c:c;return(c<0n?'-':'')+'₱'+(a/100n).toLocaleString('en-PH')+'.'+String(a%100n).padStart(2,'0');};
@@ -15,7 +16,7 @@
         search:{regex:false,smart:true,search:main?data.state.search:''},order:main&&data.state.order.length?data.state.order:[[0,'desc']],orderFixed:{post:[[7,'desc'],[8,'asc']]},
         layout:{topStart:null,topEnd:'search',bottomStart:'info',bottomEnd:{paging:{numbers:false,firstLast:false}}},
         language:{search:'Search records:',info:'Showing _START_–_END_ of _TOTAL_ lines.',infoEmpty:'Showing 0–0 of 0 lines.',infoFiltered:'',emptyTable:'No posted lines match these filters.',zeroRecords:'No lines match your search.',paginate:{previous:'Previous',next:'Next'}},
-        columns:[{data:'entry_date',render},{data:'reference',render},{data:'description',render},
+        columns:[{data:'entry_date',render},{data:'reference',render},{data:'description',render:(v,type,r)=>type==='filter'?label(v)+' '+(r.correction_search||''):render(v,type)},
             {data:null,render:(_,type,r)=>render(account(r),type)},
             ...['debit_cents','credit_cents'].map(key=>({data:key,type:'num',className:'records-amount',render:(v,type)=>type==='display'||type==='filter'?money(v):Number(v)})),
             {data:null,orderable:false,searchable:false,render:()=>'<button type="button" class="records-view">View</button>'},
@@ -37,7 +38,7 @@
             const terms=search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean),ids=new Set();
             Object.entries(data.journals).forEach(([id,j])=>{
                 const h=j.header,party=h.party_snapshot?JSON.parse(h.party_snapshot):null;
-                const hay=[h.entry_date,h.reference,h.description,party?.name,j.evidence_coverage?.status,...j.lines.flatMap(l=>[account(l),l.project_code_snapshot,l.project_name_snapshot,money(l.debit_amount.replace('.','')),money(l.credit_amount.replace('.',''))])].join(' ').toLocaleLowerCase();
+                const hay=[...j.corrections.flatMap(c=>['Correction #'+c.id,c.role,c.accounting_date,c.reason]),h.entry_date,h.reference,h.description,party?.name,j.evidence_coverage?.status,...j.lines.flatMap(l=>[account(l),l.project_code_snapshot,l.project_name_snapshot,money(l.debit_amount.replace('.','')),money(l.credit_amount.replace('.',''))])].join(' ').toLocaleLowerCase();
                 if(terms.every(term=>hay.includes(term)))ids.add(String(id));
             });
             table.search((_text,row)=>ids.has(String(row.journal_id))).page(0).draw();
@@ -261,6 +262,8 @@
         const button=event.target.closest('.records-view');if(!button)return;const row=table.row(button.closest('tr')).data();if(!row)return;
         const j=data.journals[row.journal_id];opener=button;dialog.dataset.transaction=String(row.journal_id);
         const details=document.getElementById('transaction-details');details.replaceChildren();
+        if(correctionsEnabled&&j.correction_entry_available===true&&j.correction_eligible!==false){const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent='Correction';a.href='journal_correction.php?journal_id='+row.journal_id;a.textContent='Prepare correction draft';dd.append(a);details.append(dt,dd);}
+        (j.corrections||[]).forEach(c=>{const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent=c.role;a.href='journal_corrections.php?correction_id='+c.id;a.textContent='Correction #'+c.id+' - accounting date '+c.accounting_date;dd.append(a,document.createTextNode(' - '+c.reason+' (this date may be outside the displayed range)'));details.append(dt,dd);});
         if(row.source_book){const party=row.party_snapshot?JSON.parse(row.party_snapshot):null;[['Originating book',row.source_book],['Payer / payee',party?.name||'Not recorded']].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});}
         if(j.evidence_coverage){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent='Evidence coverage';dd.textContent=j.evidence_coverage.status;Object.entries(j.evidence_coverage).forEach(([side,value])=>{if(side!=='status'&&value.covered!==null)dd.append(' · '+side+': PHP '+value.covered+' supported of PHP '+value.eligible);});details.append(dt,dd);}
         [['Journal ID',row.journal_id],['Date',row.entry_date],['Reference',label(row.reference)],['Description',row.description],['Posted by',label(row.posted_by)],['Total Debits',money(j.debit_cents)],['Total Credits',money(j.credit_cents)],['Difference',money(BigInt(j.debit_cents)-BigInt(j.credit_cents))]].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});

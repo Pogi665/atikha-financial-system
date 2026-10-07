@@ -10,15 +10,16 @@
         const fragment=document.createDocumentFragment();
         records.forEach(row=>{
             const tr=document.createElement('tr');tr.dataset.draftId=String(row.id);
-            [row.id,(row.workflow_kind&&row.workflow_kind!=='ordinary'?row.workflow_kind.replace('advance_','Advance ').replaceAll('_',' '):row.source_book)+' / '+(row.entry_date||'No accounting date'),row.description||'No purpose yet',row.updated_at_display].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});
+            const correction=row.workflow_kind==='correction',advance=row.workflow_kind?.startsWith('advance_');
+            [row.id,(correction?'Correction '+row.correction_mode.replaceAll('_',' ')+' · journal #'+row.correction_target_journal_id:advance?row.workflow_kind.replace('advance_','Advance ').replaceAll('_',' '):row.source_book)+' / '+(row.entry_date||'No accounting date'),row.description||'No purpose yet',row.updated_at_display].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});
             const actions=document.createElement('td'),a=document.createElement('a');
-            a.href=(row.workflow_kind&&row.workflow_kind!=='ordinary'?'cash_advance_entry.php':({CRB:'cash_receipt.php',CDB:'cash_disbursement.php',GJ:'general_journal.php'}[row.source_book]))+'?draft_id='+row.id;a.textContent='Continue';actions.append(a,' ');
+            a.href=(correction?'journal_correction.php':advance?'cash_advance_entry.php':({CRB:'cash_receipt.php',CDB:'cash_disbursement.php',GJ:'general_journal.php'}[row.source_book]))+'?draft_id='+row.id;a.textContent='Continue';actions.append(a,' ');
             const b=document.createElement('button');b.textContent='Discard';b.type='button';
             b.addEventListener('click',async()=>{
                 if(!confirm('Discard this draft and its reserved images? No posted financial records will change.'))return;
                 b.disabled=true;error.textContent='';let discarded=false;
                 try{
-                    const r=await fetch(row.workflow_kind&&row.workflow_kind!=='ordinary'?'cash_advance_actions.php':'accounting_actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'discard',csrf_token:csrf,draft_id:String(row.id),revision:String(row.revision)})});
+                    const r=await fetch(correction?'journal_correction_actions.php':advance?'cash_advance_actions.php':'accounting_actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'discard',csrf_token:csrf,draft_id:String(row.id),revision:String(row.revision)})});
                     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not discard this draft.');discarded=true;b.textContent='Discarded';a.removeAttribute('href');await load();
                 }catch(e){error.textContent=e.message;if(!discarded&&b.isConnected)b.disabled=false;}
             });actions.append(b);tr.append(actions);fragment.append(tr);

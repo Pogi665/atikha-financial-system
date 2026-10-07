@@ -55,7 +55,7 @@ try {
     $server->exec("CREATE DATABASE $db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");$pdo=cli_db($db);
     cli_sql_file($pdo,__DIR__.'/../database.sql');
     foreach(glob(__DIR__.'/../migrations/*.sql') as $path){if(preg_match('/\A(\d{3})_/',basename($path),$m)&&(int)$m[1]<=17){cli_sql_file($pdo,$path);}}
-    rt(!receipt_schema_available($pdo),'Evidence unavailable before migration 018');
+    if(getenv('ATIKHA_TEST_INTEGRATED')!=='1')rt(!receipt_schema_available($pdo),'Evidence unavailable before migration 018');
     foreach(['admin'=>'Admin','other'=>'Admin','management'=>'Management'] as $name=>$role){$s=$pdo->prepare('INSERT INTO Users (FullName,Email,Role,Password,Is_Active) VALUES (?,?,?,?,1)');$s->execute(['Receipt '.$name,$name.'@receipt.invalid',$role,'not-a-login-hash']);}
     $pdo->exec('INSERT INTO user_identities (UserID,FullName,Email,Role) SELECT UserID,FullName,Email,Role FROM Users');
     $uids=$pdo->query('SELECT Email,UserID FROM Users')->fetchAll(PDO::FETCH_KEY_PAIR);$uid=(int)$uids['admin@receipt.invalid'];$other=(int)$uids['other@receipt.invalid'];$manager=(int)$uids['management@receipt.invalid'];
@@ -67,6 +67,11 @@ try {
     $old=journal_post($pdo,$uid,$manual);$counts=rc($pdo);
     cli_sql_file($pdo,__DIR__.'/../migrations/018_journal_receipt_evidence.sql');
     rt(receipt_schema_available($pdo)&&rc($pdo)===$counts,'Migration 018 rehearsed, existing journals and audits preserved');
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){
+        foreach(['019_stage1_foundation.sql','020_stage2_advances.sql','021_journal_corrections.sql'] as $migration)cli_sql_file($pdo,__DIR__.'/../migrations/'.$migration);
+        cli_require(stage3_schema($pdo)&&stage2_schema($pdo),'Receipt operational tests require complete integrated schema.');
+        echo "PROFILE: integrated receipt operations on 019/020/021\n";
+    }
     rt(journal_post($pdo,$uid,$manual)['duplicate'],'Pre-018 manual submission hash still retries identically');
     $d=normalize_receipt_data(['total_amount'=>'9999999999999.99','transaction_date'=>'2026-02-30','currency'=>'USD','suggested_debit_account_id'=>4294967295,'confidence'=>4],[['CategoryID'=>$expense]]);
     rt($d['total_amount']==='9999999999999.99'&&$d['transaction_date']===null&&$d['suggested_debit_account_id']===null&&$d['confidence']===0.0&&count($d['warnings'])>0,'Exact maximum, invalid dates, nonexistent suggestions and confidence normalized safely');
@@ -130,5 +135,6 @@ try {
     $_SESSION=['UserID'=>$manager,'Role'=>'Management'];$post8['csrf_token']=csrf_token();$post8['submission_key']=journal_submission_key();receipt_request_key();
     rr($pdo,fn()=>journal_post($pdo,$manager,$post8),'Management cannot post',403);
     rt((int)$pdo->query('SELECT COUNT(*) FROM Expenses')->fetchColumn()===0&&(int)$pdo->query('SELECT COUNT(*) FROM Incoming_Funds')->fetchColumn()===0,'Legacy transaction tables remain empty');
+    file_put_contents($run.'/receipt-fixture.json',json_encode(['database'=>$db,'receipt_root'=>RECEIPT_UPLOAD_DIR],JSON_THROW_ON_ERROR));
     echo "Completed $checks checks. Disposable database retained: $db\nPrivate evidence: $run\n";
 }catch(Throwable $e){fwrite(STDERR,"FAIL: ".$e->getMessage()."\nDisposable database retained: $db\n");exit(1);}

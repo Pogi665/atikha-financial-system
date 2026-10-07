@@ -1,6 +1,7 @@
 <?php
 /** Read only. No configuration loading, DDL, data repair, or receipt deletion. */
 require_once __DIR__.'/cli_common.php';define('ATIKHA_ISOLATED_TEST',true);require_once __DIR__.'/../includes/cash_advance.php';
+require_once __DIR__.'/../includes/journal_corrections.php';
 $opt=getopt('',['database:']);$db=$opt['database']??'';
 try{
     cli_require(is_string($db)&&$db!=='','Specify --database explicitly.');$p=cli_db($db);$problems=[];
@@ -16,9 +17,9 @@ try{
             if((int)$p->query('SELECT COUNT(*) FROM Receipts WHERE JournalEntryID IS NOT NULL AND (File_SHA256 IS NULL OR Posted_File_SHA256 IS NULL OR File_SHA256<>Posted_File_SHA256)')->fetchColumn())$problems[]='Posted evidence hashes are inconsistent.';
             if((int)$p->query("SELECT COUNT(*) FROM draft_evidence_reservations v JOIN Receipts r ON r.ReceiptID=v.receipt_id JOIN journal_drafts d ON d.id=v.draft_id WHERE d.state<>'Draft' OR r.JournalEntryID IS NOT NULL OR r.UploadedBy_UserID<>d.owner_id OR r.OCR_Status='Discarded'")->fetchColumn())$problems[]='Draft evidence reservations are inconsistent.';
             if((int)$p->query("SELECT COUNT(*) FROM advance_control_designations d JOIN Categories c ON c.CategoryID=d.account_id WHERE c.Is_Active<>1 OR c.Account_Type<>'Asset' OR c.Normal_Balance<>'Debit' OR c.Is_Cash_Account<>0")->fetchColumn())$problems[]='Designated control accounts are ineligible.';
-            if((int)$p->query('SELECT COUNT(*) FROM posted_evidence_associations e JOIN Receipts r ON r.ReceiptID=e.receipt_id WHERE r.JournalEntryID<>e.journal_id OR r.JournalEntryID IS NULL')->fetchColumn())$problems[]='Posted document/journal associations are inconsistent.';
+            foreach($p->query('SELECT * FROM posted_evidence_associations')->fetchAll() as $association)if(!stage3_evidence_association_valid($p,$association))$problems[]='Posted document/journal associations are inconsistent.';
             if((int)$p->query('SELECT COUNT(*) FROM evidence_allocations a JOIN posted_evidence_associations e ON e.id=a.association_id JOIN journal_entry_lines l ON l.id=a.line_id WHERE l.journal_entry_id<>e.journal_id')->fetchColumn())$problems[]='Evidence allocation journal links are inconsistent.';
-            if($complete){$state=advance_state($p,journal_today());foreach($state['reconciliation'] as $r)if(!$r['ok'])$problems[]='Control account #'.$r['account_id'].' does not reconcile: '.implode('; ',$r['errors']);}
+            if($complete){$s3=stage3_schema_state($p);if($s3['state']==='absent'){$state=advance_state($p,journal_today());foreach($state['reconciliation'] as $r)if(!$r['ok'])$problems[]='Control account #'.$r['account_id'].' does not reconcile: '.implode('; ',$r['errors']);}else $problems=array_merge($problems,correction_integrity($p));}
             elseif(!$partial&&(int)$p->query("SELECT COUNT(*) FROM journal_entry_lines l JOIN advance_control_designations d ON d.account_id=l.account_id JOIN journal_entries j ON j.id=l.journal_entry_id WHERE j.status='posted'")->fetchColumn())$problems[]='Pre-020 control lines require investigation; no historical advance inference is allowed.';
         }
         return ['deployment_state'=>$complete?'020 already applied':($partial?'Partial 020':'020 not applied'),'schema_complete'=>$complete,'schema_ready_for_020'=>!$partial&&!$problems];

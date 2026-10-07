@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/stage3_common.php';
 /** Schema/data protections intentionally do not depend on the Stage 2 UI flag. */
 function stage2_tables(PDO $pdo): bool
 {
@@ -19,6 +20,10 @@ function stage2_enabled(PDO $pdo): bool
     return defined('STAGE2_ADVANCES_ENABLED')&&STAGE2_ADVANCES_ENABLED===true&&stage1_enabled($pdo)&&stage2_schema($pdo);
 }
 function stage2_sensitive_journals(PDO $pdo,array $ids): array
+{
+    return stage3_sensitive_journals($pdo,$ids);
+}
+function stage2_sensitive_journals_direct(PDO $pdo,array $ids): array
 {
     if(!$ids)return [];$found=[];
     foreach(array_chunk($ids,500) as $chunk){

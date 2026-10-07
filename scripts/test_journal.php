@@ -24,11 +24,14 @@ function sample_post(int $asset, int $income, string $amount = '123.45'): array 
     return ['csrf_token' => csrf_token(), 'submission_key' => journal_submission_key(), 'entry_date' => '2026-10-04',
         'reference' => 'Fixture', 'description' => 'Synthetic journal', 'line_count' => '2', 'form_complete' => '1',
         'lines' => [['account_id' => (string)$asset, 'fund_project_id' => '', 'debit_amount' => $amount, 'credit_amount' => ''],
-            ['account_id' => (string)$income, 'fund_project_id' => '4294967295', 'debit_amount' => '', 'credit_amount' => $amount]]];
+            ['account_id' => (string)$income, 'fund_project_id' => (getenv('ATIKHA_TEST_INTEGRATED')==='1'?'':'4294967295'), 'debit_amount' => '', 'credit_amount' => $amount]]];
 }
 try {
     $opts = getopt('', ['database:', 'worker:']); $db = $opts['database'] ?? '';
     cli_require(is_string($db) && (bool)preg_match('/\Aatikha_test_journal_[a-z0-9]+\z/', $db), 'Explicit disposable atikha_test_journal_* database required.');
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'&&!isset($opts['worker'])){
+        $server=new PDO('mysql:host='.(getenv('ATIKHA_DB_HOST')?:'127.0.0.1'),getenv('ATIKHA_DB_USER')?:'root',getenv('ATIKHA_DB_PASSWORD')?:'');$server->exec("CREATE DATABASE $db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    }
     $pdo = cli_db($db);
     if (isset($opts['worker'])) {
         $path = realpath($opts['worker']); $private = realpath(__DIR__ . '/../.migration-private');
@@ -49,6 +52,12 @@ try {
     jt(array_intersect_key($new, $old) === $old && $new['submission_key'] === null && $new['posted_by_user_id'] === null,
         'Migration 016 retains existing header values with nullable metadata');
     $pdo->exec('DELETE FROM journal_entries');
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){
+        foreach(['017_trial_balance_report_snapshots.sql','018_journal_receipt_evidence.sql','019_stage1_foundation.sql','020_stage2_advances.sql','021_journal_corrections.sql'] as $migration){
+            if(str_starts_with($migration,'017_')){$files=glob(__DIR__.'/../migrations/017_*.sql');cli_sql_file($pdo,$files[0]);}else cli_sql_file($pdo,__DIR__.'/../migrations/'.$migration);
+        }
+        require_once __DIR__.'/../includes/stage2_common.php';require_once __DIR__.'/../includes/stage3_common.php';cli_require(stage3_schema($pdo)&&stage2_schema($pdo),'Journal operations require complete integrated schema.');echo "PROFILE: integrated journal operations on 019/020/021\n";
+    }
     foreach (['admin' => ['Admin',1], 'other' => ['Admin',1], 'management' => ['Management',1], 'inactive' => ['Admin',0]] as $name => [$role,$active]) {
         $stmt = $pdo->prepare('INSERT INTO Users (FullName,Role,Email,Password,Is_Active) VALUES (?,?,?,?,?)');
         $stmt->execute(['Journal '.$name,$role,$name.'@example.invalid','not-a-login-hash',$active]);
@@ -68,12 +77,13 @@ try {
     rejected($pdo,fn()=>account_save($pdo,$uid,'create',['name'=>'Duplicate code','account_type'=>'Asset','account_code'=>'1000','normal_balance'=>'Debit','is_cash_account'=>'0']), 'Duplicate account code');
     rejected($pdo,fn()=>account_save($pdo,$uid,'update',['account_id'=>$asset,'account_code'=>'1000','normal_balance'=>'Debit','is_cash_account'=>'1','description'=>['bad']]), 'Array text field');
     $post = sample_post($asset,$income);
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){$forgedProject=$post;$forgedProject['lines'][1]['fund_project_id']='4294967295';rejected($pdo,fn()=>journal_post($pdo,$uid,$forgedProject),'Integrated legacy route rejects project allocation');}
     $result = journal_post($pdo,$uid,$post);
     jt(!$result['duplicate'], 'Balanced journal posted');
     $header = $pdo->query('SELECT * FROM journal_entries WHERE id='.$result['id'])->fetch();
     jt($header['status']==='posted' && (int)$header['posted_by_user_id']===$uid && strlen($header['submission_hash'])===64, 'Posted header stores actor and durable hash');
     $lines = $pdo->query('SELECT * FROM journal_entry_lines WHERE journal_entry_id='.$result['id'].' ORDER BY id')->fetchAll();
-    jt(count($lines)===2 && $lines[0]['debit_amount']==='123.45' && $lines[0]['credit_amount']==='0.00' && $lines[0]['fund_project_id']===null && (int)$lines[1]['fund_project_id']===4294967295, 'Exact amounts and optional fund ID retained');
+    jt(count($lines)===2 && $lines[0]['debit_amount']==='123.45' && $lines[0]['credit_amount']==='0.00' && $lines[0]['fund_project_id']===null && (getenv('ATIKHA_TEST_INTEGRATED')==='1'?$lines[1]['fund_project_id']===null:(int)$lines[1]['fund_project_id']===4294967295), 'Exact amounts and optional fund ID retained');
     $counts = journal_counts($pdo); $again = journal_post($pdo,$uid,$post);
     jt($again['duplicate'] && $again['id']===$result['id'] && journal_counts($pdo)===$counts, 'Identical retry creates no duplicate header, lines or audit');
     $changed = $post; $changed['description'] = 'Different payload';

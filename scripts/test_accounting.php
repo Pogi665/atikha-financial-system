@@ -7,10 +7,10 @@ require_once __DIR__.'/../includes/dashboard_query.php';
 function ac(bool $ok,string $label): void { cli_require($ok,$label);echo "PASS: $label\n"; }
 function ap(PDO $pdo,string $date,array $lines,string $status='posted'): int
 {
-    $pdo->beginTransaction();try{
+    $owned=!$pdo->inTransaction();if($owned)$pdo->beginTransaction();try{
         $s=$pdo->prepare('INSERT INTO journal_entries (entry_date,description,status) VALUES (?,?,?)');$s->execute([$date,'Synthetic <script>window.bad=1</script>',$status]);$id=(int)$pdo->lastInsertId();
-        $s=$pdo->prepare('INSERT INTO journal_entry_lines (journal_entry_id,account_id,debit_amount,credit_amount) VALUES (?,?,?,?)');foreach($lines as $l){$s->execute(array_merge([$id],$l));}$pdo->commit();return $id;
-    }catch(Throwable $e){$pdo->rollBack();throw $e;}
+        $s=$pdo->prepare('INSERT INTO journal_entry_lines (journal_entry_id,account_id,debit_amount,credit_amount) VALUES (?,?,?,?)');foreach($lines as $l){$s->execute(array_merge([$id],$l));}if($owned)$pdo->commit();return $id;
+    }catch(Throwable $e){if($owned&&$pdo->inTransaction())$pdo->rollBack();throw $e;}
 }
 function reject(callable $fn,string $label,?int $status=null): void
 {
@@ -31,6 +31,10 @@ try{
     $server=new PDO('mysql:host='.(getenv('ATIKHA_DB_HOST')?:'127.0.0.1').';charset=utf8mb4',getenv('ATIKHA_DB_USER')?:'root',getenv('ATIKHA_DB_PASSWORD')?:'',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
     $server->exec("CREATE DATABASE `$db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");$pdo=cli_db($db);
     cli_sql_file($pdo,__DIR__.'/../database.sql');foreach(glob(__DIR__.'/../migrations/*.sql') as $path){if(preg_match('/\A(\d{3})_/',basename($path),$m)&&(int)$m[1]<=17){cli_sql_file($pdo,$path);}}
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){
+        foreach(['018_journal_receipt_evidence.sql','019_stage1_foundation.sql','020_stage2_advances.sql','021_journal_corrections.sql'] as $migration)cli_sql_file($pdo,__DIR__.'/../migrations/'.$migration);
+        require_once __DIR__.'/../includes/stage2_common.php';require_once __DIR__.'/../includes/stage3_common.php';cli_require(stage3_schema($pdo)&&stage2_schema($pdo),'Accounting operations require complete integrated schema.');echo "PROFILE: integrated accounting operations on 019/020/021\n";
+    }
     ac(report_snapshot_available($pdo),'Migration 017 rehearsed; snapshot tables empty and available');
     $empty=accounting_trial_balance($pdo,'2026-09-30');ac($empty['total_debits']==='0.00'&&$empty['total_credits']==='0.00'&&!$empty['invalid_journals']&&count($empty['rows'])>0,'Empty journal history preserves zero-balance accounts');
     foreach(['admin'=>'Admin','other'=>'Admin','management'=>'Management'] as $name=>$role){
@@ -99,12 +103,14 @@ try{
     $bad=['chart_data'=>[['month'=>'2099-01','projected_expenses'=>INF]]];ac(!forecast_validate_projection($bad,$history['projection_months'],130,20)['valid'],'Malformed AI projection returns baseline');
     $signed=['chart_data'=>forecast_baseline_projection($neg)];ac(forecast_validate_projection($signed,$history['projection_months'],130,-12.34)['valid'],'Valid signed AI projection is accepted');
     $pdo->exec("INSERT INTO Budgets (Category,Year,Month,Amount) VALUES ('Fixture Expense',2026,9,100.00)");$u=budget_utilization($pdo,2026,9);$fixtureBudget=array_values(array_filter($u['by_category'],fn($r)=>$r['category']==='Fixture Expense'))[0];ac($u['spent']==='130.00'&&$fixtureBudget['budgeted']==='100.00'&&$fixtureBudget['remaining']==='-30.00','Budget spending follows posted Expense net amounts and preserves other allocations');
+    if(getenv('ATIKHA_TEST_INTEGRATED')!=='1'){
     // Offset corruption: overall difference is zero but individual journals are invalid.
     $bad1=ap($pdo,'2026-09-15',[[$a['Bank'],'1.00','0.00']]);$bad2=ap($pdo,'2026-09-15',[[$a['Revenue'],'0.00','1.00']]);$tb=accounting_trial_balance($pdo,'2026-09-30');
     ac($tb['difference']==='0.00'&&count($tb['invalid_journals'])===2,'Offsetting corrupt journals do not pass integrity checks');reject(fn()=>report_snapshot_submit($pdo,$uid,request_for($pdo,2026,9)),'Corrupted journals block submission',422);
-    $pdo->exec('DELETE FROM journal_entry_lines WHERE journal_entry_id IN ('.$bad1.','.$bad2.')');$pdo->exec('DELETE FROM journal_entries WHERE id IN ('.$bad1.','.$bad2.')');
+    if(getenv('ATIKHA_TEST_INTEGRATED')!=='1'){$pdo->exec('DELETE FROM journal_entry_lines WHERE journal_entry_id IN ('.$bad1.','.$bad2.')');$pdo->exec('DELETE FROM journal_entries WHERE id IN ('.$bad1.','.$bad2.')');}
+    }
     reject(fn()=>accounting_cents('92233720368547758.08'),'Aggregate overflow rejected');reject(fn()=>accounting_add(PHP_INT_MAX,1),'Addition overflow rejected');
-    ac(accounting_money('90071992547409.93')==='₱90,071,992,547,409.93','Large exact amounts format without floating-point loss');
+    ac(accounting_money('90071992547409.93')==="\xE2\x82\xB190,071,992,547,409.93",'Large exact amounts format without floating-point loss');
     ac(accounting_today(new DateTimeImmutable('2026-09-30T16:01:00Z'))==='2026-10-01','Asia/Manila midnight boundary');
     $writer=cli_db($db);$seen=accounting_read($pdo,function()use($pdo,$writer,$a){$before=accounting_kpis($pdo,'2026-09-30');ap($writer,'2026-09-19',[[$a['Bank'],'1.00','0.00'],[$a['Revenue'],'0.00','1.00']]);return [$before,accounting_kpis($pdo,'2026-09-30')];});
     ac($seen[0]===$seen[1]&&accounting_kpis($pdo,'2026-09-30')!==$seen[0],'Repeatable reads resist concurrent committed posting');
@@ -146,5 +152,12 @@ try{
         $upper=$parse(['to'=>'2024-02-29','account_id'=>(string)$a['Wallet']]);ac(count(accounting_records($pdo,$upper['filters'])['rows'])===2,'To-only query includes all earlier dates');
         $lower=$parse(['from'=>'2024-03-02','account_id'=>(string)$a['Wallet']]);$lines=accounting_records($pdo,$lower['filters'])['rows'];ac($lines&&!array_filter($lines,static fn($r)=>$r['entry_date']<'2024-03-02'),'From-only query includes every later date');
     } finally { $pdo->rollBack(); }
+    // Integrated corruption is a terminal case in this separate disposable suite, never a browser fixture.
+    if(getenv('ATIKHA_TEST_INTEGRATED')==='1'){
+    // Offset corruption: overall difference is zero but individual journals are invalid.
+    $bad1=ap($pdo,'2026-09-15',[[$a['Bank'],'1.00','0.00']]);$bad2=ap($pdo,'2026-09-15',[[$a['Revenue'],'0.00','1.00']]);$tb=accounting_trial_balance($pdo,'2026-09-30');
+    ac($tb['difference']==='0.00'&&count($tb['invalid_journals'])===2,'Offsetting corrupt journals do not pass integrity checks');reject(fn()=>report_snapshot_submit($pdo,$uid,request_for($pdo,2026,9)),'Corrupted journals block submission',422);
+    if(getenv('ATIKHA_TEST_INTEGRATED')!=='1'){$pdo->exec('DELETE FROM journal_entry_lines WHERE journal_entry_id IN ('.$bad1.','.$bad2.')');$pdo->exec('DELETE FROM journal_entries WHERE id IN ('.$bad1.','.$bad2.')');}
+    }
     echo "PASS: Disposable database retained for browser tests: $db\n";
 }catch(Throwable $e){fwrite(STDERR,$e->getMessage()."\n");exit(1);}

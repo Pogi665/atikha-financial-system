@@ -5,12 +5,19 @@ from pathlib import Path
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
-parser=argparse.ArgumentParser();parser.add_argument('--database',required=True);parser.add_argument('--browser',default='msedge');args=parser.parse_args()
-if not re.fullmatch(r'atikha_test_phase4_[a-z0-9]+',args.database):parser.error('New disposable atikha_test_phase4_* database required')
+parser=argparse.ArgumentParser();parser.add_argument('--database');parser.add_argument('--fixture');parser.add_argument('--browser',default='msedge');args=parser.parse_args()
 php=shutil.which('php') or r'C:\xampp\php\php.exe'
-bootstrap=subprocess.check_output([php,str(root/'scripts/test_receipt_journal.php'),'--database='+args.database],text=True)
-print(bootstrap,end='')
-evidence=Path(re.search(r'Private evidence: (.+)',bootstrap).group(1).strip())/'receipts'
+if args.fixture:
+    if args.database:parser.error('Choose database or fixture, not both')
+    path=Path(args.fixture).resolve()
+    if not path.is_relative_to(root/'.migration-private'):parser.error('Private fixture required')
+    fixture=json.loads(path.read_text());args.database=fixture['database'];evidence=Path(fixture['receipt_root']).resolve()
+    if not evidence.is_relative_to(root/'.migration-private'):parser.error('Private evidence required')
+else:
+    if not args.database or not re.fullmatch(r'atikha_test_phase4_[a-z0-9]+',args.database):parser.error('New disposable receipt database required')
+    bootstrap=subprocess.check_output([php,str(root/'scripts/test_receipt_journal.php'),'--database='+args.database],text=True);print(bootstrap,end='')
+    evidence=Path(re.search(r'Private evidence: (.+)',bootstrap).group(1).strip())/'receipts'
+if not re.fullmatch(r'atikha_test_phase4_[a-z0-9]+',args.database):parser.error('Disposable receipt database required')
 run=root/'.migration-private'/('receipt-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
 for path in root.glob('*.php'):
     if path.name not in ['db_connect.php','config.php']:shutil.copy2(path,app/path.name)
@@ -25,6 +32,7 @@ function gemini_request(array $payload,?int $timeout=null,?int $connect=null):ar
  file_put_contents(FIXTURE_CAPTURE,json_encode(['payload'=>$payload,'timeout'=>$timeout,'connect'=>$connect]));
  $mode=$_POST['fixture_mode']??'good';
  if($mode==='failure'){return ['ok'=>false,'raw'=>'fixture_failure','text'=>'','error'=>'fixture timeout'];}
+ if(in_array($mode,['busy','limit','badkey'],true)){$code=['busy'=>503,'limit'=>429,'badkey'=>403][$mode];return ['ok'=>false,'raw'=>json_encode(['error'=>['code'=>$code,'message'=>'PRIVATE_PROVIDER_DETAIL']]),'text'=>'','error'=>'Provider rejected request'];}
  if($mode==='badjson'){return ['ok'=>true,'raw'=>'fixture_badjson','text'=>'invalid JSON','error'=>''];}
  global $pdo;$id=(int)$pdo->query("SELECT CategoryID FROM Categories WHERE Account_Type='Expense' AND Is_Active=1 LIMIT 1")->fetchColumn();
  $d=['schema_version'=>'journal_receipt_v1','merchant'=>'Vendor <script>window.ocrBad=1</script>','document_type'=>'receipt','reference'=>'OCR-REF',
@@ -170,13 +178,40 @@ try:
         page.get_by_role('button',name='Send to Management').click();page.wait_for_url('**/board_messages.php?sent=1')
         check(sql("SELECT File_Path FROM Board_Communications WHERE Subject='Phase4 Board removed'")[0]['File_Path'] is None,'Board attachment removal does not submit previous bytes')
         before=counts();page.goto(base+'/ocr_expense.php')
+        page.set_viewport_size({'width':1366,'height':768})
+        check(page.locator('#receipt-upload button').evaluate('(el)=>getComputedStyle(el).backgroundColor')=='rgb(4, 120, 87)','Upload action uses the accounting workspace accent color')
+        page.screenshot(path=str(run/'scan-empty-1366.png'),full_page=True)
         page.set_input_files('#receipt-image',{'name':'ui-receipt.png','mimeType':'image/png','buffer':png()})
+        page.wait_for_function("document.querySelector('#ocr-selected-image').naturalWidth>0")
+        check(page.locator('#ocr-local-preview').is_visible() and 'ui-receipt.png' in page.locator('#ocr-selected-file').inner_text() and counts()==before,'Selected-image preview is local and posts nothing')
+        page.screenshot(path=str(run/'scan-selected-1366.png'),full_page=True)
         page.locator('#receipt-upload button').click();page.wait_for_url(re.compile(r'.*/ocr_expense.php\?receipt=\d+'))
         ui_id=int(page.url.rsplit('=',1)[1])
         check(counts()==before and page.locator('a',has_text='Review in General Journal').count()==1,'Actual browser AJAX upload hands off to review without posting')
+        check('123.45' in page.locator('.ocr-amount').inner_text() and page.locator('.ocr-tag-ready').inner_text()=='Ready for review','Processed details have a readable total and review status')
+        check('Suggested expense account' in page.locator('.ocr-facts').inner_text() and 'Suggested Expense account ID' not in page.locator('.ocr-facts').inner_text() and page.evaluate('window.ocrBad===undefined'),'Account suggestions use escaped labels rather than raw IDs')
+        page.set_viewport_size({'width':1920,'height':1080});page.screenshot(path=str(run/'scan-processed-1920.png'),full_page=True)
         ui_row=sql('SELECT File_Path FROM Receipts WHERE ReceiptID='+str(ui_id))[0]
         page.locator('#receipt-discard button').click();page.wait_for_url('**/ocr_expense.php?discarded=1')
         check(not (evidence/Path(ui_row['File_Path']).name).exists() and counts()==before,'Discard UI removes only unposted evidence and posts nothing')
+        for mode,expected in [('busy','AI service is busy'),('limit','request limit'),('badkey','AI configuration'),('failure','too long')]:
+            scan=context(user('supplement'+mode));q=scan.new_page();q.on('pageerror',lambda e:errors.append(str(e)))
+            outcome=scan.request.post(base+'/ocr_extract.php',multipart=payload(scan,mode)).json();rid2=outcome['data']['receipt_id']
+            q.goto(base+'/ocr_expense.php?receipt='+str(rid2));q.set_viewport_size({'width':1366,'height':768})
+            check(outcome['data']['status']=='Failed' and expected in q.locator('.ocr-warning').inner_text(),'Specific '+mode+' guidance survives receipt extraction and rendering')
+            check('PRIVATE_PROVIDER_DETAIL' not in q.content() and q.get_by_role('link',name='Review in General Journal').is_visible() and counts()==before,'Failure retains manual General Journal access without exposing provider details or posting')
+            if mode=='busy':
+                # Insert an older-style completed attempt; never rewrite immutable existing rows.
+                sql("INSERT INTO receipt_ocr_attempts(receipt_id,requested_by_user_id,request_key,state,started_at,completed_at,source_hash,catalog_fingerprint,model,schema_version,raw_response,error_message) SELECT receipt_id,requested_by_user_id,'"+secrets.token_hex(32)+"','Failed',UTC_TIMESTAMP(),UTC_TIMESTAMP(),source_hash,catalog_fingerprint,model,schema_version,raw_response,'Automatic extraction was unavailable. Retry or enter the details manually.' FROM receipt_ocr_attempts WHERE id="+str(outcome['data']['attempt_id']),True)
+                q.reload();check('AI service is busy' in q.locator('.ocr-warning').inner_text(),'Historical generic failures display their saved 503 reason without rewriting attempts')
+                q.screenshot(path=str(run/'scan-busy-1366.png'),full_page=True)
+                q.set_viewport_size({'width':1920,'height':1080});q.screenshot(path=str(run/'scan-busy-1920.png'),full_page=True)
+                check(q.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Busy desktop view has no page overflow')
+                q.get_by_role('button',name='Retry Extraction').click();q.wait_for_url(re.compile(r'.*/ocr_expense.php\?receipt='+str(rid2)+r'$'))
+                q.wait_for_selector('.ocr-tag-ready');check(sql('SELECT COUNT(*) n FROM Receipts WHERE ReceiptID='+str(rid2))[0]['n']==1 and counts()==before,'Manual retry reads the same saved image without duplicating it or posting')
+            q.get_by_role('link',name='Review in General Journal').click();q.wait_for_selector('#journal-form')
+            check(counts()==before,'General Journal handoff remains review only after '+mode)
+            q.close();scan.close()
         check(not errors,'Browser reports no JavaScript errors')
         browser.close()
     print(f'Completed {checks} HTTP/browser checks. Screenshots/private app: {run}')

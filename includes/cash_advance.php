@@ -2,6 +2,7 @@
 /** Dedicated advance workflow. The shared journal writer runs inside our coordinated transaction. */
 require_once __DIR__.'/accounting_workspace.php';
 require_once __DIR__.'/accounting_query.php';
+require_once __DIR__.'/cash_advance_lifecycle.php';
 
 function advance_guard(PDO $pdo,int $uid,?array $request=null,bool $write=false): string
 {
@@ -72,7 +73,7 @@ function advance_canonical(PDO $pdo,array $d,array $payload,?array $original=nul
         if($p['approval_name']!==''||$p['approval_date']!==''||$p['approval_reference']!==''){if($p['approval_name']===''||$p['approval_date']==='')throw new JournalProblem('External approval needs both approver name and date.');$approval=['name'=>$p['approval_name'],'date'=>advance_date($p['approval_date'],true),'reference'=>$p['approval_reference']];}}
     $projectString=$project===null?'':(string)$project;$raw=[];$ids=[];$gross=$liability=0;
     if($kind==='advance_liquidation'){
-        $raw=$p['lines'];$ids=array_column($raw,'client_id');foreach($raw as $l){$gross+=journal_amount($l['debit_amount']);$liability+=journal_amount($l['credit_amount']);}
+        $raw=$p['lines'];$ids=array_column($raw,'client_id');foreach($raw as $l){$gross=accounting_add($gross,journal_amount($l['debit_amount']));$liability=accounting_add($liability,journal_amount($l['credit_amount']));}
         $reduction=$gross-$liability;if($reduction<=0)throw new JournalProblem('Expenditure debits minus liability credits must be positive.');
         $raw[]=['account_id'=>(string)$control,'fund_project_id'=>$projectString,'debit_amount'=>'','credit_amount'=>ledger_decimal($reduction)];$ids[]='control';
     }else{
@@ -92,26 +93,7 @@ function advance_canonical(PDO $pdo,array $d,array $payload,?array $original=nul
 /** Unfiltered, bidirectional reconciliation. Call within a repeatable read or the writer barrier. */
 function advance_state(PDO $pdo,string $asof): array
 {
-    $rows=$pdo->query('SELECT a.*,j.entry_date release_date FROM cash_advances a JOIN journal_entries j ON j.id=a.release_journal_id ORDER BY a.id')->fetchAll();$advances=[];$reconciliation=[];
-    foreach($pdo->query('SELECT d.account_id,c.Name account_name FROM advance_control_designations d JOIN Categories c ON c.CategoryID=d.account_id')->fetchAll() as $c)$reconciliation[(int)$c['account_id']]=['account_id'=>(int)$c['account_id'],'account_name'=>$c['account_name'],'register_cents'=>0,'ledger_cents'=>0,'errors'=>[]];
-    foreach($rows as $a){$a['released_cents']=$a['liquidated_cents']=$a['returned_cents']=0;$a['operations']=[];$a['release_count']=0;$a['due_date']=$a['initial_due_date'];$advances[(int)$a['id']]=$a;}
-    $ops=$pdo->query('SELECT o.*,j.entry_date,j.status,j.source_book,j.transaction_kind,l.journal_entry_id line_journal,l.account_id,l.debit_amount,l.credit_amount,d.workflow_kind,d.advance_id draft_advance,d.state draft_state,d.posted_journal_id FROM cash_advance_operations o LEFT JOIN journal_entries j ON j.id=o.journal_id LEFT JOIN journal_entry_lines l ON l.id=o.control_line_id LEFT JOIN journal_drafts d ON d.id=o.draft_id ORDER BY o.id')->fetchAll();$linked=[];
-    foreach($ops as $o){$a=&$advances[(int)$o['advance_id']];$account=(int)$a['control_account_id'];$kind=$o['operation_kind'];$book=['release'=>'CDB','liquidation'=>'GJ','return'=>'CRB'][$kind];$debit=ledger_cents($o['debit_amount']??'0.00');$credit=ledger_cents($o['credit_amount']??'0.00');
-        $valid=$o['status']==='posted'&&$o['source_book']===$book&&$o['transaction_kind']==='advance_'.$kind&&$o['workflow_kind']==='advance_'.$kind&&$o['draft_state']==='Posted'&&(int)$o['posted_journal_id']===(int)$o['journal_id']&&(int)$o['draft_advance']===(int)$a['id']&&(int)$o['line_journal']===(int)$o['journal_id']&&(int)$o['account_id']===$account&&($kind==='release'?($debit>0&&$credit===0&&(int)$a['release_journal_id']===(int)$o['journal_id']):($credit>0&&$debit===0&&$o['entry_date']>=$a['release_date']));
-        if($o['entry_date']===null||$o['entry_date']<=$asof){if(!$valid)$reconciliation[$account]['errors'][]='Invalid operation #'.$o['id'];$linked[(int)$o['control_line_id']]=$valid;
-            $a[$kind==='release'?'released_cents':($kind==='liquidation'?'liquidated_cents':'returned_cents')]+=$kind==='release'?$debit:$credit;$a['operations'][]=$o;if($kind==='release')$a['release_count']++;}
-        unset($a);
-    }
-    $s=$pdo->prepare("SELECT l.id,l.account_id,l.debit_amount,l.credit_amount FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id JOIN advance_control_designations d ON d.account_id=l.account_id WHERE j.status='posted' AND j.entry_date<=? ORDER BY l.id");$s->execute([$asof]);
-    foreach($s->fetchAll() as $l){$account=(int)$l['account_id'];$reconciliation[$account]['ledger_cents']+=ledger_cents($l['debit_amount'])-ledger_cents($l['credit_amount']);if(!($linked[(int)$l['id']]??false))$reconciliation[$account]['errors'][]='Unlinked or invalid control line #'.$l['id'];}
-    $s=$pdo->prepare('SELECT * FROM cash_advance_due_changes WHERE effective_date<=? ORDER BY effective_date,id');$s->execute([$asof]);foreach($s->fetchAll() as $e)$advances[(int)$e['advance_id']]['due_date']=$e['new_due_date'];
-    foreach($advances as $id=>&$a){if($a['release_date']>$asof){unset($advances[$id]);continue;}$a['outstanding_cents']=$a['released_cents']-$a['liquidated_cents']-$a['returned_cents'];$account=(int)$a['control_account_id'];$reconciliation[$account]['register_cents']+=$a['outstanding_cents'];if($a['release_count']!==1||$a['outstanding_cents']<0)$reconciliation[$account]['errors'][]='Invalid release or balance for '.advance_number($id);
-        $a['status']=$a['outstanding_cents']===0?'settled':($a['liquidated_cents']+$a['returned_cents']>0?'partially_settled':'outstanding');
-        $a['overdue_days']=$a['outstanding_cents']>0&&$asof>$a['due_date']?(int)(new DateTimeImmutable($a['due_date'],new DateTimeZone('Asia/Manila')))->diff(new DateTimeImmutable($asof,new DateTimeZone('Asia/Manila')))->days:0;
-        $days=$a['overdue_days'];$a['aging_bucket']=$days===0?'Not overdue':($days<=30?'1–30':($days<=60?'31–60':($days<=90?'61–90':'>90')));}
-    unset($a);
-    foreach($reconciliation as &$r){$r['difference']=ledger_decimal($r['ledger_cents']-$r['register_cents']);$r['ledger_balance']=ledger_decimal($r['ledger_cents']);$r['register_balance']=ledger_decimal($r['register_cents']);$r['ok']=$r['ledger_cents']===$r['register_cents']&&!$r['errors'];unset($r['ledger_cents'],$r['register_cents']);}unset($r);
-    return ['advances'=>$advances,'reconciliation'=>array_values($reconciliation)];
+    return advance_lifecycle_state($pdo,$asof);
 }
 function advance_reconciled(array $state,?int $account=null): void {foreach($state['reconciliation'] as $r)if(($account===null||$r['account_id']===$account)&&!$r['ok'])throw new JournalProblem('Advance control reconciliation failed for '.$r['account_name'].'. Resolve linked-line integrity before posting.',409);}
 function advance_proof_context(PDO $pdo,array $d,array $p): array
@@ -131,12 +113,12 @@ function advance_confirm(PDO $pdo,int $uid,array $r): array
         $pdo->prepare('UPDATE journal_drafts SET return_confirmation=?,revision=revision+1,updated_at=UTC_TIMESTAMP() WHERE id=?')->execute([workspace_json($confirmation),$id]);
         workspace_audit($pdo,$uid,AUDIT_ACTION_EDIT,'Advance Return Proof',$id,null,$confirmation);return workspace_draft_public(workspace_draft($pdo,$uid,$id));});
 }
-function advance_prepare(PDO $pdo,int $uid,array $d,array $input,string $version,?array $original): array
+function advance_prepare(PDO $pdo,int $uid,array $d,array $input,string $version,?array $original,?array $correctionDraft=null): array
 {
     advance_date($input['entry_date']);$ctx=$input['advance_context'];$kind=$d['workflow_kind'];
     if($kind==='advance_release'){if($ctx['due_date']<$input['entry_date'])throw new JournalProblem('Liquidation due date cannot precede release.');if($ctx['approval']!==null&&$ctx['approval']['date']>$input['entry_date'])throw new JournalProblem('Approval date cannot follow release.');}
     elseif($input['entry_date']<$original['release_date'])throw new JournalProblem('Settlement date cannot precede release.');
-    $resources=workspace_resources($pdo,$uid,$d,$input,$original);extract($resources);$control=$ctx['control_account_id'];
+    $resources=$correctionDraft===null?workspace_resources($pdo,$uid,$d,$input,$original):correction_resources($pdo,$uid,$correctionDraft,$input);extract($resources);$control=$ctx['control_account_id'];
     $designations=array_map('intval',$pdo->query('SELECT account_id FROM advance_control_designations')->fetchAll(PDO::FETCH_COLUMN));
     $a=$accounts[$control];if(!in_array($control,$designations,true)||$a['Account_Type']!=='Asset'||$a['Normal_Balance']!=='Debit'||(int)$a['Is_Cash_Account']!==0)throw new JournalProblem('Select an active, designated Debit-normal noncash Asset control account.');
     if($kind==='advance_release'&&$party['party_type']!=='person')throw new JournalProblem('The accountable employee must be an active person-type party.');
@@ -144,19 +126,19 @@ function advance_prepare(PDO $pdo,int $uid,array $d,array $input,string $version
     foreach($input['lines'] as $l){$a=$accounts[$l['account_id']];if($l['client_id']==='control')continue;if(in_array((int)$l['account_id'],$designations,true))throw new JournalProblem('Only the generated original control line may use a designated advance account.');
         if($kind!=='advance_liquidation'){if((int)$a['Is_Cash_Account']!==1)throw new JournalProblem('Select an active cash/bank account.');continue;}
         if((int)$a['Is_Cash_Account']!==0)throw new JournalProblem('Liquidation cannot move cash.');
-        if(journal_amount($l['debit_amount'])>0){if(!in_array($a['Account_Type'],['Expense','Asset'],true)||$a['Normal_Balance']!=='Debit')throw new JournalProblem('Liquidation debits must be expenses or Debit-normal noncash assets.');$claims[$l['client_id']]=$l;$eligible+=journal_amount($l['debit_amount']);}
+        if(journal_amount($l['debit_amount'])>0){if(!in_array($a['Account_Type'],['Expense','Asset'],true)||$a['Normal_Balance']!=='Debit')throw new JournalProblem('Liquidation debits must be expenses or Debit-normal noncash assets.');$claims[$l['client_id']]=$l;$eligible=accounting_add($eligible,journal_amount($l['debit_amount']));}
         elseif($a['Account_Type']!=='Liability'||$a['Normal_Balance']!=='Credit'||($ctx['line_notes'][$l['client_id']]??'')==='')throw new JournalProblem('Liability credits require a Credit-normal Liability account and an explanatory allocation note.');
     }
     foreach($input['documents'] as $doc){if($kind!=='advance_liquidation'){if($doc['purpose']!=='supporting')throw new JournalProblem('Release and return documents are informational supporting proof.');continue;}
         if($doc['purpose']!=='amount')continue;if($doc['support_side']!=='debit')throw new JournalProblem('Liquidation evidence supports expenditure/asset debits only.');
-        foreach($doc['allocations'] as $al){if(!isset($claims[$al['client_id']]))throw new JournalProblem('Evidence cannot support liability or control credits.');$c=journal_amount($al['amount']);$allocated[$al['client_id']]=($allocated[$al['client_id']]??0)+$c;if($allocated[$al['client_id']]>journal_amount($claims[$al['client_id']]['debit_amount']))throw new JournalProblem('Combined evidence exceeds this cost line.');$covered+=$c;}}
+        foreach($doc['allocations'] as $al){if(!isset($claims[$al['client_id']]))throw new JournalProblem('Evidence cannot support liability or control credits.');$c=journal_amount($al['amount']);$allocated[$al['client_id']]=accounting_add($allocated[$al['client_id']]??0,$c);if($allocated[$al['client_id']]>journal_amount($claims[$al['client_id']]['debit_amount']))throw new JournalProblem('Combined evidence exceeds this cost line.');$covered=accounting_add($covered,$c);}}
     if($kind==='advance_liquidation')foreach($claims as $id=>$l)if(($allocated[$id]??0)!==journal_amount($l['debit_amount']))throw new JournalProblem('Fully cover every expenditure/asset debit with reviewed monetary evidence. Unsupported claims remain unposted drafts.');
-    if($kind==='advance_return'){$context=advance_proof_context($pdo,$d,$d['payload']);$confirmation=$input['return_confirmation'];if(!$confirmation||!hash_equals($confirmation['fingerprint'],hash('sha256',workspace_json($context)))||$confirmation['context']!==$context)throw new JournalProblem('Confirm the proof for this advance, amount and return context before review.',409);}
-    $state=advance_state($pdo,journal_today());advance_reconciled($state,$control);$remaining=null;
-    if($original!==null){$remaining=$state['advances'][(int)$original['id']]['outstanding_cents']??0;if(journal_amount($ctx['reduction'])>$remaining)throw new JournalProblem('Settlement exceeds the current outstanding PHP '.ledger_decimal($remaining).'. Save a revised claim; no financial entry was posted.',409);}
+    if($kind==='advance_return'){$context=$correctionDraft===null?advance_proof_context($pdo,$d,$d['payload']):correction_proof_context($correctionDraft,$input,$resources);$confirmation=$input['return_confirmation'];if(!$confirmation||!hash_equals($confirmation['fingerprint'],hash('sha256',workspace_json($context)))||$confirmation['context']!==$context)throw new JournalProblem('Confirm the proof for this advance, amount and return context before review.',409);}
+    $timeline=advance_lifecycle_candidate($pdo,$correctionDraft??$d,$input,$correctionDraft===null?null:correction_target($pdo,(int)$correctionDraft['correction_target_journal_id']));
+    $remaining=$timeline['remaining'];
     $coverage=['status'=>$kind==='advance_liquidation'?'Fully covered':($kind==='advance_return'?'Return proof confirmed':($input['documents']?'Supporting proof reviewed':'Optional proof not supplied')),'debit'=>['eligible'=>ledger_decimal($eligible),'covered'=>ledger_decimal($covered)],'credit'=>['eligible'=>'0.00','covered'=>'0.00']];
     $evidence=array_map(fn($r)=>[$r['ReceiptID'],$r['File_SHA256'],$r['attempt_version']],$receipts);
-    return $resources+['input'=>$input,'coverage'=>$coverage,'remaining'=>$remaining,'fingerprint'=>hash('sha256',workspace_json([$version,$d['revision'],$input,$party,$projects,$accounts,$evidence,$original['revision']??null,$remaining]))];
+    return $resources+['input'=>$input,'coverage'=>$coverage,'remaining'=>$remaining,'timeline'=>$timeline,'fingerprint'=>hash('sha256',workspace_json([$version,$d['revision'],$input,$party,$projects,$accounts,$evidence,$original['revision']??null,$remaining,$timeline]))];
 }
 function advance_review(PDO $pdo,int $uid,array $r): array
 {
@@ -174,14 +156,28 @@ function advance_post(PDO $pdo,int $uid,array $r): array
         workspace_revision($d,$r);if(workspace_json($input)!==workspace_json(advance_canonical($pdo,$d,$d['payload'],$original)))throw new JournalProblem('Save and review the latest changes before posting.',409);
         $prepared=advance_prepare($pdo,$uid,$d,$input,$version,$original);$token=journal_string($r,'review_token');
         if(!preg_match('/\A([0-9]{10})\.([a-f0-9]{64})\z/',$token,$m)||!isset($_SESSION['workspace_review_secret'])||time()>(int)$m[1]||!hash_equals(workspace_token($d,$prepared['fingerprint'],(int)$m[1]),$token))throw new JournalProblem('Review expired or accounting data changed. Review again.',409);
-        $written=workspace_write_post($pdo,$uid,$d,$input,$prepared);$advanceId=$original===null?null:(int)$original['id'];$ctx=$input['advance_context'];
-        if($advanceId===null){$s=$pdo->prepare('INSERT INTO cash_advances(party_id,originating_project_id,control_account_id,release_journal_id,purpose,reference,party_snapshot,project_snapshot,initial_due_date,approval_snapshot,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP())');
-            $s->execute([$input['party_id'],$ctx['originating_project_id'],$ctx['control_account_id'],$written['id'],$input['description'],$input['reference']??'',workspace_json($prepared['party']),$ctx['originating_project_id']===null?null:workspace_json($prepared['projects'][$ctx['originating_project_id']]),$ctx['due_date'],$ctx['approval']===null?null:workspace_json($ctx['approval']),$uid]);$advanceId=(int)$pdo->lastInsertId();$pdo->prepare('UPDATE journal_drafts SET advance_id=? WHERE id=?')->execute([$advanceId,$id]);}
-        else $pdo->prepare('UPDATE cash_advances SET revision=revision+1 WHERE id=?')->execute([$advanceId]);
-        $snapshot=['input'=>$input,'coverage'=>$prepared['coverage'],'return_confirmation'=>$input['return_confirmation']];
-        $pdo->prepare('INSERT INTO cash_advance_operations(advance_id,operation_kind,journal_id,draft_id,control_line_id,review_snapshot,created_by,created_at) VALUES(?,?,?,?,?,?,?,UTC_TIMESTAMP())')->execute([$advanceId,substr($d['workflow_kind'],8),$written['id'],$id,$written['line_ids']['control'],workspace_json($snapshot),$uid]);
-        workspace_audit($pdo,$uid,AUDIT_ACTION_CREATE,'Cash Advance Operation',$advanceId,null,$snapshot+['journal_id'=>$written['id'],'number'=>advance_number($advanceId)]);
+        $written=workspace_write_post($pdo,$uid,$d,$input,$prepared);$advanceId=advance_write_operation($pdo,$uid,$d,$input,$prepared,$written,$original===null?null:(int)$original['id']);
+        advance_reconciled(advance_state($pdo,journal_today()));
         return ['id'=>$written['id'],'duplicate'=>false,'advance_id'=>$advanceId];});
+}
+/** Transaction-owned operation insertion shared by v3 posting and validated v4 replacement posting. */
+function advance_write_operation(PDO $pdo,int $uid,array $d,array $input,array $prepared,array $written,?int $advanceId=null,bool $revise=true): int
+{
+    if(!$pdo->inTransaction())throw new LogicException('Advance operations require an owned posting transaction.');
+    $kind=substr($input['transaction_kind'],8);$ctx=$input['advance_context'];
+    if(!in_array($kind,['release','liquidation','return'],true)||!isset($written['line_ids']['control']))throw new LogicException('Invalid trusted advance operation.');
+    if($kind==='release'){
+        if($advanceId!==null)throw new LogicException('A release creates a new advance.');
+        $s=$pdo->prepare('INSERT INTO cash_advances(party_id,originating_project_id,control_account_id,release_journal_id,purpose,reference,party_snapshot,project_snapshot,initial_due_date,approval_snapshot,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP())');
+        $s->execute([$input['party_id'],$ctx['originating_project_id'],$ctx['control_account_id'],$written['id'],$input['description'],$input['reference']??'',workspace_json($prepared['party']),$ctx['originating_project_id']===null?null:workspace_json($prepared['projects'][$ctx['originating_project_id']]),$ctx['due_date'],$ctx['approval']===null?null:workspace_json($ctx['approval']),$uid]);$advanceId=(int)$pdo->lastInsertId();
+        // v4 retains its target identity; only normal release drafts acquire the new ID.
+        if((int)$d['payload_version']===3)$pdo->prepare('UPDATE journal_drafts SET advance_id=? WHERE id=?')->execute([$advanceId,$d['id']]);
+    }elseif($advanceId===null)throw new LogicException('A settlement requires its original advance.');
+    elseif($revise)$pdo->prepare('UPDATE cash_advances SET revision=revision+1 WHERE id=?')->execute([$advanceId]);
+    $snapshot=['input'=>$input,'coverage'=>$prepared['coverage'],'return_confirmation'=>$input['return_confirmation'],'timeline'=>$prepared['timeline']];
+    $pdo->prepare('INSERT INTO cash_advance_operations(advance_id,operation_kind,journal_id,draft_id,control_line_id,review_snapshot,created_by,created_at) VALUES(?,?,?,?,?,?,?,UTC_TIMESTAMP())')->execute([$advanceId,$kind,$written['id'],$d['id'],$written['line_ids']['control'],workspace_json($snapshot),$uid]);
+    workspace_audit($pdo,$uid,AUDIT_ACTION_CREATE,'Cash Advance Operation',$advanceId,null,$snapshot+['journal_id'=>$written['id'],'number'=>advance_number($advanceId)]);
+    return $advanceId;
 }
 function advance_extend_due(PDO $pdo,int $uid,array $r): array
 {
@@ -194,15 +190,15 @@ function advance_extend_due(PDO $pdo,int $uid,array $r): array
 function advance_summary(array $a): array
 {
     $party=json_decode($a['party_snapshot'],true,32,JSON_THROW_ON_ERROR);$project=$a['project_snapshot']===null?null:json_decode($a['project_snapshot'],true,32,JSON_THROW_ON_ERROR);
-    return ['id'=>(int)$a['id'],'number'=>advance_number((int)$a['id']),'revision'=>(int)$a['revision'],'party_id'=>(int)$a['party_id'],'employee'=>$party['name'],'employee_code'=>$party['code'],'originating_project_id'=>$a['originating_project_id']===null?null:(int)$a['originating_project_id'],'project'=>$project['name']??'Organization operations','project_code'=>$project['code']??'','control_account_id'=>(int)$a['control_account_id'],'purpose'=>$a['purpose'],'reference'=>$a['reference'],'release_date'=>$a['release_date'],'due_date'=>$a['due_date'],'initial_due_date'=>$a['initial_due_date'],'released'=>ledger_decimal($a['released_cents']),'liquidated'=>ledger_decimal($a['liquidated_cents']),'returned'=>ledger_decimal($a['returned_cents']),'outstanding'=>ledger_decimal($a['outstanding_cents']),'status'=>$a['status'],'overdue'=>$a['overdue_days']>0,'overdue_days'=>$a['overdue_days'],'aging_bucket'=>$a['aging_bucket']];
+    return ['id'=>(int)$a['id'],'number'=>advance_number((int)$a['id']),'revision'=>(int)$a['revision'],'party_id'=>(int)$a['party_id'],'employee'=>$party['name'],'employee_code'=>$party['code'],'originating_project_id'=>$a['originating_project_id']===null?null:(int)$a['originating_project_id'],'project'=>$project['name']??'Organization operations','project_code'=>$project['code']??'','control_account_id'=>(int)$a['control_account_id'],'purpose'=>$a['purpose'],'reference'=>$a['reference'],'release_date'=>$a['release_date'],'due_date'=>$a['due_date'],'initial_due_date'=>$a['initial_due_date'],'released'=>ledger_decimal($a['released_cents']),'liquidated'=>ledger_decimal($a['liquidated_cents']),'returned'=>ledger_decimal($a['returned_cents']),'outstanding'=>ledger_decimal($a['outstanding_cents']),'status'=>$a['status'],'original_released'=>ledger_decimal($a['original_released_cents']),'lifecycle_date'=>$a['lifecycle_date'],'original_advance_id'=>$a['original_advance_id'],'replacement_advance_id'=>$a['replacement_advance_id'],'lifecycle_correction_id'=>$a['lifecycle_correction_id'],'overdue'=>$a['overdue_days']>0,'overdue_days'=>$a['overdue_days'],'aging_bucket'=>$a['aging_bucket']];
 }
 function advance_register(PDO $pdo,int $uid,array $r): array
 {
     advance_guard($pdo,$uid);$asof=advance_date(journal_string($r,'as_of',true)?:journal_today());$person=journal_id(journal_string($r,'party_id',true),true);$project=journal_string($r,'project_id',true);$control=journal_id(journal_string($r,'control_account_id',true),true);$status=journal_string($r,'status',true);$overdue=journal_string($r,'overdue',true);$search=journal_string($r,'search',true);$page=journal_string($r,'page',true)?:'1';
-    if($project!==''&&$project!=='organization')journal_id($project);if(!in_array($status,['','outstanding','partially_settled','settled'],true)||!in_array($overdue,['','0','1'],true)||!preg_match('/\A[1-9][0-9]{0,8}\z/',$page)||mb_strlen($search)>200)throw new JournalProblem('Invalid register filter.');
+    if($project!==''&&$project!=='organization')journal_id($project);if(!in_array($status,['','outstanding','partially_settled','settled','cancelled','replaced'],true)||!in_array($overdue,['','0','1'],true)||!preg_match('/\A[1-9][0-9]{0,8}\z/',$page)||mb_strlen($search)>200)throw new JournalProblem('Invalid register filter.');
     return accounting_read($pdo,function()use($pdo,$asof,$person,$project,$control,$status,$overdue,$search,$page){$state=advance_state($pdo,$asof);$items=[];$totals=['released'=>0,'liquidated'=>0,'returned'=>0,'outstanding'=>0];$terms=preg_split('/\s+/u',mb_strtolower(trim($search)),-1,PREG_SPLIT_NO_EMPTY);
         foreach($state['advances'] as $a){$item=advance_summary($a);if(($person!==null&&$item['party_id']!==$person)||($control!==null&&$item['control_account_id']!==$control)||($project==='organization'&&$item['originating_project_id']!==null)||($project!==''&&$project!=='organization'&&$item['originating_project_id']!==(int)$project)||($status!==''&&$item['status']!==$status)||($overdue!==''&&$item['overdue']!==($overdue==='1')))continue;$text=mb_strtolower(implode(' ',[$item['number'],$item['employee'],$item['employee_code'],$item['purpose'],$item['reference']]));foreach($terms as $term)if(!str_contains($text,$term))continue 2;
-            $items[]=$item;foreach($totals as $k=>$_)$totals[$k]+=ledger_cents($item[$k]);}
+            $items[]=$item;foreach($totals as $k=>$_)$totals[$k]=accounting_add($totals[$k],ledger_cents($item[$k]));}
         usort($items,fn($a,$b)=>strcmp($b['release_date'],$a['release_date'])?:($b['id']<=>$a['id']));$count=count($items);$pages=max(1,(int)ceil($count/25));$current=min((int)$page,$pages);return ['as_of'=>$asof,'rows'=>array_slice($items,($current-1)*25,25),'count'=>$count,'page'=>$current,'pages'=>$pages,'totals'=>array_map('ledger_decimal',$totals),'reconciliation'=>$state['reconciliation'],'restatement_notice'=>'Historical balances include all currently recorded postings through the selected accounting date.'];});
 }
 function advance_detail(PDO $pdo,int $uid,int $id,string $asof): array
@@ -210,8 +206,8 @@ function advance_detail(PDO $pdo,int $uid,int $id,string $asof): array
     $role=advance_guard($pdo,$uid);$asof=advance_date($asof?:journal_today());
     return accounting_read($pdo,function()use($pdo,$id,$asof,$role){$state=advance_state($pdo,$asof);if(!isset($state['advances'][$id]))throw new JournalProblem('Advance is not available at this reporting date.',404);$a=$state['advances'][$id];$out=advance_summary($a);$out['as_of']=$asof;$out['operations']=[];
         foreach($a['operations'] as $o){$snapshot=json_decode($o['review_snapshot'],true,64,JSON_THROW_ON_ERROR);$s=$pdo->prepare('SELECT l.*,c.Name account_name FROM journal_entry_lines l JOIN Categories c ON c.CategoryID=l.account_id WHERE journal_entry_id=? ORDER BY l.id');$s->execute([$o['journal_id']]);$lines=$s->fetchAll();
-            $op=['kind'=>$o['operation_kind'],'journal_id'=>(int)$o['journal_id'],'date'=>$o['entry_date'],'amount'=>$o['operation_kind']==='release'?$o['debit_amount']:$o['credit_amount'],'coverage'=>$snapshot['coverage'],'lines'=>$lines,'reference'=>$snapshot['input']['reference'],'recorded_at_display'=>(new DateTimeImmutable($o['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s')];
-            if($role==='Admin'){$op['attachments']=receipt_journal_metadata($pdo,[(int)$o['journal_id']],$role)[(int)$o['journal_id']]??[];$op['private_review']=$snapshot;}$out['operations'][]=$op;}
+            $op=['kind'=>($o['is_reversal']?'Reversal of ':'').$o['operation_kind'],'is_reversal'=>$o['is_reversal'],'correction_id'=>$o['correction_id'],'journal_id'=>(int)$o['journal_id'],'date'=>$o['entry_date'],'amount'=>$o['operation_kind']==='release'?$o['debit_amount']:$o['credit_amount'],'coverage'=>$o['is_reversal']?['status'=>'Exact reversal / original evidence reference']:$snapshot['coverage'],'lines'=>$lines,'reference'=>$snapshot['input']['reference'],'recorded_at_display'=>(new DateTimeImmutable($o['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s')];
+            if($role==='Admin'&&!$o['is_reversal']){$op['attachments']=receipt_journal_metadata($pdo,[(int)$o['journal_id']],$role)[(int)$o['journal_id']]??[];$op['private_review']=$snapshot;}$out['operations'][]=$op;}
         $s=$pdo->prepare('SELECT id,old_due_date,new_due_date,effective_date,reason,created_at FROM cash_advance_due_changes WHERE advance_id=? AND effective_date<=? ORDER BY effective_date,id');$s->execute([$id,$asof]);$out['due_changes']=$s->fetchAll();if($role==='Admin'){$out['external_approval']=$a['approval_snapshot']===null?null:json_decode($a['approval_snapshot'],true,32,JSON_THROW_ON_ERROR);$out['original_party']=json_decode($a['party_snapshot'],true);$out['original_project']=$a['project_snapshot']===null?null:json_decode($a['project_snapshot'],true);}
         $out['can_settle']=$role==='Admin'&&$asof===journal_today()&&$a['outstanding_cents']>0;$out['reconciliation']=$state['reconciliation'];return $out;});
 }

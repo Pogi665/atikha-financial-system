@@ -168,7 +168,7 @@ function receipt_extract(PDO $pdo, int $userId, int $id, array $post): array
     if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
     try { $ocr = gemini_extract_receipt($path, $r['Mime_Type'], $accounts); }
     catch (Throwable $e) { error_log('OCR extraction failed: ' . $e->getMessage()); $ocr = ['ok'=>false,'data'=>null,'raw'=>'','error'=>'Extraction failed. Enter the details manually.']; }
-    $error = $ocr['ok'] ? null : 'Automatic extraction was unavailable. Retry or enter the details manually.';
+    $error = $ocr['ok'] ? null : $ocr['error'];
     $pdo->beginTransaction();
     try {
         receipt_actor_lock($pdo, $userId); $current = receipt_owned($pdo, $id, $userId, true);
@@ -274,30 +274,59 @@ function receipt_discard(PDO $pdo,int $userId,int $id,array $post): void
 function receipt_journal_evidence_internal(PDO $pdo,array $ids): array
 {
     if(!$ids||!receipt_schema_available($pdo)){return [];}
-    $out=[];
+    $out=[];$associated=stage1_schema($pdo);$s3=stage3_schema_state($pdo);
+    if($s3['state']==='partial')throw new JournalProblem('Correction evidence schema is incomplete.',503);
     foreach(array_chunk($ids,500) as $chunk){
+        if($associated){
+            $s=$pdo->prepare("SELECT e.*,r.Original_Filename,r.Mime_Type,r.File_Size,r.File_SHA256,u.FullName AS uploaded_by
+                FROM posted_evidence_associations e JOIN Receipts r ON r.ReceiptID=e.receipt_id
+                JOIN journal_entries j ON j.id=e.journal_id AND j.status='posted'
+                LEFT JOIN user_identities u ON u.UserID=r.UploadedBy_UserID
+                WHERE e.journal_id IN (".implode(',',array_fill(0,count($chunk),'?')).') ORDER BY e.id');
+            $s->execute(array_values($chunk));$records=$s->fetchAll();
+            foreach($records as $a){
+                if(!stage3_evidence_association_valid($pdo,$a))throw new JournalProblem('Posted evidence provenance is inconsistent.',409);
+                $review=array_intersect_key($a,array_flip(['receipt_id','purpose','support_side','declared_amount','accepted_amount','exclusion_reason','reviewed_at']));
+                $out[$a['journal_id']][]=['id'=>(int)$a['receipt_id'],'name'=>$a['Original_Filename']?:'Supporting receipt','mime'=>$a['Mime_Type'],
+                    'size'=>(int)$a['File_Size'],'sha256'=>$a['File_SHA256'],'uploaded_by'=>$a['uploaded_by'],
+                    'url'=>'receipt_attachment.php?receipt_id='.(int)$a['receipt_id'].'&journal_id='.(int)$a['journal_id'],'review'=>$review];
+            }
+        }
+        // Historical primary-journal compatibility, without duplicating associations.
         $s=$pdo->prepare("SELECT r.ReceiptID,r.JournalEntryID,r.Original_Filename,r.Mime_Type,r.File_Size,r.File_SHA256,u.FullName AS uploaded_by
             FROM Receipts r JOIN journal_entries j ON j.id=r.JournalEntryID AND j.status='posted'
-            LEFT JOIN user_identities u ON u.UserID=r.UploadedBy_UserID WHERE r.JournalEntryID IN (".implode(',',array_fill(0,count($chunk),'?')).') ORDER BY r.ReceiptID');
+            LEFT JOIN user_identities u ON u.UserID=r.UploadedBy_UserID WHERE r.JournalEntryID IN (".implode(',',array_fill(0,count($chunk),'?')).')'.($associated?' AND NOT EXISTS(SELECT 1 FROM posted_evidence_associations e WHERE e.receipt_id=r.ReceiptID AND e.journal_id=r.JournalEntryID)':'').' ORDER BY r.ReceiptID');
         $s->execute(array_values($chunk));
         foreach($s as $r){$out[$r['JournalEntryID']][]=['id'=>(int)$r['ReceiptID'],'name'=>$r['Original_Filename']?:'Supporting receipt','mime'=>$r['Mime_Type'],
             'size'=>(int)$r['File_Size'],'sha256'=>$r['File_SHA256'],'uploaded_by'=>$r['uploaded_by'],
             'url'=>'receipt_attachment.php?receipt_id='.(int)$r['ReceiptID'].'&journal_id='.(int)$r['JournalEntryID']];}
     }
-    if(stage1_schema($pdo)){
-        foreach($out as $journal=>&$documents){
-            $s=$pdo->prepare('SELECT receipt_id,purpose,support_side,declared_amount,accepted_amount,exclusion_reason,reviewed_at FROM posted_evidence_associations WHERE journal_id=?');$s->execute([$journal]);$reviews=[];
-            foreach($s as $review){$reviews[(int)$review['receipt_id']]=$review;}
-            foreach($documents as &$document){$document['review']=$reviews[$document['id']]??null;}unset($document);
-        }unset($documents);
-    }
     return $out;
 }
 
 /** Viewer projection: calculate coverage with the internal reader before redacting. */
+function receipt_posted_download_allowed(PDO $pdo,int $receiptId,int $journalId): bool
+{
+    $uid=(int)($_SESSION['UserID']??0);if($uid<=0)return false;
+    $s=$pdo->prepare('SELECT Role,Is_Active FROM Users WHERE UserID=?');$s->execute([$uid]);$viewer=$s->fetch();
+    if(!$viewer||(int)$viewer['Is_Active']!==1||!in_array($viewer['Role'],['Admin','Management'],true))return false;
+    $state=stage3_schema_state($pdo);if($state['state']==='partial')return false;
+    if(stage1_schema($pdo)){
+        $s=$pdo->prepare('SELECT * FROM posted_evidence_associations WHERE receipt_id=? AND journal_id=?');$s->execute([$receiptId,$journalId]);$a=$s->fetch();
+        if($a){if(!stage3_evidence_association_valid($pdo,$a))return false;}
+        else{$s=$pdo->prepare("SELECT r.ReceiptID FROM Receipts r JOIN journal_entries j ON j.id=r.JournalEntryID WHERE r.ReceiptID=? AND j.id=? AND j.status='posted' AND r.ExpenseID IS NULL AND r.OCR_Status<>'Discarded'");$s->execute([$receiptId,$journalId]);if(!$s->fetchColumn())return false;}
+        if(stage3_receipt_sensitive($pdo,$receiptId)&&$viewer['Role']!=='Admin')return false;
+    }else{
+        $s=$pdo->prepare("SELECT r.ReceiptID FROM Receipts r JOIN journal_entries j ON j.id=r.JournalEntryID WHERE r.ReceiptID=? AND j.id=? AND j.status='posted' AND r.ExpenseID IS NULL AND r.OCR_Status<>'Discarded'");$s->execute([$receiptId,$journalId]);if(!$s->fetchColumn())return false;
+    }
+    return true;
+}
 function receipt_journal_metadata(PDO $pdo,array $ids,?string $role=null): array
 {
     $out=receipt_journal_evidence_internal($pdo,$ids);
-    if((stage1_schema($pdo)||stage2_tables($pdo))&&!stage2_private_viewer($pdo))foreach(stage2_sensitive_journals($pdo,$ids) as $id=>$_)unset($out[$id]);
+    if((stage1_schema($pdo)||stage2_tables($pdo))&&!stage2_private_viewer($pdo)){
+        foreach(stage2_sensitive_journals($pdo,$ids) as $id=>$_)unset($out[$id]);
+        foreach($out as $id=>$documents){$out[$id]=array_values(array_filter($documents,fn($d)=>!stage3_receipt_sensitive($pdo,$d['id'])));}
+    }
     return $out;
 }

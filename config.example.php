@@ -4,6 +4,8 @@
 define('STAGE1_WORKSPACE_ENABLED', false);
 // Requires complete migration 020 and Stage 1. Enable only after deployment checks.
 define('STAGE2_ADVANCES_ENABLED', false);
+// Stage 3 checkpoint 1 provides schema/readers only. Keep disabled until all checkpoints pass.
+define('STAGE3_CORRECTIONS_ENABLED', false);
 /**
  * Example configuration — copy to config.php and fill in real values.
  *
