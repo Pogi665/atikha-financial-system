@@ -4,6 +4,12 @@ Last updated: October 7, 2026. Maintained handoff for subsequent tasks and conte
 
 ## Current task and authorization
 
+**Current planning task:** the user requested the [detailed U1 inspection/design plan](usability-u1-plan.md) after supplying favorable Gemini/ChatGPT roadmap reviews. It is prepared for review, covering fresh workflow captures, source/field inventory, annotated payment screens and safe standalone prototype, exact simple/split/advanced form conditions, unsaved-change state contracts, and an isolated advance-comparison timing baseline repeated in U5. The [usability/completion roadmap](usability-completion-plan.md) retains original Stages 4-7 and the reporting/budget/closing dependencies. U1 execution has not started. Only documentation changed; no application changes, migration, activation, database query, posting, test/benchmark execution, commit or push were performed in this task.
+
+Additional source inspection found existing `beforeunload` dirty-state protection and correction-mode confirmation, alongside Review's existing save step. These are implementation facts, not new visual/behavioral verification. Roadmap review recommendations are integrated into U1 requirements; no accounting policy or client approval workflow was changed. The sandbox terminal helper failed before commands started; the necessary read-only inspection completed through runtime-approved execution. No benchmark or application acceptance is claimed from those reads.
+
+The user deferred working browser acceptance again after Stage 3 activation. It remains pending alongside restoration/protected-file verification. Focused isolated implementation checks remain part of future deliveries. No connected browser surface was exposed during this planning task, so fresh visual/end-to-end UX auditing is deferred to U1; the current findings are source observations and user-reported concerns. Proposed layouts are not client-confirmed requirements or implemented behavior.
+
 **Stage 3 source implementation and isolated integrated verification are complete**, following the user's authorization to execute the reviewed Checkpoint 5 plan. Ordinary/advance entry gates, per-target navigation and original posting recovery are verified against complete 019/020/021. Final evidence: **694 complete-schema backend assertions, 19 migration/partial-schema assertions, 370 browser/HTTP assertions and 10 presentation-only assertions**. The main profile passed 487 (including four deliberately partial-schema cases); raw suite counts and exclusions are in [final Stage 3 delivery](stage3-delivery.md). Checkpoint 5 itself did not change the working database/configuration or perform financial postings, commits or pushes.
 
 **Subsequent working deployment, October 7, 2026:** the user imported migration 021 into `atikha_finance` and supplied successful import and post-migration preflight screenshots. The displayed preservation counts/hashes match the supplied pre-migration output. During the separately authorized activation task, a fresh read-only preflight independently confirmed `021 already applied`, complete schema, passed checks, no problems and no writes. `STAGE3_CORRECTIONS_ENABLED` was absent from the working configuration; one enabled definition was added beside the existing enabled Stage 1/2 flags, preserving the other configuration bytes. PHP syntax validation passed. This task made no database writes or financial postings. Browser activation smoke checks, actual-data restoration/recovery and full working acceptance remain pending.
@@ -24,8 +30,8 @@ Historical Checkpoint 5 planning update, October 7, 2026 (superseded by executio
 
 ## Source baseline
 
-- Repository HEAD inspected during Checkpoint 5 execution: `a5a681b` (`stage_2`).
-- Stage 3 Checkpoints 1-5 and earlier follow-up changes are uncommitted/untracked in the working tree. Preserve them; HEAD alone does not describe the local implementation.
+- Repository HEAD during this usability planning inspection: `7476316` (`stage_3`). The tracked working tree was clean before these documentation edits. The older `a5a681b` baseline and uncommitted Stage 3 description apply to the dated Checkpoint 5 execution, not current source.
+- Private configuration remains outside Git. Preserve unrelated changes if they appear; no commit/push is authorized by this planning task.
 - [Stage 3 specification](stage3-plan.md) remains the approved scope. Its original planning status is historical; later implementation authorization is documented in the delivery reports and conversation.
 - The Checkpoint 4 planning task did not query the working database. The later Scan Receipt supplement queried extraction attempts read-only for diagnosis; it did not reverify working deployment or change configuration. Deployment facts below remain recorded delivery evidence.
 
@@ -146,11 +152,11 @@ That reviewer-recording turn changed documentation only and did not authorize im
 
 ## Next actions
 
-1. Review [final Stage 3 delivery](stage3-delivery.md), its suite inventory and relevant local source. External delivery-only review is not independent code/test verification.
-2. Perform nonposting working browser smoke checks now that 021 is verified and Stage 3's configuration flag is enabled. Full working acceptance, restoration/protected-file verification and representative advance-comparison timing remain pending; no synthetic working postings.
-3. Do not rerun 015 or already-applied 019/020/021. Carry forward the final guide's legitimate-record acceptance and recovery checklist; missing restoration evidence remains pending, not passed.
-4. Continue later reporting/budget/closing stages only after their detailed scopes/dependencies are reviewed and authorized. Stage 3 source completion does not complete the whole system.
-5. Preserve uncommitted work and keep these context files current; no commit/push is authorized by checkpoint completion.
+1. Review [detailed U1 plan](usability-u1-plan.md), then separately authorize U1 inspection/design execution. Capture fresh journeys and timing and review proposed screens before U2 application implementation.
+2. Implement only individually reviewed and authorized usability stages. Retain original Stage 4 General Ledger, Stage 5 reporting, Stage 6 budgets/dashboard and Stage 7 receipt/export outcomes; budget-dependent reporting and period closing wait for prerequisites.
+3. Working browser acceptance, restoration/protected-file verification and representative advance-comparison timing remain pending. The user's deferral does not count as a pass; no synthetic working postings.
+4. Do not rerun 015 or already-applied 019/020/021. Carry forward the final Stage 3 legitimate-record acceptance and recovery checklist; source/deployment completion does not complete the whole system.
+5. Preserve existing work and keep these context files current; no commit/push is authorized by planning or checkpoint completion.
 
 ## How to maintain this file
 

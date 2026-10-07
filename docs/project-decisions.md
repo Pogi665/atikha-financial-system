@@ -22,7 +22,16 @@ These were selected during the original roadmap discussion. They are not all imp
 - **Report preservation:** immutable frozen revisions/report bundles and reviewed-period closing are roadmap choices. Existing Trial Balance snapshots already exist; complete report bundles and closing remain later work.
 - Essential manual evidence must precede liquidation; reports must precede report-dependent closing; approved budget revisions must precede budget-dependent snapshots/reports. Do not leave these as circular stage dependencies.
 
-The original seven-stage plan attachment is not available in this repository. Do not assign new stage numbers or claim its exact later sequence from these summaries alone.
+The original seven-stage plan attachment is not stored in this repository. Its downloaded `plan_complete.md` was located and inspected during October 7 usability planning: original Stage 4 is Cash books/General Ledger, Stage 5 Financial reports/review, Stage 6 Monthly budgets/dashboard, and Stage 7 Receipt usability/export consistency. The [current staged usability/completion proposal](usability-completion-plan.md) retains those identities and makes the reviewed reporting/budget/closing dependencies explicit. Do not infer other original details from the summaries alone.
+
+## Usability planning direction: October 7, 2026
+
+- Source: the user reports difficulty with navigation, fields, too many controls, and understanding Review/Post. They explicitly request simplification while preserving the original multi-stage system completion. This is user feedback, not an observed Atikha acceptance result.
+- Proposed supplement uses Usability U1-U5 names so original Stage 4-7 numbers are not repurposed. Detailed layouts, navigation hierarchy and field disclosure remain review proposals; this task authorizes documentation only.
+- Preserve existing financial, evidence, privacy, draft, retry and correction contracts. Fewer visible controls must not silently modify hidden allocations or remove required review/confirmation. Initial autosave is deferred; current Review already saves the draft.
+- The user deferred working browser acceptance after Stage 3 activation. Current-data restoration and protected-file byte verification remain deferred. Focused isolated verification remains required for application changes.
+- Corrected source finding: current CRB/CDB sidebar links open books, with New-entry links inside. Earlier brainstorming inferred direct entry-form destinations from the old screenshots; do not treat that inference as current behavior.
+- Both supplied roadmap reviews support detailed U1 planning. ChatGPT's recommended unsaved-navigation rules, lossless simple/complex form criteria and U1 comparison timing baseline are included in the [detailed U1 plan](usability-u1-plan.md). These are proposed implementation/design contracts pending stage review, not newly confirmed Atikha policies. The existing native dirty-state warning and Review-save behavior must be preserved and clarified.
 
 ## Stage 1 operational decisions
 

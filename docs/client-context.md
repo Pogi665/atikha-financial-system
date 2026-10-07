@@ -10,6 +10,12 @@ Recorded October 6, 2026 from the user messages available in this chat and the r
 - The client is busy and the user said they need to complete the system this week. No precise completion date was established. The advisor allowed dummy data close to Atikha's NGO activities; use clearly synthetic training, transport, donation, and similar examples in isolated environments.
 - Replies should remain in English even when source notes are Tagalog.
 
+## User usability feedback and retained completion scope: October 7, 2026
+
+After Stage 3 deployment, the user reported difficulty finding the appropriate page, understanding entry fields and the outcomes of Review/Post, and navigating the number of controls. They requested simpler daily workflows and a staged plan, explicitly retaining the original remaining system-completion work. This is the user's experience and concern about client adoption, not evidence that Atikha has tested or rejected the current system. Task-oriented navigation, simpler forms and clearer state descriptions are proposed design responses; specific layouts require detailed review. See [usability/completion proposal](usability-completion-plan.md).
+
+The user chose to defer working browser acceptance again. Existing source implementation and deployment remain distinct from pending working/client acceptance; usability planning is not authorization for financial postings or a new accounting policy.
+
 ## Current client workflow as described by the user
 
 Accounting staff use Excel/loose-leaf accounting. They prepare and print an Excel form for higher management. The user was uncertain whether 'already completed' meant a completed form or an already completed payment; approval timing is unresolved. Earlier discussion included both submitting for approval and recording/reviewing completed payments. Do not infer a mandatory digital approval sequence or treat an accounting Review button as management approval.

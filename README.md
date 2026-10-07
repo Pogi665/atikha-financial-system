@@ -7,7 +7,9 @@ The application uses double-entry journals for financial records, with cash rece
 ## Start here
 
 - [Current project status and next action](docs/project-status.md): implementation, deployment, verification, and outstanding work.
+- [Usability and remaining completion plan](docs/usability-completion-plan.md): proposed U1-U5 improvements followed by the retained completion stages; awaiting detailed stage review and authorization.
 - [Client context and corrected visit notes](docs/client-context.md): what the user/client actually described and what the supplied references establish.
+- [Detailed Usability U1 plan](docs/usability-u1-plan.md): current-journey inspection, safe screen prototypes, unsaved-change rules, simple-form conditions and the timing baseline; awaiting execution authorization.
 - [Selected project decisions](docs/project-decisions.md): accounting/workflow choices and unresolved questions.
 - [Coding-agent guidance](AGENTS.md): how to work within the authorized scope and preserve financial history.
 
