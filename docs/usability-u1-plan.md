@@ -1,6 +1,6 @@
 # Usability U1: detailed workflow inspection and design plan
 
-October 7, 2026. **Planning document for review; U1 execution has not started.** The user requested this detailed plan after supplying Gemini's and ChatGPT's reviews of the [usability/completion roadmap](usability-completion-plan.md). U1 is inspection, measurement and design; production application implementation belongs to U2 and later authorized stages.
+October 7, 2026. **Reviewed plan; U1-A, U1-B and U1-C delivered under separate user authorization.** See the [baseline](usability-u1-baseline.md), [screen specification](usability-u1-design.md), [U1 handoff](usability-u1-delivery.md) and [prototype delivery](usability-u1-prototype-delivery.md). The user requested this detailed plan after supplying Gemini's and ChatGPT's reviews of the [usability/completion roadmap](usability-completion-plan.md). U1 is inspection, measurement and design; production application implementation belongs to U2 and later authorized stages. U1-C's local payment prototype is complete; user screen approval precedes U2.
 
 ## 1. Outcome, authority and limits
 
@@ -16,12 +16,13 @@ U1 execution, when explicitly authorized, permits documentation, standalone desi
 - Existing client context: regularly used NGO finance software alongside funder-required tools; general ledger, linked advances and immutable adjustment history remain needed. Screenshots establish some account/report concepts, not undocumented approval policies.
 - Gemini supports starting U1. Its quoted execution prompt is reviewer content, not permission to implement U2. Review already saves the draft, so a separate Save click must not be taught as a required prerequisite.
 - ChatGPT's recommendations are included: explicit unsaved-change handling; exact simple-form representation rules; advance-comparison timing measured in U1 and repeated in U5.
+- Detailed-plan reviews support U1-A execution. ChatGPT identified inconsistent prototype wording; the small standalone payment prototype is a required U1-C deliverable, consistent with the opening outcome. External design services remain optional. This clarification does not authorize building U1-B/U1-C during U1-A.
 - The accounting contracts must remain unchanged. A later UI/service adapter can be necessary, but must not silently change financial meaning. U1 documents such needs rather than implementing them.
 - Default design tool: a local, standalone HTML/CSS/JavaScript prototype with synthetic data and no backend calls. Figma or MagicPath are optional if the user chooses them. Do not upload real receipts, screenshots with private contents, account exports or sessions into a design service.
 
 ## 3. Inspected baseline and discrepancies
 
-Repository baseline: `7476316` (`stage_3`). Existing uncommitted changes at the start of this task are the usability roadmap and related documentation; preserve them. Private configuration is not described by Git alone. This planning task does not reverify the working schema or activation.
+Planning inspection baseline: `7476316` (`stage_3`). U1-A found the newer HEAD `73f7d5b` (`Fix error`), which adds/updates the planning records without changing application source. Exact capture source is recorded in the baseline and its manifest. Preserve unrelated changes. Private configuration is not described by Git alone. Neither planning nor U1-A reverified working schema/activation.
 
 Inspect these components during execution: `includes/nav.php`, `includes/accounting_entry_page.php`, `assets/js/accounting_workspace.js`, `assets/css/accounting_workspace.css`, `includes/accounting_workspace.php`, `accounting_actions.php`, `accounting_drafts.php` and its script, `cash_advances.php` and its script, advance/correction services and entry routes, `financial_records.php` and its script, and `journal_corrections.php`. Consult the relevant approved plan when a field's accounting purpose is unclear.
 
@@ -158,7 +159,7 @@ Execution artifacts:
 
 - `docs/usability-u1-design.md`: findings, evidence limits, proposed navigation, field/state/eligibility specifications, annotated layouts and component mappings.
 - `docs/usability-u1-baseline.md`: measured journey counts and isolated timing summary, exact dataset/source/server conditions and pending observations. Raw private artifacts stay out of Git and public links.
-- `docs/prototypes/usability-u1-payment.html`: optional standalone clickable payment/receipt variant with local synthetic state, no PHP includes, secrets, fetch/XHR, external APIs, financial endpoints, service worker, production session access or real document upload. Visible Demo label; persistence off by default and reset local to the prototype.
+- `docs/prototypes/usability-u1-payment.html`: required small standalone clickable payment prototype, with a receipt variant when useful; local synthetic state, no PHP includes, secrets, fetch/XHR, external APIs, financial endpoints, service worker, production session access or real document upload. Visible Demo label; persistence off by default and reset local to the prototype.
 - `docs/usability-u1-delivery.md`: execution/source identity, captured/uncaptured workflows, prototype checks, reviewer decisions, pending user/client walkthrough, U2 adapter questions and next action.
 
 Prefer numbered annotated layouts and the local prototype. External Figma/MagicPath creation is optional and separately chosen; it is not a prerequisite for U1 completion. A design artifact is safe to click because it cannot record a financial transaction.
@@ -169,10 +170,10 @@ Check the prototype at 1366x768 and 1920x1080, keyboard-only, long labels, no-se
 
 ## 9. Completion and review gates
 
-U1 source/design delivery requires: accepted fresh capture coverage or named limitations; current measured navigation/field/state inventory; timing results or explicit pending dataset/tool blockers; exact representation and unsaved-change contracts; annotated payment screens and variants; a checked safe prototype if supplied; component/route/service mapping; and a review package that can inform U2.
+U1 source/design delivery requires: accepted fresh capture coverage or named limitations; current measured navigation/field/state inventory; timing results or explicit pending dataset/tool blockers; exact representation and unsaved-change contracts; annotated payment screens and variants; a checked safe payment prototype; component/route/service mapping; and a review package that can inform U2. Completing U1-A does not complete U1-B/U1-C or the whole U1 phase.
 
 Track gates independently: source specification, visual capture, timing baseline, prototype verification, user walkthrough, client validation. A named blocker makes the affected gate pending; it does not count as passed. No screenshot establishes successful user understanding, and no static prototype establishes deployed accounting correctness. Approval of provisional design may be explicitly requested if missing evidence cannot be obtained; identify what remains unverified.
 
 Before U2, obtain approval of the proposed screens and choices. Retain the existing financial/privacy contracts and record any genuine required amendment. U2 starts with the single-payment vertical slice, then receipts/shared navigation; advance and correction implementation remain U3/U4.
 
-**Next action after plan review:** authorize U1 inspection/design execution only. Do not start U2, migrate, activate, post working transactions, or claim whole-system acceptance from completion of this plan.
+**Current next action:** the user approved the revised U1-C reference without another external review. The [U2 detailed plan](usability-u2-plan.md) is delivered; next is separately authorized U2-A implementation. U1-A/U1-B/U1-C design delivery and user screen approval are complete; Atikha observation remains pending. No working migration/activation/posting or whole-system acceptance follows from this design approval.

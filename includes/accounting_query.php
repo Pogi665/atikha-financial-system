@@ -271,34 +271,20 @@ function accounting_records_request(array $get, array $accounts, string $today):
         'dateMode'=>$explicit?'explicit':'default','state'=>['search'=>$search,'order'=>array_values($order),'page'=>$filters['page']],
         'notice'=>array_key_exists('period',$get)?'Period is no longer used. The date filters shown here apply.':''];
 }
-function accounting_records(PDO $pdo, array $filters): array
+/** Shared complete-entry projection. Account names are current master labels, not invented snapshots. */
+function accounting_journal_projection(bool $hasStage1): string
 {
-    return accounting_read($pdo,function () use ($pdo,$filters) {
-        require_once __DIR__.'/receipt_ocr.php';
-        $hasStage1=stage1_schema($pdo);$stage1=stage1_enabled($pdo);$completeBook=$stage1&&$filters['context']!=='records';
-        $where=["j.status='posted'"]; $params=[];
-        if ($filters['from']!=='') { $where[]='j.entry_date>=:start'; $params['start']=$filters['from']; }
-        if ($filters['to']!=='') { $where[]='j.entry_date<:end'; $params['end']=accounting_next_day($filters['to']); }
-        $matches=[];
-        if ($filters['account_id']!=='') { $matches[]=$completeBook?'mc.CategoryID=:account':'c.CategoryID=:account'; $params['account']=$filters['account_id']; }
-        if ($filters['type']!=='') { $matches[]=$completeBook?'mc.Account_Type=:type':'c.Account_Type=:type'; $params['type']=$filters['type']; }
-        if($completeBook){
-            $where[]='j.source_book=:book';$params['book']=strtoupper($filters['context']);
-            if($matches){$where[]='EXISTS(SELECT 1 FROM journal_entry_lines ml JOIN Categories mc ON mc.CategoryID=ml.account_id WHERE ml.journal_entry_id=j.id AND '.implode(' AND ',$matches).')';}
-        }else{$where=array_merge($where,$matches);}
-        if (!$completeBook&&$filters['context']!=='records') {
-            $where[]="c.Account_Type='Asset' AND c.Is_Cash_Account=1";
-            $where[]=$filters['context']==='crb' ? 'l.debit_amount>0' : 'l.credit_amount>0';
-        }
-        $metadata=$hasStage1?",COALESCE(j.source_book,'Legacy General Journal') AS source_book,j.transaction_kind,j.party_snapshot,l.project_code_snapshot,l.project_name_snapshot,c.Is_Cash_Account AS is_cash_account":'';
-        $projection="SELECT j.id AS journal_id,j.entry_date,j.reference,j.description,j.posted_by_user_id,
-            u.FullName AS posted_by,l.id AS line_id,l.account_id,c.Name AS account_name,c.Account_Code AS account_code,
-            c.Account_Type AS account_type,l.debit_amount,l.credit_amount,l.fund_project_id $metadata
-            FROM journal_entries j JOIN journal_entry_lines l ON l.journal_entry_id=j.id
-            JOIN Categories c ON c.CategoryID=l.account_id LEFT JOIN user_identities u ON u.UserID=j.posted_by_user_id";
-        $s=$pdo->prepare($projection.' WHERE '.implode(' AND ',$where).' ORDER BY j.entry_date DESC,j.id DESC,l.id ASC');
-        $s->execute($params); $rows=$s->fetchAll(PDO::FETCH_ASSOC); $journals=[];
-        $ids=array_unique(array_column($rows,'journal_id'));
+    $metadata=$hasStage1?",COALESCE(j.source_book,'Legacy General Journal') AS source_book,j.transaction_kind,j.party_snapshot,l.project_code_snapshot,l.project_name_snapshot,c.Is_Cash_Account AS is_cash_account":'';
+    return "SELECT j.id AS journal_id,j.entry_date,j.reference,j.description,j.posted_by_user_id,j.created_at AS recorded_at,
+        u.FullName AS posted_by,l.id AS line_id,l.account_id,c.Name AS account_name,c.Account_Code AS account_code,
+        c.Account_Type AS account_type,l.debit_amount,l.credit_amount,l.fund_project_id $metadata
+        FROM journal_entries j JOIN journal_entry_lines l ON l.journal_entry_id=j.id
+        JOIN Categories c ON c.CategoryID=l.account_id LEFT JOIN user_identities u ON u.UserID=j.posted_by_user_id";
+}
+/** Caller owns the consistent read snapshot. Reads only these posted IDs, including all their lines. */
+function accounting_complete_journals(PDO $pdo,array $ids,bool $hasStage1): array
+{
+    $journals=[];$projection=accounting_journal_projection($hasStage1);
         foreach (array_chunk($ids,500) as $chunk) {
             $s=$pdo->prepare($projection." WHERE j.status='posted' AND j.id IN (".implode(',',array_fill(0,count($chunk),'?')).') ORDER BY j.id,l.id');
             $s->execute(array_values($chunk));
@@ -311,7 +297,6 @@ function accounting_records(PDO $pdo, array $filters): array
             }
         }
         foreach ($journals as &$j) { $j['debit_cents']=(string)$j['debit_cents']; $j['credit_cents']=(string)$j['credit_cents']; } unset($j);
-        foreach ($rows as &$r) { $r['debit_cents']=(string)accounting_cents($r['debit_amount']); $r['credit_cents']=(string)accounting_cents($r['credit_amount']); } unset($r);
         require_once __DIR__.'/receipt_ocr.php';
         $attachments=receipt_journal_evidence_internal($pdo,array_keys($journals));
         $privateAllowed=stage2_private_viewer($pdo);$sensitive=($hasStage1||stage2_tables($pdo))?stage2_sensitive_journals($pdo,array_keys($journals)):[];
@@ -344,6 +329,51 @@ function accounting_records(PDO $pdo, array $filters): array
         $entryEnabled=stage3_enabled($pdo);$advanceEnabled=stage2_enabled($pdo);$advanceTargets=[];
         if($entryEnabled&&$journals){$ids=array_keys($journals);$s=$pdo->prepare('SELECT journal_id FROM cash_advance_operations WHERE journal_id IN ('.implode(',',array_fill(0,count($ids),'?')).')');$s->execute($ids);$advanceTargets=array_fill_keys($s->fetchAll(PDO::FETCH_COLUMN),true);}
         foreach($journals as $id=>&$journal){$journal['correction_entry_available']=$entryEnabled&&(!isset($advanceTargets[$id])||$advanceEnabled);$journal['corrections']=$corrections[(int)$id]??[];$journal['correction_eligible']=($journal['header']['transaction_kind']??'')!=='correction_reversal'&&!array_filter($journal['corrections'],fn($c)=>$c['role']==='Corrected original');}unset($journal);
+    return $journals;
+}
+/** Posted inspection has database-backed role checks and never grants private draft access. */
+function accounting_posted_journal(PDO $pdo,int $uid,int $id): array
+{
+    require_once __DIR__.'/receipt_ocr.php';
+    if($uid<=0||(int)($_SESSION['UserID']??0)!==$uid)throw new JournalProblem('Please sign in again.',401);
+    $s=$pdo->prepare('SELECT Role,Is_Active FROM Users WHERE UserID=?');$s->execute([$uid]);$actor=$s->fetch();
+    if(!$actor||(int)$actor['Is_Active']!==1||!in_array($actor['Role'],['Admin','Management'],true))throw new JournalProblem('Access restricted.',403);
+    return accounting_read($pdo,function()use($pdo,$id){
+        $journals=accounting_complete_journals($pdo,[$id],stage1_schema($pdo));
+        if(!isset($journals[$id]))throw new JournalProblem('Posted transaction not found.',404);
+        // Durable writers explicitly store UTC. Legacy scalar/default timestamps have no recorded timezone.
+        $knownUtc=($journals[$id]['header']['transaction_kind']??'')==='correction_reversal';
+        if(stage1_schema($pdo)){$s=$pdo->prepare("SELECT 1 FROM journal_drafts WHERE posted_journal_id=? AND state='Posted' AND payload_version IN (2,3,4) LIMIT 1");$s->execute([$id]);$knownUtc=$knownUtc||$s->fetchColumn()!==false;}
+        $journals[$id]['header']['recorded_timezone']=$knownUtc?'UTC':null;
+        return $journals[$id];
+    });
+}
+function accounting_records(PDO $pdo, array $filters): array
+{
+    return accounting_read($pdo,function () use ($pdo,$filters) {
+        require_once __DIR__.'/receipt_ocr.php';
+        $hasStage1=stage1_schema($pdo);$stage1=stage1_enabled($pdo);$completeBook=$stage1&&$filters['context']!=='records';
+        $where=["j.status='posted'"]; $params=[];
+        if ($filters['from']!=='') { $where[]='j.entry_date>=:start'; $params['start']=$filters['from']; }
+        if ($filters['to']!=='') { $where[]='j.entry_date<:end'; $params['end']=accounting_next_day($filters['to']); }
+        $matches=[];
+        if ($filters['account_id']!=='') { $matches[]=$completeBook?'mc.CategoryID=:account':'c.CategoryID=:account'; $params['account']=$filters['account_id']; }
+        if ($filters['type']!=='') { $matches[]=$completeBook?'mc.Account_Type=:type':'c.Account_Type=:type'; $params['type']=$filters['type']; }
+        if($completeBook){
+            $where[]='j.source_book=:book';$params['book']=strtoupper($filters['context']);
+            if($matches){$where[]='EXISTS(SELECT 1 FROM journal_entry_lines ml JOIN Categories mc ON mc.CategoryID=ml.account_id WHERE ml.journal_entry_id=j.id AND '.implode(' AND ',$matches).')';}
+        }else{$where=array_merge($where,$matches);}
+        if (!$completeBook&&$filters['context']!=='records') {
+            $where[]="c.Account_Type='Asset' AND c.Is_Cash_Account=1";
+            $where[]=$filters['context']==='crb' ? 'l.debit_amount>0' : 'l.credit_amount>0';
+        }
+        $projection=accounting_journal_projection($hasStage1);
+        $s=$pdo->prepare($projection.' WHERE '.implode(' AND ',$where).' ORDER BY j.entry_date DESC,j.id DESC,l.id ASC');
+        $s->execute($params); $rows=$s->fetchAll(PDO::FETCH_ASSOC); $journals=[];
+        $ids=array_unique(array_column($rows,'journal_id'));
+        $journals=accounting_complete_journals($pdo,$ids,$hasStage1);
+        foreach ($rows as &$r) { $r['debit_cents']=(string)accounting_cents($r['debit_amount']); $r['credit_cents']=(string)accounting_cents($r['credit_amount']); } unset($r);
+        $corrections=[];foreach($journals as $id=>$j)$corrections[$id]=$j['corrections'];
         foreach($rows as &$row){$row['correction_search']=implode(' ',array_map(fn($c)=>'Correction #'.$c['id'].' '.$c['role'].' '.$c['accounting_date'].' '.$c['reason'],$corrections[(int)$row['journal_id']]??[]));}unset($row);
         return ['rows'=>$rows,'journals'=>$journals,'completeBook'=>$completeBook];
     });

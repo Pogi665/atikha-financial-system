@@ -33,7 +33,10 @@ function correction_chain(PDO $pdo,int $uid,int $journalId): array
 function correction_metadata(PDO $pdo,array $journalIds): array
 {
     if(!$journalIds||!stage3_schema($pdo))return [];$wanted=array_fill_keys(array_map('intval',$journalIds),true);$out=[];
-    foreach($pdo->query('SELECT * FROM journal_corrections ORDER BY id') as $c){
+    $holders=implode(',',array_fill(0,count($wanted),'?'));
+    $s=$pdo->prepare('SELECT * FROM journal_corrections WHERE target_journal_id IN ('.$holders.') OR reversal_journal_id IN ('.$holders.') OR replacement_journal_id IN ('.$holders.') ORDER BY id');
+    $ids=array_keys($wanted);$s->execute(array_merge($ids,$ids,$ids));
+    foreach($s->fetchAll() as $c){
         foreach(['target_journal_id'=>'Corrected original','reversal_journal_id'=>'Generated GJ reversal','replacement_journal_id'=>'Replacement'] as $key=>$role){
             if($c[$key]===null||!isset($wanted[(int)$c[$key]]))continue;
             if(!stage3_correction_valid($pdo,$c))throw new JournalProblem('Correction chain integrity failed.',409);

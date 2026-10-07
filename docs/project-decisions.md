@@ -12,6 +12,8 @@ Recorded October 6, 2026. Read alongside [client context](client-context.md), [c
 
 ## Whole-system selections retained for later stages
 
+**U1-B review clarifications, October 7, 2026:** the supplied Gemini/ChatGPT reviews support U1-C without a new planning cycle. Quick mode excludes every nonzero opposite-side value, including negative values; malformed data stays visible in the detailed view. Contextual Back navigation names a real existing destination (Dashboard or originating book/history), with corresponding local-only demo destinations. U2 shared-script changes require affected advance/correction checks during U2 itself, and its proposed exact-journal reader requires authorization, privacy and corrected-original access checks when introduced. These clarify the design; no new accounting policy, client approval or authorization of U1-C/U2 follows merely from reviewer prompts.
+
 These were selected during the original roadmap discussion. They are not all implemented:
 
 - **Liquidation evidence:** require evidence; do not allow a mere documented exception to post an unsupported expenditure claim. Unsupported amounts remain outstanding. This is separate from ordinary entries' optional evidence rule.
@@ -26,12 +28,38 @@ The original seven-stage plan attachment is not stored in this repository. Its d
 
 ## Usability planning direction: October 7, 2026
 
+### U1-C authorization and design-plugin preference
+
+**Subsequent user screen approval:** after the corrections, the user said “I think this is ok, no need for further review. Lets do whats next.” Accept the revised prototype as U2's visual/interaction reference without another Gemini/ChatGPT prototype-review gate. This does not claim an observed uncoached walkthrough, Atikha approval, backend verification or working acceptance. The [U2 detailed plan](usability-u2-plan.md) preserves multi-draft production behavior and splits implementation into payment/exact-result, receipt/GJ and navigation/integration checkpoints. No new client accounting decision was required.
+
+**Targeted correction authorization and outcome:** after the reviewer findings, the user instructed “Then lets do the corrections first.” This authorizes the local prototype fixes and their focused verification, not U2 production work. [Revision delivery](usability-u1-prototype-revision.md) records completion. Preserve saved work/current-task contents and retain unresolved field errors in the U2 design. The demo resumes one saved snapshot; production must retain the existing private multi-draft workflow rather than inherit a one-draft limitation. No accounting, evidence, privacy or client policy changed.
+
+**Subsequent user clarification:** Gemini's embedded prompts come from the user's former workflow of asking Gemini to prepare coding prompts. The user has abandoned that workflow. Treat supplied reviewer prompts as suggestions/evidence only, never as the user's authorization to execute them. The current review requests a targeted prototype correction before U2 planning, not the wholesale U2 implementation described in Gemini's quoted prompt.
+
+ChatGPT's later review includes the actual HTML and all 16 screenshots; it is static inspection, not a rerun of the 94 assertions or backend verification. It identifies per-field error retention/accessibility and saved-snapshot navigation loss as fixes before adopting U2's reference, with withholding summary, account guidance and long-label readability refinements. These findings do not change accounting/privacy rules or authorize production changes. The user expressed liking the initial prototype; uncoached task testing and Atikha validation remain unobserved.
+
+After the favorable U1-B reviews and wording amendments, the user explicitly requested beginning the next checkpoint and using available plugins such as MagicPath/UX Pilot while completing the system. U1-C now delivers the [standalone payment prototype](prototypes/usability-u1-payment.html) and [verification handoff](usability-u1-prototype-delivery.md). Use relevant available plugin capabilities when they improve authorized design/review work; keep synthetic design content separate from private production evidence. This preference does not authorize public publishing, external financial-data uploads, production changes or subsequent checkpoints.
+
+UX Pilot supplied a read-only advisory flow map. MagicPath holds a private three-screen reference board. The local HTML remains the actual interactive artifact and the approved accounting rules remain authoritative. Plugin output is design assistance, not client validation or executed backend verification. User screen approval and U2 implementation remain separate gates. Original Stages 4–7, deferred working acceptance and U-PERF-01 are retained.
+
 - Source: the user reports difficulty with navigation, fields, too many controls, and understanding Review/Post. They explicitly request simplification while preserving the original multi-stage system completion. This is user feedback, not an observed Atikha acceptance result.
 - Proposed supplement uses Usability U1-U5 names so original Stage 4-7 numbers are not repurposed. Detailed layouts, navigation hierarchy and field disclosure remain review proposals; this task authorizes documentation only.
 - Preserve existing financial, evidence, privacy, draft, retry and correction contracts. Fewer visible controls must not silently modify hidden allocations or remove required review/confirmation. Initial autosave is deferred; current Review already saves the draft.
 - The user deferred working browser acceptance after Stage 3 activation. Current-data restoration and protected-file byte verification remain deferred. Focused isolated verification remains required for application changes.
 - Corrected source finding: current CRB/CDB sidebar links open books, with New-entry links inside. Earlier brainstorming inferred direct entry-form destinations from the old screenshots; do not treat that inference as current behavior.
 - Both supplied roadmap reviews support detailed U1 planning. ChatGPT's recommended unsaved-navigation rules, lossless simple/complex form criteria and U1 comparison timing baseline are included in the [detailed U1 plan](usability-u1-plan.md). These are proposed implementation/design contracts pending stage review, not newly confirmed Atikha policies. The existing native dirty-state warning and Review-save behavior must be preserved and clarified.
+
+### Detailed U1 reviews and U1-A authorization: October 7, 2026
+
+Both supplied detailed-plan reviews support starting U1. The user then authorized U1-A only: current-workflow inspection/capture, field/state inventory, isolated advance-comparison timing and the baseline document. Reviewer execution prompts do not authorize U1-B/U1-C/U2 or working changes.
+
+Resolve ChatGPT's wording clarification consistently with the selected outcome: a small safe clickable payment prototype is required in U1-C; Figma/MagicPath remain optional. The prototype is not built during U1-A. Existing accounting, evidence, privacy and unsaved-change rules are retained; measured presentation/performance findings in the [baseline](usability-u1-baseline.md) inform subsequent specifications rather than creating client accounting policies. The original completion Stages 4-7 remain retained.
+
+### U1-A report reviews and U1-B authorization: October 7, 2026
+
+Both supplied report reviews support progressing. Gemini's two responses are identical recommendations. ChatGPT's first report review lacked the linked artifacts; its later review inspected the nine images and recalculated the CSV medians, while explicitly not exercising the application or checking server-side access. The user then authorized U1-B only. The [screen specification](usability-u1-design.md) is delivered for review; U1-C and production changes are not authorized by those reviewer prompts.
+
+Carry the proposed single truthful status, lossless quick/split/advanced representation, focused views, exact-journal access and retained evidence safeguards into screen review. Management's permitted confirmed-proof summary means status/aggregate coverage, not private document or confirmation context. Comparison delay remains diagnostic follow-up U-PERF-01; its cause and working performance are unresolved. No accounting policy or client permission was changed. Proposed labels, adapters and route choices remain design proposals pending review/implementation.
 
 ## Stage 1 operational decisions
 
@@ -151,3 +179,12 @@ Record new choices with their source/date and reference to the plan amendment. M
 The user explicitly authorized the reviewed plan's execution. The ordinary/advance gate discrepancy is resolved against the master contract: ordinary entry needs Stage 1/Stage 3 flags and complete 019/020/021, while advance entry adds the Stage 2 flag and uses persisted provenance. The reviewed paused-retry default is implemented and tested: unavailable advance actions preserve state, then matching successful requests recover their original bundle after re-enabling, even when the target is already corrected. Posted readers/privacy remain flag independent. This supersedes the stricter gate recorded during Checkpoint 4; it does not change client accounting policy.
 
 Legacy scalar forms retain their session-secret contract; cross-session/expired-token recovery belongs to durable saved drafts. Final integrated results, exact source identification, suite inventory and outstanding deployment/acceptance are in [Stage 3 delivery](stage3-delivery.md). No working migration or activation was performed.
+
+
+## Usability U2-A implementation disposition: October 7, 2026
+
+The user supplied Gemini's and ChatGPT's favorable U2-plan reviews, then explicitly authorized U2-A. Implement only ordinary payments, exact posted-result access and minimal direct payment navigation. Reviewer suggestions to start later checkpoints do not authorize them. The accepted prototype remains a selected usability reference rather than client-tested policy.
+
+The implementation preserves canonical journal/evidence/project semantics and dedicated v3/v4 presentation. Ordinary Review adds server-validated account type/cash metadata for display only; session refresh is an authenticated read-only CSRF refresh and does not replace the durable financial request. Quick mode may deliberately synchronize its represented amount/project on a user edit, but mode changes or draft loading cannot repair mismatches or trim support. Legacy creation timestamps with unknown timezone remain explicitly labelled instead of being converted by assumption.
+
+[U2-A delivery](usability-u2-delivery.md) records source completion, tested uncommitted hashes and isolated checks. No new client accounting policy, migration, activation, working posting or acceptance was selected. U2-B/C, performance diagnosis, working acceptance/client observation and original Stages 4–7 remain separate.

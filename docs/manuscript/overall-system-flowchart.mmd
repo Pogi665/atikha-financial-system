@@ -1,0 +1,60 @@
+flowchart TB
+    startNode(["Start"])
+    loginFlow[["Enter credentials and complete MFA"]]
+    authenticated{"Account verified?"}
+    loginError["Show authentication error"]
+    dashboard["Display role-based dashboard"]
+    chooseTask{"Select authorized task"}
+
+    ordinary[["Receipts, payments and General Journal"]]
+    receiptScan[["Optional receipt extraction or manual fallback"]]
+    advances[["Advance release, liquidation or return"]]
+    corrections[["Linked reversal and optional replacement"]]
+    inspection[["Books, ledger, reports and analytics"]]
+    controls[["Budgets, report review and period controls"]]
+    otherTasks[["Communications, setup and audit access"]]
+
+    entry["Enter details and review required evidence"]
+    draftOrReview{"Save or review?"}
+    saveDraft["Save owner-private draft - no ledger posting"]
+    validate{"Entry and evidence valid?"}
+    errors["Show errors and retain entered details"]
+    review["Show proposed journal - not yet recorded"]
+    confirmRecord{"Confirm recording?"}
+    record[["Revalidate and record journals, links and audit atomically"]]
+    recorded{"Posting outcome?"}
+    recover[["Check the same durable posting request"]]
+    controlAction[["Perform permitted workflow and preserve its history"]]
+    alertCondition{"Configured alert triggered?"}
+    notify["Notify authorized recipients"]
+    showResult["Display result and permitted record details"]
+    anotherTask{"Another task?"}
+    logout["Log out and terminate session"]
+    finishNode(["End"])
+
+    startNode --> loginFlow --> authenticated
+    authenticated -->|"No"| loginError --> loginFlow
+    authenticated -->|"Yes"| dashboard --> chooseTask
+    chooseTask -->|"Daily entry"| ordinary --> entry
+    chooseTask -->|"Scan receipt"| receiptScan -->|"General Journal draft"| entry
+    chooseTask -->|"Cash advance"| advances --> entry
+    chooseTask -->|"Correction"| corrections --> entry
+    chooseTask -->|"View or export"| inspection --> showResult
+    chooseTask -->|"Plan or review"| controls --> controlAction
+    chooseTask -->|"Other permitted work"| otherTasks --> controlAction
+    entry --> draftOrReview
+    draftOrReview -->|"Save draft"| saveDraft --> showResult
+    draftOrReview -->|"Review"| validate
+    validate -->|"No"| errors --> entry
+    validate -->|"Yes"| review --> confirmRecord
+    confirmRecord -->|"Edit"| entry
+    confirmRecord -->|"Yes"| record --> recorded
+    recorded -->|"Confirmed recorded"| alertCondition
+    recorded -->|"Rejected"| errors
+    recorded -->|"Uncertain"| recover --> recorded
+    controlAction --> alertCondition
+    alertCondition -->|"Yes"| notify --> showResult
+    alertCondition -->|"No"| showResult
+    showResult --> anotherTask
+    anotherTask -->|"Yes"| chooseTask
+    anotherTask -->|"No"| logout --> finishNode

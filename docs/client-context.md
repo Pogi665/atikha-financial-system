@@ -4,6 +4,10 @@ Recorded October 6, 2026 from the user messages available in this chat and the r
 
 ## Purpose and constraints
 
+- **Advisor formatting requirement, user report October 7, 2026:** browser compatibility testing and platform/device compatibility testing must have separate plans/matrices. The combined manuscript Table 2 draft is superseded. Draft labels 2A/2B avoid changing unrelated manuscript numbering; final numbering should be coordinated across the manuscript. This is a manuscript-structure requirement, not evidence of passed compatibility tests or an instruction to implement mobile support.
+
+- **Manuscript context, user clarification October 7, 2026:** Chapters I-III were written while the system still used the legacy Incoming Funds and Expenses workflows. Those terms in the September 11 manuscript are historical design context, not a request to restore the old architecture. The user accepted the proposed completed-scope overall flowchart and next requested revision of Chapter III Table 2. This authorizes manuscript assistance, not changes to application requirements or implementation. Current journal workflows and retained completion stages remain authoritative.
+
 - Atikha is the NGO client. This university capstone is intended to computerize its internal finance work and become its regularly used system.
 - The user initially asked for discussion only, identified poor cash receipt/disbursement usability, considered double entry a good foundation, and wanted receipt scanning improved. They then requested staged planning, external review, and explicitly authorized implementation checkpoint by checkpoint.
 - The organization cannot disclose its actual financial documents. Staff supplied cropped Excel screenshots and visit notes instead. Do not fill missing facts with fictional client data.

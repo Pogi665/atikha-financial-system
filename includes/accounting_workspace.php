@@ -323,6 +323,8 @@ function workspace_review(PDO $pdo,int $uid,array $r): array
         $d=workspace_draft($pdo,$uid,$id,true);workspace_ordinary($d);workspace_revision($d,$r);$input=workspace_canonical($d,$d['payload']);
         $prepared=workspace_prepare($pdo,$uid,$d,$input,$version);
         $lines=[];foreach($input['lines'] as $l){$lines[]=$l+['account_name'=>$prepared['accounts'][$l['account_id']]['Name'],
+            'account_type'=>$prepared['accounts'][$l['account_id']]['Account_Type'],
+            'is_cash_account'=>(int)$prepared['accounts'][$l['account_id']]['Is_Cash_Account'],
             'project_name'=>$l['fund_project_id']===null?'Organization operations':$prepared['projects'][$l['fund_project_id']]['name']];}
         return ['input'=>$input,'lines'=>$lines,'party'=>$prepared['party'],'coverage'=>$prepared['coverage'],
             'token'=>workspace_token($d,$prepared['fingerprint'],time()+900)];

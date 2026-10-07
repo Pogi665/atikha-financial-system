@@ -87,6 +87,7 @@ $sidebarClass = $navIsExecutive
                 External Email
             </a>
         <?php endif; ?>
+        <?php if ($navStage1): ?><a href="cash_disbursement.php" class="<?= nav_link_class('payment', $activePage, $navIsExecutive) ?>" <?= $activePage==='payment'?'aria-current="page"':'' ?>>Record a payment</a><?php endif; ?>
         <?php if ($navCanUseWorkspace): ?>
             <a href="general_journal.php" class="<?= nav_link_class('general_journal', $activePage, $navIsExecutive) ?>">
                 <svg width="20" height="20" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h3m2 0h3"/></svg>

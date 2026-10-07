@@ -1,0 +1,27 @@
+<?php
+/** Exact posted record; no financial writes, private drafts or all-history queries. */
+session_start();require_once __DIR__.'/db_connect.php';require_once __DIR__.'/includes/require_role.php';require_login();
+require_once __DIR__.'/includes/accounting_query.php';require_once __DIR__.'/includes/journal.php';require_once __DIR__.'/includes/layout.php';
+header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
+if($_SERVER['REQUEST_METHOD']!=='GET'){header('Allow: GET');http_response_code(405);exit('Use GET to view a posted transaction.');}
+$esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+try{
+    $value=$_GET['journal_id']??null;
+    if(!is_string($value)||!preg_match('/\A[0-9]{1,10}\z/',$value)||ltrim($value,'0')===''||strlen(ltrim($value,'0'))===10&&strcmp(ltrim($value,'0'),'4294967295')>0)throw new JournalProblem('Choose a valid positive transaction ID.',400);
+    $id=(int)$value;$j=accounting_posted_journal($pdo,(int)($_SESSION['UserID']??0),$id);$h=$j['header'];
+    $party=isset($h['party_snapshot'])&&$h['party_snapshot']?json_decode($h['party_snapshot'],true,64,JSON_THROW_ON_ERROR):null;
+}catch(JournalProblem $e){http_response_code($e->status);exit($esc($e->getMessage()));}
+catch(Throwable $e){error_log('Exact posted transaction reader unavailable.');http_response_code(503);exit('This transaction could not be displayed. Retry this same transaction link; do not record it again.');}
+$book=$h['source_book']??'Legacy General Journal';$back=['CDB'=>'financial_records.php?view=cdb&from=&to=','CRB'=>'financial_records.php?view=crb&from=&to='][$book]??'financial_records.php?from=&to=';
+$createdDisplay=($h['recorded_timezone']??null)==='UTC'?(new DateTimeImmutable($h['recorded_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s').' (Asia/Manila)':$h['recorded_at'].' (stored creation time; timezone not recorded)';
+layout_begin('Recorded transaction #'.$id,'financial_records',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/assets/css/accounting_workspace.css').'">');
+?>
+<div class="accounting-workspace correction-details">
+<header class="aw-header"><div><p class="aw-eyebrow">RECORDED · READ ONLY</p><h1>Transaction #<?= $id ?></h1><p>The complete recorded entry. Corrections preserve this original history.</p></div><a href="<?= $esc($back) ?>">Back to <?= $book==='CDB'?'payments book':($book==='CRB'?'receipts book':'Journal History') ?></a></header>
+<section class="aw-card"><h2><?= $esc($h['description']) ?></h2><p>Accounting date: <?= $esc($h['entry_date']) ?> · <?= $esc($book) ?></p><p>Party: <?= $esc($party['name']??'Not recorded') ?> · Reference: <?= $esc($h['reference']?:'Not recorded') ?></p><p>Recorded by <?= $esc($h['posted_by']??'Historical actor') ?> · <?= $esc($createdDisplay) ?></p>
+<div class="aw-coverage">Evidence: <?= $esc($j['evidence_coverage']['status']??'Not recorded') ?><?php foreach(['debit','credit'] as $side): if(!isset($j['evidence_coverage'][$side]))continue;$c=$j['evidence_coverage'][$side]; ?><p><?= $esc(ucfirst($side)) ?>: PHP <?= $esc($c['covered']??'Not recorded') ?> supported of PHP <?= $esc($c['eligible']) ?></p><?php endforeach; ?></div>
+<div class="aw-table-wrap"><table class="aw-table"><thead><tr><th>Account (current name)</th><th>Project at recording</th><th>Debit (PHP)</th><th>Credit (PHP)</th></tr></thead><tbody><?php foreach($j['lines'] as $l): ?><tr><td><?= $esc($l['account_name'].' · '.($l['account_code']?:'#'.$l['account_id'])) ?></td><td><?= $esc($l['project_name_snapshot']??'Organization operations') ?></td><td><?= $esc($l['debit_amount']) ?></td><td><?= $esc($l['credit_amount']) ?></td></tr><?php endforeach; ?></tbody><tfoot><tr><th colspan="2">Complete entry totals</th><td><?= $esc(accounting_decimal((int)$j['debit_cents'])) ?></td><td><?= $esc(accounting_decimal((int)$j['credit_cents'])) ?></td></tr></tfoot></table></div>
+<?php foreach($j['attachments'] as $a): ?><p><a href="<?= $esc($a['url']) ?>"><?= $esc($a['name']) ?></a> · <?= $esc(($a['review']['purpose']??'')==='amount'?'Reviewed monetary support PHP '.$a['review']['accepted_amount']:'Supporting document') ?></p><?php endforeach; ?>
+<?php foreach($j['corrections'] as $c): ?><section class="correction-journal"><h3><?= $esc($c['role']) ?> in correction #<?= $esc($c['id']) ?></h3><p><?= $esc($c['reason']) ?> · <?= $esc($c['accounting_date']) ?></p><?php foreach(['target_journal_id'=>'Original','reversal_journal_id'=>'GJ reversal','replacement_journal_id'=>'Replacement'] as $k=>$label): if($c[$k]===null)continue; ?><a href="journal_transaction.php?journal_id=<?= $esc($c[$k]) ?>"><?= $esc($label) ?> #<?= $esc($c[$k]) ?></a> · <?php endforeach; ?><a href="journal_corrections.php?correction_id=<?= $esc($c['id']) ?>">View correction comparison</a></section><?php endforeach; ?>
+</section><nav class="correction-navigation"><a href="financial_records.php?view=crb&amp;from=&amp;to=">Cash Receipts Book</a><a href="financial_records.php?view=cdb&amp;from=&amp;to=">Cash Disbursements Book</a><a href="financial_records.php?from=&amp;to=">Journal History</a><button type="button" onclick="window.print()">Print transaction</button></nav><p>Cash-book totals show gross originating activity. Linked General Journal reversals supply correction offsets.</p>
+</div><?php layout_end(); ?>

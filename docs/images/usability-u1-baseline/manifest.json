@@ -1,0 +1,97 @@
+{
+  "captured_date": "2026-10-07",
+  "source_head": "73f7d5baa227b2a8ad133c63f6d881ec30986159",
+  "application_source_manifest_sha256": "348f3f0cb6e3005edb9a640398b8756222eec9bd50134e037de86da7addf8548",
+  "images": [
+    {
+      "file": "payment-empty-1366.png",
+      "sha256": "8270d905f89a2d271fb4c825ea05819a2633ecf37f3933b1f09dc47eb842c5bd",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "payment-empty",
+      "synthetic": true
+    },
+    {
+      "file": "payment-empty-1920.png",
+      "sha256": "a6f8285da414d68ad33e9e15d2b2051b7bda507fd4880cad570131ce79e3500c",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "task_state": "payment-empty",
+      "synthetic": true
+    },
+    {
+      "file": "payment-review-1366.png",
+      "sha256": "c00ab19b79bd9d70af25aa580926b205ffd0200c28d7219b04a3946dfcfda4b4",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "payment-review",
+      "synthetic": true
+    },
+    {
+      "file": "payment-recorded-1920.png",
+      "sha256": "5ac1968957872983529be99cc627fb7ff1fe5dfbefec9272535bdd6c1888a34a",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "task_state": "payment-recorded",
+      "synthetic": true
+    },
+    {
+      "file": "comparison-management-1920.png",
+      "sha256": "76bbd1eb517f78fb5447a9f5535adf9ae97c2813770583349c92ccd8576aa5b6",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "task_state": "comparison-management",
+      "synthetic": true
+    },
+    {
+      "file": "advance-liquidation-review-1366.png",
+      "sha256": "22907606c5a1221e28483f778b54484f960e53a764c9f55cc80d0bcb86077c09",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "advance-liquidation-review",
+      "synthetic": true
+    },
+    {
+      "file": "advance-detail-settled-1366.png",
+      "sha256": "c95ce04bd1aa9fe7efaf04f0ebf783ff9baa6ecf913505ca53efef0d5e687884",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "advance-detail-settled",
+      "synthetic": true
+    },
+    {
+      "file": "management-advance-detail-1366.png",
+      "sha256": "c063b926724f7a5dbf890685c25d5b36002450655d637449d6ebf73e2aaab617",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "management-advance-detail",
+      "synthetic": true
+    },
+    {
+      "file": "release-correction-blocker-1366.png",
+      "sha256": "64cf6c653dd2327ec00a446c60c2afb05d3b734eed3ef064e6b16f036738c4fd",
+      "viewport": [
+        1366,
+        768
+      ],
+      "task_state": "release-correction-blocker",
+      "synthetic": true
+    }
+  ]
+}

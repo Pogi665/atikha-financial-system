@@ -11,7 +11,8 @@ try{
     if(!in_array($method,['GET','POST'],true)){header('Allow: GET, POST');throw new JournalProblem('Method not allowed.',405);}
     if($method==='GET'){
         $action=journal_string($_GET,'action');
-        if($action==='lists'){$result=workspace_lists($pdo,$uid);}
+        if($action==='session'){$result=['csrf_token'=>csrf_token()];}
+        elseif($action==='lists'){$result=workspace_lists($pdo,$uid);}
         elseif($action==='draft'){
             $d=workspace_draft($pdo,$uid,journal_id(journal_string($_GET,'draft_id')));workspace_ordinary($d);$result=workspace_draft_public($d);
             if($d['state']==='Posted'){
