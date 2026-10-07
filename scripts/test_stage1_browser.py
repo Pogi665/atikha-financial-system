@@ -72,7 +72,9 @@ try:
         page.screenshot(path=str(run/'payment-1366.png'),full_page=True)
         bank=str(sql("SELECT CategoryID FROM Categories WHERE Name='Stage1 Bank'")[0]['CategoryID']);training=str(sql("SELECT CategoryID FROM Categories WHERE Name='Stage1 Training Expense'")[0]['CategoryID']);transport=str(sql("SELECT CategoryID FROM Categories WHERE Name='Stage1 Transportation'")[0]['CategoryID'])
         party=str(sql('SELECT id FROM parties LIMIT 1')[0]['id']);project=str(sql('SELECT id FROM projects LIMIT 1')[0]['id'])
-        page.locator('[data-payment-mode=split]').click();page.locator('#aw-optional summary').click();choose_record(page.locator('#aw-party'),party);choose_record(page.locator('#aw-default-project'),project);page.locator('#aw-purpose').fill('Browser NGO workshop <script>window.bad=1</script>')
+        original_party=sql('SELECT name FROM parties WHERE id='+party)[0]['name'];original_project=sql('SELECT name FROM projects WHERE id='+project)[0]['name']
+        browser_marker='Browser NGO workshop '+secrets.token_hex(6)
+        page.locator('[data-payment-mode=split]').click();page.locator('#aw-optional summary').click();choose_record(page.locator('#aw-party'),party);choose_record(page.locator('#aw-default-project'),project);page.locator('#aw-purpose').fill(browser_marker+' <script>window.bad=1</script>')
         choose_record(page.locator('#aw-cash-account'),bank);page.locator('#aw-cash-amount').fill('8000.00')
         lines=page.locator('[data-line]');choose_record(lines.nth(0).locator('[data-field="account_id"]'),training);lines.nth(0).locator('[data-field="debit_amount"]').fill('5000.00');page.locator('#aw-add-line').click()
         choose_record(lines.nth(1).locator('[data-field="account_id"]'),transport);lines.nth(1).locator('[data-field="debit_amount"]').fill('3000.00');page.locator('#aw-apply-project').click()
@@ -91,8 +93,8 @@ try:
         check(page.locator('#aw-default-project').input_value()==project,'Tab cancels an uncommitted project query')
         page.locator('#aw-cash-account-search').fill('bank stage1');page.screenshot(path=str(run/'selector-1366.png'),full_page=True);page.keyboard.press('Escape')
         # A fresh authenticated session can recover the persistent draft.
-        ctx2,s2=context('admin@example.invalid');pg=ctx2.new_page();pg.on('pageerror',lambda e:errors.append(str(e)));pg.goto(base+'/cash_disbursement.php?draft_id='+draft_id);pg.wait_for_function("document.getElementById('aw-draft-label').textContent.includes('saved')")
-        check(pg.locator('#aw-purpose').input_value().startswith('Browser NGO workshop') and pg.locator('[data-line]').count()==2,'Draft survives a new login session')
+        ctx2,s2=context('admin@example.invalid');pg=ctx2.new_page();pg.on('pageerror',lambda e:errors.append(str(e)));pg.goto(base+'/cash_disbursement.php?draft_id='+draft_id);pg.wait_for_function("id=>document.getElementById('aw-draft-label').textContent.startsWith('Draft #'+id+' · saved')",arg=draft_id)
+        check(pg.locator('#aw-purpose').input_value().startswith(browser_marker) and pg.locator('[data-line]').count()==2,'Draft survives a new login session')
         # Commit an upload at the server, then lose its response. Retry must reuse its durable key.
         uploads_before=int(sql('SELECT COUNT(*) n FROM Receipts')[0]['n']);lost=[False]
         def lose_upload(route):
@@ -136,8 +138,9 @@ try:
         pg.reload();pg.wait_for_selector('#aw-posted:not([hidden])');check(pg.locator('#aw-purpose').is_disabled(),'Reloaded posted draft is read-only')
         check(pg.locator('#aw-party-search').is_disabled() and pg.locator('.aw-record-toggle').first.is_disabled(),'Reloaded posted searchable controls remain disabled')
         check(ctx2.request.get(base+'/'+pg.locator('[data-document] a').first.get_attribute('href')).status==200,'Posted draft still opens its original evidence with journal authorization')
-        sql("UPDATE parties SET name='Later renamed supplier',is_active=0 WHERE id="+party,True);sql("UPDATE projects SET name='Later renamed project',is_active=0 WHERE id="+project,True)
-        pg.reload();pg.wait_for_selector('#aw-posted:not([hidden])');check('Renamed supplier' in pg.locator('#aw-party option:checked').inner_text() and 'Synthetic community training' in pg.locator('[data-line] [data-field="fund_project_id"]').first.locator('option:checked').inner_text(),'Posted draft keeps snapshot labels after master rename and disabling')
+        later_party='Changed supplier '+secrets.token_hex(6);later_project='Changed project '+secrets.token_hex(6)
+        sql("UPDATE parties SET name='"+later_party+"',is_active=0 WHERE id="+party,True);sql("UPDATE projects SET name='"+later_project+"',is_active=0 WHERE id="+project,True)
+        pg.reload();pg.wait_for_selector('#aw-posted:not([hidden])');check(original_party in pg.locator('#aw-party option:checked').inner_text() and original_project in pg.locator('[data-line] [data-field="fund_project_id"]').first.locator('option:checked').inner_text() and later_party not in pg.locator('#aw-party option:checked').inner_text() and later_project not in pg.locator('[data-line] [data-field="fund_project_id"]').first.locator('option:checked').inner_text(),'Posted draft keeps snapshot labels after master rename and disabling')
         sql('UPDATE parties SET is_active=1 WHERE id='+party,True);sql('UPDATE projects SET is_active=1 WHERE id='+project,True)
         d=ctx2.request.get(base+'/accounting_actions.php?action=draft&draft_id='+draft_id).json()['result']
         retry={'action':'post','csrf_token':session['csrf'],'draft_id':draft_id,'revision':str(d['revision']),'submission_key':d['submission_key'],'payload':d['payload'],'review_token':'1000000000.'+'0'*64}
@@ -145,9 +148,9 @@ try:
         check(res.status==200 and res.json()['result']['duplicate'] and journal_count()==before+1,'HTTP matching retry across sessions and expired review recovers result')
         retry['payload']['description']='Changed content';res=ctx.request.post(base+'/accounting_actions.php',data=json.dumps(retry),headers={'Content-Type':'application/json'});check(res.status==409,'HTTP changed content with durable key conflicts')
         # Search selects journal IDs, keeping both sides and exact totals.
-        page.goto(base+'/financial_records.php?view=cdb&from=&to=');page.wait_for_selector('.dt-search input');page.locator('.dt-search input').fill('Browser NGO workshop');page.wait_for_timeout(300)
+        page.goto(base+'/financial_records.php?view=cdb&from=&to=');page.wait_for_selector('.dt-search input');page.locator('.dt-search input').fill(browser_marker);page.wait_for_timeout(300)
         check(page.locator('#records-table tbody tr').count()==3 and page.locator('#records-total-debit').inner_text()=='₱8,000.00' and page.locator('#records-total-credit').inner_text()=='₱8,000.00','Cash-book search retains complete entry and balanced totals')
-        page.locator('.dt-search input').fill('Stage1 Transportation Browser');page.wait_for_timeout(200);check(page.locator('#records-table tbody tr').count()==3,'Search terms on different lines retain the whole journal')
+        page.locator('.dt-search input').fill('Stage1 Transportation '+browser_marker);page.wait_for_timeout(200);check(page.locator('#records-table tbody tr').count()==3,'Search terms on different lines retain the whole journal')
         page.locator('.records-view').last.click();page.wait_for_selector('#transaction-dialog[open]');check('Reviewed monetary evidence' in page.locator('#transaction-documents').inner_text(),'History displays posted manual evidence review');check('Partially covered' in page.locator('#transaction-details').inner_text(),'Posted cash-book details retain partial coverage status');page.keyboard.press('Escape')
         page.screenshot(path=str(run/'cash-book-1366.png'),full_page=True)
         # Inline masters and server validation recovery.
@@ -157,8 +160,9 @@ try:
         page.locator('#aw-purpose').fill('Keep values after validation failure');page.locator('#aw-review').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0")
         check(page.locator('#aw-purpose').input_value()=='Keep values after validation failure' and page.locator('#aw-save').is_enabled(),'Validation failure retains values and enables recovery')
         page.locator('#aw-purpose').focus();page.keyboard.press('Tab');check(page.evaluate('document.activeElement.id')=='aw-cash-account-search','Keyboard moves through labelled searchable fields')
-        page.locator('[data-new-master="projects"]').click();page.locator('#aw-master-form [name="name"]').fill('Browser community project');page.locator('#aw-master-form [name="code"]').fill('BROWSER2');page.locator('#aw-master-form button.aw-primary').click();page.wait_for_function("document.activeElement.id==='aw-default-project-search'")
-        check('BROWSER2' in page.locator('#aw-default-project-search').input_value() and page.locator('#aw-purpose').input_value()=='Keep values after validation failure','Inline project creation keeps form values and restores searchable focus')
+        project_code='BROWSER-'+secrets.token_hex(6).upper()
+        page.locator('[data-new-master="projects"]').click();page.locator('#aw-master-form [name="name"]').fill('Browser community project');page.locator('#aw-master-form [name="code"]').fill(project_code);page.locator('#aw-master-form button.aw-primary').click();page.wait_for_function("document.activeElement.id==='aw-default-project-search'")
+        check(project_code in page.locator('#aw-default-project-search').input_value() and page.locator('#aw-purpose').input_value()=='Keep values after validation failure','Inline project creation keeps form values and restores searchable focus')
         for source in ['CRB','GJ']:
             existing=str(sql("SELECT id FROM journal_drafts WHERE state='Posted' AND source_book='"+source+"' ORDER BY id LIMIT 1")[0]['id'])
             page.goto(base+('/cash_receipt.php' if source=='CRB' else '/general_journal.php')+'?draft_id='+existing);page.wait_for_selector('#aw-posted:not([hidden])')

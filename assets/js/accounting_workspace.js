@@ -20,7 +20,7 @@
     async function api(action,args={},method='POST'){
         const url=new URL(action==='master'?'accounting_actions.php':(config.endpoint||'accounting_actions.php'),location.href),options={credentials:'same-origin',cache:'no-store'};
         if(method==='GET'){url.search=new URLSearchParams({action,...args});}else{options.method='POST';options.headers={'Content-Type':'application/json'};options.body=JSON.stringify({action,csrf_token:config.csrf_token,...args});}
-        const response=await fetch(url,options);let data;try{data=await response.json();}catch{throw Object.assign(new Error('The server response was interrupted. Retry the same action.'),{uncertain:true});}
+        let response;try{response=await fetch(url,options);}catch(e){if(payment)throw Object.assign(new Error('The connection was interrupted. Check the recording result using the same request.'),{uncertain:true});throw e;}let data;try{data=await response.json();}catch{throw Object.assign(new Error('The server response was interrupted. Retry the same action.'),{uncertain:true});}
         if(typeof data?.ok!=='boolean')throw Object.assign(new Error('The recording response could not be verified. Check the same request.'),{uncertain:true});
         if(!response.ok||!data.ok)throw Object.assign(new Error(data.error||'Request failed.'),{status:response.status,uncertain:response.status>=500||response.status<400});
         if(action==='post'&&(!Number.isInteger(data.result?.id)||data.result.id<=0))throw Object.assign(new Error('The recorded transaction identity could not be verified. Check the same request.'),{uncertain:true});return data.result;
@@ -202,7 +202,7 @@
         if(isCorrection){const heading=document.createElement('h3');heading.textContent='Generated exact reversal · General Journal';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement · '+book;panel.append(h);}}
         const summary=document.createElement('p');summary.textContent=review.input.entry_date+' · '+(review.party?.name||'No party')+' · '+review.input.description;panel.append(summary);
         const cover=document.createElement('div');cover.className='aw-coverage';cover.textContent=review.coverage.status+' — '+(isLiquidation?['debit']:book==='GJ'?['debit','credit']:book==='CRB'?['credit']:['debit']).map(side=>side+': PHP '+review.coverage[side].covered+' supported of PHP '+review.coverage[side].eligible).join('; ');panel.append(cover);
-        if(payment)paymentSummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(payment){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.append(summary,wrap);panel.append(details);paymentView('review');paymentFocus='aw-post';}else panel.append(wrap);$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Post reversal':'Post correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
+        if(payment)paymentSummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(payment){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=paymentMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l.credit_amount)>0n);details.append(summary,wrap);panel.append(details);paymentView('review');paymentFocus='aw-post';}else panel.append(wrap);$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Post reversal':'Post correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
     });});
     $('aw-back').addEventListener('click',()=>{if(payment)paymentView('enter');token='';$('aw-review-panel').hidden=true;$('aw-purpose').focus();});
     function posted(id,duplicate=false,advanceId=config.advance_id){if(payment){paymentRequest=null;paymentView('recorded');message(duplicate?'Recorded result recovered. No duplicate payment was created.':'Payment recorded.');$('aw-exact-link').href='journal_transaction.php?journal_id='+encodeURIComponent(id);paymentFocus='aw-exact-link';}if(isAdvance){if($('aw-print-label'))$('aw-print-label').textContent='POSTED journal #'+id;if($('aw-advance-link'))$('aw-advance-link').href='cash_advances.php?advance_id='+advanceId;}draft.state='Posted';draft.posted_journal_id=id;dirty=false;token='';renderDocuments();$('aw-review-panel').hidden=true;$('aw-posted').hidden=false;$('aw-draft-label').textContent='Posted journal #'+id;$('aw-posted-message').textContent='Journal #'+id+(duplicate?' was already posted. The existing result was recovered.':' posted successfully.');
@@ -271,6 +271,7 @@
         root.querySelector('.aw-columns').hidden=step!=='enter';
         $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
         root.querySelector('h1').textContent={enter:'Record a payment',review:'Review payment',recorded:'Payment recorded',unknown:'Check recording result'}[step];
+        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter the payment details, review, then confirm to record.',review:'Check where the money comes from and how this payment will be recorded.',recorded:'This payment is recorded. Open its details or prepare another entry.',unknown:'The payment may already be recorded. Check the same request before continuing.'}[step];
         $('aw-mode-notice').hidden=step!=='enter';
         Array.from($('aw-progress').children).forEach((el,i)=>{if(i==={enter:0,review:1,recorded:2,unknown:1}[step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
         if(step==='review')message('Review complete. This payment has not been recorded.');
@@ -314,7 +315,7 @@
             const account='aw-line-'+l.client_id+'-account',d=cents(l.debit_amount),c=cents(l.credit_amount);
             if(eligible(account,l.account_id))add(visible(account),'Choose an available cost, asset or liability account.');
             const project='aw-line-'+l.client_id+'-project';if(paymentMode!=='quick'&&l.fund_project_id&&$(project).selectedOptions[0]?.disabled)add(visible(project),'Choose an available project or Organization operations.');
-            if(d===null||c===null||((d===0n)===(c===0n))){add(paymentMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+(d===null||d===0n?'debit':'credit'),'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;}
+            if(d===null||c===null||((d===0n)===(c===0n))){add(paymentMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+(d===null||d===0n?'debit':'credit'),paymentMode==='quick'?'Enter a positive payment amount with at most two decimal places.':'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;}
             else {debit+=d;credit+=c;}
         }
         if(!p.lines.length)add('aw-add-line','Add at least one allocation.');
@@ -349,13 +350,24 @@
     function paymentSummary(review,panel){
         const summary=document.createElement('dl');summary.className='aw-payment-summary';
         const add=(name,value)=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=name;dd.textContent=value;summary.append(dt,dd);};
-        const cash=review.lines.filter(l=>Number(l.is_cash_account)).reduce((a,l)=>a+cents(l.credit_amount),0n);
+        const cashLines=review.lines.filter(l=>Number(l.is_cash_account));
+        cashLines.forEach(l=>{add('Pay from',l.account_name);add('Cash account project',l.project_name);});
+        const cash=cashLines.reduce((a,l)=>a+cents(l.credit_amount),0n);
         add('Cash paid',money(cash));
         const eligible=review.lines.filter(l=>!Number(l.is_cash_account)&&['Expense','Asset'].includes(l.account_type));
         const liabilities=review.lines.filter(l=>l.account_type==='Liability'&&cents(l.credit_amount)>0n);
         const gross=eligible.reduce((a,l)=>a+cents(l.debit_amount),0n),held=liabilities.reduce((a,l)=>a+cents(l.credit_amount),0n);
         if(held>0n&&gross-held===cash){add('Gross costs / asset purchases',money(gross));add('Withholding / other liability credits',money(held));}
-        panel.prepend(summary);
+        const allocations=document.createElement('section');allocations.className='aw-review-allocations';
+        const heading=document.createElement('h3');heading.textContent='Allocations';
+        const breakdown=document.createElement('table');breakdown.className='aw-review-breakdown';
+        const head=document.createElement('thead'),headRow=document.createElement('tr');
+        ['Account','Amount (PHP)','Actual project'].forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;headRow.append(th);});head.append(headRow);
+        const body=document.createElement('tbody');
+        review.lines.filter(l=>!Number(l.is_cash_account)).forEach(l=>{const row=document.createElement('tr');
+            const credit=cents(l.credit_amount)>0n;
+            [l.account_name,(credit?'Credit · ':'')+money(cents(l[credit?'credit_amount':'debit_amount'])),l.project_name].forEach(value=>{const td=document.createElement('td');td.textContent=value;row.append(td);});body.append(row);
+        });breakdown.append(head,body);allocations.append(heading,breakdown);panel.prepend(summary,allocations);
     }
     async function paymentRecord(){
         const recovering=paymentStep==='unknown';

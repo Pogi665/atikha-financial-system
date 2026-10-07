@@ -1,5 +1,7 @@
 # Usability U2 delivery: Checkpoint U2-A
 
+**Subsequent review revision, October 8:** [Targeted corrections, final-change coverage and revised screenshots](usability-u2-a-revision.md) supersede this initial delivery's presentation and final-verification handoff. The counts and captures below remain dated October 7 evidence. U2-B remains unstarted.
+
 October 7, 2026. **U2-A source implementation and focused isolated verification complete. U2-B/U2-C, working acceptance and Atikha observation remain pending.**
 
 The user explicitly authorized “Implement U2-A” after supplying Gemini's and ChatGPT's favorable reviews of the [U2 plan](usability-u2-plan.md). The corrected [U1-C prototype](prototypes/usability-u1-payment.html) is the accepted design reference. These are selected usability decisions, not evidence that Atikha staff have independently completed the new workflow.

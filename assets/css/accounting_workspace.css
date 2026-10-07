@@ -34,6 +34,13 @@
 .aw-payment #aw-error a{color:#9f1239}
 .aw-payment-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px;background:#ecfdf5;border-radius:8px}
 .aw-payment-summary dd{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.aw-payment .aw-review-allocations{margin:10px 0}
+.aw-payment #aw-review-panel .aw-payment-summary{padding:12px;gap:6px}
+.aw-payment #aw-review-panel .aw-coverage{padding:10px;margin:10px 0}
+.aw-payment .aw-review-allocations h3{font-weight:650;margin-bottom:5px}
+.aw-payment .aw-review-breakdown{width:100%;table-layout:fixed;font-size:13px;text-align:left}
+.aw-payment .aw-review-breakdown th,.aw-payment .aw-review-breakdown td{padding:6px 10px;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere;vertical-align:top}
+.aw-payment .aw-review-breakdown th:nth-child(2),.aw-payment .aw-review-breakdown td:nth-child(2){width:24%;font-variant-numeric:tabular-nums}
 #aw-exact-link{display:inline-block;background:#047857;color:white;padding:10px 14px;border-radius:7px;margin:12px 0}
 #aw-leave-dialog{width:min(520px,90%);border:1px solid #cbd5e1;border-radius:12px;padding:24px}
 #aw-leave-dialog::backdrop{background:#0f172a88}
