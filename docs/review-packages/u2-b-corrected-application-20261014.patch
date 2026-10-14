@@ -1,0 +1,442 @@
+diff --git a/assets/css/accounting_workspace.css b/assets/css/accounting_workspace.css
+index 4ae1c4dc3bc7c81faf617e91b7b356bf04c4744c..d14b4a92e0ab88d16fc70e950a1613b97a195220 100644
+--- a/assets/css/accounting_workspace.css
++++ b/assets/css/accounting_workspace.css
+@@ -1,7 +1,7 @@
+ .accounting-workspace{max-width:1440px;margin:auto;color:#1e293b;font:14px/1.5 system-ui,sans-serif}.aw-header{display:flex;justify-content:space-between;gap:20px;margin-bottom:20px}.aw-header h1{font-size:28px;font-weight:700;line-height:1.3}.aw-header p{color:#64748b}.aw-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;color:#047857!important}.accounting-workspace a{color:#047857;text-decoration:underline;text-underline-offset:3px}.aw-columns{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(300px,1fr);gap:20px;align-items:start}.aw-card{background:white;border:1px solid #dbe3ec;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px #0f172a04}.aw-card h2{font-size:17px;font-weight:650;margin:0 0 16px}.aw-card h2 span{font-size:12px;font-weight:400;color:#64748b;float:right}.aw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.accounting-workspace label{display:block;font-weight:600;font-size:13px;margin:0 0 14px}.accounting-workspace input:not([type=checkbox]),.accounting-workspace select,.accounting-workspace textarea{display:block;width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:9px 10px;margin-top:5px;background:#fff;color:#0f172a;font-weight:400;min-width:0}.accounting-workspace input:focus,.accounting-workspace select:focus,.accounting-workspace textarea:focus,.accounting-workspace button:focus-visible{outline:3px solid #a7f3d0;outline-offset:2px;border-color:#059669}.accounting-workspace button{border:1px solid #cbd5e1;border-radius:7px;padding:8px 12px;background:white;cursor:pointer;font-weight:600}.accounting-workspace button:hover{background:#f1f5f9}.accounting-workspace button:disabled{opacity:.5;cursor:default}.accounting-workspace button.aw-primary{background:#047857;color:white;border-color:#047857}.aw-primary:hover{background:#065f46!important}.aw-help{color:#64748b;font-size:12px;margin-bottom:14px}.aw-section-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:20px}.aw-section-heading h2{margin:0}.accounting-workspace .aw-inline{display:inline-flex;align-items:center;gap:6px;font-size:12px;margin-right:8px}.aw-cash{border:1px solid #a7f3d0;background:#f0fdf4;padding:16px;border-radius:8px;margin-top:12px}.aw-cash .aw-grid{grid-template-columns:1fr 1fr}.aw-line{border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:12px}.aw-line-top{display:grid;grid-template-columns:1.2fr 1fr auto;gap:10px;align-items:center}.aw-line-money{display:grid;grid-template-columns:1fr 1fr;gap:12px}.aw-line label{margin:0 0 8px}.aw-line button{color:#9f1239}.aw-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}.aw-totals{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #e2e8f0;padding-top:18px;margin-top:20px}.aw-totals span{font-size:12px;color:#64748b}.aw-totals strong{display:block;font-size:18px;color:#0f172a;font-variant-numeric:tabular-nums}.aw-document{border-top:1px solid #e2e8f0;padding:16px 0}.aw-document h3{font-size:14px;font-weight:650;overflow-wrap:anywhere}.aw-document .aw-grid{gap:10px}.aw-document label{font-size:12px}.aw-document img{width:100%;max-height:240px;object-fit:contain;background:#f8fafc;margin:12px 0}.aw-upload{border:1px dashed #94a3b8;padding:16px;border-radius:8px;background:#f8fafc}.aw-table{width:100%;border-collapse:collapse;font-size:13px}.aw-table th,.aw-table td{text-align:left;padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.aw-table th{background:#f8fafc;color:#64748b}.aw-table-wrap{overflow:auto}.aw-coverage{background:#f8fafc;border:1px solid #dbe3ec;border-radius:8px;padding:14px;margin:16px 0}#aw-error:empty,#aw-status:empty{display:none}#aw-error{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;padding:12px;border-radius:8px;margin-bottom:16px}#aw-status{color:#047857;padding:8px 0}#aw-master-dialog{max-width:480px;width:90%;border:1px solid #cbd5e1;border-radius:12px;padding:24px}#aw-master-dialog::backdrop{background:#0f172a88}.aw-master-error{color:#9f1239}.aw-master-list{display:grid;grid-template-columns:1fr 1fr;gap:20px}.aw-master-list button{margin:4px}.aw-controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.aw-controls label{flex:1;min-width:180px}.aw-draft-filters{display:flex;gap:16px;align-items:end}.aw-draft-filters label{flex:1}.aw-draft-filters button{margin-bottom:14px}.accounting-workspace [hidden]{display:none!important}@media(max-width:1450px){.aw-columns{grid-template-columns:1fr}.aw-card{padding:20px}.aw-document img{max-width:450px}.aw-master-list{grid-template-columns:1fr}}@media print{.aw-actions,.aw-upload,.aw-header>a{display:none}.aw-columns{display:block}}
+ 
+ /* Searchable workspace record controls. Native selects retain the saved IDs. */
+-/* U2-A: ordinary payments only. Existing receipt/advance/correction screens keep their layout. */
++/* U2: explicitly opted-in ordinary workspaces. Dedicated advance/correction layouts stay separate. */
+ .aw-payment{max-width:1000px}
+ .aw-payment .aw-header{margin-bottom:10px}
+ .aw-payment .aw-header h1{font-size:26px}
+diff --git a/assets/js/accounting_workspace.js b/assets/js/accounting_workspace.js
+index 00e28c652d1c738b406eba2b7a3595f02f12014a..ce52009dfaa7ae8b14b20c9ed7c7ed5e34fbc89c 100644
+--- a/assets/js/accounting_workspace.js
++++ b/assets/js/accounting_workspace.js
+@@ -3,12 +3,15 @@
+     const config=JSON.parse(document.getElementById('workspace-data').textContent),book=config.book;
+     const isCorrection=Boolean(config.is_correction),reverseOnly=isCorrection&&config.mode==='reverse_only';
+     let correctionPayload=isCorrection?structuredClone(config.initial_payload):null,correctionTarget=config.target;
+-    const payment=Boolean(config.ordinary_payment)&&book==='CDB'&&!isCorrection&&!config.workflow_kind;
++    // Explicit opt-in excludes dedicated advance/correction and legacy scalar OCR routes.
++    const focused=Boolean(config.ordinary_workspace)&&!isCorrection&&!config.workflow_kind;
++    const cashFocused=focused&&book!=='GJ',entryNoun=book==='CDB'?'payment':book==='CRB'?'receipt':'journal entry';
++    const counterpartSide=book==='CRB'?'credit':'debit',oppositeSide=book==='CRB'?'debit':'credit';
+     const advanceKind=config.workflow_kind||'',isAdvance=Boolean(advanceKind),isLiquidation=advanceKind==='advance_liquidation';
+     const $=id=>document.getElementById(id),root=$('entry-workspace');
+     const nonce=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
+     let lists=config.lists,draft=null,key=nonce(),token='',dirty=false,busy=false,documentDetails=[],pendingUpload=null;
+-    let busyDisabled=[],paymentMode='',paymentStep='enter',paymentRequest=null,paymentErrorsShown=false,leaveDestination='',paymentFocus='',paymentErrorSignature='';
++    let busyDisabled=[],entryMode='',entryStep='enter',entryRequest=null,entryErrorsShown=false,leaveDestination='',entryFocus='',entryErrorSignature='';
+     function disableBusyControls(){if(!busy||!isCorrection)return;root.querySelectorAll('button,input,select,textarea').forEach(el=>{if(!el.disabled){el.disabled=true;busyDisabled.push(el);}});}
+     const freshLine=()=>({client_id:nonce(),account_id:'',fund_project_id:$('aw-default-project')?.value||'',debit_amount:'',credit_amount:''});
+     let state={entry_date:$('aw-date').value,reference:'',description:'',party_id:'',default_project_id:'',cash_account_id:'',cash_amount:'',cash_project_id:'',transaction_kind:'ordinary',lines:[],documents:[]};
+@@ -20,14 +23,14 @@
+     async function api(action,args={},method='POST'){
+         const url=new URL(action==='master'?'accounting_actions.php':(config.endpoint||'accounting_actions.php'),location.href),options={credentials:'same-origin',cache:'no-store'};
+         if(method==='GET'){url.search=new URLSearchParams({action,...args});}else{options.method='POST';options.headers={'Content-Type':'application/json'};options.body=JSON.stringify({action,csrf_token:config.csrf_token,...args});}
+-        let response;try{response=await fetch(url,options);}catch(e){if(payment)throw Object.assign(new Error('The connection was interrupted. Check the recording result using the same request.'),{uncertain:true});throw e;}let data;try{data=await response.json();}catch{throw Object.assign(new Error('The server response was interrupted. Retry the same action.'),{uncertain:true});}
++        let response;try{response=await fetch(url,options);}catch(e){if(focused)throw Object.assign(new Error('The connection was interrupted. Check the recording result using the same request.'),{uncertain:true});throw e;}let data;try{data=await response.json();}catch{throw Object.assign(new Error('The server response was interrupted. Retry the same action.'),{uncertain:true});}
+         if(typeof data?.ok!=='boolean')throw Object.assign(new Error('The recording response could not be verified. Check the same request.'),{uncertain:true});
+         if(!response.ok||!data.ok)throw Object.assign(new Error(data.error||'Request failed.'),{status:response.status,uncertain:response.status>=500||response.status<400});
+         if(action==='post'&&(!Number.isInteger(data.result?.id)||data.result.id<=0))throw Object.assign(new Error('The recorded transaction identity could not be verified. Check the same request.'),{uncertain:true});return data.result;
+     }
+     function message(v){$('aw-status').textContent=v;}
+-    function error(e){if(payment&&paymentErrorsShown)paymentShowErrors();const p=document.createElement('p');p.textContent=e.message||String(e);$('aw-error').append(p);$('aw-error').focus();}
+-    function mark(){if(payment){message('');paymentView('enter');}if(isAdvance&&$('aw-proof-status'))$('aw-proof-status').textContent='Save and confirm the current return context before review.';dirty=true;token='';$('aw-review-panel').hidden=true;$('aw-draft-label').textContent=(draft?'Draft #'+draft.id:'Unsaved draft')+' · unsaved changes';}
++    function error(e){if(focused&&entryErrorsShown)entryShowErrors();const p=document.createElement('p');p.textContent=e.message||String(e);$('aw-error').append(p);$('aw-error').focus();}
++    function mark(){if(focused){message('');entryView('enter');}if(isAdvance&&$('aw-proof-status'))$('aw-proof-status').textContent='Save and confirm the current return context before review.';dirty=true;token='';$('aw-review-panel').hidden=true;$('aw-draft-label').textContent=(draft?'Draft #'+draft.id:'Unsaved draft')+' · unsaved changes';}
+     function select(options,value,empty){const s=document.createElement('select');s.add(new Option(empty,''));options.forEach(([id,label])=>s.add(new Option(label,String(id))));if(value&&!options.some(([id])=>String(id)===String(value))){const unavailable=new Option(value+' (inactive or unavailable)',value);unavailable.disabled=true;s.add(unavailable);}s.value=value||'';return s;}
+     const recordSelectors=new Map();let openRecordSelector=null,selectorSerial=0;
+     function enhanceRecordSelector(s){
+@@ -40,7 +43,7 @@
+         const list=document.createElement('ul');list.id=id+'-choices';list.className='aw-record-choices';list.setAttribute('role','listbox');list.setAttribute('aria-label',labelText+' choices');list.hidden=true;
+         search.setAttribute('aria-controls',list.id);toggle.setAttribute('aria-controls',list.id);toggle.setAttribute('aria-expanded','false');
+         const notice=document.createElement('span');notice.id=id+'-notice';notice.className='aw-sr-only';notice.setAttribute('role','status');search.setAttribute('aria-describedby',notice.id);
+-        const full=payment?document.createElement('span'):null;if(full){full.className='aw-record-full-label';label.append(full);}
++        const full=focused?document.createElement('span'):null;if(full){full.className='aw-record-full-label';label.append(full);}
+         let active=-1,choices=[];
+         const blocked=()=>busy||s.disabled||draft?.state==='Posted'||(isCorrection&&!correctionTarget.eligible);
+         const selectedLabel=()=>s.selectedOptions[0]?.textContent||'';
+@@ -75,7 +78,7 @@
+     function syncRecordSelectors(){recordSelectors.forEach(widget=>widget.sync());}
+     document.addEventListener('mousedown',e=>{if(openRecordSelector&&!e.target.closest('.aw-record-selector'))openRecordSelector.close();});
+     const accountOptions=cash=>{
+-        const rows=lists.accounts.filter(a=>(!isLiquidation||(!Number(a.Is_Cash_Account)&&((['Expense','Asset'].includes(a.Account_Type)&&a.Normal_Balance==='Debit')||(a.Account_Type==='Liability'&&a.Normal_Balance==='Credit'))))&&(cash===undefined||Boolean(Number(a.Is_Cash_Account))===cash)).map(a=>[a.CategoryID,payment?a.Name+' · '+(a.Account_Code||'#'+a.CategoryID):(a.Account_Code||'#'+a.CategoryID)+' · '+a.Name]);
++        const rows=lists.accounts.filter(a=>(!isLiquidation||(!Number(a.Is_Cash_Account)&&((['Expense','Asset'].includes(a.Account_Type)&&a.Normal_Balance==='Debit')||(a.Account_Type==='Liability'&&a.Normal_Balance==='Credit'))))&&(cash===undefined||Boolean(Number(a.Is_Cash_Account))===cash)).map(a=>[a.CategoryID,focused?a.Name+' · '+(a.Account_Code||'#'+a.CategoryID):(a.Account_Code||'#'+a.CategoryID)+' · '+a.Name]);
+         if(draft?.state==='Posted')(draft.posted_lines||[]).forEach(l=>{if(!rows.some(([id])=>String(id)===String(l.account_id)))rows.push([l.account_id,(l.account_code||'#'+l.account_id)+' · '+l.account_name]);});return rows;
+     };
+     const projectOptions=()=>{
+@@ -90,7 +93,7 @@
+         if(isCorrection&&!isAdvance&&correctionTarget.journal.party_snapshot){const p=JSON.parse(correctionTarget.journal.party_snapshot);if(!partyOptions.some(([id])=>String(id)===String(p.id)))partyOptions.push([p.id,p.name+' (original party)']);}
+         if(draft?.state==='Posted'&&draft.posted_party){const p=draft.posted_party,i=partyOptions.findIndex(([id])=>String(id)===String(p.id)),value=[p.id,p.name+' · '+p.code];if(i<0)partyOptions.push(value);else partyOptions[i]=value;}
+         if(config.advance?.original_party){const p=config.advance.original_party;const i=partyOptions.findIndex(([id])=>String(id)===String(p.id)),value=[p.id,p.name+' \u00b7 '+p.code+' (original employee)'];if(i<0)partyOptions.push(value);else partyOptions[i]=value;}
+-        replaceSelect('aw-party',partyOptions,state.party_id,isAdvance?'Select accountable employee':book==='GJ'?'No party':payment?'Select payee':'Select payer / payee',true);
++        replaceSelect('aw-party',partyOptions,state.party_id,isAdvance?'Select accountable employee':book==='GJ'?'No party':focused?(book==='CRB'?'Select payer':'Select payee'):'Select payer / payee',true);
+         replaceSelect('aw-default-project',projectOptions(),state.default_project_id,'Organization operations',true);
+         if(book!=='GJ'){replaceSelect('aw-cash-project',projectOptions(),state.cash_project_id,'Organization operations',true);replaceSelect('aw-cash-account',accountOptions(true),state.cash_account_id,'Select cash / bank account',true);}
+     }
+@@ -109,21 +112,21 @@
+     function field(labelText,input){const label=document.createElement('label');label.append(labelText,input);return label;}
+     function input(value,attr){const i=document.createElement('input');i.value=value||'';i.inputMode='decimal';Object.assign(i.dataset,attr);return i;}
+     function renderLines(){
+-        if(payment&&$('aw-cash-project'))$('aw-project-home').after($('aw-cash-project').closest('label'));
+-        destroyRecordSelectors($('aw-lines'));$('aw-lines').replaceChildren();const advanced=payment?paymentMode==='advanced':book==='GJ'||$('aw-advanced').checked;
++        if(cashFocused&&$('aw-cash-project'))$('aw-project-home').after($('aw-cash-project').closest('label'));
++        destroyRecordSelectors($('aw-lines'));$('aw-lines').replaceChildren();const advanced=focused?entryMode==='advanced':book==='GJ'||$('aw-advanced').checked;
+         state.lines.forEach((l,index)=>{
+             const box=document.createElement('div');box.className='aw-line';box.dataset.line=l.client_id;
+             const top=document.createElement('div');top.className='aw-line-top';
+             const a=select(accountOptions(book==='GJ'?undefined:false),l.account_id,'Select account');a.dataset.field='account_id';a.id='aw-line-'+l.client_id+'-account';
+             const p=select(projectOptions(),l.fund_project_id,'Organization operations');p.dataset.field='fund_project_id';p.id='aw-line-'+l.client_id+'-project';
+             const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.setAttribute('aria-label','Remove line '+(index+1));remove.disabled=state.lines.length<=(book==='GJ'&&!isLiquidation?2:1);
+-            remove.addEventListener('click',()=>{read();if(payment&&state.documents.some(d=>d.allocations.some(a=>a.client_id===l.client_id))){error(new Error('Reallocate or remove this line’s document support before removing the line.'));return;}state.lines=state.lines.filter(x=>x!==l);mark();renderLines();renderDocuments();totals();});
++            remove.addEventListener('click',()=>{read();if(focused&&state.documents.some(d=>d.allocations.some(a=>a.client_id===l.client_id))){error(new Error('Reallocate or remove this line’s document support before removing the line.'));return;}state.lines=state.lines.filter(x=>x!==l);mark();renderLines();renderDocuments();totals();});
+             top.append(field('Account '+(index+1),a),field('Project',p),remove);box.append(top);
+             const amounts=document.createElement('div');amounts.className='aw-line-money';
+-            ['debit','credit'].forEach(side=>{const v=input(l[side+'_amount'],{field:side+'_amount'});if(payment)v.id='aw-line-'+l.client_id+'-'+side;const label=field(advanced?side[0].toUpperCase()+side.slice(1)+' (PHP)':'Amount (PHP)',v);
++            ['debit','credit'].forEach(side=>{const v=input(l[side+'_amount'],{field:side+'_amount'});if(focused)v.id='aw-line-'+l.client_id+'-'+side;const label=field(advanced?side[0].toUpperCase()+side.slice(1)+' (PHP)':'Amount (PHP)',v);
+                 if(!advanced&&side!==(book==='CRB'?'credit':'debit'))label.hidden=true;amounts.append(label);});
+             box.append(amounts);if(isLiquidation){const note=document.createElement('textarea');note.value=state.line_notes[l.client_id]||'';note.maxLength=2000;note.dataset.lineNote=l.client_id;box.append(field('Allocation note (required for liability credits)',note));}$('aw-lines').append(box);enhanceRecordSelector(a);enhanceRecordSelector(p);
+-        });if(payment)paymentLayout();$('aw-add-line').disabled=state.lines.length>=(book==='GJ'&&!isLiquidation?100:99);disableBusyControls();
++        });if(cashFocused)entryLayout();else if(focused)root.dataset.paymentMode='advanced';$('aw-add-line').disabled=state.lines.length>=(book==='GJ'&&!isLiquidation?100:99);disableBusyControls();
+     }
+     function totals(){
+         read();let debit=0n,credit=0n,valid=true;
+@@ -172,42 +175,44 @@
+     }
+     function identity(){return {draft_id:String(draft.id),revision:String(draft.revision),submission_key:key};}
+     function payloadForSave(){const replacement=read();if(!isCorrection)return replacement;return {entry_date:replacement.entry_date,reason:$('aw-correction-reason').value,backdate_reason:$('aw-backdate-reason').value,replacement:reverseOnly?null:replacement};}
+-    async function save(){const payload=payloadForSave();if(!dirty&&draft){if(payment)message('Draft saved. No changes to save. This payment has not been recorded.');return;}
+-        adopt(await api('save',{draft_id:draft?String(draft.id):'',revision:draft?String(draft.revision):'',source_book:book,workflow_kind:advanceKind,advance_id:config.advance_id||'',submission_key:key,target_journal_id:String(config.target_journal_id),mode:config.mode,payload}));message(payment?'Draft saved. This payment has not been recorded.':'Draft saved. No financial entry has been posted.');if(payment&&paymentErrorsShown)paymentShowErrors();}
++    async function save(){const payload=payloadForSave();if(!dirty&&draft){if(focused)message('Draft saved. No changes to save. This '+entryNoun+' has not been recorded.');return;}
++        adopt(await api('save',{draft_id:draft?String(draft.id):'',revision:draft?String(draft.revision):'',source_book:book,workflow_kind:advanceKind,advance_id:config.advance_id||'',submission_key:key,target_journal_id:String(config.target_journal_id),mode:config.mode,payload}));message(focused?'Draft saved. This '+entryNoun+' has not been recorded.':'Draft saved. No financial entry has been posted.');if(focused&&entryErrorsShown)entryShowErrors();}
+     function render(){if(isCorrection){$('aw-correction-reason').value=correctionPayload.reason;$('aw-backdate-reason').value=correctionPayload.backdate_reason;showCorrectionContext();}renderMasters();$('aw-date').value=state.entry_date;$('aw-reference').value=state.reference;$('aw-purpose').value=state.description;
+         if(book!=='GJ'){$('aw-cash-amount').value=state.cash_amount;if(state.lines.some(l=>cents(l[book==='CRB'?'debit_amount':'credit_amount'])>0n))$('aw-advanced').checked=true;}
+         else $('aw-kind').value=state.transaction_kind;
+         if(isAdvance){['due-date','approval-name','approval-date','approval-reference'].forEach(id=>{if($('aw-'+id))$('aw-'+id).value=state[id.replaceAll('-','_')]||'';});
+             if($('aw-control-account'))replaceSelect('aw-control-account',lists.all_accounts.filter(a=>lists.controls.includes(Number(a.CategoryID))).map(a=>[a.CategoryID,(a.Account_Code||'#'+a.CategoryID)+' \u00b7 '+a.Name]),state.control_account_id,'Select advance control account',true);
+         }
+-        if(payment)paymentMode=PaymentPresentation.mode(state);renderLines();renderDocuments();totals();lockAdvanceContext();if(payment&&paymentErrorsShown)paymentShowErrors();}
+-    function lockAdvanceContext(){if(payment&&draft?.state==='Posted')paymentView('recorded');if(!isAdvance)return;if(!isLiquidation){$('aw-lines').hidden=true;$('aw-advanced')?.closest('label')?.setAttribute('hidden','');}if(config.advance){['aw-party','aw-default-project','aw-cash-project'].forEach(id=>{if($(id))$(id).disabled=true;});root.querySelectorAll('[data-new-master]').forEach(b=>b.hidden=true);$('aw-apply-project').hidden=true;}if(!isLiquidation&&$('aw-cash-project'))$('aw-cash-project').closest('label').hidden=true;syncRecordSelectors();}
++        if(focused)entryMode=PaymentPresentation.mode(state,book);renderLines();renderDocuments();totals();lockAdvanceContext();if(focused&&entryErrorsShown)entryShowErrors();}
++    function lockAdvanceContext(){if(focused&&draft?.state==='Posted')entryView('recorded');if(!isAdvance)return;if(!isLiquidation){$('aw-lines').hidden=true;$('aw-advanced')?.closest('label')?.setAttribute('hidden','');}if(config.advance){['aw-party','aw-default-project','aw-cash-project'].forEach(id=>{if($(id))$(id).disabled=true;});root.querySelectorAll('[data-new-master]').forEach(b=>b.hidden=true);$('aw-apply-project').hidden=true;}if(!isLiquidation&&$('aw-cash-project'))$('aw-cash-project').closest('label').hidden=true;syncRecordSelectors();}
+ 
+     async function run(op){if(busy)return;busy=true;busyDisabled=[];const disabled=busyDisabled;root.querySelectorAll('button,input,select,textarea').forEach(el=>{if(!el.disabled){el.disabled=true;disabled.push(el);}});syncRecordSelectors();$('aw-error').textContent='';
+-        try{await op();}catch(e){error(e);}finally{busy=false;disabled.forEach(el=>{if(el.isConnected)el.disabled=false;});if(draft?.state==='Posted')root.querySelectorAll('#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-entry button,.aw-columns aside input,.aw-columns aside select,.aw-columns aside textarea,.aw-columns aside button').forEach(el=>el.disabled=true);lockAdvanceContext();if(isCorrection){$('aw-post').disabled=!token||draft?.state==='Posted';if(draft?.state==='Posted'&&$('aw-replacement-book'))$('aw-replacement-book').disabled=true;if(draft)$('aw-correction-mode').disabled=true;if(!correctionTarget.eligible||draft?.state==='Discarded'){root.querySelectorAll('#aw-entry button,#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-upload,#aw-attach,#aw-attach-reuse,#aw-confirm-proof,#aw-replacement-book').forEach(el=>el.disabled=true);}}syncRecordSelectors();restoreMasterFocus();if(payment){if(paymentRequest&&paymentStep==='unknown'){root.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);$('aw-check-result').disabled=false;}if(paymentFocus){$(paymentFocus)?.focus();paymentFocus='';}}}
++        try{await op();}catch(e){error(e);}finally{busy=false;disabled.forEach(el=>{if(el.isConnected)el.disabled=false;});if(draft?.state==='Posted')root.querySelectorAll('#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-entry button,.aw-columns aside input,.aw-columns aside select,.aw-columns aside textarea,.aw-columns aside button').forEach(el=>el.disabled=true);lockAdvanceContext();if(isCorrection){$('aw-post').disabled=!token||draft?.state==='Posted';if(draft?.state==='Posted'&&$('aw-replacement-book'))$('aw-replacement-book').disabled=true;if(draft)$('aw-correction-mode').disabled=true;if(!correctionTarget.eligible||draft?.state==='Discarded'){root.querySelectorAll('#aw-entry button,#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-upload,#aw-attach,#aw-attach-reuse,#aw-confirm-proof,#aw-replacement-book').forEach(el=>el.disabled=true);}}syncRecordSelectors();restoreMasterFocus();if(focused){if(entryRequest&&entryStep==='unknown'){root.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);$('aw-check-result').disabled=false;}if(entryFocus){$(entryFocus)?.focus();entryFocus='';}}}
+     }
+     function table(lines){const t=document.createElement('table');t.className='aw-table';const h=document.createElement('tr');['Account','Project','Debit (PHP)','Credit (PHP)'].forEach(v=>{const th=document.createElement('th');th.textContent=v;h.append(th);});t.append(h);lines.forEach(l=>{const tr=document.createElement('tr');[l.account_name,l.project_name,l.debit_amount,l.credit_amount].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});t.append(tr);});return t;}
+-    root.addEventListener('input',e=>{if(!busy&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){mark();totals();if(payment&&paymentErrorsShown)paymentShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);}});
++    // Native selects emit input before change. Document-purpose changes first rebuild
++    // their dependent controls; validate the finished editor in the change handler.
++    root.addEventListener('input',e=>{if(!busy&&e.target.tagName!=='SELECT'&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){mark();totals();if(focused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);}});
+     root.addEventListener('change',e=>{if(!busy&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){
+         if(e.target.dataset.docField&&e.target.dataset.docField!=='reviewed'){const box=e.target.closest('[data-document]');box.querySelector('[data-doc-field="reviewed"]').checked=false;}
+         read();mark();if(e.target.dataset.docField==='support_side'){state.documents.find(d=>d.receipt_id===e.target.closest('[data-document]').dataset.document).allocations=[];renderDocuments();}
+-        totals();if(payment&&paymentErrorsShown)paymentShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);
++        totals();if(focused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);
+     }});
+-    $('aw-add-line').addEventListener('click',()=>{read();state.lines.push(freshLine());if(payment)paymentMode='split';mark();renderLines();totals();});
++    $('aw-add-line').addEventListener('click',()=>{read();state.lines.push(freshLine());if(cashFocused)entryMode='split';mark();renderLines();totals();});
+     $('aw-advanced')?.addEventListener('change',()=>{read();if(!$('aw-advanced').checked&&state.lines.some(l=>cents(l[book==='CRB'?'debit_amount':'credit_amount'])>0n)){$('aw-advanced').checked=true;error(new Error('Remove opposite-side amounts before returning to simple allocations.'));}renderLines();});
+     $('aw-apply-project').addEventListener('click',()=>{read();state.lines.forEach(l=>l.fund_project_id=state.default_project_id);state.cash_project_id=state.default_project_id;mark();render();});
+     $('aw-save').addEventListener('click',()=>run(save));
+     $('aw-entry').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+-        await save();if(payment){paymentErrorsShown=true;if(paymentShowErrors()){paymentFocus='aw-error';return;}}const review=await api('review',identity());token=review.token;const panel=$('aw-review-content');panel.replaceChildren();
++        await save();if(focused){entryErrorsShown=true;if(entryShowErrors()){entryFocus='aw-error';return;}}const review=await api('review',identity());token=review.token;const panel=$('aw-review-content');panel.replaceChildren();
+         if(isCorrection){const heading=document.createElement('h3');heading.textContent='Generated exact reversal · General Journal';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement · '+book;panel.append(h);}}
+         const summary=document.createElement('p');summary.textContent=review.input.entry_date+' · '+(review.party?.name||'No party')+' · '+review.input.description;panel.append(summary);
+         const cover=document.createElement('div');cover.className='aw-coverage';cover.textContent=review.coverage.status+' — '+(isLiquidation?['debit']:book==='GJ'?['debit','credit']:book==='CRB'?['credit']:['debit']).map(side=>side+': PHP '+review.coverage[side].covered+' supported of PHP '+review.coverage[side].eligible).join('; ');panel.append(cover);
+-        if(payment)paymentSummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(payment){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=paymentMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l.credit_amount)>0n);details.append(summary,wrap);panel.append(details);paymentView('review');paymentFocus='aw-post';}else panel.append(wrap);$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Post reversal':'Post correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
++        if(focused)entrySummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(focused){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=entryMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l[oppositeSide+'_amount'])>0n);details.append(summary,wrap);panel.append(details);entryView('review');entryFocus='aw-post';}else panel.append(wrap);$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Post reversal':'Post correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
+     });});
+-    $('aw-back').addEventListener('click',()=>{if(payment)paymentView('enter');token='';$('aw-review-panel').hidden=true;$('aw-purpose').focus();});
+-    function posted(id,duplicate=false,advanceId=config.advance_id){if(payment){paymentRequest=null;paymentView('recorded');message(duplicate?'Recorded result recovered. No duplicate payment was created.':'Payment recorded.');$('aw-exact-link').href='journal_transaction.php?journal_id='+encodeURIComponent(id);paymentFocus='aw-exact-link';}if(isAdvance){if($('aw-print-label'))$('aw-print-label').textContent='POSTED journal #'+id;if($('aw-advance-link'))$('aw-advance-link').href='cash_advances.php?advance_id='+advanceId;}draft.state='Posted';draft.posted_journal_id=id;dirty=false;token='';renderDocuments();$('aw-review-panel').hidden=true;$('aw-posted').hidden=false;$('aw-draft-label').textContent='Posted journal #'+id;$('aw-posted-message').textContent='Journal #'+id+(duplicate?' was already posted. The existing result was recovered.':' posted successfully.');
++    $('aw-back').addEventListener('click',()=>{if(focused)entryView('enter');token='';$('aw-review-panel').hidden=true;$('aw-purpose').focus();});
++    function posted(id,duplicate=false,advanceId=config.advance_id){if(focused){entryRequest=null;entryView('recorded');message(duplicate?'Recorded result recovered. No duplicate '+entryNoun+' was created.':entryNoun[0].toUpperCase()+entryNoun.slice(1)+' recorded.');$('aw-exact-link').href='journal_transaction.php?journal_id='+encodeURIComponent(id);entryFocus='aw-exact-link';}if(isAdvance){if($('aw-print-label'))$('aw-print-label').textContent='POSTED journal #'+id;if($('aw-advance-link'))$('aw-advance-link').href='cash_advances.php?advance_id='+advanceId;}draft.state='Posted';draft.posted_journal_id=id;dirty=false;token='';renderDocuments();$('aw-review-panel').hidden=true;$('aw-posted').hidden=false;$('aw-draft-label').textContent='Posted journal #'+id;$('aw-posted-message').textContent='Journal #'+id+(duplicate?' was already posted. The existing result was recovered.':' posted successfully.');
+         if(book!=='GJ')$('aw-posted-link').href='financial_records.php?view='+book.toLowerCase()+'&from=&to=';$('aw-posted').scrollIntoView();}
+-    $('aw-post').addEventListener('click',()=>run(async()=>{if(payment){paymentRequest={...identity(),payload:payloadForSave(),review_token:token};await paymentRecord();return;}const result=await api('post',{...identity(),payload:payloadForSave(),review_token:token});posted(result.id,result.duplicate,result.advance_id);if(isCorrection)await showPostedCorrection();}));
++    $('aw-post').addEventListener('click',()=>run(async()=>{if(focused){entryRequest={...identity(),payload:payloadForSave(),review_token:token};await entryRecord();return;}const result=await api('post',{...identity(),payload:payloadForSave(),review_token:token});posted(result.id,result.duplicate,result.advance_id);if(isCorrection)await showPostedCorrection();}));
+     async function showPostedCorrection(loaded=null){
+         const d=loaded||await api('draft',{draft_id:String(draft.id)},'GET');
+         correctionTarget=d.target;message('Correction posted. The original journal remains unchanged.');
+@@ -240,13 +245,13 @@
+     async function employeeAdvances(){if(isCorrection)return;if(advanceKind!=='advance_release'||!state.party_id)return;const selected=state.party_id;try{const register=await api('register',{party_id:selected},'GET');if(state.party_id!==selected)return;showAdvanceContext();const p=document.createElement('p');p.textContent='Existing advances: '+register.count+' \u00b7 Outstanding PHP '+register.totals.outstanding+' (additional releases are permitted).';$('aw-advance-context').append(p);}catch(e){message('Could not load existing employee advances. '+e.message);}}
+     $('aw-party').closest('label').addEventListener('change',()=>{if(advanceKind==='advance_release'){read();employeeAdvances();}});
+     let masterKind='',masterTrigger=null,masterCreated=false,masterFocusPending=false;
+-    function restoreMasterFocus(){if(!masterFocusPending||busy)return;masterFocusPending=false;if(masterCreated)$(masterKind==='projects'?(payment&&paymentMode==='quick'?'aw-cash-project-search':'aw-default-project-search'):'aw-party-search').focus();else masterTrigger?.focus();}
++    function restoreMasterFocus(){if(!masterFocusPending||busy)return;masterFocusPending=false;if(masterCreated)$(masterKind==='projects'?(focused&&entryMode==='quick'?'aw-cash-project-search':'aw-default-project-search'):'aw-party-search').focus();else masterTrigger?.focus();}
+     $('aw-master-dialog').addEventListener('close',()=>{masterFocusPending=true;restoreMasterFocus();});
+     root.querySelectorAll('[data-new-master]').forEach(b=>b.addEventListener('click',()=>{read();masterKind=b.dataset.newMaster;masterTrigger=b;masterCreated=false;$('aw-master-form').reset();$('aw-master-title').textContent='New '+(masterKind==='projects'?'project':'party');$('aw-master-code-label').hidden=masterKind!=='projects';$('aw-master-type-label').hidden=masterKind!=='parties';$('aw-master-error').textContent='';$('aw-master-dialog').showModal();}));
+     $('aw-master-cancel').addEventListener('click',()=>$('aw-master-dialog').close());
+     $('aw-master-form').addEventListener('submit',e=>{e.preventDefault();const fields=Object.fromEntries(new FormData(e.target));run(async()=>{try{const record=await api('master',{...fields,kind:masterKind,is_active:'1'});lists=await api('lists',{},'GET');
+-        if(masterKind==='projects'){state.default_project_id=String(record.id);if(payment&&paymentMode==='quick'){state.cash_project_id=String(record.id);state.lines[0].fund_project_id=String(record.id);}}else state.party_id=String(record.id);mark();renderMasters();if(payment)renderLines();masterCreated=true;$('aw-master-dialog').close();}catch(e){$('aw-master-error').textContent=e.message;}});});
+-    window.addEventListener('beforeunload',e=>{if(dirty||(payment&&paymentStep==='unknown')){e.preventDefault();e.returnValue='';}});
++        if(masterKind==='projects'){state.default_project_id=String(record.id);if(focused&&entryMode==='quick'){state.cash_project_id=String(record.id);state.lines[0].fund_project_id=String(record.id);}}else state.party_id=String(record.id);mark();renderMasters();if(focused)renderLines();masterCreated=true;$('aw-master-dialog').close();}catch(e){$('aw-master-error').textContent=e.message;}});});
++    window.addEventListener('beforeunload',e=>{if(dirty||(focused&&entryStep==='unknown')){e.preventDefault();e.returnValue='';}});
+     function showCorrectionContext(){
+         const box=$('aw-original');box.replaceChildren();const summary=document.createElement('p');summary.textContent=correctionTarget.journal.entry_date+' · '+(correctionTarget.journal.source_book||'Legacy General Journal')+' · '+correctionTarget.journal.description;box.append(summary,table(correctionTarget.lines.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));
+         const status=$('aw-correction-eligibility');status.textContent=correctionTarget.ineligible_reason||'Eligible target. The original remains immutable.';
+@@ -266,25 +271,26 @@
+         message('Replacement book saved. Opening '+next+' workspace.');
+         dirty=false;location.href='journal_correction.php?draft_id='+d.id;
+     }));
+-    function paymentView(step){
+-        if(!payment)return;paymentStep=step;
++    function entryView(step){
++        if(!focused)return;entryStep=step;
+         root.querySelector('.aw-columns').hidden=step!=='enter';
+         $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
+-        root.querySelector('h1').textContent={enter:'Record a payment',review:'Review payment',recorded:'Payment recorded',unknown:'Check recording result'}[step];
+-        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter the payment details, review, then confirm to record.',review:'Check where the money comes from and how this payment will be recorded.',recorded:'This payment is recorded. Open its details or prepare another entry.',unknown:'The payment may already be recorded. Check the same request before continuing.'}[step];
++        const capital=entryNoun[0].toUpperCase()+entryNoun.slice(1);
++        root.querySelector('h1').textContent={enter:'Record a '+entryNoun,review:'Review '+entryNoun,recorded:capital+' recorded',unknown:'Check recording result'}[step];
++        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter the '+entryNoun+' details, review, then confirm to record.',review:book==='GJ'?'Check every account, project, debit and credit before recording.':book==='CRB'?'Check where the money is received and how this receipt will be recorded.':'Check where the money comes from and how this payment will be recorded.',recorded:'This '+entryNoun+' is recorded. Open its details or prepare another entry.',unknown:'The '+entryNoun+' may already be recorded. Check the same request before continuing.'}[step];
+         $('aw-mode-notice').hidden=step!=='enter';
+         Array.from($('aw-progress').children).forEach((el,i)=>{if(i==={enter:0,review:1,recorded:2,unknown:1}[step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
+-        if(step==='review')message('Review complete. This payment has not been recorded.');
++        if(step==='review')message('Review complete. This '+entryNoun+' has not been recorded.');
+         if(step==='recorded')root.querySelectorAll('.aw-columns input,.aw-columns select,.aw-columns textarea,.aw-columns button').forEach(el=>el.disabled=true);
+     }
+-    function paymentLayout(){
+-        if(!payment)return;const quick=paymentMode==='quick';root.dataset.paymentMode=paymentMode;
++    function entryLayout(){
++        if(!cashFocused)return;const quick=entryMode==='quick';root.dataset.paymentMode=entryMode;
+         $('aw-purpose').rows=quick?1:2;
+-        $('aw-advanced').checked=paymentMode==='advanced';$('aw-advanced').closest('label').hidden=true;
+-        root.querySelectorAll('[data-payment-mode]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.paymentMode===paymentMode));});
++        $('aw-advanced').checked=entryMode==='advanced';$('aw-advanced').closest('label').hidden=true;
++        root.querySelectorAll('[data-payment-mode]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.paymentMode===entryMode));});
+         $('aw-add-line').hidden=quick;root.querySelector('#aw-entry .aw-section-heading').hidden=quick;
+         root.querySelector('#aw-entry > .aw-help').hidden=quick;root.querySelector('.aw-totals').hidden=quick;
+-        $('aw-mode-notice').textContent=quick?'One amount and one project for this payment.':'Detailed entry: amounts and project allocations are preserved independently.';
++        $('aw-mode-notice').textContent=quick?'One amount and one project for this '+entryNoun+'.':'Detailed entry: amounts and project allocations are preserved independently.';
+         root.querySelectorAll('[data-line]').forEach(el=>{
+             el.querySelector('.aw-line-money').hidden=quick;el.querySelector('[data-field="fund_project_id"]').closest('label').hidden=quick;
+             el.querySelector('button[aria-label^="Remove line"]').hidden=quick;
+@@ -299,27 +305,31 @@
+         if(quick&&$('aw-lines').firstElementChild)$('aw-lines').firstElementChild.querySelector('.aw-line-top').append(project);
+         else $('aw-project-home').after(project);
+     }
+-    function paymentValidate(){
++    function entryValidate(){
+         const p=read(),errors={},add=(id,text)=>errors[id]=text;
+         const visible=id=>$(id+'-search')?id+'-search':id;
+         const eligible=(id,value)=>!value||!$(id)?.selectedOptions[0]||$(id).selectedOptions[0].disabled;
+         const date=p.entry_date,parsed=new Date(date+'T00:00:00Z');
+-        if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<'1000-01-01'||!Number.isFinite(parsed.valueOf())||parsed.toISOString().slice(0,10)!==date||date>$('aw-date').max)add('aw-date','Choose a real accounting date on or before today.');
+-        if(eligible('aw-party',p.party_id))add(visible('aw-party'),'Choose an available payee.');
+-        if(!p.description.trim())add('aw-purpose','Explain the purpose of this payment.');
+-        if(eligible('aw-cash-account',p.cash_account_id))add(visible('aw-cash-account'),'Choose an eligible cash or bank account.');
+-        for(const id of ['aw-cash-project','aw-default-project'])if($(id).value&&$(id).selectedOptions[0]?.disabled)add(visible(id),'Choose an available project or Organization operations.');
+-        const cash=cents(p.cash_amount);if(cash===null||cash<=0n)add('aw-cash-amount','Enter a positive amount with at most two decimal places.');
++        if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<'1000-01-01'||!Number.isFinite(parsed.valueOf())||parsed.toISOString().slice(0,10)!==date||($('aw-date').max&&date>$('aw-date').max))add('aw-date',book==='GJ'?'Choose a real accounting date.':'Choose a real accounting date on or before today.');
++        if((book!=='GJ'||p.party_id)&&eligible('aw-party',p.party_id))add(visible('aw-party'),'Choose an available '+(book==='CRB'?'payer':book==='CDB'?'payee':'party')+'.');
++        if(!p.description.trim())add('aw-purpose','Explain the purpose of this '+entryNoun+'.');
++        if(cashFocused&&eligible('aw-cash-account',p.cash_account_id))add(visible('aw-cash-account'),'Choose an eligible cash or bank account.');
++        for(const id of ['aw-cash-project','aw-default-project'])if($(id)?.value&&$(id).selectedOptions[0]?.disabled)add(visible(id),'Choose an available project or Organization operations.');
++        const cash=cashFocused?cents(p.cash_amount):0n;
++        if(cashFocused&&(cash===null||cash<=0n))add('aw-cash-amount','Enter a positive amount with at most two decimal places.');
+         let debit=0n,credit=0n,valid=cash!==null;
+         for(const l of p.lines){
+             const account='aw-line-'+l.client_id+'-account',d=cents(l.debit_amount),c=cents(l.credit_amount);
+-            if(eligible(account,l.account_id))add(visible(account),'Choose an available cost, asset or liability account.');
+-            const project='aw-line-'+l.client_id+'-project';if(paymentMode!=='quick'&&l.fund_project_id&&$(project).selectedOptions[0]?.disabled)add(visible(project),'Choose an available project or Organization operations.');
+-            if(d===null||c===null||((d===0n)===(c===0n))){add(paymentMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+(d===null||d===0n?'debit':'credit'),paymentMode==='quick'?'Enter a positive payment amount with at most two decimal places.':'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;}
++            if(eligible(account,l.account_id))add(visible(account),book==='CDB'?'Choose an available cost, asset or liability account.':'Choose an available account for this line.');
++            const project='aw-line-'+l.client_id+'-project';if(entryMode!=='quick'&&l.fund_project_id&&$(project).selectedOptions[0]?.disabled)add(visible(project),'Choose an available project or Organization operations.');
++            if(d===null||c===null||((d===0n)===(c===0n))){
++                const side=d===null?'debit':c===null?'credit':d===0n&&c===0n&&cashFocused&&entryMode==='split'?counterpartSide:d===0n?'debit':'credit';
++                add(entryMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+side,entryMode==='quick'?'Enter a positive '+entryNoun+' amount with at most two decimal places.':'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;
++            }
+             else {debit+=d;credit+=c;}
+         }
+-        if(!p.lines.length)add('aw-add-line','Add at least one allocation.');
+-        if(valid&&debit!==credit+cash)add('aw-cash-amount','The complete entry is not balanced. Check the independent cash and allocation amounts.');
++        if(p.lines.length<(book==='GJ'?2:1))add('aw-add-line',book==='GJ'?'Add at least two journal lines.':'Add at least one allocation.');
++        if(valid&&debit+(book==='CRB'?cash:0n)!==credit+(book==='CDB'?cash:0n))add(cashFocused?'aw-cash-amount':'aw-line-'+p.lines[0]?.client_id+'-debit','The complete entry is not balanced. Check the independent '+(cashFocused?'cash and allocation':'debit and credit')+' amounts.');
+         for(const d of p.documents){
+             const box=root.querySelector('[data-document="'+d.receipt_id+'"]');if(!box)continue;
+             box.querySelectorAll('[data-doc-field],[data-allocation]').forEach((el,i)=>el.id='aw-doc-'+d.receipt_id+'-'+i);
+@@ -331,33 +341,34 @@
+         }
+         return errors;
+     }
+-    function paymentShowErrors(){
+-        if(!payment)return 0;const errors=paymentValidate();
++    function entryShowErrors(){
++        if(!focused)return 0;const errors=entryValidate();
+         const signature=JSON.stringify(errors),entries=Object.entries(errors);
+         // Do not replace a clicked summary link during the field's blur/change event.
+-        if(signature===paymentErrorSignature&&$('aw-error').querySelectorAll('a').length===entries.length&&entries.every(([id])=>$(id+'-error')&&$(id)?.getAttribute('aria-invalid')==='true'))return entries.length;
+-        paymentErrorSignature=signature;
++        if(signature===entryErrorSignature&&$('aw-error').querySelectorAll('a').length===entries.length&&entries.every(([id])=>$(id+'-error')&&$(id)?.getAttribute('aria-invalid')==='true'))return entries.length;
++        entryErrorSignature=signature;
+         root.querySelectorAll('.aw-field-error').forEach(el=>el.remove());
+         root.querySelectorAll('[aria-invalid]').forEach(el=>{el.removeAttribute('aria-invalid');el.setAttribute('aria-describedby',(el.getAttribute('aria-describedby')||'').split(' ').filter(v=>!v.endsWith('-error')).join(' '));});
+         const summary=$('aw-error');summary.replaceChildren();
+-        if(entries.length){const heading=document.createElement('strong');heading.textContent='Check these payment details';summary.append(heading);const ul=document.createElement('ul');summary.append(ul);
++        if(entries.length){const heading=document.createElement('strong');heading.textContent='Check these '+entryNoun+' details';summary.append(heading);const ul=document.createElement('ul');summary.append(ul);
+             entries.forEach(([id,text])=>{const control=$(id);if(!control)return;const note=document.createElement('span');note.id=id+'-error';note.className='aw-field-error';note.textContent=text;
+                 control.closest('label')?.append(note);control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby',(control.getAttribute('aria-describedby')||'')+' '+note.id);
+                 const li=document.createElement('li'),a=document.createElement('a');a.href='#'+id;a.textContent=text;a.addEventListener('click',e=>{e.preventDefault();let el=control;while(el&&el!==root){if(el.tagName==='DETAILS')el.open=true;el=el.parentElement;}control.focus();});li.append(a);ul.append(li);
+             });
+         }return entries.length;
+     }
+-    function paymentSummary(review,panel){
++    function entrySummary(review,panel){
+         const summary=document.createElement('dl');summary.className='aw-payment-summary';
+         const add=(name,value)=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=name;dd.textContent=value;summary.append(dt,dd);};
+         const cashLines=review.lines.filter(l=>Number(l.is_cash_account));
+-        cashLines.forEach(l=>{add('Pay from',l.account_name);add('Cash account project',l.project_name);});
+-        const cash=cashLines.reduce((a,l)=>a+cents(l.credit_amount),0n);
+-        add('Cash paid',money(cash));
++        if(book==='GJ'){add('Entry kind',review.input.transaction_kind==='transfer'?'Internal cash transfer':'General journal');add('Total debits',money(review.lines.reduce((a,l)=>a+cents(l.debit_amount),0n)));add('Total credits',money(review.lines.reduce((a,l)=>a+cents(l.credit_amount),0n)));panel.prepend(summary);return;}
++        cashLines.forEach(l=>{add(book==='CRB'?'Receive into':'Pay from',l.account_name);add('Cash account project',l.project_name);});
++        const cash=cashLines.reduce((a,l)=>a+cents(l[book==='CRB'?'debit_amount':'credit_amount']),0n);
++        add(book==='CRB'?'Cash received':'Cash paid',money(cash));
+         const eligible=review.lines.filter(l=>!Number(l.is_cash_account)&&['Expense','Asset'].includes(l.account_type));
+         const liabilities=review.lines.filter(l=>l.account_type==='Liability'&&cents(l.credit_amount)>0n);
+         const gross=eligible.reduce((a,l)=>a+cents(l.debit_amount),0n),held=liabilities.reduce((a,l)=>a+cents(l.credit_amount),0n);
+-        if(held>0n&&gross-held===cash){add('Gross costs / asset purchases',money(gross));add('Withholding / other liability credits',money(held));}
++        if(book==='CDB'&&held>0n&&gross-held===cash){add('Gross costs / asset purchases',money(gross));add('Withholding / other liability credits',money(held));}
+         const allocations=document.createElement('section');allocations.className='aw-review-allocations';
+         const heading=document.createElement('h3');heading.textContent='Allocations';
+         const breakdown=document.createElement('table');breakdown.className='aw-review-breakdown';
+@@ -366,36 +377,36 @@
+         const body=document.createElement('tbody');
+         review.lines.filter(l=>!Number(l.is_cash_account)).forEach(l=>{const row=document.createElement('tr');
+             const credit=cents(l.credit_amount)>0n;
+-            [l.account_name,(credit?'Credit · ':'')+money(cents(l[credit?'credit_amount':'debit_amount'])),l.project_name].forEach(value=>{const td=document.createElement('td');td.textContent=value;row.append(td);});body.append(row);
++            [l.account_name,(credit?(book==='CDB'?'Credit · ':''):(book==='CRB'?'Debit · ':''))+money(cents(l[credit?'credit_amount':'debit_amount'])),l.project_name].forEach(value=>{const td=document.createElement('td');td.textContent=value;row.append(td);});body.append(row);
+         });breakdown.append(head,body);allocations.append(heading,breakdown);panel.prepend(summary,allocations);
+     }
+-    async function paymentRecord(){
+-        const recovering=paymentStep==='unknown';
+-        try{const result=await api('post',paymentRequest);posted(result.id,result.duplicate);}
+-        catch(e){if(recovering||e.uncertain||!e.status){paymentView('unknown');message('Recording result is unknown. Keep this draft and check the same request.');paymentFocus='aw-check-result';}else{paymentRequest=null;paymentView('review');}throw e;}
++    async function entryRecord(){
++        const recovering=entryStep==='unknown';
++        try{const result=await api('post',entryRequest);posted(result.id,result.duplicate);}
++        catch(e){if(recovering||e.uncertain||!e.status){entryView('unknown');message('Recording result is unknown. Keep this draft and check the same request.');entryFocus='aw-check-result';}else{entryRequest=null;entryView('review');}throw e;}
+     }
+-    if(payment){
++    if(focused){
+         const form=$('aw-entry'),optional=document.createElement('details'),heading=document.createElement('summary');heading.textContent='Optional reference and default project context';optional.append(heading);optional.id='aw-optional';
+         const grid=document.createElement('div');grid.className='aw-grid';optional.append(grid);grid.append($('aw-reference').closest('label'),$('aw-default-project').closest('label'));form.append(optional);
+-        const home=document.createElement('span');home.id='aw-project-home';$('aw-cash-project').closest('label').before(home);
+-        const help=document.createElement('p');help.id='aw-account-help';help.className='aw-help';help.textContent='Choose the account for this cost, asset purchase or liability settlement.';$('aw-lines').after(help);
++        if(cashFocused){const home=document.createElement('span');home.id='aw-project-home';$('aw-cash-project').closest('label').before(home);}
++        const help=document.createElement('p');help.id='aw-account-help';help.className='aw-help';help.textContent=book==='CRB'?'Choose the account for this receipt, such as income, a liability, equity or an asset recovery.':book==='GJ'?'Enter every debit and credit explicitly. Transfers use eligible cash accounts; server review checks the complete entry.':'Choose the account for this cost, asset purchase or liability settlement.';$('aw-lines').after(help);
+         const aside=root.querySelector('.aw-columns > aside'),docs=document.createElement('details'),ds=document.createElement('summary');ds.textContent='Supporting documents (optional)';docs.id='aw-document-group';docs.className='aw-card';docs.append(ds,...aside.childNodes);aside.replaceWith(docs);
+-        $('aw-review').textContent='Review payment';root.querySelector('.aw-cash label:has(#aw-cash-amount)').firstChild.textContent='Amount paid (PHP)';
++        $('aw-review').textContent='Review '+entryNoun;if(cashFocused)root.querySelector('.aw-cash label:has(#aw-cash-amount)').firstChild.textContent=book==='CRB'?'Amount received (PHP)':'Amount paid (PHP)';else $('aw-mode-notice').textContent='Detailed journal: enter every debit, credit and actual line project.';
+         const refresh=document.createElement('button');refresh.type='button';refresh.id='aw-refresh-review';refresh.textContent='Refresh review';refresh.addEventListener('click',()=>form.requestSubmit());$('aw-back').after(refresh);
+         root.querySelectorAll('[data-payment-mode]').forEach(b=>b.addEventListener('click',()=>{
+-            read();const next=b.dataset.paymentMode,required=PaymentPresentation.mode(state);
++            read();const next=b.dataset.paymentMode,required=PaymentPresentation.mode(state,book);
+             if(next==='quick'&&required!=='quick'||next==='split'&&required==='advanced'){error(new Error('These values require the detailed journal. No amounts or allocations have been changed.'));return;}
+-            paymentMode=next;renderLines();if(paymentErrorsShown)paymentShowErrors();
++            entryMode=next;renderLines();if(entryErrorsShown)entryShowErrors();
+         }));
+         // Deliberate Quick edits update the two represented values, never merely selecting a mode.
+-        root.addEventListener('input',e=>{if(paymentMode==='quick'&&e.target.id==='aw-cash-amount'){state.lines[0].debit_amount=e.target.value;root.querySelector('[data-field="debit_amount"]').value=e.target.value;}},true);
+-        root.addEventListener('change',e=>{if(paymentMode==='quick'&&e.target.id==='aw-cash-project'){state.lines[0].fund_project_id=e.target.value;const s=root.querySelector('[data-field="fund_project_id"]');s.value=e.target.value;recordSelectors.get(s)?.sync();}},true);
+-        $('aw-check-result').addEventListener('click',()=>run(async()=>{const session=await api('session',{},'GET');config.csrf_token=session.csrf_token;await paymentRecord();}));
++        root.addEventListener('input',e=>{if(entryMode==='quick'&&e.target.id==='aw-cash-amount'){state.lines[0][counterpartSide+'_amount']=e.target.value;root.querySelector('[data-field="'+counterpartSide+'_amount"]').value=e.target.value;}},true);
++        root.addEventListener('change',e=>{if(entryMode==='quick'&&e.target.id==='aw-cash-project'){state.lines[0].fund_project_id=e.target.value;const s=root.querySelector('[data-field="fund_project_id"]');s.value=e.target.value;recordSelectors.get(s)?.sync();}},true);
++        $('aw-check-result').addEventListener('click',()=>run(async()=>{const session=await api('session',{},'GET');config.csrf_token=session.csrf_token;await entryRecord();}));
+         document.addEventListener('click',e=>{
+             const a=e.target.closest('a[href]');if(!a||a.target==='_blank'||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.getAttribute('href').startsWith('#'))return;
+             const dest=new URL(a.href,location.href);if(dest.origin!==location.origin)return;
+-            if(busy||paymentStep==='unknown'){e.preventDefault();message('Wait for the current action or check the recording result before leaving.');return;}
+-            const current=dest.pathname===location.pathname&&!dest.search&&paymentStep!=='recorded';if(current){e.preventDefault();return;}
++            if(busy||entryStep==='unknown'){e.preventDefault();message('Wait for the current action or check the recording result before leaving.');return;}
++            const current=dest.pathname===location.pathname&&!dest.search&&entryStep!=='recorded';if(current){e.preventDefault();return;}
+             if(!dirty)return;e.preventDefault();leaveDestination=a.href;$('aw-leave-error').textContent='';$('aw-leave-dialog').showModal();
+         });
+         $('aw-leave-stay').addEventListener('click',()=>$('aw-leave-dialog').close());
+diff --git a/assets/js/payment_presentation.js b/assets/js/payment_presentation.js
+index 12e42a14ac8161d0cdf5d90b27d9dfb40b466add..76df93fcf87c0fa448d1cdce527791f67dff18a8 100644
+--- a/assets/js/payment_presentation.js
++++ b/assets/js/payment_presentation.js
+@@ -7,15 +7,17 @@
+         const [whole, fraction = ''] = value.split('.');
+         return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'));
+     };
+-    function mode(p) {
+-        if (p.transaction_kind !== 'ordinary' || !Array.isArray(p.lines)) return 'advanced';
++    function mode(p, book = 'CDB') {
++        if (!['CDB','CRB'].includes(book) || p.transaction_kind !== 'ordinary' || !Array.isArray(p.lines)) return 'advanced';
++        const side = book === 'CRB' ? 'credit_amount' : 'debit_amount';
++        const opposite = book === 'CRB' ? 'debit_amount' : 'credit_amount';
+         if ((p.documents || []).some(d => (d.allocations || []).some(a => !p.lines.some(l => l.client_id === a.client_id)))) return 'advanced';
+-        if (p.lines.some(l => cents(l.credit_amount) === null || cents(l.credit_amount) !== 0n || cents(l.debit_amount) === null)) return 'advanced';
++        if (p.lines.some(l => cents(l[opposite]) === null || cents(l[opposite]) !== 0n || cents(l[side]) === null)) return 'advanced';
++        // Inspect every line before choosing any simplified representation.
++        if (p.lines.some(l => Object.keys(l).some(k => !['client_id','account_id','fund_project_id','debit_amount','credit_amount'].includes(k)))) return 'advanced';
+         if (p.lines.length !== 1) return 'split';
+-        const l = p.lines[0], cash = cents(p.cash_amount), debit = cents(l.debit_amount);
+-        if (cash === null || debit === null || (p.cash_amount === '') !== (l.debit_amount === '') || cash !== debit || p.cash_project_id !== l.fund_project_id) return 'split';
+-        // Unknown fields cannot be hidden by a representation we do not understand.
+-        if (Object.keys(l).some(k => !['client_id','account_id','fund_project_id','debit_amount','credit_amount'].includes(k))) return 'advanced';
++        const l = p.lines[0], cash = cents(p.cash_amount), amount = cents(l[side]);
++        if (cash === null || amount === null || (p.cash_amount === '') !== (l[side] === '') || cash !== amount || p.cash_project_id !== l.fund_project_id) return 'split';
+         return 'quick';
+     }
+     scope.PaymentPresentation = Object.freeze({cents, mode});
+diff --git a/includes/accounting_entry_page.php b/includes/accounting_entry_page.php
+index 38ff061d106934abd7094f7235944a1f4cd0cf3b..ff1e720e98f125e379146c5084312c6df238e1a2 100644
+--- a/includes/accounting_entry_page.php
++++ b/includes/accounting_entry_page.php
+@@ -5,22 +5,24 @@ header('Cache-Control: private, no-store');
+ try{workspace_guard($pdo,(int)$_SESSION['UserID']);$lists=workspace_lists($pdo,(int)$_SESSION['UserID']);}
+ catch(JournalProblem $e){http_response_code($e->status);exit(htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8'));}
+ $advanceMode=$advanceConfig['workflow_kind']??null;
+-$ordinaryPayment=$workspaceBook==='CDB'&&$advanceMode===null&&!isset($correctionConfig);
++$ordinaryWorkspace=$advanceMode===null&&!isset($correctionConfig);
++$ordinaryCash=$ordinaryWorkspace&&$workspaceBook!=='GJ';
++$entryNoun=['CDB'=>'payment','CRB'=>'receipt','GJ'=>'journal entry'][$workspaceBook];
+ $isCorrection=isset($correctionConfig);$reverseOnly=$isCorrection&&$correctionConfig['mode']==='reverse_only';
+ $title=$advanceMode!==null?['advance_release'=>'Release cash advance','advance_liquidation'=>'Liquidate cash advance','advance_return'=>'Return unused cash'][$advanceMode]:['CRB'=>'New cash receipt','CDB'=>'New cash payment','GJ'=>'New journal entry'][$workspaceBook];
+ $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+ if($isCorrection)$title=$reverseOnly?'Prepare journal reversal':'Prepare journal correction';
+-if($ordinaryPayment)$title='Record a payment';
+-layout_begin($title,$ordinaryPayment?'payment':['CRB'=>'crb','CDB'=>'cdb','GJ'=>'general_journal'][$workspaceBook],[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/../assets/css/accounting_workspace.css').'">');
++if($ordinaryWorkspace)$title='Record a '.$entryNoun;
++layout_begin($title,$ordinaryWorkspace&&$workspaceBook==='CDB'?'payment':['CRB'=>'crb','CDB'=>'cdb','GJ'=>'general_journal'][$workspaceBook],[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/../assets/css/accounting_workspace.css').'">');
+ ?>
+-<div class="accounting-workspace <?= $ordinaryPayment?'aw-payment':'' ?> <?= $reverseOnly?'aw-reverse-only':'' ?>" id="entry-workspace">
+-<header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING · <?= $workspaceBook ?></p><h1><?= $title ?></h1><p><?= $ordinaryPayment?'Enter the payment details, review, then confirm to record.':'Prepare an entry, save your draft, then review the complete debit and credit posting.' ?></p></div><div><a href="accounting_drafts.php">My drafts</a><?php if($isCorrection): ?> &middot; <button type="button" class="aw-no-print" onclick="window.print()">Print comparison</button><?php endif; ?><?php if($advanceMode): ?> &middot; <a href="cash_advances.php">Advance register</a> &middot; <button type="button" onclick="window.print()">Print draft</button><?php endif; ?></div></header>
++<div class="accounting-workspace <?= $ordinaryWorkspace?'aw-payment':'' ?> <?= $reverseOnly?'aw-reverse-only':'' ?>" id="entry-workspace">
++<header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING · <?= $workspaceBook ?></p><h1><?= $title ?></h1><p><?= $ordinaryWorkspace?'Enter the '.$entryNoun.' details, review, then confirm to record.':'Prepare an entry, save your draft, then review the complete debit and credit posting.' ?></p></div><div><a href="accounting_drafts.php">My drafts</a><?php if($isCorrection): ?> &middot; <button type="button" class="aw-no-print" onclick="window.print()">Print comparison</button><?php endif; ?><?php if($advanceMode): ?> &middot; <a href="cash_advances.php">Advance register</a> &middot; <button type="button" onclick="window.print()">Print draft</button><?php endif; ?></div></header>
+ <?php if($isCorrection&&!$advanceMode): ?><p id="aw-print-label" class="aw-print-label">DRAFT &mdash; not a posted financial record</p><?php endif; ?><?php if($advanceMode): ?><p id="aw-print-label" class="aw-print-label">DRAFT &mdash; not a posted financial record</p><section class="aw-card" id="aw-advance-context" aria-live="polite"></section><?php endif; ?>
+-<?php if($ordinaryPayment): ?><a class="aw-context-back" href="financial_records.php?view=cdb&amp;from=&amp;to=">Back to payments book</a><ol id="aw-progress" aria-label="Payment progress"><li aria-current="step">1 Enter details</li><li>2 Review</li><li>3 Recorded</li></ol><p id="aw-mode-notice"></p><?php endif; ?>
++<?php if($ordinaryWorkspace): ?><a class="aw-context-back" href="financial_records.php?<?= $workspaceBook==='GJ'?'from=&amp;to=':'view='.strtolower($workspaceBook).'&amp;from=&amp;to=' ?>">Back to <?= $workspaceBook==='GJ'?'Journal History':($workspaceBook==='CRB'?'receipts book':'payments book') ?></a><ol id="aw-progress" aria-label="<?= ucfirst($entryNoun) ?> progress"><li aria-current="step">1 Enter details</li><li>2 Review</li><li>3 Recorded</li></ol><p id="aw-mode-notice"></p><?php endif; ?>
+ <p id="aw-status" role="status" aria-live="polite"></p><p id="aw-error" role="alert" tabindex="-1"></p>
+ <?php if($isCorrection): ?><section class="aw-card" id="aw-correction-context"><h2>Original journal #<?= $esc($correctionConfig['target_journal_id']) ?></h2><div id="aw-original"></div><p id="aw-correction-eligibility" role="status"></p><div class="aw-grid"><label>Correction mode<select id="aw-correction-mode" <?= $draftId!==null?'disabled':'' ?>><option value="reverse_replace" <?= !$reverseOnly?'selected':'' ?>>Reverse and replace</option><option value="reverse_only" <?= $reverseOnly?'selected':'' ?>>Reverse only</option></select></label><?php if(!$advanceMode&&!$reverseOnly): ?><label>Replacement book<select id="aw-replacement-book"><option value="CRB" <?= $workspaceBook==='CRB'?'selected':'' ?>>Cash Receipts Book</option><option value="CDB" <?= $workspaceBook==='CDB'?'selected':'' ?>>Cash Disbursements Book</option><option value="GJ" <?= $workspaceBook==='GJ'?'selected':'' ?>>General Journal</option></select></label><?php endif; ?></div><p>Original records remain unchanged. The generated reversal goes to General Journal. Drafts and previews do not change financial records.</p></section><?php endif; ?>
+ <div class="aw-columns"><form id="aw-entry" novalidate class="aw-card">
+-<?php if($ordinaryPayment): ?><div class="aw-payment-modes" aria-label="Entry presentation"><button type="button" data-payment-mode="quick">Quick form</button><button type="button" data-payment-mode="split">Split allocations</button><button type="button" data-payment-mode="advanced">Advanced journal</button></div><?php endif; ?><h2>Transaction details <span id="aw-draft-label">Unsaved draft</span></h2>
++<?php if($ordinaryCash): ?><div class="aw-payment-modes" aria-label="Entry presentation"><button type="button" data-payment-mode="quick">Quick form</button><button type="button" data-payment-mode="split">Split allocations</button><button type="button" data-payment-mode="advanced">Advanced journal</button></div><?php endif; ?><h2>Transaction details <span id="aw-draft-label">Unsaved draft</span></h2>
+ <div class="aw-grid"><label>Date<input id="aw-date" type="date" value="<?= journal_today() ?>" min="1000-01-01" <?= ($workspaceBook!=='GJ'||$advanceMode)?'max="'.journal_today().'"':'' ?>></label>
+ <?php if($isCorrection): ?><label class="aw-correction-field">Correction reason<textarea id="aw-correction-reason" maxlength="2000" rows="2"></textarea></label><label class="aw-correction-field">Earlier-date explanation<textarea id="aw-backdate-reason" maxlength="2000" rows="2"></textarea></label><?php endif; ?>
+ <label <?= $reverseOnly?'hidden':'' ?>>Reference <small>Optional</small><input id="aw-reference" maxlength="100" placeholder="Voucher, bank or receipt reference"></label>
+@@ -43,10 +45,10 @@ layout_begin($title,$ordinaryPayment?'payment':['CRB'=>'crb','CDB'=>'cdb','GJ'=>
+ <?php if($advanceMode==='advance_liquidation'): ?><p class="aw-document-warning" id="aw-liquidation-reuse-warning">Once an image is posted, its unused or excluded amount cannot support another liquidation. Use distinct documents for separate liquidations.</p><?php endif; ?>
+ <div id="aw-documents"></div><?php if($advanceMode==='advance_return'): ?><p id="aw-proof-status" role="status"></p><button type="button" id="aw-confirm-proof">Confirm return proof</button><?php endif; ?><p class="aw-help" id="aw-evidence-help"><?= $advanceMode==='advance_liquidation'?'Monetary evidence must fully cover every expenditure or eligible asset debit. Informational documents and the advance-control credit do not add expenditure coverage.':($advanceMode==='advance_return'?'Reviewed informational proof and confirmation are required for this return. Monetary evidence allocations are not used.':($advanceMode?'Reviewed informational release proof is optional. Monetary evidence allocations are not used.':'Monetary support covers noncash allocations. Informational documents do not add monetary coverage. Missing or partial support will be shown at review.')) ?></p></aside></div>
+ <?php if($isCorrection&&!$reverseOnly): ?><section class="aw-card" id="aw-reuse-card"><h2>Reuse an original image</h2><p>The prior review is a reference. Review the image again and explain any changed purpose or amounts.</p><div class="aw-grid"><label>Eligible target image<select id="aw-reuse"></select></label><button type="button" id="aw-attach-reuse">Attach target image</button></div></section><?php endif; ?>
+-<section class="aw-card" id="aw-review-panel" hidden><h2><?= $ordinaryPayment?'Review payment':'Review before posting' ?></h2><p><?= $ordinaryPayment?'Not recorded yet. Check these details before confirming. This review is not Management approval.':'This checks the accounting entry. It does not record management approval.' ?></p><div id="aw-review-content"></div><div class="aw-actions"><button type="button" id="aw-back">Back to editing</button><button type="button" class="aw-primary" id="aw-post"><?= $ordinaryPayment?'Confirm and record payment':'Post' ?> <?= $ordinaryPayment?'':($workspaceBook==='CRB'?'receipt':($workspaceBook==='CDB'?'payment':'journal')) ?></button></div></section>
+-<section class="aw-card" id="aw-posted" hidden><h2><?= $ordinaryPayment?'Payment recorded':'Entry posted' ?></h2><?php if($ordinaryPayment): ?><p>Finished. This payment is now in the accounting records.</p><a id="aw-exact-link" class="aw-record-link">View this transaction</a><?php endif; ?><?php if($advanceMode): ?><span id="aw-advance-navigation"><a id="aw-advance-link" href="cash_advances.php">View advance</a> &middot; </span><?php endif; ?><p id="aw-posted-message"></p><?php if($workspaceBook!=='GJ'): ?><a id="aw-posted-link" href="financial_records.php?view=<?= strtolower($workspaceBook) ?>&amp;from=&amp;to=">View <?= $workspaceBook==='CRB'?'Cash Receipts Book':'Cash Disbursements Book' ?></a> · <?php endif; ?><a id="aw-history-link" href="financial_records.php?from=&amp;to=">View Journal History</a> · <a href="<?= $advanceMode?'cash_advance_entry.php?workflow_kind=advance_release':['CRB'=>'cash_receipt.php','CDB'=>'cash_disbursement.php','GJ'=>'general_journal.php'][$workspaceBook] ?>">Prepare another entry</a></section>
+-<?php if($ordinaryPayment): ?><section class="aw-card" id="aw-unknown" hidden><h2>Check recording result</h2><p>The response was interrupted. The payment may already be recorded. Check the same request before editing or starting another payment.</p><button type="button" id="aw-check-result" class="aw-primary">Check recording result</button></section><dialog id="aw-leave-dialog"><h2>Leave with unsaved changes?</h2><p>Your last saved draft remains available. The latest edits have not been saved.</p><p id="aw-leave-error" role="alert"></p><div class="aw-actions"><button type="button" id="aw-leave-stay">Stay</button><button type="button" id="aw-leave-unsaved">Leave without latest edits</button><button type="button" id="aw-leave-save" class="aw-primary">Save draft and leave</button></div></dialog><?php endif; ?>
++<section class="aw-card" id="aw-review-panel" hidden><h2><?= $ordinaryWorkspace?'Review '.$entryNoun:'Review before posting' ?></h2><p><?= $ordinaryWorkspace?'Not recorded yet. Check these details before confirming. This review is not Management approval.':'This checks the accounting entry. It does not record management approval.' ?></p><div id="aw-review-content"></div><div class="aw-actions"><button type="button" id="aw-back">Back to editing</button><button type="button" class="aw-primary" id="aw-post"><?= $ordinaryWorkspace?'Confirm and record '.$entryNoun:'Post' ?> <?= $ordinaryWorkspace?'':($workspaceBook==='CRB'?'receipt':($workspaceBook==='CDB'?'payment':'journal')) ?></button></div></section>
++<section class="aw-card" id="aw-posted" hidden><h2><?= $ordinaryWorkspace?ucfirst($entryNoun).' recorded':'Entry posted' ?></h2><?php if($ordinaryWorkspace): ?><p>Finished. This <?= $entryNoun ?> is now in the accounting records.</p><a id="aw-exact-link" class="aw-record-link">View this transaction</a><?php endif; ?><?php if($advanceMode): ?><span id="aw-advance-navigation"><a id="aw-advance-link" href="cash_advances.php">View advance</a> &middot; </span><?php endif; ?><p id="aw-posted-message"></p><?php if($workspaceBook!=='GJ'): ?><a id="aw-posted-link" href="financial_records.php?view=<?= strtolower($workspaceBook) ?>&amp;from=&amp;to=">View <?= $workspaceBook==='CRB'?'Cash Receipts Book':'Cash Disbursements Book' ?></a> · <?php endif; ?><a id="aw-history-link" href="financial_records.php?from=&amp;to=">View Journal History</a> · <a href="<?= $advanceMode?'cash_advance_entry.php?workflow_kind=advance_release':['CRB'=>'cash_receipt.php','CDB'=>'cash_disbursement.php','GJ'=>'general_journal.php'][$workspaceBook] ?>">Prepare another entry</a></section>
++<?php if($ordinaryWorkspace): ?><section class="aw-card" id="aw-unknown" hidden><h2>Check recording result</h2><p>The response was interrupted. The <?= $entryNoun ?> may already be recorded. Check the same request before editing or starting another entry.</p><button type="button" id="aw-check-result" class="aw-primary">Check recording result</button></section><dialog id="aw-leave-dialog"><h2>Leave with unsaved changes?</h2><p>Your last saved draft remains available. The latest edits have not been saved.</p><p id="aw-leave-error" role="alert"></p><div class="aw-actions"><button type="button" id="aw-leave-stay">Stay</button><button type="button" id="aw-leave-unsaved">Leave without latest edits</button><button type="button" id="aw-leave-save" class="aw-primary">Save draft and leave</button></div></dialog><?php endif; ?>
+ <dialog id="aw-master-dialog"><form id="aw-master-form"><h2 id="aw-master-title">New master</h2><label>Name<input name="name" required maxlength="100"></label><label id="aw-master-code-label">Project code<input name="code" maxlength="30"></label><label id="aw-master-type-label">Party type<select name="party_type"><option value="person">Person</option><option value="organization">Organization</option></select></label><label>Description (optional)<textarea name="description" maxlength="2000"></textarea></label><p id="aw-master-error" role="alert"></p><div class="aw-actions"><button type="button" id="aw-master-cancel">Cancel</button><button class="aw-primary">Create and select</button></div></form></dialog>
+ </div>
+-<script type="application/json" id="workspace-data"><?= json_encode(($correctionConfig??[])+($advanceConfig??[])+['ordinary_payment'=>$ordinaryPayment,'book'=>$workspaceBook,'csrf_token'=>csrf_token(),'lists'=>$lists,'draft_id'=>is_string($_GET['draft_id']??null)?$_GET['draft_id']:'','receipt_id'=>is_string($_GET['receipt_id']??null)?$_GET['receipt_id']:''],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_QUOT|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script>
+-<?php layout_end(($ordinaryPayment?'<script src="assets/js/payment_presentation.js?v='.filemtime(__DIR__.'/../assets/js/payment_presentation.js').'"></script>':'').'<script src="assets/js/accounting_workspace.js?v='.filemtime(__DIR__.'/../assets/js/accounting_workspace.js').'"></script>'); ?>
++<script type="application/json" id="workspace-data"><?= json_encode(($correctionConfig??[])+($advanceConfig??[])+['ordinary_workspace'=>$ordinaryWorkspace,'book'=>$workspaceBook,'csrf_token'=>csrf_token(),'lists'=>$lists,'draft_id'=>is_string($_GET['draft_id']??null)?$_GET['draft_id']:'','receipt_id'=>is_string($_GET['receipt_id']??null)?$_GET['receipt_id']:''],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_QUOT|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script>
++<?php layout_end(($ordinaryWorkspace?'<script src="assets/js/payment_presentation.js?v='.filemtime(__DIR__.'/../assets/js/payment_presentation.js').'"></script>':'').'<script src="assets/js/accounting_workspace.js?v='.filemtime(__DIR__.'/../assets/js/accounting_workspace.js').'"></script>'); ?>

@@ -1,0 +1,30 @@
+--- a/assets/js/accounting_workspace.js
++++ b/assets/js/accounting_workspace.js
+@@ -322,7 +322,10 @@
+             const account='aw-line-'+l.client_id+'-account',d=cents(l.debit_amount),c=cents(l.credit_amount);
+             if(eligible(account,l.account_id))add(visible(account),book==='CDB'?'Choose an available cost, asset or liability account.':'Choose an available account for this line.');
+             const project='aw-line-'+l.client_id+'-project';if(entryMode!=='quick'&&l.fund_project_id&&$(project).selectedOptions[0]?.disabled)add(visible(project),'Choose an available project or Organization operations.');
+-            if(d===null||c===null||((d===0n)===(c===0n))){add(entryMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+(d===null?'debit':c===null?'credit':d===0n?'debit':'credit'),entryMode==='quick'?'Enter a positive '+entryNoun+' amount with at most two decimal places.':'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;}
++            if(d===null||c===null||((d===0n)===(c===0n))){
++                const side=d===null?'debit':c===null?'credit':d===0n&&c===0n&&cashFocused&&entryMode==='split'?counterpartSide:d===0n?'debit':'credit';
++                add(entryMode==='quick'?'aw-cash-amount':'aw-line-'+l.client_id+'-'+side,entryMode==='quick'?'Enter a positive '+entryNoun+' amount with at most two decimal places.':'Enter one positive debit or credit per allocation; keep the other side zero.');valid=false;
++            }
+             else {debit+=d;credit+=c;}
+         }
+         if(p.lines.length<(book==='GJ'?2:1))add('aw-add-line',book==='GJ'?'Add at least two journal lines.':'Add at least one allocation.');
+--- a/assets/js/payment_presentation.js
++++ b/assets/js/payment_presentation.js
+@@ -13,11 +13,11 @@
+         const opposite = book === 'CRB' ? 'debit_amount' : 'credit_amount';
+         if ((p.documents || []).some(d => (d.allocations || []).some(a => !p.lines.some(l => l.client_id === a.client_id)))) return 'advanced';
+         if (p.lines.some(l => cents(l[opposite]) === null || cents(l[opposite]) !== 0n || cents(l[side]) === null)) return 'advanced';
++        // Inspect every line before choosing any simplified representation.
++        if (p.lines.some(l => Object.keys(l).some(k => !['client_id','account_id','fund_project_id','debit_amount','credit_amount'].includes(k)))) return 'advanced';
+         if (p.lines.length !== 1) return 'split';
+         const l = p.lines[0], cash = cents(p.cash_amount), amount = cents(l[side]);
+         if (cash === null || amount === null || (p.cash_amount === '') !== (l[side] === '') || cash !== amount || p.cash_project_id !== l.fund_project_id) return 'split';
+-        // Unknown fields cannot be hidden by a representation we do not understand.
+-        if (Object.keys(l).some(k => !['client_id','account_id','fund_project_id','debit_amount','credit_amount'].includes(k))) return 'advanced';
+         return 'quick';
+     }
+     scope.PaymentPresentation = Object.freeze({cents, mode});

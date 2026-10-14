@@ -1,5 +1,7 @@
 # Usability U2 delivery: Checkpoint U2-A
 
+**Subsequent checkpoint, October 14:** [U2-B delivery and 48 screenshots](usability-u2-b-delivery.md) record completed receipt/GJ/transfer implementation and fresh affected checks. U2-C remains pending. U2-B-unstarted statements below describe the dated U2-A handoff.
+
 **Subsequent review revision, October 8:** [Targeted corrections, final-change coverage and revised screenshots](usability-u2-a-revision.md) supersede this initial delivery's presentation and final-verification handoff. The counts and captures below remain dated October 7 evidence. U2-B remains unstarted.
 
 October 7, 2026. **U2-A source implementation and focused isolated verification complete. U2-B/U2-C, working acceptance and Atikha observation remain pending.**

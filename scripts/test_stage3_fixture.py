@@ -17,9 +17,12 @@ def runphp(body):return subprocess.check_output([php],input='<?php define("ATIKH
 run=root/'.migration-private'/('cp5-clone-'+secrets.token_hex(6));run.mkdir();dump=run/'fixture.sql'
 env=os.environ.copy();env['MYSQL_PWD']=env.get('ATIKHA_DB_PASSWORD','')
 host=env.get('ATIKHA_DB_HOST','127.0.0.1');user=env.get('ATIKHA_DB_USER','root')
-subprocess.run([r'C:\xampp\mysql\bin\mysqldump.exe','--host='+host,'--user='+user,'--single-transaction','--result-file='+str(dump),db],env=env,check=True)
+# Match cli_db's TCP port; a preserved recovery my.ini can supply client port 3307.
+# Do not inherit option files or change XAMPP configuration for disposable copies.
+client=['--no-defaults','--protocol=TCP','--host='+host,'--port=3306','--user='+user]
+subprocess.run([r'C:\xampp\mysql\bin\mysqldump.exe',*client,'--single-transaction','--result-file='+str(dump),db],env=env,check=True)
 runphp('$p=cli_db('+quote(db)+');require_once '+quote(str(root/'includes/stage2_common.php'))+';require_once '+quote(str(root/'includes/stage3_common.php'))+';cli_require(stage3_schema($p)&&stage2_schema($p),"Integrated source required");$s=new PDO("mysql:host=".(getenv("ATIKHA_DB_HOST")?:"127.0.0.1"),getenv("ATIKHA_DB_USER")?:"root",getenv("ATIKHA_DB_PASSWORD")?:"");$s->exec("CREATE DATABASE '+target+' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");')
-with dump.open('rb') as data:subprocess.run([r'C:\xampp\mysql\bin\mysql.exe','--host='+host,'--user='+user,target],stdin=data,env=env,check=True)
+with dump.open('rb') as data:subprocess.run([r'C:\xampp\mysql\bin\mysql.exe',*client,target],stdin=data,env=env,check=True)
 receipts=run/'receipts';shutil.copytree(evidence,receipts)
 for original in source.parent.glob('*fixture.json'):
     data=json.loads(original.read_text())
