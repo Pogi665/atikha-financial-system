@@ -18,8 +18,9 @@
 .app-sidebar > .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid #334155; }
 .app-sidebar .sidebar-brand > h2 { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.75rem; letter-spacing: -.025em; }
 .app-sidebar .sidebar-brand > p { margin: .25rem 0 0; color: #94a3b8; font-size: .75rem; line-height: 1rem; }
-.app-sidebar > nav { flex: 1 1 0%; padding: 1.5rem 1rem; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
-.app-sidebar > nav::-webkit-scrollbar { display: none; }
+.app-sidebar > nav { flex: 1 1 0%; min-height: 0; padding: 1.5rem 1rem; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #64748b #1e293b; }
+.app-sidebar > nav::-webkit-scrollbar { width: 8px; }
+.app-sidebar > nav::-webkit-scrollbar-thumb { background: #64748b; border: 2px solid #1e293b; border-radius: 8px; }
 .app-sidebar > nav > * { margin: 0; }
 .app-sidebar > nav > * + * { margin-top: .25rem; }
 .app-sidebar > nav > a {
@@ -34,7 +35,9 @@
     text-decoration: none;
     transition: color .15s, background-color .15s;
 }
-.app-sidebar > nav > a > svg { display: block; width: 1.25rem; height: 1.25rem; margin-right: .75rem; }
+.app-sidebar > nav > a > svg { display: block; flex-shrink: 0; width: 1.25rem; height: 1.25rem; margin-right: .75rem; }
+.app-sidebar .sidebar-link-label { min-width: 0; overflow-wrap: anywhere; }
+.app-sidebar > nav > a:focus-visible { outline: 2px solid #a7f3d0; outline-offset: -2px; background: #334155; color: #fff; }
 .app-sidebar > nav > a.group > svg { color: #94a3b8; }
 .app-sidebar > nav > a:hover { background: rgb(51 65 85 / .5); color: #fff; }
 .app-sidebar > nav > a.group:hover > svg { color: #fff; }
@@ -43,6 +46,6 @@
 .app-sidebar > nav > a.bg-blue-900 { background: #1e3a8a; }
 .app-sidebar > nav > a.bg-emerald-600 { background: #059669; }
 .app-sidebar .sidebar-section { padding: 1.25rem 0 .25rem; }
-.app-sidebar .sidebar-section > p { margin: 0; padding: 0 1rem; color: #94a3b8; font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .05em; text-transform: uppercase; }
+.app-sidebar .sidebar-section > h2 { margin: 0; padding: 0 1rem; color: #94a3b8; font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .05em; text-transform: uppercase; }
 .app-sidebar .sidebar-spacer { padding-bottom: .5rem; }
 @media print { .app-sidebar { display: none; } }

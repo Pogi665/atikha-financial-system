@@ -14,7 +14,7 @@ try{
 }catch(JournalProblem $e){http_response_code($e->status);exit(htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8'));}
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
 $manila=fn($v)=>(new DateTimeImmutable($v,new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
-layout_begin('Posted corrections','general_journal',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/assets/css/accounting_workspace.css').'">');
+layout_begin('Posted corrections','financial_records',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/assets/css/accounting_workspace.css').'">');
 ?>
 <div class="accounting-workspace correction-details">
 <header class="aw-header"><div><p class="aw-eyebrow">POSTED FINANCIAL HISTORY</p><h1><?= $detail?'Posted correction comparison':'Posted corrections' ?></h1><p>Originals remain posted. General Journal reversals and replacements show the complete correction history.</p></div><div class="correction-navigation"><a href="journal_corrections.php">All corrections</a> <button type="button" onclick="window.print()">Print comparison</button></div></header>

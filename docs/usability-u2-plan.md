@@ -2,7 +2,9 @@
 
 October 7, 2026. **Detailed implementation plan; application implementation had not started when this plan was written.** The user accepted the corrected U1-C prototype and chose to proceed without another external prototype review. This accepts its screens as the design reference, not as Atikha validation or working-system acceptance. Implement one authorized checkpoint at a time.
 
-**Subsequent disposition:** U2-A was separately authorized and delivered on October 7, 2026. See [delivery, actual checks and screens](usability-u2-delivery.md). Sections describing existing source remain dated planning findings. U2-B/C require separate authorization and remain unimplemented.
+**Current disposition, October 17, 2026:** U2-A, U2-B and U2-C source scope are complete following their separate authorizations. The user supplied ChatGPT's passing exact-source review of U2-C, with no application-code blocker. The documentation handoff is complete and the U2 source checkpoint is closed. See the [overall delivery/handoff](usability-u2-delivery.md), [U2-C delivery](usability-u2-c-delivery.md) and [current status](project-status.md). Sections below describing pre-implementation source are dated October 7 planning findings.
+
+Working-system/Atikha acceptance remains separate. U-PERF-01, U3-U5 and original Stages 4-7 remain outstanding; U3 is not authorized. Migration 009's stored-procedure registration error 1304 remains a separate unresolved diagnostic issue. The isolated anonymous-block test compatibility path does not establish normal migration/deployment success. No old working migration is authorized to rerun. This disposition update changes documentation only; it starts no diagnostics or later checkpoint.
 
 Read alongside the [roadmap](usability-completion-plan.md), [screen specification](usability-u1-design.md), [accepted prototype revision](usability-u1-prototype-revision.md), [decisions](project-decisions.md) and [current status](project-status.md).
 

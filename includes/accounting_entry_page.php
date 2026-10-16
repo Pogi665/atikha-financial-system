@@ -13,7 +13,12 @@ $title=$advanceMode!==null?['advance_release'=>'Release cash advance','advance_l
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
 if($isCorrection)$title=$reverseOnly?'Prepare journal reversal':'Prepare journal correction';
 if($ordinaryWorkspace)$title='Record a '.$entryNoun;
-layout_begin($title,$ordinaryWorkspace&&$workspaceBook==='CDB'?'payment':['CRB'=>'crb','CDB'=>'cdb','GJ'=>'general_journal'][$workspaceBook],[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/../assets/css/accounting_workspace.css').'">');
+// A correction's location follows the trusted original, never its reversal/replacement book.
+if($isCorrection){
+    $navTarget=$correctionConfig['target'];
+    $entryActive=$navTarget['operation']!==null?'cash_advances':(['CRB'=>'crb','CDB'=>'cdb'][$navTarget['journal']['source_book']??'']??'financial_records');
+}else $entryActive=$advanceMode!==null?'cash_advances':['CRB'=>'receipt','CDB'=>'payment','GJ'=>'general_journal'][$workspaceBook];
+layout_begin($title,$entryActive,[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/../assets/css/accounting_workspace.css').'">');
 ?>
 <div class="accounting-workspace <?= $ordinaryWorkspace?'aw-payment':'' ?> <?= $reverseOnly?'aw-reverse-only':'' ?>" id="entry-workspace">
 <header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING · <?= $workspaceBook ?></p><h1><?= $title ?></h1><p><?= $ordinaryWorkspace?'Enter the '.$entryNoun.' details, review, then confirm to record.':'Prepare an entry, save your draft, then review the complete debit and credit posting.' ?></p></div><div><a href="accounting_drafts.php">My drafts</a><?php if($isCorrection): ?> &middot; <button type="button" class="aw-no-print" onclick="window.print()">Print comparison</button><?php endif; ?><?php if($advanceMode): ?> &middot; <a href="cash_advances.php">Advance register</a> &middot; <button type="button" onclick="window.print()">Print draft</button><?php endif; ?></div></header>
