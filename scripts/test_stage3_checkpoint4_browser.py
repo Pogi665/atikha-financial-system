@@ -96,9 +96,9 @@ try:
         fresh,fs=context('admin@example.invalid');q=fixture['release_request'];q.pop('csrf_token',None);q['review_token']='0000000000.'+'0'*64
         recovered=call('post',q,fresh,fs['csrf']);check(recovered.ok and recovered.json()['result']['replacement_advance_id']==new_id and recovered.json()['result']['duplicate'],'Cross-session expired review recovers release correction')
         q['payload']['replacement']['due_date']='9998-12-31';check(call('post',q,fresh,fs['csrf']).status==409,'Changed advance fields conflict on successful retry')
-        page.goto(base+'/cash_advances.php?advance_id='+str(old_id));check('replaced' in page.locator('main').inner_text() and page.locator('#ca-extension').count()==0,'Old release detail is Replaced without settlement/extension actions')
+        page.goto(base+'/cash_advances.php?advance_id='+str(old_id));check(page.locator('.ca-status-line .ca-badge').inner_text().lower()=='replaced' and page.locator('#ca-extension').count()==0,'Old release detail is Replaced without settlement/extension actions')
         check(page.locator('a',has_text='View replacement advance').get_attribute('href').find('advance_id='+str(new_id))>=0,'Old detail navigates to replacement')
-        page.goto(base+'/cash_advances.php?advance_id='+str(new_id));check('9000.00' in page.locator('main').inner_text() and page.locator('#ca-extension').count()==1,'New advance detail has correct outstanding and normal actions')
+        page.goto(base+'/cash_advances.php?advance_id='+str(new_id));check(page.locator('.ca-outstanding strong').inner_text()=='PHP 9,000.00' and page.locator('#ca-extension').count()==1,'New advance detail has correct outstanding and normal actions')
         page.goto(base+'/journal_correction.php?journal_id='+str(fixture['blocked_release']));page.wait_for_function("document.getElementById('aw-correction-eligibility').textContent.includes('Blocking')")
         check(page.locator('#aw-review').is_disabled(),'Release with effective settlements shows blockers and disables review')
         # Both settlement replacement types use saved reviewed images and visible controls.
@@ -114,13 +114,13 @@ try:
         check('Return proof confirmed' in page.locator('#aw-review-content').inner_text(),'Return review confirms current proof and amount')
         capture('return-review');page.locator('#aw-post').click();page.wait_for_selector('[data-advance-result="original_advance_id"]')
         check(page.locator('#aw-posted a[href="financial_records.php?view=crb&from=&to="]').count()==1,'Return replacement result links CRB')
-        page.goto(base+'/cash_advances.php?advance_id='+str(fixture['settlement_advance']));check('1500.00' in page.locator('main').inner_text() and 'Reversal of liquidation' in page.locator('main').inner_text() and 'Reversal of return' in page.locator('main').inner_text(),'Detail shows effective balance and original/reversal/replacement timeline')
+        page.goto(base+'/cash_advances.php?advance_id='+str(fixture['settlement_advance']));check(page.locator('.ca-outstanding strong').inner_text()=='PHP 1,500.00' and 'Reversal of liquidation' in page.locator('main').inner_text() and 'Reversal of return' in page.locator('main').inner_text(),'Detail shows effective balance and original/reversal/replacement timeline')
         capture('settlement-detail')
         page.emulate_media(media='print');check(page.locator('#ca-extension').is_hidden(),'Print media hides editable actions');page.screenshot(path=str(run/'settlement-detail-print.png'),full_page=True);page.emulate_media(media='screen')
         page.goto(base+'/cash_advances.php');page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')")
         for status in ['replaced','cancelled']:
             page.locator('[name="status"]').select_option(status);page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-applied-filters').textContent.includes('Settlement status: '+document.querySelector('[name=status] option:checked').textContent)")
-            check(page.locator('#ca-rows').inner_text().find(status)>=0 and 'Reconciled' in page.locator('#ca-reconciliation').inner_text(),'Register '+status+' filter retains full reconciliation')
+            check(page.locator('#ca-rows').inner_text().find(status)>=0 and 'Reconciled' in page.locator('#ca-reconciliation').text_content() and 'reconciled' in page.locator('#ca-health-message').inner_text(),'Register '+status+' filter retains full reconciliation')
         capture('retired-register');applied=page.locator('#ca-applied-filters').inner_text();rows=page.locator('#ca-rows').inner_text()
         page.locator('[name="status"]').select_option('replaced');check(page.locator('#ca-applied-filters').inner_text()==applied,'Unapplied filter edits retain displayed print scope')
         def fail_register(route):route.fulfill(status=503,content_type='application/json',body='{"ok":false,"error":"Synthetic refresh failure"}')

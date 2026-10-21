@@ -146,7 +146,7 @@ try:
         page.route('**/cash_advance_actions.php?*',register_fixture)
         page.locator('[name="project_id"]').select_option(project);page.locator('[name="control_account_id"]').select_option(control);page.locator('[name="status"]').select_option('partially_settled');page.locator('[name="overdue"]').select_option('1');page.locator('[name="search"]').fill('field <visit>');page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-totals-basis').textContent.includes('40')")
         labels=page.locator('#ca-applied-filters').inner_text()
-        check(all(term in labels for term in ['Employee:','Originating project:','Control account: Account #'+control,'Settlement status: Partially settled','Overdue: Overdue','Search: field <visit>']),'Printed summary records all applied filters as safe text')
+        check(all(term in labels for term in ['Employee:','Originating project:','Control account: '+page.locator('[name="control_account_id"] option:checked').inner_text(),'Settlement status: Partially settled','Overdue: Overdue','Search: field <visit>']),'Printed summary records all applied filters as safe text')
         check('rows 1-25 of 40' in page.locator('#ca-print-scope').inner_text() and 'all 40 matching advances (all pages)' in page.locator('#ca-totals-basis').inner_text(),'First page distinguishes printed rows from all-matching totals')
         page.locator('[name="search"]').fill('unsaved filter');check(page.locator('#ca-applied-filters').inner_text()==labels,'Unsaved filter edits do not change printed applied labels')
         page.locator('#ca-next').click();page.wait_for_function("document.getElementById('ca-print-scope').textContent.includes('rows 26-40')")

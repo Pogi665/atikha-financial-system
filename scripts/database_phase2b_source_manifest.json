@@ -1,0 +1,194 @@
+{
+  "Format": "phase2b-readonly-source-v1",
+  "PhpSHA256": "4043721B2D6A3D0E68D13B3DAEAB0A2C842B9E054EC4098B80E1AEAB6A8456F3",
+  "Files": [
+    {
+      "Path": "includes/accounting_entry_page.php",
+      "SHA256": "D7B2EFD49EBEE2C2D4E6AE7E92B4E6B0B6717D6A964802212C658F989789E3E3"
+    },
+    {
+      "Path": "includes/accounting_query.php",
+      "SHA256": "61A15B396CC5C2013484633E3A9EA82211BED7F2C2A4B15CA9939A256FC6B4FA"
+    },
+    {
+      "Path": "includes/accounting_workspace.php",
+      "SHA256": "8CAA99478C501AC90C8620322C2F3A61A7F85808D31FAC47F87D20FF76647509"
+    },
+    {
+      "Path": "includes/accounts.php",
+      "SHA256": "95B65AA896E85CE420BE95BCE314D3C51F6A934DD2F32EC8126CF8942155A379"
+    },
+    {
+      "Path": "includes/admin_bootstrap.php",
+      "SHA256": "0E1F4BC856C5F333846AAD64D07A9E152A9CF42C8EC6567209BD523996E9AA5C"
+    },
+    {
+      "Path": "includes/audit_query.php",
+      "SHA256": "C5E1B617E625C9043B5DAFCB4AB0B54E2165FDF584D912CFB60C217D7C4E4C3D"
+    },
+    {
+      "Path": "includes/board_uploads.php",
+      "SHA256": "73FD98448713E5DBD43950353EB956DE2EEE78910A04BC17221A0C3DB2183F39"
+    },
+    {
+      "Path": "includes/budget_query.php",
+      "SHA256": "9D8AB326AE0069C9382879C40B589D671C8A45F97CAE62926FAD5E8DBB8C7BCD"
+    },
+    {
+      "Path": "includes/cash_advance.php",
+      "SHA256": "2846CCC1F54721D8A863052ACB49C2F0E794D491BA0B18FEF5762961E397F29F"
+    },
+    {
+      "Path": "includes/cash_advance_lifecycle.php",
+      "SHA256": "7088B253ACE7A0740EBCE55E247A5B83F8B851FF3241ABFEC33960A935844B53"
+    },
+    {
+      "Path": "includes/categories.php",
+      "SHA256": "35C3882BE9FF6AA37D8E2091CAF276F1A6F16095F1E810EB4066370B1BF8A5D5"
+    },
+    {
+      "Path": "includes/correction_drafts.php",
+      "SHA256": "92DF7F48ADCD8B651F030F3CAFDB7FA2F90AAABDC957910E57B01363365FEE26"
+    },
+    {
+      "Path": "includes/correction_posting.php",
+      "SHA256": "88852F374A0543BC8564A85760A11F4A1CF6B31C8EF3B04811A759ADFBD26C91"
+    },
+    {
+      "Path": "includes/csrf.php",
+      "SHA256": "5136B847D88BC1413913B1B0FB9CE48CD23B033A4A9E5A7E2A127E415BF2E50C"
+    },
+    {
+      "Path": "includes/dashboard_query.php",
+      "SHA256": "A089E2020C36BFA845621098743E9499C443CF0D70D2EFF4AD0A3D4CE92DFFF4"
+    },
+    {
+      "Path": "includes/expense_warnings.php",
+      "SHA256": "C36B4F14A0C0EB1D26D5D828AC2B526229E38FAFC53106E4142136CC85295A59"
+    },
+    {
+      "Path": "includes/external_mail.php",
+      "SHA256": "E53994677560901B27FB71A9611B5C6D7853A0B14A028E9758BD44F5F780D7C0"
+    },
+    {
+      "Path": "includes/forecast_query.php",
+      "SHA256": "0899F501DF8B23E6A43B189532AFEEF9113D7E911AC08A691CCCBC68AC1F6790"
+    },
+    {
+      "Path": "includes/gemini_client.php",
+      "SHA256": "4D1F7254E43F3862BC82C0FD68CFE0FD8AEEBB49A2031D4A350E0E2835288020"
+    },
+    {
+      "Path": "includes/gemini_receipt.php",
+      "SHA256": "4F49BBA158FF87D3CDBAA7E88836ED414BE455A140E3AD5A1EEDE1764466C0E7"
+    },
+    {
+      "Path": "includes/header_bar.php",
+      "SHA256": "47F845C0975E91E3DBB5CEA26026F7223C2EBA4E9C53B1E83D4B7F3361210723"
+    },
+    {
+      "Path": "includes/journal.php",
+      "SHA256": "2CD02BD330186249C12B715D6E8904D81E955E4C31BADEF0EE97964DD1972B9B"
+    },
+    {
+      "Path": "includes/journal_corrections.php",
+      "SHA256": "A6CE0EC1B3C400E22391EBF6DF2CE7AB4094A65C499F1F5602D3F36374C8D6D1"
+    },
+    {
+      "Path": "includes/layout.php",
+      "SHA256": "2F7AA1C97BAF1091BCCD0A63CC5233D4ACF3BC12EB6638C99442B816E20B2884"
+    },
+    {
+      "Path": "includes/ledger_query.php",
+      "SHA256": "6DBB0E5A518B4F2866AA39AEF188587E76246B870E9CBE0474E0E412200234BF"
+    },
+    {
+      "Path": "includes/ledger_ui.php",
+      "SHA256": "6370D77BE949F0F56A3346BEF81C9B9EF6FE1753DEC97013481EE19C80A63941"
+    },
+    {
+      "Path": "includes/legacy_entry_guard.php",
+      "SHA256": "9BDB0EBA5500ADE7656487C8379501FE567B9F120FB756A2FFFC34BDB6B2C160"
+    },
+    {
+      "Path": "includes/logger.php",
+      "SHA256": "1CC3B351B9502F8EDE23EF36D79EF43EE14B63C1B0731CAC1EDCD67E031C8680"
+    },
+    {
+      "Path": "includes/mailer.php",
+      "SHA256": "64383B636C1E6DC1B5D7141B8FF5801F52489B0151CA723DDD62FEDA2432BAF6"
+    },
+    {
+      "Path": "includes/management_dashboard.php",
+      "SHA256": "369349CE0000B8DDF25C151940401A0AC7D4E838BD76ED6BAB7D9ECD554AE771"
+    },
+    {
+      "Path": "includes/mfa.php",
+      "SHA256": "214E7F24954E5CC8E8B893E6721618195368B412F66B639526DF98C187DEDC71"
+    },
+    {
+      "Path": "includes/nav.php",
+      "SHA256": "892D35C4D0EA9CFA75918AF169E485947A608A7C4B03D39A6D8A97F3E2DD78CF"
+    },
+    {
+      "Path": "includes/notifications.php",
+      "SHA256": "BA82468C7C940B4C4719DDDBB5297C4F739876C0C756F162A68EF9BEEED16EA6"
+    },
+    {
+      "Path": "includes/receipt_ocr.php",
+      "SHA256": "68EE49EB4F722C284DABD6BA1A933F8CBAC7321F4E6F8D81176B9B2DBA875C86"
+    },
+    {
+      "Path": "includes/receipts.php",
+      "SHA256": "50B09C0F64C7E951D64EF879AE4E013CDDD00CD4250B3D31F4A4E1698AA12402"
+    },
+    {
+      "Path": "includes/report_snapshots.php",
+      "SHA256": "44B3D263E8AD48664CDEECA52F0B00BDEADAA5BA3B4FC3466A9BFA243EA5920B"
+    },
+    {
+      "Path": "includes/require_role.php",
+      "SHA256": "4F47A8FE65354F26E50B6A64E70CEFB1E089C1690223C187C2B54F2E2898669B"
+    },
+    {
+      "Path": "includes/review_ui.php",
+      "SHA256": "E79D5FBCE549B506ED9A8D4ADA67B412A11DF8BF4A069F6CB0086861B854D3C6"
+    },
+    {
+      "Path": "includes/stage1_common.php",
+      "SHA256": "4A4C383146AC32C6C4C5E38CD70C91719A56D574E528714C3F3B49D54430CCD9"
+    },
+    {
+      "Path": "includes/stage2_common.php",
+      "SHA256": "43F32F5534B4D8BD69B7F6B7BDB4BD7EDA54746B4BB21CC4A41DEB8F9EA16438"
+    },
+    {
+      "Path": "includes/stage3_common.php",
+      "SHA256": "470FBD5F21F5D3FB33EE162E3C73C9C61E054ECA0FAFF304126C2CAACBD53F3C"
+    },
+    {
+      "Path": "includes/transaction_details.php",
+      "SHA256": "34F3DDBE2023D1A72CA2B780900D91EDB523D3640A3D16B8A03A960E3E11AD51"
+    },
+    {
+      "Path": "includes/user_identities.php",
+      "SHA256": "1F6AD5A356189AC66A4CD9B886A4865C9E8EB2B8AF215500D2F3F42CD54B87FC"
+    },
+    {
+      "Path": "includes/user_roles.php",
+      "SHA256": "B2EA52211E5DFD738A666319C80543F0CE1869D26D83607854454BE5F1936229"
+    },
+    {
+      "Path": "includes/user_session.php",
+      "SHA256": "BB840DE5E1CBE90A2DE3BFA5E7E93239AF5281EBD2636EF3AD1BC5151D18F210"
+    },
+    {
+      "Path": "includes/users.php",
+      "SHA256": "2410743A42465DC59B5E7F374CADFCB4C0145D1B9FEC54481FB898D6395D9085"
+    },
+    {
+      "Path": "scripts/database_phase2b_probe.php",
+      "SHA256": "C827303D62808315FE808BD269555733C29BC54A8D4AD17A363FB6E706375A63"
+    }
+  ]
+}

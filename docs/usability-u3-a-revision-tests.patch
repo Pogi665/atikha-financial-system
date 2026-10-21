@@ -1,0 +1,74 @@
+diff --git a/scripts/test_usability_u3_a_browser.py b/scripts/test_usability_u3_a_browser.py
+index a97cfa6614d63e0a29df9bd11b5d4e0b6e140843..42899e7b9f200c1bdabf725187b178401b34233e 100644
+--- a/scripts/test_usability_u3_a_browser.py
++++ b/scripts/test_usability_u3_a_browser.py
+@@ -134,6 +134,13 @@
+         check('No posted advances yet' in page.locator('#ca-rows').inner_text() and 'PHP 0.00' in page.locator('#ca-totals').inner_text(),'Empty-register presentation double differs from a filtered no-match result');capture('register-empty-double')
+         page.unroute('**/cash_advances.php',empty_html);page.unroute('**/cash_advance_actions.php?*',empty_result);page.route('**/cash_advance_actions.php?*',fail);page.goto(base+'/cash_advances.php');page.wait_for_function("document.getElementById('ca-error').textContent.includes('have not loaded')")
+         check(page.locator('#ca-print').is_disabled() and 'No successful' in page.locator('#ca-health-message').inner_text(),'First-load failure cannot claim reconciliation or print a successful register');page.unroute('**/cash_advance_actions.php?*',fail)
++        check(page.locator('#ca-health').get_attribute('data-state')=='unavailable' and page.locator('#ca-health').evaluate("e=>getComputedStyle(e).backgroundColor")== 'rgb(241, 245, 249)' and not page.locator('#ca-health').evaluate("e=>e.classList.contains('ca-health-warning')"),'Initial HTTP failure has neutral unavailable styling instead of healthy/discrepancy styling')
++        check('not verified' in page.locator('#ca-health-message').inner_text() and page.locator('#ca-health-link').is_hidden() and page.locator('#ca-reconciliation-details').is_hidden() and 'No successful' in page.locator('#ca-reconciliation-basis').text_content(),'Initial HTTP failure hides unverified reconciliation link/details and labels its basis')
++        page.locator('#ca-health-link').evaluate('e=>e.click()');check(page.locator('#ca-reconciliation-details').get_attribute('open') is None,'Initial failure cannot open an empty reconciliation disclosure');capture('register-first-load-unavailable')
++        def invalid_initial(route):route.fulfill(status=200,content_type='application/json',body=json.dumps({'ok':True,'result':malformed}))
++        page.route('**/cash_advance_actions.php?*',invalid_initial);page.goto(base+'/cash_advances.php');page.wait_for_function("document.getElementById('ca-health').dataset.state==='unavailable'")
++        check(page.locator('#ca-health-link').is_hidden() and page.locator('#ca-reconciliation-details').is_hidden() and page.locator('#ca-print').is_disabled(),'Unverifiable first HTTP response cannot expose verified details/printing');page.unroute('**/cash_advance_actions.php?*',invalid_initial)
++        page.locator('#ca-filters button').click();loaded();check(page.locator('#ca-health').get_attribute('data-state')=='healthy' and page.locator('#ca-health-link').is_visible() and page.locator('#ca-reconciliation-details').is_visible(),'Real successful retry restores verified health and full reconciliation')
+         check(state()==before,'All 34 application tables unchanged across real read/navigation/print and response-double phases')
+         # Deliberate isolated deadline writes follow, outside the read-only fingerprint pass.
+         page=admin.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto(base+'/cash_advances.php?advance_id='+first);page.locator('#ca-extension-panel summary').click()
+diff --git a/scripts/test_usability_u3_a_presentation.py b/scripts/test_usability_u3_a_presentation.py
+index fb7aad90e4d5cf73134fdbe48521b20ac0c1a754..9a6bbe8642d9bc25b971e3065b006f0c56e15eb2 100644
+--- a/scripts/test_usability_u3_a_presentation.py
++++ b/scripts/test_usability_u3_a_presentation.py
+@@ -22,7 +22,7 @@
+     variables={'role':role,'detail':data,'asof':data['as_of'] if data else today,'id':data['id'] if data else None,'options':[] if empty else [record],'controlNames':{'22':recon[0]['account_name']}}
+     response=subprocess.run([php,str(template)],input=json.dumps(variables),capture_output=True,text=True,encoding='utf-8',check=True);assert not response.stderr,response.stderr
+     return '<!doctype html><html><head><base href="http://127.0.0.1:9/"><link rel="stylesheet" href="assets/css/accounting_workspace.css"><style>body{margin:0;background:#f1f5f9}main{margin-left:256px;padding:30px}*{box-sizing:border-box}p{margin:8px 0}h1,h2,h3{margin:0}</style></head><body><main>'+response.stdout+'</main></body></html>'
+-checks=0;errors=[];response_data=copy.deepcopy(result)
++checks=0;errors=[];response_data=copy.deepcopy(result);response_mode='success';pending=[]
+ def check(ok,label):
+     global checks
+     if not ok:raise AssertionError(label)
+@@ -33,18 +33,38 @@
+         path=request.request.url.split('127.0.0.1:9/',1)[-1].split('?',1)[0]
+         if path=='assets/css/accounting_workspace.css':request.fulfill(content_type='text/css',body=(root/path).read_text(encoding='utf-8'))
+         elif path=='assets/js/cash_advances.js':request.fulfill(content_type='application/javascript',body=(root/path).read_text(encoding='utf-8'))
+-        elif path=='cash_advance_actions.php':request.fulfill(content_type='application/json',body=json.dumps({'ok':True,'result':response_data}))
++        elif path=='cash_advance_actions.php':
++            if response_mode=='pending':pending.append(request)
++            elif response_mode=='failure':request.fulfill(status=503,content_type='application/json',body='{"ok":false,"error":"Synthetic unavailable check"}')
++            else:request.fulfill(content_type='application/json',body=json.dumps({'ok':True,'result':response_data}))
+         else:request.fulfill(status=403,body='Blocked presentation test request')
+     c.route('**/*',route)
+-    def render(role='Admin',data=None,empty=False):
+-        page.set_content(html(role,data,empty),wait_until='networkidle')
+-        if data is None:page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')")
++    def render(role='Admin',data=None,empty=False,wait=True):
++        page.set_content(html(role,data,empty),wait_until='networkidle' if wait else 'domcontentloaded')
++        if data is None and wait:page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')")
+     def captures(label):
+         for w,h in [(1366,768),(1920,1080)]:
+             page.set_viewport_size({'width':w,'height':h});check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),label+' fits '+str(w));page.screenshot(path=str(run/(label+'-'+str(w)+'.png')),full_page=True)
+     render();check('PHP 10,000.00' in page.locator('#ca-totals').inner_text(),'Exact amounts format with separators');check('<training & community>' in page.locator('#ca-rows').inner_text() and page.locator('#ca-rows script').count()==0,'Purpose text is escaped');check(page.locator('#ca-reconciliation-details').get_attribute('open') is None,'Full reconciliation starts secondary');captures('register')
+     page.locator('#ca-health-link').click();check(page.locator('#ca-reconciliation-details').get_attribute('open') is not None and page.locator('#ca-reconciliation-details summary').evaluate('e=>e===document.activeElement'),'Health shortcut opens and focuses full reconciliation')
+     response_data=copy.deepcopy(result);response_data['reconciliation'][0]['ok']=False;response_data['reconciliation'][0]['difference']='1.00';response_data['reconciliation'][0]['errors']=['Synthetic excluded-account discrepancy'];render();check('Integrity discrepancy' in page.locator('#ca-health-message').inner_text(),'Discrepancy stays prominent outside disclosure');captures('discrepancy')
++    warning_snapshot=page.locator('#ca-health').get_attribute('class'),page.locator('#ca-health-message').inner_text(),page.locator('#ca-reconciliation').text_content()
++    response_mode='failure';page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-error').textContent.length>0")
++    check(warning_snapshot==(page.locator('#ca-health').get_attribute('class'),page.locator('#ca-health-message').inner_text(),page.locator('#ca-reconciliation').text_content()) and page.locator('#ca-health-link').is_visible(),'Failed discrepancy refresh retains verified warning/details and link')
++    response_mode='pending';render(wait=False);page.wait_for_function("document.getElementById('ca-rows').getAttribute('aria-busy')==='true'")
++    check(page.locator('#ca-health').get_attribute('data-state')=='loading' and page.locator('#ca-health').evaluate("e=>getComputedStyle(e).backgroundColor")== 'rgb(248, 250, 252)','Initial loading has a distinct neutral health state')
++    check(page.locator('#ca-health-link').is_hidden() and page.locator('#ca-reconciliation-details').is_hidden(),'Loading offers no unverified full-reconciliation details')
++    pending.pop().fulfill(status=503,content_type='application/json',body='{"ok":false,"error":"Synthetic unavailable check"}');page.wait_for_function("document.getElementById('ca-health').dataset.state==='unavailable'")
++    check(page.locator('#ca-health').evaluate("e=>getComputedStyle(e).backgroundColor")== 'rgb(241, 245, 249)' and 'not verified' in page.locator('#ca-health-message').inner_text() and not page.locator('#ca-health').evaluate("e=>e.classList.contains('ca-health-warning')"),'Initial failure is unavailable, distinct from healthy and discrepancy')
++    check(page.locator('#ca-print').is_disabled() and page.locator('#ca-health-link').is_hidden() and page.locator('#ca-reconciliation-details').is_hidden() and 'No successful' in page.locator('#ca-reconciliation-basis').text_content(),'Initial failure disables printing and hides empty reconciliation details')
++    page.locator('#ca-health-link').evaluate('e=>e.click()');check(page.locator('#ca-reconciliation-details').get_attribute('open') is None,'Unavailable shortcut cannot open an empty disclosure');captures('first-load-unavailable')
++    response_mode='success';response_data=copy.deepcopy(result);response_data['reconciliation']=[{'ok':False,'errors':[]}];render(wait=False);page.wait_for_function("document.getElementById('ca-health').dataset.state==='unavailable'")
++    check(page.locator('#ca-health-link').is_hidden() and page.locator('#ca-reconciliation-details').is_hidden(),'Unverifiable initial response also leaves reconciliation unavailable')
++    response_data=copy.deepcopy(result);page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-health').dataset.state==='healthy'")
++    check(page.locator('#ca-health-link').is_visible() and page.locator('#ca-reconciliation-details').is_visible() and not page.locator('#ca-print').is_disabled(),'Verified retry restores healthy styling, details and printing')
++    healthy_snapshot=page.locator('#ca-health').get_attribute('class'),page.locator('#ca-health-message').inner_text(),page.locator('#ca-reconciliation').text_content()
++    response_mode='failure';page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-error').textContent.length>0")
++    check(healthy_snapshot==(page.locator('#ca-health').get_attribute('class'),page.locator('#ca-health-message').inner_text(),page.locator('#ca-reconciliation').text_content()) and page.locator('#ca-health-link').is_visible(),'Later failure retains the successful healthy reconciliation snapshot');response_mode='success'
+     response_data=copy.deepcopy(result);render();page.emulate_media(media='print');page.wait_for_function("[...document.querySelectorAll('details[data-ca-print]')].every(d=>d.open)");check(page.locator('#ca-filters').is_hidden() and page.locator('#ca-print-scope').is_visible(),'Print retains applied scope and hides filters');captures('register-print');page.emulate_media(media='screen');page.wait_for_function("!document.getElementById('ca-reconciliation-details').open");check(page.locator('#ca-reconciliation-details').get_attribute('open') is None,'Print restores prior disclosures')
+     response_data={**result,'rows':[],'count':0,'reconciliation':[],'totals':{k:'0.00' for k in result['totals']}};render(empty=True);check('No posted advances yet' in page.locator('#ca-rows').inner_text(),'Empty-register guidance differs from filtering');captures('empty')
+     render();check('No posted advances match' in page.locator('#ca-rows').inner_text(),'No-match guidance retains filter context')

@@ -1,0 +1,94 @@
+Authenticated U3-A:91 passing assertions
+PASS: Advance register retains U2-C current location
+PASS: Healthy independent reconciliation is visible
+PASS: Full healthy reconciliation is secondary
+PASS: Reconciliation shortcut opens details and focuses its summary
+PASS: Real synthetic matching advances use two 25-row pages
+PASS: All-page totals retain exact server amounts with separators
+PASS: Purpose and long project labels render as safe literal text
+PASS: Populated results are distinct from empty state
+PASS: Real second page retains all-match count and page-only scope
+PASS: Pagination retains applied filters while labelling unapplied edits
+PASS: admin-register fits 1366
+PASS: admin-register fits 1920
+PASS: Successful snapshot contains #ca-totals
+PASS: Successful snapshot contains #ca-rows
+PASS: Successful snapshot contains #ca-basis
+PASS: Successful snapshot contains #ca-applied-filters
+PASS: Successful snapshot contains #ca-print-scope
+PASS: Successful snapshot contains #ca-health-message
+PASS: Failed refresh preserves rows/totals/date/filters/reconciliation atomically
+PASS: register-refresh-failed fits 1366
+PASS: register-refresh-failed fits 1920
+PASS: Malformed success response cannot partially replace the applied snapshot
+PASS: Deliberately late response cannot replace newer no-match result
+PASS: Actual no-match query has contextual empty guidance
+PASS: register-no-matches fits 1366
+PASS: register-no-matches fits 1920
+PASS: Unfiltered discrepancy remains prominent outside display filters
+PASS: Full discrepancy details remain inspectable
+PASS: register-discrepancy-double fits 1366
+PASS: register-discrepancy-double fits 1920
+PASS: Printed register keeps scope/totals and hides mutation/filter controls
+PASS: register-print fits 1366
+PASS: register-print fits 1920
+PASS: Print restores disclosure state on return to screen
+PASS: Detail shows posted release and outstanding without counting drafts
+PASS: Due today is separate from overdue status
+PASS: Both settlement actions bind the original advance identity
+PASS: Deadline extension is secondary
+PASS: admin-advance-detail fits 1366
+PASS: admin-advance-detail fits 1920
+PASS: Timeline opens exact existing journal independently of list filters
+PASS: Historical view has no settlement/extension actions
+PASS: Detail Back retains the applied accounting date
+PASS: Historical view offers explicit current-date navigation
+PASS: advance-historical fits 1366
+PASS: advance-historical fits 1920
+PASS: Real detail retains settled lifecycle status
+PASS: No settlement action for settled
+PASS: Real detail retains outstanding lifecycle status
+PASS: Real detail retains partially_settled lifecycle status
+PASS: Real detail retains replaced lifecycle status
+PASS: No settlement action for replaced
+PASS: Retired advance retains posted correction comparison
+PASS: Real detail retains cancelled lifecycle status
+PASS: No settlement action for cancelled
+PASS: Retired advance retains posted correction comparison
+PASS: Settled timeline retains all original posted operations
+PASS: advance-settled fits 1366
+PASS: advance-settled fits 1920
+PASS: management-register fits 1366
+PASS: management-register fits 1920
+PASS: Management gets read navigation without authoring tasks
+PASS: Management cannot extend or start settlement
+PASS: Management detail JSON excludes private review/images/approval context
+PASS: management-detail fits 1366
+PASS: management-detail fits 1920
+PASS: Printed Management detail includes full journals and hides sidebar
+PASS: management-detail-print fits 1366
+PASS: management-detail-print fits 1920
+PASS: Advance surface retains Stage 1/2 gate (False, False)
+PASS: Advance surface retains Stage 1/2 gate (True, False)
+PASS: Advance surface retains Stage 1/2 gate (False, True)
+PASS: Empty-register presentation double differs from a filtered no-match result
+PASS: register-empty-double fits 1366
+PASS: register-empty-double fits 1920
+PASS: First-load failure cannot claim reconciliation or print a successful register
+PASS: Initial HTTP failure has neutral unavailable styling instead of healthy/discrepancy styling
+PASS: Initial HTTP failure hides unverified reconciliation link/details and labels its basis
+PASS: Initial failure cannot open an empty reconciliation disclosure
+PASS: register-first-load-unavailable fits 1366
+PASS: register-first-load-unavailable fits 1920
+PASS: Unverifiable first HTTP response cannot expose verified details/printing
+PASS: Real successful retry restores verified health and full reconciliation
+PASS: All 34 application tables unchanged across real read/navigation/print and response-double phases
+PASS: Failed extension retains entered fields
+PASS: Failed extension has no application writes
+PASS: extension-failed fits 1366
+PASS: extension-failed fits 1920
+PASS: Successful extension is preserved in deadline history
+PASS: Stale revision fails without replacing deadline/history or entered fields
+PASS: U3-A pages have no uncaught JavaScript errors
+
+Database-free presentation:43 assertions; see test source and revision results.

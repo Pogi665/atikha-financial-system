@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-21",
+  "scope": "U3-A first-load reconciliation health only",
+  "browser": "155.0.4283.62",
+  "checks": {
+    "database_free_presentation": 43,
+    "authenticated_focused_u3a": 91
+  },
+  "page_errors": [],
+  "working_fingerprints_unchanged": true,
+  "working_config_unchanged": true,
+  "migrations_run": false,
+  "other_suites": "Not rerun; earlier 56 Stage2,48 CP4,54 CP5 and27 readback are dated pre-correction evidence.",
+  "external_review": "pending",
+  "u3_b_c_d": "unstarted",
+  "original_review_zip_sha256": "8a9153c9122aab5d98af4d204cb38af0ca11d687135df504418f1239203c579a"
+}

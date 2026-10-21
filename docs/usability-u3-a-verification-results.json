@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-21",
+  "baseline": "ab653a1b59431d6c1ef0fad080f583da64961b8f",
+  "browser": "Edge 155.0.4283.62",
+  "checks": {
+    "u3a": 84,
+    "readback": 27,
+    "stage2": 56,
+    "stage3_cp4": 48,
+    "stage3_cp5": 54
+  },
+  "total": 269,
+  "page_errors": [],
+  "synthetic_read_phases_unchanged_application_tables": 34,
+  "working_read_only_fingerprints_unchanged": true,
+  "working_source_config_unchanged": true,
+  "migrations_run": false,
+  "external_review": "pending",
+  "working_client_acceptance": "separate",
+  "later_u3_checkpoints": "unstarted",
+  "provider_boundary": "external browser requests and provider endpoints blocked; child PHP URL/cURL/socket/mail disabled",
+  "prior_backend_487": "dated fixture provenance only; not rerun",
+  "attempts": "Test helper inclusion, metadata selection, same-URL navigation, status/currency/disclosure expectations corrected; no application changes required."
+}

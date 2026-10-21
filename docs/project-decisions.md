@@ -1,5 +1,10 @@
 # Selected decisions and unresolved requirements
 
+**Recovery priority selection, October 21, 2026:** after discussing a clean synthetic development server, the user selected fixing the database before resuming U3-A and instructed proceeding with [Phase 3-B guarded preparation/manual handoff](database-phase3-b-normalization-proposal-20261021.md). U3-A application source remains preserved; integration and external exact-source approval remain pending. The supplied ChatGPT U3-A review is a partial-delivery review with approval withheld for missing integrated evidence and local source, not a request to undo the prepared presentation. No new U3 checkpoint or working cutover is authorized by this sequencing choice. Earlier separate recovery authorizations remain dated scope records; the Phase3-B document identifies its new target-MAI/MAD disposable-only boundary.
+
+**Sequencing selection, October 20, 2026:** the user chose to defer U2 action-count evidence and the two nonblocking currency/transfer-wording refinements to a small [follow-up before U5](usability-u2-followup-plan.md), preserving the frozen U2-C baseline. U3-A was explicitly authorized; its own integrity/privacy/regression checks remain required. Following a connection failure, the user separately authorized read-only database diagnosis and explicitly prohibited repairs. These are user-selected scope/sequence decisions, not new client accounting requirements.
+
+
 Recorded October 6, 2026. Read alongside [client context](client-context.md), [current status](project-status.md), and the approved stage plans. This is a decision index, not a second implementation specification or blanket authorization.
 
 ## Evidence and execution approach

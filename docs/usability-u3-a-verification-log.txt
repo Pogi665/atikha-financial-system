@@ -1,0 +1,278 @@
+u3a — 84 passing assertions
+PASS: Advance register retains U2-C current location
+PASS: Healthy independent reconciliation is visible
+PASS: Full healthy reconciliation is secondary
+PASS: Reconciliation shortcut opens details and focuses its summary
+PASS: Real synthetic matching advances use two 25-row pages
+PASS: All-page totals retain exact server amounts with separators
+PASS: Purpose and long project labels render as safe literal text
+PASS: Populated results are distinct from empty state
+PASS: Real second page retains all-match count and page-only scope
+PASS: Pagination retains applied filters while labelling unapplied edits
+PASS: admin-register fits 1366
+PASS: admin-register fits 1920
+PASS: Successful snapshot contains #ca-totals
+PASS: Successful snapshot contains #ca-rows
+PASS: Successful snapshot contains #ca-basis
+PASS: Successful snapshot contains #ca-applied-filters
+PASS: Successful snapshot contains #ca-print-scope
+PASS: Successful snapshot contains #ca-health-message
+PASS: Failed refresh preserves rows/totals/date/filters/reconciliation atomically
+PASS: register-refresh-failed fits 1366
+PASS: register-refresh-failed fits 1920
+PASS: Malformed success response cannot partially replace the applied snapshot
+PASS: Deliberately late response cannot replace newer no-match result
+PASS: Actual no-match query has contextual empty guidance
+PASS: register-no-matches fits 1366
+PASS: register-no-matches fits 1920
+PASS: Unfiltered discrepancy remains prominent outside display filters
+PASS: Full discrepancy details remain inspectable
+PASS: register-discrepancy-double fits 1366
+PASS: register-discrepancy-double fits 1920
+PASS: Printed register keeps scope/totals and hides mutation/filter controls
+PASS: register-print fits 1366
+PASS: register-print fits 1920
+PASS: Print restores disclosure state on return to screen
+PASS: Detail shows posted release and outstanding without counting drafts
+PASS: Due today is separate from overdue status
+PASS: Both settlement actions bind the original advance identity
+PASS: Deadline extension is secondary
+PASS: admin-advance-detail fits 1366
+PASS: admin-advance-detail fits 1920
+PASS: Timeline opens exact existing journal independently of list filters
+PASS: Historical view has no settlement/extension actions
+PASS: Detail Back retains the applied accounting date
+PASS: Historical view offers explicit current-date navigation
+PASS: advance-historical fits 1366
+PASS: advance-historical fits 1920
+PASS: Real detail retains settled lifecycle status
+PASS: No settlement action for settled
+PASS: Real detail retains outstanding lifecycle status
+PASS: Real detail retains partially_settled lifecycle status
+PASS: Real detail retains replaced lifecycle status
+PASS: No settlement action for replaced
+PASS: Retired advance retains posted correction comparison
+PASS: Real detail retains cancelled lifecycle status
+PASS: No settlement action for cancelled
+PASS: Retired advance retains posted correction comparison
+PASS: Settled timeline retains all original posted operations
+PASS: advance-settled fits 1366
+PASS: advance-settled fits 1920
+PASS: management-register fits 1366
+PASS: management-register fits 1920
+PASS: Management gets read navigation without authoring tasks
+PASS: Management cannot extend or start settlement
+PASS: Management detail JSON excludes private review/images/approval context
+PASS: management-detail fits 1366
+PASS: management-detail fits 1920
+PASS: Printed Management detail includes full journals and hides sidebar
+PASS: management-detail-print fits 1366
+PASS: management-detail-print fits 1920
+PASS: Advance surface retains Stage 1/2 gate (False, False)
+PASS: Advance surface retains Stage 1/2 gate (True, False)
+PASS: Advance surface retains Stage 1/2 gate (False, True)
+PASS: Empty-register presentation double differs from a filtered no-match result
+PASS: register-empty-double fits 1366
+PASS: register-empty-double fits 1920
+PASS: First-load failure cannot claim reconciliation or print a successful register
+PASS: All 34 application tables unchanged across real read/navigation/print and response-double phases
+PASS: Failed extension retains entered fields
+PASS: Failed extension has no application writes
+PASS: extension-failed fits 1366
+PASS: extension-failed fits 1920
+PASS: Successful extension is preserved in deadline history
+PASS: Stale revision fails without replacing deadline/history or entered fields
+PASS: U3-A pages have no uncaught JavaScript errors
+
+readback — 27 passing assertions
+PASS: Privacy fixture contains real associated synthetic image evidence
+PASS: Admin detail exposes existing authorized evidence links
+PASS: Evidence-bearing Management JSON excludes private properties
+PASS: Evidence-bearing Management HTML contains no evidence URLs
+PASS: Evidence-bearing Management print retains complete journals without private links
+PASS: Management download denied with Stage 1/2 (True, True)
+PASS: Management download denied with Stage 1/2 (True, True)
+PASS: Management download denied with Stage 1/2 (True, False)
+PASS: Management download denied with Stage 1/2 (True, False)
+PASS: Management download denied with Stage 1/2 (False, False)
+PASS: Management download denied with Stage 1/2 (False, False)
+PASS: Real extended deadline applies today and preserves prior-date deadline history
+PASS: Historical HTML displays the actual earlier deadline without future history
+PASS: Actual settled fixture restates to PHP 100.00 outstanding at its release date
+PASS: Historical HTML retains the authoritative earlier balance and settlement state
+PASS: admin register native viewport has no horizontal overflow at 1366
+PASS: admin register native viewport has no horizontal overflow at 1920
+PASS: admin detail native viewport has no horizontal overflow at 1366
+PASS: admin detail native viewport has no horizontal overflow at 1920
+PASS: Deadline disclosure accepts real keyboard focus
+PASS: Keyboard opens deadline disclosure
+PASS: management register native viewport has no horizontal overflow at 1366
+PASS: management register native viewport has no horizontal overflow at 1920
+PASS: management detail native viewport has no horizontal overflow at 1366
+PASS: management detail native viewport has no horizontal overflow at 1920
+PASS: All 34 application tables unchanged across evidence-bearing readback
+PASS: Readback pages have no uncaught JavaScript errors
+
+stage2 — 56 passing assertions
+PASS: Release hides editable allocation lines
+PASS: Release explains its optional informational evidence policy
+PASS: Inline person creation restores focus to visible selector
+PASS: Release draft saves with no financial posting
+PASS: Search cancellation preserves selected employee and saved revision
+PASS: Release review shows the generated control line
+PASS: Release exposes separate book/history destinations
+PASS: Posted release selector is read only
+PASS: Reopening a posted advance draft recovers its navigation
+PASS: Settlement fixes original employee identity
+PASS: Liquidation explains unused-image restriction before review or posting
+PASS: Liquidation footer states full expenditure coverage instead of ordinary partial support
+PASS: Missing liquidation evidence fails visibly and retains draft
+PASS: v3 lost upload response retries one reserved document without losing advance context
+PASS: Fully accepted image has no excluded-amount warning
+PASS: Partial acceptance shows exact unused amount without changing financial allocations
+PASS: Invalid document amount never displays a fabricated unused amount
+PASS: My Drafts labels and resumes v3 liquidation
+PASS: Resume retains manual evidence and allocations
+PASS: Resumed liquidation retains partial-document explanation
+PASS: Liquidation review uses gross expenditure coverage only
+PASS: Liquidation shows Journal History once
+PASS: Return footer describes proof and confirmation requirements
+PASS: Changing the return amount clears bound proof confirmation
+PASS: Changed return requires explicit confirmation again
+PASS: Return routes to CRB
+PASS: Detail shows release/liquidation/return and settled balance
+PASS: Print view hides application navigation
+PASS: Register fits 1366px laptop without page overflow
+PASS: Filtered register keeps full-account reconciliation
+PASS: Failed register refresh preserves prior results
+PASS: Failed refresh preserves printable applied scope and labels
+PASS: Printed summary records all applied filters as safe text
+PASS: First page distinguishes printed rows from all-matching totals
+PASS: Unsaved filter edits do not change printed applied labels
+PASS: Pagination retains applied filters and explicitly labels the current page
+PASS: Printed register retains filters, row scope and totals basis while hiding controls
+PASS: Stale response cannot overwrite newer empty results, print labels or totals basis
+PASS: Ordinary attach rejects v3 context
+PASS: Ordinary remove rejects v3 context
+PASS: Ordinary discard rejects v3 context
+PASS: Management print/detail contains no private image links
+PASS: Management history/book privacy with Stage 2 True view history
+PASS: Management history/book privacy with Stage 2 True view crb
+PASS: Management history/book privacy with Stage 2 True view cdb
+PASS: Management image bytes denied with Stage 2 True
+PASS: Management history/book privacy with Stage 2 False view history
+PASS: Management history/book privacy with Stage 2 False view crb
+PASS: Management history/book privacy with Stage 2 False view cdb
+PASS: Management image bytes denied with Stage 2 False
+PASS: Advance privacy also survives the Stage 1 UI flag being disabled
+PASS: Management cannot read private advance drafts
+PASS: Management cannot mutate advances
+PASS: Anonymous advance API is denied
+PASS: HTTP retry across sessions and expired token recovers posted liquidation
+PASS: Advance browser workflows have no JavaScript errors
+
+stage3_cp4 — 48 passing assertions
+PASS: Review has no error
+PASS: Release review enables posting and explains new identity
+PASS: release-review fits 1366
+PASS: release-review fits 1920
+PASS: Lost release correction response commits one atomic bundle
+PASS: Visible release retry recovers distinct old/new identity links
+PASS: Release result retains CDB and Journal History navigation
+PASS: release-posted fits 1366
+PASS: release-posted fits 1920
+PASS: Posted draft reopening keeps replacement ID and read-only bundle
+PASS: Cross-session expired review recovers release correction
+PASS: Changed advance fields conflict on successful retry
+PASS: Old release detail is Replaced without settlement/extension actions
+PASS: Old detail navigates to replacement
+PASS: New advance detail has correct outstanding and normal actions
+PASS: Release with effective settlements shows blockers and disables review
+PASS: Review has no error
+PASS: Liquidation review covers gross cost once
+PASS: liquidation-review fits 1366
+PASS: liquidation-review fits 1920
+PASS: Liquidation posting preserves original advance navigation
+PASS: GJ liquidation result has one Journal History link
+PASS: Editing the return amount invalidates confirmation visibly
+PASS: Review has no error
+PASS: Return review confirms current proof and amount
+PASS: return-review fits 1366
+PASS: return-review fits 1920
+PASS: Return replacement result links CRB
+PASS: Detail shows effective balance and original/reversal/replacement timeline
+PASS: settlement-detail fits 1366
+PASS: settlement-detail fits 1920
+PASS: Print media hides editable actions
+PASS: Register replaced filter retains full reconciliation
+PASS: Register cancelled filter retains full reconciliation
+PASS: retired-register fits 1366
+PASS: retired-register fits 1920
+PASS: Unapplied filter edits retain displayed print scope
+PASS: Failed refresh preserves rows and applied print filters
+PASS: Printed register labels page and all-matching totals
+PASS: Management and other Admin cannot read owned advance correction draft
+PASS: Management existing history/book response redacts only private advance evidence 
+PASS: Management existing history/book response redacts only private advance evidence &view=crb
+PASS: Management existing history/book response redacts only private advance evidence &view=cdb
+PASS: Management correction comparison retains supported status without images
+PASS: Management cannot download reused advance image
+PASS: Disabled accounting UI flags do not weaken comparison/download privacy
+PASS: Visible release/liquidation/return flows post exactly three two-journal bundles
+PASS: Advance correction browser flows have no JavaScript errors
+
+stage3_cp5 — 54 passing assertions
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary CRB correction available while Stage 2 off
+PASS: Visible CRB correction posts with Stage 2 off
+PASS: Original CRB HTTP request recovers original journal in new session with no writes
+PASS: Changed original CRB retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary CDB correction available while Stage 2 off
+PASS: CP5 review fits 1366
+PASS: CP5 review fits 1920
+PASS: Visible CDB correction posts with Stage 2 off
+PASS: Original CDB HTTP request recovers original journal in new session with no writes
+PASS: Changed original CDB retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary GJ correction available while Stage 2 off
+PASS: Visible GJ correction posts with Stage 2 off
+PASS: Original GJ HTTP request recovers original journal in new session with no writes
+PASS: Changed original GJ retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary transfer correction available while Stage 2 off
+PASS: Visible transfer correction posts with Stage 2 off
+PASS: Original transfer HTTP request recovers original journal in new session with no writes
+PASS: Changed original transfer retry conflicts without writes
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance post HTTP rejects before mutation
+PASS: Paused advance review HTTP rejects before mutation
+PASS: Paused advance discard HTTP rejects before mutation
+PASS: Paused advance remove HTTP rejects before mutation
+PASS: Paused advance upload HTTP rejects before mutation
+PASS: Paused advance confirm_return_proof HTTP rejects before mutation
+PASS: All paused advance HTTP actions preserve journals/evidence/drafts/audits
+PASS: Records availability hides advance correction start while preserving ordinary global gate
+PASS: Records retain eligible ordinary correction starts with Stage 2 off
+PASS: Management comparison remains readable without advance image links
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (True, True, False)
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (False, True, True)
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (False, False, False)
+PASS: Advance draft resumes after Stage 2 reenabled
+PASS: Checkpoint 5 browser paths have no uncaught errors

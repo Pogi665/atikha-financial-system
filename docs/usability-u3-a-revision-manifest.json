@@ -1,0 +1,426 @@
+{
+  "date": "2026-10-21",
+  "baseline": "ab653a1b59431d6c1ef0fad080f583da64961b8f",
+  "scope": "First-load reconciliation health only",
+  "previous_review_zip_sha256": "8a9153c9122aab5d98af4d204cb38af0ca11d687135df504418f1239203c579a",
+  "application_files": [
+    {
+      "path": "cash_advances.php",
+      "sha256": "070c9ee639f89b8b2d10fa2d05f093d78db0e53a3a81d14266b844927e64625f",
+      "previous_sha256": "80eb6a34c75afab6a252a668fb63b2205663de0eb951f93f61297e98ac87da7a",
+      "previous_git_blob": "48fcf6012f54bbc7f067704f3bd6415c72891714",
+      "final_git_blob": "f73880b0ba6968c54c57494e2af942fe175f1ab8"
+    },
+    {
+      "path": "assets/js/cash_advances.js",
+      "sha256": "f9f03238314f77ff88caec1f2bf4ea9d52365ee1ba64bd789ae5050ab35388b3",
+      "previous_sha256": "228e6a7f28f03b52539bff259155a6e676f4531acc92aa476963b91a1c1236cd",
+      "previous_git_blob": "6e502f5f3bc911ebd27fce41105f6ca5b853f53e",
+      "final_git_blob": "c5dc39af4ee66d13ddf38ae63c6f8f405ba4e194"
+    },
+    {
+      "path": "assets/css/accounting_workspace.css",
+      "sha256": "6c0f9c02595992dc3254eb14724935ef25ce3de85f34dfef6e569b9be687eb8a",
+      "previous_sha256": "7f09cb2a49c6abc074dae7e81a1e01fe683b1d93027e451bcf18815c70178461",
+      "previous_git_blob": "6ab167892592744821a81ae0a2950c85793d9c63",
+      "final_git_blob": "34e62c5773306b454749237dab9f74b972d61228"
+    }
+  ],
+  "correction_test_files": [
+    "scripts/test_usability_u3_a_browser.py",
+    "scripts/test_usability_u3_a_presentation.py"
+  ],
+  "screenshots": [
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-advance-detail-1366.png",
+      "sha256": "8c9b78142e5bae5878ef722f412fda45599cc13fb263477b8696394ac5a3e54b"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-advance-detail-1920.png",
+      "sha256": "684bf87eba7ee9b4cedb66d91e2f85109bb170b0e2d29c55857afee916e339e6"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-register-1366.png",
+      "sha256": "8d01161903b5283a9e9b09371c2484330d3f0a3990cb2d5670bd60641721e23e"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-register-1920.png",
+      "sha256": "3d5fe4b2d9cd6ea7198899060f2fb26db8d011ecfca88f9d301a9693b084bc6f"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-historical-1366.png",
+      "sha256": "40c6ca4dec09a40bf05e7f875590942410e3dcd63d0ec95be3bf6b94053c0e9a"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-historical-1920.png",
+      "sha256": "2a8f2177b7d6d4041208dc96cc1b8c8581c0fa0bed11d994bb9dc7a008bb0067"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-settled-1366.png",
+      "sha256": "3966c8049f3682712fd3997a5e077f3b32e503077d306e15e9a87d75669aecde"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-settled-1920.png",
+      "sha256": "6baaf7846031db5fd546b84afd9b10376db3c53013c0d2416958782ef5ed96e9"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/component-first-load-unavailable-1366.png",
+      "sha256": "42919b93c6e7f3c75bd42fc400185eda7f83baf98d44f7613a6b41cf3ab8dfce"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/component-first-load-unavailable-1920.png",
+      "sha256": "aaa472f80e731e4a1f4419c761682ea4f6bb4594d6e16c1ddc16826e944bba43"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/extension-failed-1366.png",
+      "sha256": "0718bce5fdf537630de30f09ebd8dcf815e16b03a36f8b29f566acd8f32cc6d2"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/extension-failed-1920.png",
+      "sha256": "c8c4096ddf5cd45b4fafd8b2fd5d5a507feb8c7d055768c5c1d86165dbfa1cd3"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-1366.png",
+      "sha256": "2b0ec8b6e67a4066b55562a2c3f9ea6de86510c68cf0102f35b14fb8e1197f0e"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-1920.png",
+      "sha256": "df7cbd6ca6f866ef841cbd62d85148f0ad0bb7b206bf40f4c614b57b620ce51d"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-print-1366.png",
+      "sha256": "252ee5b6789617bb7c6274521983c75b7fb37c6bea8e9de8007e25a789e07e45"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-print-1920.png",
+      "sha256": "e196bab92a78ce0da6e322db5aa67cac0ab69951204f94ab3e9946c33cfae38a"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-register-1366.png",
+      "sha256": "3c512e8eb5f7e7ebb9b87b573628acc04076af627e746796ecfbe60ad3ca88b8"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-register-1920.png",
+      "sha256": "d6e5e84889e213c3422eaa16b60e6661e548c561875659d427e1acb4dfac73d5"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-discrepancy-double-1366.png",
+      "sha256": "94b1f958dc02a7d33a696dc0286c452294ffe17cff18832753c736e3d61e28c9"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-discrepancy-double-1920.png",
+      "sha256": "49419b462f787654be12b3957b88bae7b8f913801ab007aae58e2f0c425f7687"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-empty-double-1366.png",
+      "sha256": "dea7f57580ffedf781e869b11d58b6d9a0cbb25f58b2973b34e1ce8d8268a176"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-empty-double-1920.png",
+      "sha256": "a97ff7f2673454e4cbb63dc6a76dc6717f8ffeb65e1ef879fd4066c413ebaa21"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-first-load-unavailable-1366.png",
+      "sha256": "2648e1017e8a09a9d0259c24322e4b672782c07a85c2c2eff0701e7d4f54a92f"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-first-load-unavailable-1920.png",
+      "sha256": "0a4999149f32db3e1dcc968f8bf25f6b41ef24de375a618e8c935b5ecc402d4d"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-no-matches-1366.png",
+      "sha256": "9247f0a3252e2251a3224d9a8a0b85a632c021999b1794a9a931c394e82eef9a"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-no-matches-1920.png",
+      "sha256": "4dc80b42069d72b911281e6e994ac5085853a1af5b960cbd2e281aaf6ba1cd9c"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-print-1366.png",
+      "sha256": "eb1ab295a9cbe70bf03fb9373a97f0d82b6fd6f7c9ac816f4b2959ff0d25e017"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-print-1920.png",
+      "sha256": "d34e0deffb140ed61d527e1847249db911d164d53607d59f0d3f234d4f092839"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-refresh-failed-1366.png",
+      "sha256": "3059fa55c9d26a4b2c9399ef8c6fd5f623bd0f47dcac1442fab45dd4933b80cf"
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-refresh-failed-1920.png",
+      "sha256": "6f78f003ae813eaf4d7437d8adf3a66016f35f89b0243a7ea37d863e5faa380d"
+    }
+  ],
+  "files": [
+    {
+      "path": "cash_advances.php",
+      "sha256": "070c9ee639f89b8b2d10fa2d05f093d78db0e53a3a81d14266b844927e64625f",
+      "bytes": 13618
+    },
+    {
+      "path": "assets/js/cash_advances.js",
+      "sha256": "f9f03238314f77ff88caec1f2bf4ea9d52365ee1ba64bd789ae5050ab35388b3",
+      "bytes": 12843
+    },
+    {
+      "path": "assets/css/accounting_workspace.css",
+      "sha256": "6c0f9c02595992dc3254eb14724935ef25ce3de85f34dfef6e569b9be687eb8a",
+      "bytes": 17946
+    },
+    {
+      "path": "scripts/test_usability_u3_a_fixture.php",
+      "sha256": "5db769a5a72d102c809d4216daf33bc3483364ab779063ea6d7319d4f8f4e883",
+      "bytes": 4087
+    },
+    {
+      "path": "scripts/test_usability_u3_a_browser.py",
+      "sha256": "13f8672709615cfe4761e4173e41a852d27fe942d51e7299c9fdb19a3e78c286",
+      "bytes": 24370
+    },
+    {
+      "path": "scripts/test_usability_u3_a_presentation.py",
+      "sha256": "0fa490e0fd248ff85f6a1eaa05de2d315854829e1240bbb8f1f0f5494d083b43",
+      "bytes": 13606
+    },
+    {
+      "path": "scripts/test_usability_u3_a_readback.py",
+      "sha256": "908f4e83496e0d377e01b93f61873783a7de7caa15b88332ba0ad989f767bbf2",
+      "bytes": 10726
+    },
+    {
+      "path": "scripts/test_stage2_browser.py",
+      "sha256": "f4d6b99a2d0bb595ca97d890a717649aacc479d4d643c2f743fabe413d32289f",
+      "bytes": 26693
+    },
+    {
+      "path": "scripts/test_stage3_checkpoint4_browser.py",
+      "sha256": "ef87bc63af9aa34402e3338ac1c24ca374a5bb3d2ce64292e7695e4796231cd3",
+      "bytes": 19965
+    },
+    {
+      "path": "scripts/test_stage3_fixture.py",
+      "sha256": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+      "bytes": 3750
+    },
+    {
+      "path": "docs/usability-u3-plan.md",
+      "sha256": "9f1410d3039a2f1f444cea1bf63c3de37d6c048f81d2f36faa7540b132d3bcfa",
+      "bytes": 26114
+    },
+    {
+      "path": "docs/usability-u3-a-delivery.md",
+      "sha256": "b94c727e217e41270eeddc6bfb205b7b6c62bfb8e4e5af9d7ac53d6fb3a63f10",
+      "bytes": 20212
+    },
+    {
+      "path": "docs/usability-u3-a-revision.md",
+      "sha256": "8067afe3bcc933778f911aa1e623232f2ce2e00e52cf3f39676b9ae89aa031b0",
+      "bytes": 7950
+    },
+    {
+      "path": "docs/usability-u3-a-revision-reviewer-notes.md",
+      "sha256": "71bfe9512c95b33381063735c7c7ee1f2b2eb75de83af1fc6692b346161bbc3c",
+      "bytes": 1651
+    },
+    {
+      "path": "docs/usability-u3-a-revision-application.patch",
+      "sha256": "d0bbae9acbd734324fe86f3711930aaf147988e3000b41ae100d55fa554411e7",
+      "bytes": 7744
+    },
+    {
+      "path": "docs/usability-u3-a-revision-tests.patch",
+      "sha256": "c808e6f2b96ce9c4df908ff2cb857a433d9c03fa4ec034cad6f58c593b60f8cc",
+      "bytes": 12470
+    },
+    {
+      "path": "docs/usability-u3-a-revision-from-u2c.patch",
+      "sha256": "baf9b7e4eb18a758a2fa7e042314e9207b4780ce99097d882dc799c122ab3991",
+      "bytes": 45639
+    },
+    {
+      "path": "docs/usability-u3-a-revision-results.json",
+      "sha256": "304dbeaa15f881376819995b21aef3a09014c95b2376f55c023a1c884c71beef",
+      "bytes": 623
+    },
+    {
+      "path": "docs/usability-u3-a-revision-verification-log.txt",
+      "sha256": "db11bdb2a84051e3c273c6ac9e38b165de25a472800e80f1d49daa9444a88889",
+      "bytes": 5149
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-advance-detail-1366.png",
+      "sha256": "8c9b78142e5bae5878ef722f412fda45599cc13fb263477b8696394ac5a3e54b",
+      "bytes": 127824
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-advance-detail-1920.png",
+      "sha256": "684bf87eba7ee9b4cedb66d91e2f85109bb170b0e2d29c55857afee916e339e6",
+      "bytes": 143594
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-register-1366.png",
+      "sha256": "8d01161903b5283a9e9b09371c2484330d3f0a3990cb2d5670bd60641721e23e",
+      "bytes": 554195
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/admin-register-1920.png",
+      "sha256": "3d5fe4b2d9cd6ea7198899060f2fb26db8d011ecfca88f9d301a9693b084bc6f",
+      "bytes": 554446
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-historical-1366.png",
+      "sha256": "40c6ca4dec09a40bf05e7f875590942410e3dcd63d0ec95be3bf6b94053c0e9a",
+      "bytes": 122463
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-historical-1920.png",
+      "sha256": "2a8f2177b7d6d4041208dc96cc1b8c8581c0fa0bed11d994bb9dc7a008bb0067",
+      "bytes": 137659
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-settled-1366.png",
+      "sha256": "3966c8049f3682712fd3997a5e077f3b32e503077d306e15e9a87d75669aecde",
+      "bytes": 141281
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/advance-settled-1920.png",
+      "sha256": "6baaf7846031db5fd546b84afd9b10376db3c53013c0d2416958782ef5ed96e9",
+      "bytes": 157834
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/component-first-load-unavailable-1366.png",
+      "sha256": "42919b93c6e7f3c75bd42fc400185eda7f83baf98d44f7613a6b41cf3ab8dfce",
+      "bytes": 53291
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/component-first-load-unavailable-1920.png",
+      "sha256": "aaa472f80e731e4a1f4419c761682ea4f6bb4594d6e16c1ddc16826e944bba43",
+      "bytes": 56201
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/extension-failed-1366.png",
+      "sha256": "0718bce5fdf537630de30f09ebd8dcf815e16b03a36f8b29f566acd8f32cc6d2",
+      "bytes": 142847
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/extension-failed-1920.png",
+      "sha256": "c8c4096ddf5cd45b4fafd8b2fd5d5a507feb8c7d055768c5c1d86165dbfa1cd3",
+      "bytes": 159390
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-1366.png",
+      "sha256": "2b0ec8b6e67a4066b55562a2c3f9ea6de86510c68cf0102f35b14fb8e1197f0e",
+      "bytes": 112622
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-1920.png",
+      "sha256": "df7cbd6ca6f866ef841cbd62d85148f0ad0bb7b206bf40f4c614b57b620ce51d",
+      "bytes": 117188
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-print-1366.png",
+      "sha256": "252ee5b6789617bb7c6274521983c75b7fb37c6bea8e9de8007e25a789e07e45",
+      "bytes": 108296
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-detail-print-1920.png",
+      "sha256": "e196bab92a78ce0da6e322db5aa67cac0ab69951204f94ab3e9946c33cfae38a",
+      "bytes": 112940
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-register-1366.png",
+      "sha256": "3c512e8eb5f7e7ebb9b87b573628acc04076af627e746796ecfbe60ad3ca88b8",
+      "bytes": 550408
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/management-register-1920.png",
+      "sha256": "d6e5e84889e213c3422eaa16b60e6661e548c561875659d427e1acb4dfac73d5",
+      "bytes": 539145
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-discrepancy-double-1366.png",
+      "sha256": "94b1f958dc02a7d33a696dc0286c452294ffe17cff18832753c736e3d61e28c9",
+      "bytes": 587101
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-discrepancy-double-1920.png",
+      "sha256": "49419b462f787654be12b3957b88bae7b8f913801ab007aae58e2f0c425f7687",
+      "bytes": 586021
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-empty-double-1366.png",
+      "sha256": "dea7f57580ffedf781e869b11d58b6d9a0cbb25f58b2973b34e1ce8d8268a176",
+      "bytes": 113533
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-empty-double-1920.png",
+      "sha256": "a97ff7f2673454e4cbb63dc6a76dc6717f8ffeb65e1ef879fd4066c413ebaa21",
+      "bytes": 128804
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-first-load-unavailable-1366.png",
+      "sha256": "2648e1017e8a09a9d0259c24322e4b672782c07a85c2c2eff0701e7d4f54a92f",
+      "bytes": 85190
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-first-load-unavailable-1920.png",
+      "sha256": "0a4999149f32db3e1dcc968f8bf25f6b41ef24de375a618e8c935b5ecc402d4d",
+      "bytes": 98932
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-no-matches-1366.png",
+      "sha256": "9247f0a3252e2251a3224d9a8a0b85a632c021999b1794a9a931c394e82eef9a",
+      "bytes": 116318
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-no-matches-1920.png",
+      "sha256": "4dc80b42069d72b911281e6e994ac5085853a1af5b960cbd2e281aaf6ba1cd9c",
+      "bytes": 132074
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-print-1366.png",
+      "sha256": "eb1ab295a9cbe70bf03fb9373a97f0d82b6fd6f7c9ac816f4b2959ff0d25e017",
+      "bytes": 474575
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-print-1920.png",
+      "sha256": "d34e0deffb140ed61d527e1847249db911d164d53607d59f0d3f234d4f092839",
+      "bytes": 488689
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-refresh-failed-1366.png",
+      "sha256": "3059fa55c9d26a4b2c9399ef8c6fd5f623bd0f47dcac1442fab45dd4933b80cf",
+      "bytes": 558748
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/register-refresh-failed-1920.png",
+      "sha256": "6f78f003ae813eaf4d7437d8adf3a66016f35f89b0243a7ea37d863e5faa380d",
+      "bytes": 559346
+    },
+    {
+      "path": "docs/images/usability-u3-a-revision/index.html",
+      "sha256": "cff8c83c778a7e3e730a00faa2325387fcc5547ce2e5f67e424e977462b18d3b",
+      "bytes": 11231
+    }
+  ],
+  "verification": {
+    "date": "2026-10-21",
+    "scope": "U3-A first-load reconciliation health only",
+    "browser": "155.0.4283.62",
+    "checks": {
+      "database_free_presentation": 43,
+      "authenticated_focused_u3a": 91
+    },
+    "page_errors": [],
+    "working_fingerprints_unchanged": true,
+    "working_config_unchanged": true,
+    "migrations_run": false,
+    "other_suites": "Not rerun; earlier 56 Stage2,48 CP4,54 CP5 and27 readback are dated pre-correction evidence.",
+    "external_review": "pending",
+    "u3_b_c_d": "unstarted",
+    "original_review_zip_sha256": "8a9153c9122aab5d98af4d204cb38af0ca11d687135df504418f1239203c579a"
+  },
+  "hash_note": "SHA-256 covers exact bytes; Git blob IDs normalize CRLF to LF. Self/ZIP hashes are excluded to avoid circularity.",
+  "patch_verification": "Canonical LF application/test correction patches apply cleanly to exact previous review files; final normalized Git blobs verified."
+}

@@ -1,0 +1,99 @@
+diff --git a/cash_advances.php b/cash_advances.php
+index 48fcf6012f54bbc7f067704f3bd6415c72891714..f73880b0ba6968c54c57494e2af942fe175f1ab8 100644
+--- a/cash_advances.php
++++ b/cash_advances.php
+@@ -27,10 +27,10 @@
+     </div>
+ </header>
+ <p id="ca-error" role="alert" tabindex="-1"></p><p id="ca-status" role="status"></p>
+-<section id="ca-health" class="ca-health" aria-labelledby="ca-health-title" aria-live="polite">
++<section id="ca-health" class="ca-health ca-health-loading" data-state="loading" aria-labelledby="ca-health-title" aria-live="polite">
+     <h2 id="ca-health-title">Control-account reconciliation</h2>
+     <p id="ca-health-message">Loading the independent control-account check…</p>
+-    <a href="#ca-reconciliation-details" id="ca-health-link">View full reconciliation</a>
++    <a href="#ca-reconciliation-details" id="ca-health-link" hidden>View full reconciliation</a>
+ </section>
+ <?php if($detail): ?>
+ <p class="ca-date-basis"><strong><?= $historical?'Historical view':'Current view' ?> · As of <?= $esc($asof) ?></strong><br>Historical views include currently recorded postings through this accounting date; they are not frozen reports.</p>
+@@ -101,9 +101,9 @@
+     <div class="aw-actions aw-no-print"><button type="button" id="ca-prev">Previous</button><span id="ca-page"></span><button type="button" id="ca-next">Next</button></div>
+ </section>
+ <?php endif; ?>
+-<details class="aw-card ca-secondary" id="ca-reconciliation-details" data-ca-print>
++<details class="aw-card ca-secondary" id="ca-reconciliation-details" data-ca-print hidden>
+     <summary>Full control-account reconciliation — independent of register filters</summary>
+-    <p id="ca-reconciliation-basis">All posted advances and control-account lines through the same accounting date are included.</p>
++    <p id="ca-reconciliation-basis">No successful control-account check is available.</p>
+     <div id="ca-reconciliation"></div>
+ </details>
+ <noscript><p>JavaScript is required to load register results and the independent reconciliation check. Advance detail amounts and posted journals above remain read-only.</p></noscript>
+diff --git a/assets/js/cash_advances.js b/assets/js/cash_advances.js
+index 6e502f5f3bc911ebd27fce41105f6ca5b853f53e..c5dc39af4ee66d13ddf38ae63c6f8f405ba4e194 100644
+--- a/assets/js/cash_advances.js
++++ b/assets/js/cash_advances.js
+@@ -21,7 +21,7 @@
+     $('ca-print').addEventListener('click',()=>window.print());
+     if(form)$('ca-print').disabled=true;
+     $('ca-health-link').addEventListener('click',e=>{
+-        e.preventDefault();const details=$('ca-reconciliation-details');details.open=true;
++        e.preventDefault();const details=$('ca-reconciliation-details');if(details.hidden)return;details.open=true;
+         details.querySelector('summary').focus();details.scrollIntoView({block:'start'});
+     });
+     function filterSummary(snapshot){
+@@ -53,10 +53,26 @@
+             :'No designated control accounts · As of '+asof+'.';
+         return {fragment,bad,text};
+     }
++    function unverifiedReconciliation(state){
++        const health=$('ca-health'),details=$('ca-reconciliation-details');
++        health.dataset.state=state;
++        health.classList.remove('ca-health-warning');
++        health.classList.toggle('ca-health-loading',state==='loading');
++        health.classList.toggle('ca-health-unavailable',state==='unavailable');
++        $('ca-health-message').textContent=state==='loading'
++            ?'Loading the independent control-account check…'
++            :'Reconciliation unavailable — not verified. No successful control-account check is available.';
++        $('ca-health-link').hidden=true;details.hidden=true;details.open=false;
++        $('ca-reconciliation').replaceChildren();
++        $('ca-reconciliation-basis').textContent='No successful control-account check is available.';
++    }
+     function showReconciliation(view,asof){
+         $('ca-reconciliation').replaceChildren(view.fragment);
+         $('ca-health-message').textContent=view.text;
+         $('ca-health').classList.toggle('ca-health-warning',view.bad>0);
++        $('ca-health').classList.remove('ca-health-loading','ca-health-unavailable');
++        $('ca-health').dataset.state=view.bad>0?'discrepancy':'healthy';
++        $('ca-health-link').hidden=false;$('ca-reconciliation-details').hidden=false;
+         $('ca-reconciliation-basis').textContent='As of '+asof+' · All posted advances and control-account lines are included, independently of employee, project, status, overdue and search filters.';
+     }
+     function renderRow(r,asof){
+@@ -93,6 +109,7 @@
+         if(!form.reportValidity())return;
+         const request=++sequence,snapshot=useApplied&&applied?{...applied}:Object.fromEntries(new FormData(form));
+         controller?.abort();controller=new AbortController();$('ca-status').textContent='Loading advances…';$('ca-error').textContent='';$('ca-rows').setAttribute('aria-busy','true');
++        if(!applied)unverifiedReconciliation('loading');
+         try{
+             const res=await fetch('cash_advance_actions.php?'+new URLSearchParams({action:'register',...snapshot,page:String(page)}),{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+             const data=await res.json();if(request!==sequence)return;if(!res.ok||!data.ok)throw new Error(data.error||'Could not load advances.');
+@@ -110,7 +127,7 @@
+         }catch(e){
+             if(request!==sequence||e.name==='AbortError')return;
+             $('ca-error').textContent=(applied?'The previously loaded register, balances and reconciliation remain visible for the last successful date and filters. ':'The register and independent reconciliation have not loaded. ')+(e instanceof SyntaxError?'The server response could not be read. Try loading again.':e.message);
+-            if(!applied)$('ca-health-message').textContent='Reconciliation has not loaded. No successful control-account check is available.';
++            if(!applied)unverifiedReconciliation('unavailable');
+             $('ca-status').textContent='';mark();
+         }finally{if(request===sequence)$('ca-rows').setAttribute('aria-busy','false');}
+     }
+diff --git a/assets/css/accounting_workspace.css b/assets/css/accounting_workspace.css
+index 6ab167892592744821a81ae0a2950c85793d9c63..34e62c5773306b454749237dab9f74b972d61228 100644
+--- a/assets/css/accounting_workspace.css
++++ b/assets/css/accounting_workspace.css
+@@ -96,6 +96,8 @@
+ .advance-register .ca-health{border:1px solid #a7d8cb;border-radius:10px;background:#f0fdf9;padding:14px 18px;margin:0 0 18px}
+ .advance-register .ca-health h2{font-size:14px;font-weight:700;margin:0 0 3px}.advance-register .ca-health p{margin:0 0 5px;color:#334155}.advance-register .ca-health a{font-size:13px}
+ .advance-register .ca-health-warning{background:#fff7ed;border-color:#d97706}.advance-register .ca-health-warning h2{color:#9a3412}
++.advance-register .ca-health-loading{background:#f8fafc;border-color:#94a3b8}.advance-register .ca-health-unavailable{background:#f1f5f9;border-color:#64748b}.advance-register .ca-health-loading h2,.advance-register .ca-health-unavailable h2{color:#334155}
++.advance-register #ca-health-link[hidden],.advance-register #ca-reconciliation-details[hidden]{display:none!important}
+ .advance-register #ca-error:not(:empty){background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;padding:12px;border-radius:8px;margin:0 0 14px}
+ .advance-register #ca-error:empty,.advance-register #ca-status:empty{display:none}
+ .advance-register .ca-date-basis{margin:0 0 12px;color:#475569}.advance-register .ca-date-form{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 18px}.advance-register .ca-date-form label{margin:0}

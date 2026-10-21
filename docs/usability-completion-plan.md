@@ -1,8 +1,16 @@
 # Atikha usability and remaining system completion plan
 
+**U3-A source checkpoint closed, October 21, 2026:** the user supplied ChatGPT's final exact-source approval of the corrected implementation, with no remaining blocker. Source implementation, integrated verification and the scoped reconciliation correction are complete. [Approval record](usability-u3-a-approval.md) distinguishes external approval from working/Atikha acceptance. The reviewed ZIPs/manifests remain unchanged; this is a documentation-only closure with no new tests or database/server operations. **Next: the user commits/pushes U3-A, then separately requests U3-B planning for review.** U3-B/C/D remain unstarted and unauthorized. No commit/push occurred in this closure. Earlier pending-review statements below are dated and superseded.
+
+**October21 U3-A review correction:** the first-load reconciliation-health fix passed43 presentation and91 focused authenticated checks. [Corrected final-review handoff](usability-u3-a-revision.md) supersedes the pre-correction source state below; scope/authorization is unchanged and U3-B/C/D remain unstarted.
+
 October 7, 2026. **Proposed staged roadmap for review.** This planning task authorizes documentation only. Each usability stage and remaining completion stage needs its own detailed plan, review and implementation authorization. No application change, migration, activation, financial posting, commit or push is authorized by this document.
 
 ## 1. Goal and evidence
+
+**Current progress, October 21, 2026:** U2 source is complete and the user resumed U3-A after the separate database recovery/startup/login checks. U3-A's preserved connected register/detail implementation now passed269 fresh isolated browser/HTTP checks; [exact-source external review is next](usability-u3-a-delivery.md). U3-B/C/D are unstarted. The older proposed/unstarted entries in this roadmap are dated planning evidence, not current status. Full working/client acceptance, U2 follow-up before U5, U-PERF-01, U4/U5, original Stages4–7 and migration009 diagnosis remain outstanding.
+
+**Current progress, October 17, 2026:** U1 design/prototype and U2-A/B/C source scopes are delivered, with U2 exact-source approval recorded in [current status](project-status.md). The user reported committing/pushing U2-C and requested the next stage. The [detailed U3 plan](usability-u3-plan.md) is now prepared for review; U3-A register/detail implementation is the proposed first checkpoint after plan approval and its explicit instruction. No U3 application work has started. The October 7 planning findings below remain dated context. Working/client acceptance, U-PERF-01, the separate routine-registration diagnostic and later completion stages remain open.
 
 Make everyday accounting work easier to find, understand and finish while retaining the existing accounting engine and completing the original system roadmap. The user reports difficulty finding pages, understanding fields, navigating the number of controls, and interpreting Review/Post. They explicitly want to retain the original completion stages. These are user-reported usability concerns and requested design goals, not measured client task results or new Atikha accounting policies.
 
@@ -156,4 +164,4 @@ For every detailed stage, publish: problem and before/after journey; annotated l
 
 Unresolved implementation choices belong in the relevant detailed stage: the exact hub layout, advanced-section disclosure, common-versus-split project transitions, supported exact-record navigation, confirmation placement and the representative performance dataset. Ask focused questions when those materially affect the workflow; do not reopen the selected accounting controls or turn a proposed layout into an asserted client requirement.
 
-**Next task:** review the [detailed U1 inspection/design plan](usability-u1-plan.md), then separately authorize U1 execution. No U-stage application implementation has started, no current UX audit has passed, and no future completion stage has been abandoned.
+**Current next task, October 17:** review the [detailed U3 cash-advance plan](usability-u3-plan.md), then separately authorize U3-A connected register/detail implementation. U2 source scope is complete; U3 application implementation remains unstarted. No future completion stage has been abandoned, and source completion does not establish working/client acceptance.

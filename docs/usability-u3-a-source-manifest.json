@@ -1,0 +1,477 @@
+{
+  "date": "2026-10-21",
+  "baseline": "ab653a1b59431d6c1ef0fad080f583da64961b8f",
+  "scope": "U3-A connected register/detail only",
+  "application_files": [
+    {
+      "path": "cash_advances.php",
+      "sha256": "80eb6a34c75afab6a252a668fb63b2205663de0eb951f93f61297e98ac87da7a",
+      "baseline_git_blob": "6270126e07f6e19c26da724490b4ba8953144d7e",
+      "final_git_blob": "48fcf6012f54bbc7f067704f3bd6415c72891714"
+    },
+    {
+      "path": "assets/js/cash_advances.js",
+      "sha256": "228e6a7f28f03b52539bff259155a6e676f4531acc92aa476963b91a1c1236cd",
+      "baseline_git_blob": "160e3e516ee1b7f82fd8a6dee97bdde158f2f624",
+      "final_git_blob": "6e502f5f3bc911ebd27fce41105f6ca5b853f53e"
+    },
+    {
+      "path": "assets/css/accounting_workspace.css",
+      "sha256": "7f09cb2a49c6abc074dae7e81a1e01fe683b1d93027e451bcf18815c70178461",
+      "baseline_git_blob": "d14b4a92e0ab88d16fc70e950a1613b97a195220",
+      "final_git_blob": "6ab167892592744821a81ae0a2950c85793d9c63"
+    }
+  ],
+  "test_files": [
+    "scripts/test_usability_u3_a_fixture.php",
+    "scripts/test_usability_u3_a_browser.py",
+    "scripts/test_usability_u3_a_presentation.py",
+    "scripts/test_usability_u3_a_readback.py",
+    "scripts/test_stage2_browser.py",
+    "scripts/test_stage3_checkpoint4_browser.py",
+    "scripts/test_stage3_fixture.py"
+  ],
+  "screenshots": [
+    {
+      "path": "docs/images/usability-u3-a/admin-advance-detail-1366.png",
+      "sha256": "4ebb628b34d94a701ff3ee5d5dbc56660442a152ba40e2817ff8d2957f63ca22"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-advance-detail-1920.png",
+      "sha256": "e5ef500a9189cefc6a00a18655d19a82ef04f1c66366274291acd5755ee2febb"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-detail-viewport-1366.png",
+      "sha256": "4c31a8cde527d3e4e2392d6813d19fe2f543bdbd7bb9be778f60b25207b42e1f"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-detail-viewport-1920.png",
+      "sha256": "b912345be9b8a24a4b3583642f0375809693cda358529ed7188cfbda16da6935"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-1366.png",
+      "sha256": "fd2e850d90df6951d795112086091b09d73922e380e64efd89e071ecc818c686"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-1920.png",
+      "sha256": "1d9c5f1c93311bd8c904a1a6ce8dc49cf8dd7995ab5da87120a6dbe823e9e518"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-viewport-1366.png",
+      "sha256": "834b710f8eb924a63e1fea25efb2e36b0020fb3c12d30cc4837df0471f5432e9"
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-viewport-1920.png",
+      "sha256": "bf373c0b5788319b4b713e8d089df5f1c7263ea73134c679e5f7779365896b89"
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-historical-1366.png",
+      "sha256": "9a8c3e2301eff67d9db8ba77e38ec05ed56bfe9ccbafe2d56c25d88d6b065e77"
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-historical-1920.png",
+      "sha256": "4b1e1c1ba0143169828d4272e8576bd80eec7c9d4dbdd88030ce18774707eed4"
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-settled-1366.png",
+      "sha256": "3966c8049f3682712fd3997a5e077f3b32e503077d306e15e9a87d75669aecde"
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-settled-1920.png",
+      "sha256": "6baaf7846031db5fd546b84afd9b10376db3c53013c0d2416958782ef5ed96e9"
+    },
+    {
+      "path": "docs/images/usability-u3-a/extension-failed-1366.png",
+      "sha256": "7a0352069ea602466dd1e3047c667eed1890cdf6bedd81478271a7d7f44a791b"
+    },
+    {
+      "path": "docs/images/usability-u3-a/extension-failed-1920.png",
+      "sha256": "6bee530768ae8243b7510e738ca4ae6945b91e7ef64b1885e99ef5ede26920bd"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-1366.png",
+      "sha256": "1b79bb35063a44fbfe2e21fb274425c64bf983d0f6c06b4a36f19d6719587dc6"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-1920.png",
+      "sha256": "9ea9f59772ee565406a1c5b9585d0f93a6813636d97dc92285c3e04675dfca9b"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-print-1366.png",
+      "sha256": "d105f9fd75969e88963c9467c1899938ec83945c6bfc1d444d41bf5937f46dae"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-print-1920.png",
+      "sha256": "59fdb12feb9dc708a7435be02b3a3f63923ea79329569ed8228f8bc4d84d9acf"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-viewport-1366.png",
+      "sha256": "40368a89c8bb902229a0d88fe509e7792df195eaeb69a7fcf8cb1123991c5f23"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-viewport-1920.png",
+      "sha256": "ea3d2fe1aa59e05fa9453f244fb71b303e0456b0a2273e7ade3bf85c89229399"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-evidence-print-1366.png",
+      "sha256": "554c1cc00fc983dd109a65ff152c5f78992a36be44a5091da1b967d85329bc2b"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-evidence-print-1920.png",
+      "sha256": "8bef15a29da4fbbcf29092bbbbb35a01c7597f519cce4bf2e23f37832fb072b2"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-1366.png",
+      "sha256": "fadbe506e1352d331e21d9c24e5b801d5a307801fb2e47dcbd563b317b35fee8"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-1920.png",
+      "sha256": "012193dc9ce67c23069633a294c833ea82fe49f1963f3bfad4e7a4e6e55b1995"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-viewport-1366.png",
+      "sha256": "813c3d13e1cd649617d87dd36c786528bf4787a444280ce19cd8dd8175548caf"
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-viewport-1920.png",
+      "sha256": "034b53f7a967fb1351574bae7bb56d70fbb001deacd20a4d3e79bf0a469a6df1"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-discrepancy-double-1366.png",
+      "sha256": "e24e36f397296688be21f77d4dfce97ed78176841f9c7b40bf14caed39490cb2"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-discrepancy-double-1920.png",
+      "sha256": "6f0c8220f2b20f49cb430d29daa535bd4ce7f997d185e93f0362e2d02349614c"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-empty-double-1366.png",
+      "sha256": "dea7f57580ffedf781e869b11d58b6d9a0cbb25f58b2973b34e1ce8d8268a176"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-empty-double-1920.png",
+      "sha256": "a97ff7f2673454e4cbb63dc6a76dc6717f8ffeb65e1ef879fd4066c413ebaa21"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-no-matches-1366.png",
+      "sha256": "9247f0a3252e2251a3224d9a8a0b85a632c021999b1794a9a931c394e82eef9a"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-no-matches-1920.png",
+      "sha256": "4dc80b42069d72b911281e6e994ac5085853a1af5b960cbd2e281aaf6ba1cd9c"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-print-1366.png",
+      "sha256": "49814475e7a335c562445bebe7ac1a58c220ba52ff0b1ba52e2438f687462327"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-print-1920.png",
+      "sha256": "245c346313c1bd093dd1009d21167e9d4ff45c60a8dc091e3a6c2361fcfabb37"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-refresh-failed-1366.png",
+      "sha256": "508c200058b27c046fc26cd80951ed647f064e9d9e4d71012045afc78728973c"
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-refresh-failed-1920.png",
+      "sha256": "44ecd802c5e96b81fe0e436a03e0603750b47d528cd7ba39a851ede78fc5a0cf"
+    }
+  ],
+  "files": [
+    {
+      "path": "cash_advances.php",
+      "sha256": "80eb6a34c75afab6a252a668fb63b2205663de0eb951f93f61297e98ac87da7a",
+      "bytes": 13608
+    },
+    {
+      "path": "assets/js/cash_advances.js",
+      "sha256": "228e6a7f28f03b52539bff259155a6e676f4531acc92aa476963b91a1c1236cd",
+      "bytes": 11739
+    },
+    {
+      "path": "assets/css/accounting_workspace.css",
+      "sha256": "7f09cb2a49c6abc074dae7e81a1e01fe683b1d93027e451bcf18815c70178461",
+      "bytes": 17568
+    },
+    {
+      "path": "scripts/test_usability_u3_a_fixture.php",
+      "sha256": "5db769a5a72d102c809d4216daf33bc3483364ab779063ea6d7319d4f8f4e883",
+      "bytes": 4087
+    },
+    {
+      "path": "scripts/test_usability_u3_a_browser.py",
+      "sha256": "2e067bd7e71ec29b6bd3523dc2614e93498c2e6a442c0910c2297d9446086751",
+      "bytes": 22425
+    },
+    {
+      "path": "scripts/test_usability_u3_a_presentation.py",
+      "sha256": "fbbdf60ba8267886bea9f54fa3f0b4a556f443f2c360f94e793cd886b041fa62",
+      "bytes": 9508
+    },
+    {
+      "path": "scripts/test_usability_u3_a_readback.py",
+      "sha256": "908f4e83496e0d377e01b93f61873783a7de7caa15b88332ba0ad989f767bbf2",
+      "bytes": 10726
+    },
+    {
+      "path": "scripts/test_stage2_browser.py",
+      "sha256": "f4d6b99a2d0bb595ca97d890a717649aacc479d4d643c2f743fabe413d32289f",
+      "bytes": 26693
+    },
+    {
+      "path": "scripts/test_stage3_checkpoint4_browser.py",
+      "sha256": "ef87bc63af9aa34402e3338ac1c24ca374a5bb3d2ce64292e7695e4796231cd3",
+      "bytes": 19965
+    },
+    {
+      "path": "scripts/test_stage3_fixture.py",
+      "sha256": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+      "bytes": 3750
+    },
+    {
+      "path": "docs/usability-u3-plan.md",
+      "sha256": "7e0d54ef7393fab16962306cba8fa4ccb25735891a8d6c360c480124dea847b8",
+      "bytes": 25799
+    },
+    {
+      "path": "docs/usability-u3-a-delivery.md",
+      "sha256": "1832661eb915cf966d352ca523da745f27c6c6e782bf1a3131e5fb173c2154da",
+      "bytes": 19063
+    },
+    {
+      "path": "docs/usability-u3-a-reviewer-notes.md",
+      "sha256": "38688fbd196983b710964507e6a7e6ecb80d231524fd54f720313dd61ab7b250",
+      "bytes": 2952
+    },
+    {
+      "path": "docs/usability-u3-a-application.patch",
+      "sha256": "698a0e047b9f14f2e6cc0c034ccd156716ec4d3ed5d847b63687699f93364063",
+      "bytes": 44146
+    },
+    {
+      "path": "docs/usability-u3-a-regression-tests.patch",
+      "sha256": "cefc2575cb6644228aa67d6606fd2ce733a7969ad3fe9a39a95f7832c40967a1",
+      "bytes": 7336
+    },
+    {
+      "path": "docs/usability-u3-a-verification-results.json",
+      "sha256": "682f800e9de65a88a00ea8c249f82e835df21993a2f58f9522c321af1f22ae6d",
+      "bytes": 948
+    },
+    {
+      "path": "docs/usability-u3-a-verification-log.txt",
+      "sha256": "743693787a2d3eb1a2d01a41b00c32f51e13b0b4e2d9adda7d03bb1eec4fbdc9",
+      "bytes": 15798
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-advance-detail-1366.png",
+      "sha256": "4ebb628b34d94a701ff3ee5d5dbc56660442a152ba40e2817ff8d2957f63ca22",
+      "bytes": 127681
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-advance-detail-1920.png",
+      "sha256": "e5ef500a9189cefc6a00a18655d19a82ef04f1c66366274291acd5755ee2febb",
+      "bytes": 143494
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-detail-viewport-1366.png",
+      "sha256": "4c31a8cde527d3e4e2392d6813d19fe2f543bdbd7bb9be778f60b25207b42e1f",
+      "bytes": 82503
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-detail-viewport-1920.png",
+      "sha256": "b912345be9b8a24a4b3583642f0375809693cda358529ed7188cfbda16da6935",
+      "bytes": 117243
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-1366.png",
+      "sha256": "fd2e850d90df6951d795112086091b09d73922e380e64efd89e071ecc818c686",
+      "bytes": 553712
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-1920.png",
+      "sha256": "1d9c5f1c93311bd8c904a1a6ce8dc49cf8dd7995ab5da87120a6dbe823e9e518",
+      "bytes": 552686
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-viewport-1366.png",
+      "sha256": "834b710f8eb924a63e1fea25efb2e36b0020fb3c12d30cc4837df0471f5432e9",
+      "bytes": 84423
+    },
+    {
+      "path": "docs/images/usability-u3-a/admin-register-viewport-1920.png",
+      "sha256": "bf373c0b5788319b4b713e8d089df5f1c7263ea73134c679e5f7779365896b89",
+      "bytes": 112171
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-historical-1366.png",
+      "sha256": "9a8c3e2301eff67d9db8ba77e38ec05ed56bfe9ccbafe2d56c25d88d6b065e77",
+      "bytes": 122331
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-historical-1920.png",
+      "sha256": "4b1e1c1ba0143169828d4272e8576bd80eec7c9d4dbdd88030ce18774707eed4",
+      "bytes": 137559
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-settled-1366.png",
+      "sha256": "3966c8049f3682712fd3997a5e077f3b32e503077d306e15e9a87d75669aecde",
+      "bytes": 141281
+    },
+    {
+      "path": "docs/images/usability-u3-a/advance-settled-1920.png",
+      "sha256": "6baaf7846031db5fd546b84afd9b10376db3c53013c0d2416958782ef5ed96e9",
+      "bytes": 157834
+    },
+    {
+      "path": "docs/images/usability-u3-a/extension-failed-1366.png",
+      "sha256": "7a0352069ea602466dd1e3047c667eed1890cdf6bedd81478271a7d7f44a791b",
+      "bytes": 142729
+    },
+    {
+      "path": "docs/images/usability-u3-a/extension-failed-1920.png",
+      "sha256": "6bee530768ae8243b7510e738ca4ae6945b91e7ef64b1885e99ef5ede26920bd",
+      "bytes": 159303
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-1366.png",
+      "sha256": "1b79bb35063a44fbfe2e21fb274425c64bf983d0f6c06b4a36f19d6719587dc6",
+      "bytes": 112496
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-1920.png",
+      "sha256": "9ea9f59772ee565406a1c5b9585d0f93a6813636d97dc92285c3e04675dfca9b",
+      "bytes": 117089
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-print-1366.png",
+      "sha256": "d105f9fd75969e88963c9467c1899938ec83945c6bfc1d444d41bf5937f46dae",
+      "bytes": 108162
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-print-1920.png",
+      "sha256": "59fdb12feb9dc708a7435be02b3a3f63923ea79329569ed8228f8bc4d84d9acf",
+      "bytes": 112845
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-viewport-1366.png",
+      "sha256": "40368a89c8bb902229a0d88fe509e7792df195eaeb69a7fcf8cb1123991c5f23",
+      "bytes": 79115
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-detail-viewport-1920.png",
+      "sha256": "ea3d2fe1aa59e05fa9453f244fb71b303e0456b0a2273e7ade3bf85c89229399",
+      "bytes": 104889
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-evidence-print-1366.png",
+      "sha256": "554c1cc00fc983dd109a65ff152c5f78992a36be44a5091da1b967d85329bc2b",
+      "bytes": 142619
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-evidence-print-1920.png",
+      "sha256": "8bef15a29da4fbbcf29092bbbbb35a01c7597f519cce4bf2e23f37832fb072b2",
+      "bytes": 148015
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-1366.png",
+      "sha256": "fadbe506e1352d331e21d9c24e5b801d5a307801fb2e47dcbd563b317b35fee8",
+      "bytes": 549842
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-1920.png",
+      "sha256": "012193dc9ce67c23069633a294c833ea82fe49f1963f3bfad4e7a4e6e55b1995",
+      "bytes": 537681
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-viewport-1366.png",
+      "sha256": "813c3d13e1cd649617d87dd36c786528bf4787a444280ce19cd8dd8175548caf",
+      "bytes": 80702
+    },
+    {
+      "path": "docs/images/usability-u3-a/management-register-viewport-1920.png",
+      "sha256": "034b53f7a967fb1351574bae7bb56d70fbb001deacd20a4d3e79bf0a469a6df1",
+      "bytes": 97961
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-discrepancy-double-1366.png",
+      "sha256": "e24e36f397296688be21f77d4dfce97ed78176841f9c7b40bf14caed39490cb2",
+      "bytes": 586323
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-discrepancy-double-1920.png",
+      "sha256": "6f0c8220f2b20f49cb430d29daa535bd4ce7f997d185e93f0362e2d02349614c",
+      "bytes": 584433
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-empty-double-1366.png",
+      "sha256": "dea7f57580ffedf781e869b11d58b6d9a0cbb25f58b2973b34e1ce8d8268a176",
+      "bytes": 113533
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-empty-double-1920.png",
+      "sha256": "a97ff7f2673454e4cbb63dc6a76dc6717f8ffeb65e1ef879fd4066c413ebaa21",
+      "bytes": 128804
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-no-matches-1366.png",
+      "sha256": "9247f0a3252e2251a3224d9a8a0b85a632c021999b1794a9a931c394e82eef9a",
+      "bytes": 116318
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-no-matches-1920.png",
+      "sha256": "4dc80b42069d72b911281e6e994ac5085853a1af5b960cbd2e281aaf6ba1cd9c",
+      "bytes": 132074
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-print-1366.png",
+      "sha256": "49814475e7a335c562445bebe7ac1a58c220ba52ff0b1ba52e2438f687462327",
+      "bytes": 472359
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-print-1920.png",
+      "sha256": "245c346313c1bd093dd1009d21167e9d4ff45c60a8dc091e3a6c2361fcfabb37",
+      "bytes": 490257
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-refresh-failed-1366.png",
+      "sha256": "508c200058b27c046fc26cd80951ed647f064e9d9e4d71012045afc78728973c",
+      "bytes": 558414
+    },
+    {
+      "path": "docs/images/usability-u3-a/register-refresh-failed-1920.png",
+      "sha256": "44ecd802c5e96b81fe0e436a03e0603750b47d528cd7ba39a851ede78fc5a0cf",
+      "bytes": 557764
+    },
+    {
+      "path": "docs/images/usability-u3-a/index.html",
+      "sha256": "71353b8e2f57409cc5d244f21200f165e0cdef002e4af7b4445a5307c5e439f8",
+      "bytes": 11733
+    }
+  ],
+  "verification": {
+    "date": "2026-10-21",
+    "baseline": "ab653a1b59431d6c1ef0fad080f583da64961b8f",
+    "browser": "Edge 155.0.4283.62",
+    "checks": {
+      "u3a": 84,
+      "readback": 27,
+      "stage2": 56,
+      "stage3_cp4": 48,
+      "stage3_cp5": 54
+    },
+    "total": 269,
+    "page_errors": [],
+    "synthetic_read_phases_unchanged_application_tables": 34,
+    "working_read_only_fingerprints_unchanged": true,
+    "working_source_config_unchanged": true,
+    "migrations_run": false,
+    "external_review": "pending",
+    "working_client_acceptance": "separate",
+    "later_u3_checkpoints": "unstarted",
+    "provider_boundary": "external browser requests and provider endpoints blocked; child PHP URL/cURL/socket/mail disabled",
+    "prior_backend_487": "dated fixture provenance only; not rerun",
+    "attempts": "Test helper inclusion, metadata selection, same-URL navigation, status/currency/disclosure expectations corrected; no application changes required."
+  },
+  "hash_note": "SHA-256 is over exact delivered bytes. Git blob IDs apply repository line-ending filters. Manifest excludes its own hash and ZIP hash to avoid circular dependencies."
+}
