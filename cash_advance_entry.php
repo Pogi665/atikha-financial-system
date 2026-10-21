@@ -6,6 +6,6 @@ try{
     else{$kind=journal_string($_GET,'workflow_kind',true)?:'advance_release';$target=journal_id(journal_string($_GET,'advance_id',true),true);}
     $books=['advance_release'=>'CDB','advance_liquidation'=>'GJ','advance_return'=>'CRB'];if(!isset($books[$kind])||($draftId===null&&(($kind==='advance_release')!==($target===null))))throw new JournalProblem('Choose an operation from the advance register.');
     $context=$target===null?null:advance_detail($pdo,$uid,$target,journal_today());$workspaceBook=$books[$kind];
-    $advanceConfig=['workflow_kind'=>$kind,'advance_id'=>$target===null?'':(string)$target,'advance'=>$context,'endpoint'=>'cash_advance_actions.php'];
+    $advanceConfig=['workflow_kind'=>$kind,'advance_id'=>$target===null?'':(string)$target,'advance'=>$context,'endpoint'=>'cash_advance_actions.php','advance_presentation'=>true];
 }catch(JournalProblem $e){http_response_code($e->status);exit(htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8'));}
 require __DIR__.'/includes/accounting_entry_page.php';

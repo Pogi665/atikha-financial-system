@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-21",
+  "status": "hard_stop_current_logical_validation_failed",
+  "governing_envelope": "database-incident-u3-execution-envelope-20261021.md",
+  "preservation": {
+    "private_archive": "C:\\xampp\\mysql\\recovery-exports\\incident-20261021-093316cb4b",
+    "verified": true,
+    "data_files": 3609,
+    "data_bytes": 495241246,
+    "application_files": 4217,
+    "upload_files": 53,
+    "root_hashes": {
+      "data": "d9b2d73e341eee477f62cd8646cf6ee20851852e75a2f85ebad0d0f58a758cf9",
+      "application": "ea8f7dde9903837c48b6e3e80a082a2c8fbf51c3ffd8054a0cb3cb3cec7e4455",
+      "uploads": "94f904d9836ee13efc30f55a257df5bb68164a74ab64806606707b50b805851b",
+      "mysql-bin": "94a749b943e05b211848bcc2a4ddf6a15d5fe820c7dad429c21ab361fa21a8d3",
+      "mysql-share": "a7b0bbe1085a4945340d90264061cc0edd60942dc4ce78ea82eba4a4b9442338",
+      "prior-incident-evidence": "1e159ec92ca79e18f8074178ab4e2e328fc006a14d184415d9740661e2ffb4d8"
+    }
+  },
+  "dump": {
+    "sha256": "5d70597175fa643948da40893cf0d27057b5b21c0eaf7a36e5f50aa766c75d73",
+    "bytes": 146907,
+    "flags": "0x0",
+    "exception_code": "0x80000003",
+    "exception_thread_id": 11620,
+    "captured_threads": 33,
+    "captured_modules": 38
+  },
+  "symbols": {
+    "publisher_fingerprint": "177F4010FE56CA3336300305F1656F24C74CD1D8",
+    "archive_sha256": "06ea2880a6c589b058c2d7cfe4cfbb104ca29e8a77a3fb7f0be9a033bd2961b8",
+    "signature_and_published_checksum_verified": true,
+    "pdb_sha256": "6fe68d35a3e1650679fbf7fa457277c02266a4d5163887ec70a245002e2b20b2",
+    "pdb_guid": "d0435555-c131-4e46-9091-fc529819be77",
+    "pdb_age": 1,
+    "exact_dump_match": true
+  },
+  "engine": {
+    "source": "Existing Microsoft-signed C:/Windows/System32/dbgeng.dll",
+    "version": "10.0.26100.1",
+    "installed_by_this_execution": false,
+    "method": "Official SDK interface layout; copied user-mode dump target only"
+  },
+  "confirmed_failure_path": [
+    "buf_load",
+    "buf_read_page_background",
+    "ibuf_merge_or_delete_for_page",
+    "ibuf_bitmap_get_map_page_func",
+    "buf_page_get_low",
+    "ib::fatal",
+    "abort/raise",
+    "my_sigabrt_handler breakpoint"
+  ],
+  "confirmed_page_problem": {
+    "database": "atikha_finance",
+    "tablespace": "budgets.ibd",
+    "space_id": 9,
+    "page": 1,
+    "page_role": "change-buffer bitmap",
+    "read_only_checksum_invalid": true,
+    "other_separately_checked_pages_pass": [
+      2,
+      3,
+      4
+    ],
+    "checksum_rewritten": false
+  },
+  "current_logical_capture": {
+    "passed": false,
+    "error": "audit_logs table cannot be opened by engine (1932); expected tablespace7, found4294967294",
+    "additional_startup_error": "mysql.func marked crashed",
+    "isolated_candidate_gracefully_stopped": true,
+    "candidate_port": 3307,
+    "working_sql": false
+  },
+  "gates": {
+    "preservation": "passed",
+    "offline_causal_stack": "passed",
+    "generic_reproduction": "not needed",
+    "isolated_current_logical_baseline": "failed",
+    "repair": "not performed",
+    "full_candidate_validation": "not passed",
+    "working_cutover": "not performed",
+    "working_acceptance": "not run",
+    "u3_b": "partial preserved; gate incomplete",
+    "u3_c": "not enabled",
+    "u3_d": "not enabled",
+    "final_u3_package": "not produced"
+  },
+  "final_verification": {
+    "all_original_and_preserved_data_upload_binary_hashes_equal": true,
+    "preserved_application_complete": true,
+    "current_non_documentation_application_files_unchanged": 3877,
+    "only_handoff_documentation_expected_to_change": true,
+    "all_database_apache_clients_listeners_absent": true,
+    "repair_performed": false,
+    "working_cutover": false,
+    "u3_resumed": false,
+    "hard_stop": "Current full application/audit logical baseline could not be established; audit_logs fails engine open with tablespace-ID mismatch; no speculative correction or promotion."
+  },
+  "baseline_git_head": "797d47cbbd2f0b8f5ea91e2bd583a8196285ec38",
+  "source_changes_this_incident": "Documentation and private diagnostic tooling only; prepared application/configuration files unchanged."
+}

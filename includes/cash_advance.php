@@ -145,7 +145,9 @@ function advance_review(PDO $pdo,int $uid,array $r): array
     advance_guard($pdo,$uid,$r,true);$id=journal_id(journal_string($r,'draft_id'));
     return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$r,$id){$d=workspace_draft($pdo,$uid,$id,true);advance_draft($d);workspace_revision($d,$r);$original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id'],true);$input=advance_canonical($pdo,$d,$d['payload'],$original);$prepared=advance_prepare($pdo,$uid,$d,$input,$version,$original);$lines=[];
         foreach($input['lines'] as $l)$lines[]=$l+['account_name'=>$prepared['accounts'][$l['account_id']]['Name'],'project_name'=>$l['fund_project_id']===null?'Organization operations':$prepared['projects'][$l['fund_project_id']]['name']];
-        return ['input'=>$input,'lines'=>$lines,'party'=>$prepared['party'],'coverage'=>$prepared['coverage'],'outstanding'=>$prepared['remaining']===null?null:ledger_decimal($prepared['remaining']),'token'=>workspace_token($d,$prepared['fingerprint'],time()+900)];});
+        // Public display projection only: keep canonical input/fingerprint/token untouched.
+        $effect=['accounting_date'=>$prepared['timeline']['accounting_date'],'balance_as_of'=>journal_today(),'before_outstanding'=>$prepared['timeline']['before_display'],'after_outstanding'=>$prepared['timeline']['after_display'],'new_advance_outstanding'=>$prepared['timeline']['replacement_display']];
+        return ['input'=>$input,'lines'=>$lines,'party'=>$prepared['party'],'coverage'=>$prepared['coverage'],'outstanding'=>$prepared['remaining']===null?null:ledger_decimal($prepared['remaining']),'token'=>workspace_token($d,$prepared['fingerprint'],time()+900),'advance_effect'=>$effect];});
 }
 function advance_post(PDO $pdo,int $uid,array $r): array
 {

@@ -1,0 +1,694 @@
+{
+  "date": "2026-10-21",
+  "status": "database_recovered_normal_sql_verified_login_pending",
+  "private_recovery_archive": "C:\\xampp\\mysql\\recovery-exports\\incident-20261021-093316cb4b",
+  "logical_run": "C:\\xampp\\mysql\\recovery-exports\\incident-20261021-093316cb4b\\logical-7c75115910",
+  "damaged_directory_retained": "C:\\xampp\\mysql\\data-damaged-20261021-516017986f",
+  "user_continuity_statement_recorded": true,
+  "no_known_unrecovered_required_records": true,
+  "normal_login_mfa_pending": true,
+  "u3_resumed": false,
+  "working_financial_sql_writes": false,
+  "application_source_configuration_tests_unchanged": true,
+  "verified_non_documentation_non_git_files": 1799,
+  "working_acl_rules_equal_original": true,
+  "isolated_validation": {
+    "table_view_checks": 65,
+    "zero_orphan_relationships": 70,
+    "accounting_integrity_findings": 0,
+    "evidence_references_verified": 13,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 59,
+    "budget_rows": 120,
+    "normal_cycles": 2,
+    "bounded_running_observation_seconds_per_cycle": 30,
+    "force_recovery": 0,
+    "normal_preload_enabled": true
+  },
+  "working_sql_validation": {
+    "passed": true,
+    "full_snapshot_equal": true,
+    "zero_orphan_relationships": 70,
+    "evidence_equal": true,
+    "normal_xampp_config": true,
+    "normal_3306_authentication": true,
+    "normal_startup_shutdown_cycles": 2,
+    "all_system_schema_definitions_equal": 31,
+    "graceful_shutdown": true,
+    "all_servers_stopped": true,
+    "no_application_login": true
+  },
+  "tables": [
+    {
+      "object": "atikha_finance.accounting_write_state",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 1,
+      "source_logical_sha256": "5ca73316014d71190b8ee8849261b74c0f5f6a5e9415a7e17825813f8c04c45c",
+      "schema_sha256": "8014efbafaf692faa85fa7b6027ea038577effd99035b8583f993cc8f00525b1",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.advance_control_designations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "e8e99b91e81828f8c3fdd47180d0ba0cde3b869333c7e26f7a9b53a905624414",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.audit_logs",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 59,
+      "source_logical_sha256": "df9e1abe0686b1975defda237f7ffd675d7b7fd85536427fccd508136ec13799",
+      "schema_sha256": "673f0422c9798a2051ea7095fadcead7e97150e7c91a9c7a0c927ded31c65423",
+      "provenance": "Exact59-row verified fingerprint recovered from58 proven prior rows plus uniquely verified documented login; user/HTTP continuity establishes no later legitimate app activity.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.board_communications",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 4,
+      "source_logical_sha256": "13166f5698b8d37a259fe54dcf8e8648ddd40355915c878d0ab2b75a1fad7ba6",
+      "schema_sha256": "ad1b2bcdc99f1b30a035aa371fd97a18f2be60fa028ec5eb4826bdd7c16ee1ff",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.budgets",
+      "classification": "PRIOR-VERIFIED",
+      "source_rows": 120,
+      "source_logical_sha256": "fba9277eae655dd86fd68c87df728d92f762408d24ffda50f7937f1fa5ad611f",
+      "schema_sha256": "03079f2ff8b6b600986d509eb10f51dbba448a26c75045bbed9ee37666242fd7",
+      "provenance": "All current schema/data-bearing physical bytes equal prior validated copy; only bitmap page differs;120-row complete logical fingerprint equal.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.cash_advances",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "a6edac429cc5606207a408968540cdef5581c35637df39404f9f3e760fe5fa2b",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.cash_advance_due_changes",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "b78f1734aecf3e3267f7bdcfe28fd5a003bda81313f0c849224473e870dfde90",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.cash_advance_operations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "9f6d5535c4415123579450f857c42c5ca5008433f013ad48beda8395cbd26012",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.cash_advance_operation_reversals",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "aba194ae4e29308e27021e8e82c86cf99dc6f73817ddca0cd354224bea0a2f1f",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.categories",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 32,
+      "source_logical_sha256": "a2370970468483de03b023797dca0897c312f90a6bf1d5ab902925d78ea964e6",
+      "schema_sha256": "4c03441884970d7aa38be6ae9d1acb4816f5995b8d84707e52bf8a8a1c483569",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.correction_evidence_reservations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "00d39588710ec41aec7b396e3132dc3e418656d387759162e204f04c2a06bba9",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.draft_evidence_reservations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "abd7a66ab578828cd2623480ad12d1ad2e8d05331c145b468c0fece8f098b79a",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.evidence_allocations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "6e2e749336fcbbbb94c9c4a56fe2e991510a6f81b4febdb2071f6d18ca127e14",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.expenses",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "5de5b6def55df2b3dbff9826b66970ce6ae4154d1ad290e7fba95a1fb741be90",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.external_communications",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 6,
+      "source_logical_sha256": "5c3be2953837ab7c19174be51c3740a43d2e509fac892841d20cb361bf84247e",
+      "schema_sha256": "33c08c0b62c1df837008a8594b7ed7fdc0a2ea7135b6bf8fe5f8ffeeb41eafd9",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.forecast_cache",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "ee520f65cbb8482818972137501daa1e894de0488d18ef6b83747c33333254b1",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.incoming_funds",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "fcd6c6f7a3d1266021aeee5c8f247fdb8fc3e123195d9f63fa3414f206eda05c",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.journal_corrections",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "5d2d3196d67b737493ac3dc8943b05d83ec46420f90becd968bcc73d671a6755",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.journal_correction_lines",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "e6c57513b8002426f9698a95d6334524f843c76520840d95498386afe3ae525e",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.journal_drafts",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 2,
+      "source_logical_sha256": "999abf83a84c1f51866eaf315c5bcbbd91b579d86bdcb824a3c461a574d462ad",
+      "schema_sha256": "45f0866400c98f3d7308ce084e4aa971b20c1b17a531875160590e79e3f18788",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.journal_entries",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 2,
+      "source_logical_sha256": "1139c492954ca720b5a7a264e0f0ab7173bed68b522bacbd0f7c7927d040b56d",
+      "schema_sha256": "dba4c0e10b3090c69e40e28950e33c7b70818801fb1bd9e966b12ddf3cedbf94",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.journal_entry_lines",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 4,
+      "source_logical_sha256": "4774190bde299a1398db605ec1cc5d9641aa463dc5ec4a5ed6995b8302b7ecb2",
+      "schema_sha256": "2a6caa9a161ea60ffd4ec0130a9d8329e9110a6c5eb64c7b4e6842b607854d56",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.notifications",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 7,
+      "source_logical_sha256": "7873daed41e355e34542c7ee2a433988ebfc991b19a25f7bfab95f3cf19b2d48",
+      "schema_sha256": "ede6b4a659b054de83a2952484a3dbb9fd130940576a8d5ae9514bd41fdf7d45",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.parties",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 1,
+      "source_logical_sha256": "5932de4c652397320fb31596dc96af3b806c9279867f5db83d61920c89739e34",
+      "schema_sha256": "3edb148df32eae7c7b8316ad550232c3a58ea834e167993740300750b531ae65",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.password_resets",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 4,
+      "source_logical_sha256": "d9e7c2a536e9c2dbdeb4d36d742fb5f3c21f3d95a119e0f0388b6ef40a938a6e",
+      "schema_sha256": "353c8d151d2d8ed3e707d3b8ab4f2fa186bc42345e4051a27a3800119712150e",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.posted_evidence_associations",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "3bd629ba8543791f60c3a6bcf95c21810a7145403fd3d2346433738bbf46927f",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.projects",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "d6da42845b39fc8cdba603dca66a38be47601dfbaa6c75d9ab51b0f838b7d3a0",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.receipts",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 4,
+      "source_logical_sha256": "bb799b54846ef7e47d07f19223cb724e560f405bcfc54b4b2142db2d9300f679",
+      "schema_sha256": "182da67d77192b5a6a60e04aabd773cd37651f76ba6eb014dcc6c2be32b5acb1",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.receipt_ocr_attempts",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 9,
+      "source_logical_sha256": "e93f338435b1dfcb3ec0d4c3c4723a22865b924f277ab847f3216982bef44bae",
+      "schema_sha256": "05e11d8c4d6b215e811076c5215e501b917d7e937c2d478cf21a872a718cf462",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.reports",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "ed2f8c49a9304c63ad1302455ba387251844f78a0fe09d3ed4585deac8131ddb",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.trial_balance_snapshots",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "1ae38b1074629165e928f4df27459a725599c0a0e6ee03d94992999188ea908d",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.trial_balance_snapshot_lines",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "28d436feaf7fe2e11c3aa4352bd063197177700e5ef0831747f9a5cbc25c2697",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.users",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 3,
+      "source_logical_sha256": "763fea00f7176b76999103691ba1f269f56435b837f6e37e0a62387060460c1e",
+      "schema_sha256": "9d2176eb6b0c0552922bbee297876d6de3a835aa5655c0431b784a0160a942f9",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "atikha_finance.user_identities",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 6,
+      "source_logical_sha256": "e025a58845820ec9d72db09694b18ad238575239aa445f4f982c2ce7d61c31c8",
+      "schema_sha256": "ee0496a1fc7525686339e4019690164644027a87c182111373925da8e725cbad",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.columns_priv",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "19ed3247a1c432919386f7591667df9123f381f52d5ee53b53062bb181b087c5",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.column_stats",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "ff96c9b01b7c89668b72aee192b9f47f464ad71cb48913e334e8c33afe8fbd5b",
+      "provenance": "Readable current optimizer statistics are derived caches; regenerated on clean candidate, not treated as authoritative financial/permission rows.",
+      "object_present_in_working": true,
+      "source_rows_restored": false
+    },
+    {
+      "object": "mysql.db",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 2,
+      "source_logical_sha256": "d9dc297e9b38dd046f00697dee3847a6e6704f681d0531e5675f1677987e9922",
+      "schema_sha256": "539a3797cb809a12bf1ed2d4dabba65beff6c7abbb4812c0960cc5f5eed6b033",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.event",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "3664d284b50cdc71552dc664f1d7902c8c292b94236843ee3b0c276ca1fa821f",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.func",
+      "classification": "PRIOR-VERIFIED",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "0af8c4f163abe395210ea361d005f5c424492ea8fb38659ec5ac81453d5f3d48",
+      "provenance": "Current data/schema bytes equal prior validated empty UDF table; clean table is verified empty.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.general_log",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "d5bf482ebe6ff47915520bf89c3848bb1eb86b2efd2e01ca17ae4084fce13de0",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.global_priv",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 5,
+      "source_logical_sha256": "f23d1fec6520a4044ad10b81f9c4cd974357201051c6d8847cfa8d1801c2d76e",
+      "schema_sha256": "efffbea7e20b087cf463daf81344f9f2b56aea488421d85152bb6733ad871c10",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.gtid_slave_pos",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "0779c1b461e129890248e5799446ed34e98ac02637507167102f506fe5be5d9a",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.help_category",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 50,
+      "source_logical_sha256": "636eff3f70cebb47daf6b004db9bbd92b807a5ef88c1b35dcf71958b4cee7541",
+      "schema_sha256": "032dce30508ec602d8bdad48bc408131ebde101137fdfb5ae777891cc1da04e1",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.help_keyword",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 105,
+      "source_logical_sha256": "87e0330b101faaa2bdb95b8c7aa16e62560c7785f8c34d268f1e2cc316942b46",
+      "schema_sha256": "2f942c9afeae14c1f7ac3f912468f12298d1fda239ba7494b95b1b4988a14120",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.help_relation",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 198,
+      "source_logical_sha256": "27cdd1bea015fa0cc7167fcddce4ad95a5bb573de2f0918348ea95738c9bce48",
+      "schema_sha256": "e2507cf14560100681f6030f355fb8745bbbf0ef2db4a5d5eac5347cf5ba2704",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.help_topic",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 811,
+      "source_logical_sha256": "56b461a10ff4bd38dbc0962c9c571d9c5a4aa8099bbf0123da8a878dcd69e279",
+      "schema_sha256": "1842c6cbc6d9a810a029aeb3dc3e3bc6a5d61a5640dd0120045bf0786b0e06f1",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.index_stats",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "c698491400029183e1a217ab33941dbda1cde743d7c1717456d8b187773f0fa0",
+      "provenance": "Readable current optimizer statistics are derived caches; regenerated on clean candidate, not treated as authoritative financial/permission rows.",
+      "object_present_in_working": true,
+      "source_rows_restored": false
+    },
+    {
+      "object": "mysql.innodb_index_stats",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 16332,
+      "source_logical_sha256": "84a9f265076eb3842b76d6f52db28afc169b8b4ce7562e8c7cf75b8bb2d68534",
+      "schema_sha256": "2243ec9cfab9ff3593e95bb56b1817677ead64ae9597d4688839be0e155655a6",
+      "provenance": "Readable current optimizer statistics are derived caches; regenerated on clean candidate, not treated as authoritative financial/permission rows.",
+      "object_present_in_working": true,
+      "source_rows_restored": false
+    },
+    {
+      "object": "mysql.innodb_table_stats",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 1140,
+      "source_logical_sha256": "a827392fe31a0ed9fa550610150064a3feef510b6eed73eb2805bc26c788d948",
+      "schema_sha256": "a7ce69e5a680f32e472a08bd2b41653cfc89ad2bf6faef6cb8b3878514d854e5",
+      "provenance": "Readable current optimizer statistics are derived caches; regenerated on clean candidate, not treated as authoritative financial/permission rows.",
+      "object_present_in_working": true,
+      "source_rows_restored": false
+    },
+    {
+      "object": "mysql.plugin",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "9218344a8da12c5a4b67c504bc568758f5f8e1b3af2cf395f0affda457a46ca9",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.proc",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "b3c4d467d69cd58909dc671bec351a038ac1ff806596fd27d257a4f966f4f3b6",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.procs_priv",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "734fa83993be201aa11f14a9e638fe1ad8d42e75d7d4fb7aa463122da74dee36",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.proxies_priv",
+      "classification": "PRIOR-VERIFIED",
+      "source_rows": 4,
+      "source_logical_sha256": "117da2ced2e4b48bf36318cc911e7d743cdf693111605b6e81b2763017cf3ddb",
+      "schema_sha256": "d6846402edea748ed82d4aba55b4f53773b1e45408631f666a57b20abc463cb2",
+      "provenance": "Exact last verified4-row grant fingerprint; intact index keys, matching other permissions and direct no-grant-change continuity statement.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.roles_mapping",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "a6e2faa3dfe3c3195dba0c756b1d4403ff2ae0c048d231a1eaf9a604772d5c96",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.servers",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "a7d0eb5083901a7ccaa03bb79ceb7f64a8c428e01a0d59124182183430e01b3f",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.slow_log",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "cc52aca6037cb4012c7edaef1fb664cf4f6584d282b25caebefc0dec1bf0f8aa",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.tables_priv",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 1,
+      "source_logical_sha256": "06b4571d8d8390aaeb6d6355583a4c11364658d8013d6f163e00afea11f2feeb",
+      "schema_sha256": "59d08a695690686540da757ad397f644521f08417415f570961891afc0713d5f",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.table_stats",
+      "classification": "RECONSTRUCTIBLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "3965838c8f72e43b3e5ae2f75abf5fcf194ec666b7debbdd1f16779a451af0ff",
+      "provenance": "Readable current optimizer statistics are derived caches; regenerated on clean candidate, not treated as authoritative financial/permission rows.",
+      "object_present_in_working": true,
+      "source_rows_restored": false
+    },
+    {
+      "object": "mysql.time_zone",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "a636eca0fc354b73ab1890a1632f6a37b96c95a61bef6d77f85c9f9efc8cdb91",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.time_zone_leap_second",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "4ba28bdcc5c2b278d96591437ef7114597bd77541f1b00d4cc58dcca4d2ce442",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.time_zone_name",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "ebbcef89e551876f5840c434a5a5200148e369e269cda63c8b8354f2ff769603",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.time_zone_transition",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "e994f2968c5eb38e3f30d930c0f70433a7aa6269b8e2be2e9a38a95c7d10f38d",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.time_zone_transition_type",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "2f87fee609259c8cab1d64b262fa86d74bfad94c2b7a8588d1de223809d4712b",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.transaction_registry",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 0,
+      "source_logical_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "schema_sha256": "832952bdaf7aefac1a6af1d97c6286ce1e6caba4681ad9d677e428963bd4378b",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    },
+    {
+      "object": "mysql.user",
+      "classification": "CURRENT-READABLE",
+      "source_rows": 5,
+      "source_logical_sha256": "e7fbad82b71f0fd881f1ae1394957b577e157cefea807d5c8756af2cac63b1bf",
+      "schema_sha256": "0b0112415fec4e43c1295e7c0a6bb47573bd9d5cabb9102df2ceca50607ea4c8",
+      "provenance": "Complete current export and verified logical fingerprint.",
+      "object_present_in_working": true,
+      "source_rows_restored": true
+    }
+  ]
+}

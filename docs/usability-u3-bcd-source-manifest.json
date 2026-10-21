@@ -1,0 +1,507 @@
+{
+  "baseline": "797d47cbbd2f0b8f5ea91e2bd583a8196285ec38",
+  "status": "ready for external source review; not committed/pushed",
+  "production": {
+    "cash_advance_entry.php": {
+      "sha256": "59d5712fae905a55c115d092a8ce7c65fceb00047cbc7cfead374eb18886a627",
+      "git_blob_lf": "9d9cae0098af15eae49988a0c46c8f8a0d974fd5",
+      "baseline_git_blob": "cb76cf7aeaa9fcd2b70e699aafce5264b55f631b",
+      "new_file": false
+    },
+    "includes/accounting_entry_page.php": {
+      "sha256": "2ac58d21c6272cdbd47dc6bd7d3c6ba49f89b7ecb309bf4113dd83dd561dbafd",
+      "git_blob_lf": "616ec079cb176b8b102d58c5c256ebdcc4b6040e",
+      "baseline_git_blob": "ecdaba31a245ae48a262527974204e172fff0a8a",
+      "new_file": false
+    },
+    "includes/cash_advance.php": {
+      "sha256": "39e8f419bbfceec28e5ee04a64063e03dcd838e8e0a799ee0cd255abd3573b84",
+      "git_blob_lf": "2171b1e153e610f1f77d6baf7a640cb49dd37f74",
+      "baseline_git_blob": "c4cc55e950fdebc66a633e9ec871854a6b79a946",
+      "new_file": false
+    },
+    "assets/js/accounting_workspace.js": {
+      "sha256": "de88ec2417b328e4641fad62c52a438d8040d7f613a1b42e68bc37eae4b2c215",
+      "git_blob_lf": "c6b1b347192874c423fa35723f13cfb923d98942",
+      "baseline_git_blob": "ce52009dfaa7ae8b14b20c9ed7c7ed5e34fbc89c",
+      "new_file": false
+    },
+    "assets/js/advance_presentation.js": {
+      "sha256": "d56611f5f7508626ed36d15fca77d3bc4a00781eebb39059359ffe9dbdce5004",
+      "git_blob_lf": "eb31b9b02b95f2d80b35b207469024dd42d3fe09",
+      "baseline_git_blob": "0000000000000000000000000000000000000000",
+      "new_file": true
+    },
+    "assets/css/accounting_workspace.css": {
+      "sha256": "f4d7587588cf566c9d3bc5857fe08b56ceb241bc78ed01fb55a0bc062623ddf1",
+      "git_blob_lf": "cfdfe9f880568d8d3cbd7120220ae458e2eafb58",
+      "baseline_git_blob": "34e62c5773306b454749237dab9f74b972d61228",
+      "new_file": false
+    }
+  },
+  "tests": {
+    "scripts/test_usability_u3_advance_adapter.js": {
+      "sha256": "a07895c28ae8a36ef0a93c089660e9370938a409b7e0760fe25ba19b60149414",
+      "git_blob_lf": "73b89e7a7467f9f5eb0ba4a6870978ed3e0efa09",
+      "baseline_git_blob": "0000000000000000000000000000000000000000",
+      "new_file": true
+    },
+    "scripts/test_usability_u3_bcd.php": {
+      "sha256": "0a9fd5ef6dc8d3d4c310d12b4335bb82f22ae4da6de066aa6d3643dc733cd16a",
+      "git_blob_lf": "25d4bd8c3c452371494e2077481f14d6cc2fd51d",
+      "baseline_git_blob": "0000000000000000000000000000000000000000",
+      "new_file": true
+    },
+    "scripts/test_usability_u3_bcd_edges.php": {
+      "sha256": "bcf35e9312c102882e06630a344859291d065c67686dc41fc52244d0817b5a68",
+      "git_blob_lf": "6c530496e97a7364220eeb4aa71daab9caefda7c",
+      "baseline_git_blob": "0000000000000000000000000000000000000000",
+      "new_file": true
+    },
+    "scripts/test_usability_u3_bcd_browser.py": {
+      "sha256": "084cb94785f3ea9341bb8c454d216d31f97cb2c3dd4d337d3c56660f73005dce",
+      "git_blob_lf": "b2d330ebd195f3bcaf3b4ac0f34fbbe5a499bc12",
+      "baseline_git_blob": "0000000000000000000000000000000000000000",
+      "new_file": true
+    },
+    "scripts/test_stage2_browser.py": {
+      "sha256": "cd5fe9fa689506f75e14d7d8f11e2078771117ce020bd13ee31e290b008e9269",
+      "git_blob_lf": "539e0b030dab715bbe1203ec67ded72f8fe9617b",
+      "baseline_git_blob": "f749c433d39a660b1b6b18ca0b3282e4822f87a6",
+      "new_file": false
+    },
+    "scripts/test_usability_u2_b_browser.py": {
+      "sha256": "6aebd319ed7039ccb6aa5854f9fc5b076ef4d0580bb3cdc4219af1c7927112c7",
+      "git_blob_lf": "a00a2f55efdb71142a2de32a166daf6644fc2435",
+      "baseline_git_blob": "997b721df73c985a0810bc6807842c4ea82ebbc6",
+      "new_file": false
+    }
+  },
+  "commands": {
+    "bcd": [
+      {
+        "runner": "test_usability_u3_bcd.php",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      },
+      {
+        "runner": "test_usability_u3_bcd_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "backend": [
+      {
+        "runner": "test_usability_u3_bcd_edges.php",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "u2a": [
+      {
+        "runner": "test_usability_u2_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "u2b": [
+      {
+        "runner": "test_usability_u2_b_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "u2c": [
+      {
+        "runner": "test_usability_u2_c_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "stage2": [
+      {
+        "runner": "test_stage2_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "cp4": [
+      {
+        "runner": "test_stage3_checkpoint4_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "cp5": [
+      {
+        "runner": "test_stage3_checkpoint5_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "u3a": [
+      {
+        "runner": "test_usability_u3_a_browser.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      },
+      {
+        "runner": "test_usability_u3_a_readback.py",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ],
+    "reader": [
+      {
+        "runner": "test_usability_u2_reader.php",
+        "fixture": "fresh guarded synthetic clone",
+        "exit": 0
+      }
+    ]
+  },
+  "assertions": {
+    "backend": {
+      "b": 12,
+      "c": 24,
+      "d": 26,
+      "integration": 9
+    },
+    "focused_browser": {
+      "b": 56,
+      "c": 35,
+      "d": 37
+    },
+    "advance_adapter": 58,
+    "ordinary_adapter": 90,
+    "u2a": 124,
+    "u2b": 199,
+    "u2c": 368,
+    "reader": 16,
+    "stage2": 56,
+    "cp4": 48,
+    "cp5": 54,
+    "u3a": 91,
+    "privacy_readback": 27
+  },
+  "working_preservation": {
+    "passed": true,
+    "application_tables": 34,
+    "working_financial_data_objects_permissions_unchanged": true,
+    "working_audit_rows": 62,
+    "working_upload_files": 53,
+    "working_config_mysql_binary_ini_apache_config_unchanged": true,
+    "normal_sql_identity": {
+      "port": 3306,
+      "datadir": "C:\\xampp\\mysql\\data\\",
+      "version": "10.4.32-MariaDB",
+      "recovery": 0,
+      "preload": 1
+    },
+    "read_only_check": true
+  },
+  "screenshots": {
+    "screenshots/bcd-b-enter-1366.png": {
+      "sha256": "05653ab45cd1ebe8239b3106b8f7a08febdf6faa0c278e6c2ffd95dd5528b8d3",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-enter-1920.png": {
+      "sha256": "0eac6de4512c985193f7f4d993ffcbe39a5286223dae1e704196b912bacc9ce3",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-malformed-id-recorded-1366.png": {
+      "sha256": "bc921cab9ff77647117f71fa40428289810b51180971b6125f23a3149b772ebc",
+      "synthetic": true,
+      "response_double": true
+    },
+    "screenshots/bcd-b-malformed-id-recorded-1920.png": {
+      "sha256": "006f224e847a481c56551ad2a83da3ecd2ac093ddafeb9f060311f917bcdd3d2",
+      "synthetic": true,
+      "response_double": true
+    },
+    "screenshots/bcd-b-malformed-id-unknown-1366.png": {
+      "sha256": "a0117e30d61f2edd430cb2a9ede2b79c3897bdf7867d53aed304b7f90f6b05b7",
+      "synthetic": true,
+      "response_double": true
+    },
+    "screenshots/bcd-b-malformed-id-unknown-1920.png": {
+      "sha256": "1525759850c439ce4ae2c564ca6f372433e30db03e85cd3468a9448caf7830b1",
+      "synthetic": true,
+      "response_double": true
+    },
+    "screenshots/bcd-b-recorded-1366.png": {
+      "sha256": "9b6da8c2e1bf5169588af92e94314546f608cdc320394129fa81cd7bd92dbf19",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-recorded-1920.png": {
+      "sha256": "fd2cacd366c98b934d2f8c18b2cbbb8ff951cf5809e82b06b04c0bbac326feee",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-review-1366.png": {
+      "sha256": "5c510bc2b42a120811af2af8d75a0c12060de7424fa6df9f0b08014929322eae",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-review-1920.png": {
+      "sha256": "704fa1c19ac1b4c064f04a3c1742a14f268613b7f13e655c4487e7dc82def03b",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-review-print-1366.png": {
+      "sha256": "605a1b9ff82a4ce9ce2b13eae74db4ea6c18b0c8f6a659e65f38e7ad849b035b",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-review-print-1920.png": {
+      "sha256": "e29d3a9b357b13c4bb106427a23ed7bbac218693127431f2b9aa5646f9f0257a",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-unknown-1366.png": {
+      "sha256": "800d3ee0959eb3d6d4288f5c7941733a3f9c1de2fa7f81aa7212a75ad761ac61",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-unknown-1920.png": {
+      "sha256": "9cc582bd52f73669597c33901fa417eb137e4a0afc2fcb4250df650d47cc62d8",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-validation-1366.png": {
+      "sha256": "273aa1fd333ede8f54fd9085bd1e3075b4720794ce25832cd6d8a0d44a97e0a8",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-b-validation-1920.png": {
+      "sha256": "9da227dab35b82293a9666427b46ce01885216c44509bc4f24dfcd40d1afd2bb",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-enter-1366.png": {
+      "sha256": "c86aaf4441dcce62e8146843eee409126aace4b3d8204cef2cd3c551cc0d9c84",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-enter-1920.png": {
+      "sha256": "71bc5e47e0317a5d8a8f6472229313e253edc0d02b75dcb1596eb816e29c1896",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-gross-liability-review-1366.png": {
+      "sha256": "99c39ef31a1af6a73d68c8e0dd5107cd706398098b605df26af47b08543c7cbd",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-gross-liability-review-1920.png": {
+      "sha256": "8dc0a743a33bf9807a15098207a8aa84845613af3b2d5a9ac21968454a35ed18",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-recorded-1366.png": {
+      "sha256": "32922c8f352190f60d011845cc71f2274bab705ef4d6f94833c5b1ca276301ba",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-recorded-1920.png": {
+      "sha256": "ce19b8587a49f9e70300a09fec1e69907d5ac00442efc9bf8645c24c33aa975f",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-review-1366.png": {
+      "sha256": "8e63dedcf0ca9df4aa5b3b38607387742bc1a9f6da17b505fa1756fc9adf30af",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-review-1920.png": {
+      "sha256": "844c55862b647de7d0e7484ebcc3fa9430f5b732ae2583792e8afb2983a13788",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-unknown-1366.png": {
+      "sha256": "84cabb18930147cb3a4fa900b5d26fa6f6b257c8d19e121165796ef15429dcff",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-c-unknown-1920.png": {
+      "sha256": "976a783f023d5cde19f5722f4f3e51f2f8a3cfbc06b705490a973b3f3dd9a9c5",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-enter-confirmed-1366.png": {
+      "sha256": "2eb0935ea87bfd175cad5f27858a468f91c44d5af3fccc3d476f3833531e70da",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-enter-confirmed-1920.png": {
+      "sha256": "32e27d2caa6ba4800bc17c4d9a8fe09f59f89884e4f7a8571cff99e1222704a5",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-recorded-1366.png": {
+      "sha256": "9309b81c49b62fe1194e0ab278893710745cb880677f9f804f05036edb2f3626",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-recorded-1920.png": {
+      "sha256": "7e4627c3dbeff7cec041cad3147176fd9c125173b03f91a88fe29cb62e555840",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-review-1366.png": {
+      "sha256": "60c322cb309a7a799ccecee76afba32aaaf5df178bc2dcc55ac3a5ee848f7318",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-review-1920.png": {
+      "sha256": "d33958ce35e5f294cfbf6a2bc77d697b11bf9024abb0ebbe5baeca798510458b",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-settled-detail-1366.png": {
+      "sha256": "a7eb3ad67485a35f4c1affbc773a1bbac9e9fb31b464b4489448bde788e27b4c",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-settled-detail-1920.png": {
+      "sha256": "6242a5e2eed633066e5fb643ba1ea3fc64a618c788132a5408ceea5e85fbbcb3",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-unknown-1366.png": {
+      "sha256": "628105ba5e0d41196eeff42ecd55257215a96755397d8f3c9bf33d5bd22d37fc",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-unknown-1920.png": {
+      "sha256": "c4729b0fbbfd111e23f44ae4e22394e38213d0d7208911b7e7fc7ba93125a325",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-validation-1366.png": {
+      "sha256": "dbe0c16426bb30565ffed896dba29ebf9a92a9cbbfa7d778382d0fd3b00a394c",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/bcd-d-validation-1920.png": {
+      "sha256": "67856c2346221c889b6895f2f3c866a7cc1a3238d3d320d2d18f389e4150069c",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-admin-register-1366.png": {
+      "sha256": "ca20c93a574dcf8a308dec90f70d8d2d6f2a67b4c6f3370ffd9147c257b16e12",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-admin-register-1920.png": {
+      "sha256": "7d19171a97ce85baeefbf08b797d0b1221456e61b5c974f28ad4e08dfe6bd570",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-management-detail-1366.png": {
+      "sha256": "7befbbcd16e1d6507f6bf3ce88eca341cdcf6d918244dcfd64c8f00812419b41",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-management-detail-1920.png": {
+      "sha256": "eb71fb8e1aac094e14472e202eb56cd8dc0beea5387d85772c302aa54510214d",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-management-detail-print-1366.png": {
+      "sha256": "1d24bbe8a2fc181c3026da0f24678c77795116ae620172e8f70cb692c898a1f9",
+      "synthetic": true,
+      "response_double": false
+    },
+    "screenshots/u3a-management-detail-print-1920.png": {
+      "sha256": "bdefb3df1ea4183e6abfa3ec934f9c46bf761fdcc3e7136cdb501691f815efe0",
+      "synthetic": true,
+      "response_double": false
+    }
+  },
+  "package_files": {
+    "application.patch": "296ed0091de75dc12403d1598b86caf82048c3dada81364b7664b497f8fa9f9f",
+    "cash_advance_entry.php": "59d5712fae905a55c115d092a8ce7c65fceb00047cbc7cfead374eb18886a627",
+    "README.md": "eeee6168065a3e24847a88a65eef157098b7d04985e6870c39cd838575afbd7b",
+    "screenshots.html": "325e3083180ee7ecbdc24432e64cf1fbe2bafa806e263dbc2705722fe19aba13",
+    "tests.patch": "578a6b942350bea5e118953836fb241c0b8ad17783709a2043d8826f91263d31",
+    "verification.log": "c6333bf190c17026657e3e826150151986712ad5fbd44eb557228654a51a5b43",
+    "docs/database-logical-recovery-20261021.md": "d6fe9188a4d5d2657e40a3546a9a3f7790e08bcdc9b32b3f49d899facfd15d2e",
+    "docs/database-logical-recovery-manifest-20261021.json": "82bf2ba6988a82a94fcd90dc9afa15840ffac61859527d8256fef11ecfd24f4f",
+    "docs/project-decisions.md": "76d5579b651f242e6f4854cb09c6684c99f3b941d8fefe11ab61843e536de4ac",
+    "docs/project-status.md": "b773e2f001255233f909fbaf12a91d7604290c7154bcbc0cf83ec27b0fd8c24c",
+    "docs/usability-completion-plan.md": "a34427cde8e0a9c1c6219b0aa1b1a35b1d6fb9327db028535e6101af45946f2c",
+    "docs/usability-u3-bcd-delivery.md": "fa8386974130cfed90e710b6305c0b18fa493e7cef7446f8232af77c3e5ad940",
+    "docs/usability-u3-bcd-plan.md": "e17539beeef24637fa9eae6ca5a79b2b05435cf9a704fcef15f69e1f1b80228c",
+    "docs/usability-u3-bcd-reviewer-notes.md": "a26011a06ef77cd5ab0087b6430e85f48d175a01ab91ef3fed505677beffb2b8",
+    "docs/usability-u3-plan.md": "450fd6a56ee8360abaf6ae56d42528ef64036ae6fe19a03a04aa8306273d077f",
+    "includes/accounting_entry_page.php": "2ac58d21c6272cdbd47dc6bd7d3c6ba49f89b7ecb309bf4113dd83dd561dbafd",
+    "includes/cash_advance.php": "39e8f419bbfceec28e5ee04a64063e03dcd838e8e0a799ee0cd255abd3573b84",
+    "screenshots/bcd-b-enter-1366.png": "05653ab45cd1ebe8239b3106b8f7a08febdf6faa0c278e6c2ffd95dd5528b8d3",
+    "screenshots/bcd-b-enter-1920.png": "0eac6de4512c985193f7f4d993ffcbe39a5286223dae1e704196b912bacc9ce3",
+    "screenshots/bcd-b-malformed-id-recorded-1366.png": "bc921cab9ff77647117f71fa40428289810b51180971b6125f23a3149b772ebc",
+    "screenshots/bcd-b-malformed-id-recorded-1920.png": "006f224e847a481c56551ad2a83da3ecd2ac093ddafeb9f060311f917bcdd3d2",
+    "screenshots/bcd-b-malformed-id-unknown-1366.png": "a0117e30d61f2edd430cb2a9ede2b79c3897bdf7867d53aed304b7f90f6b05b7",
+    "screenshots/bcd-b-malformed-id-unknown-1920.png": "1525759850c439ce4ae2c564ca6f372433e30db03e85cd3468a9448caf7830b1",
+    "screenshots/bcd-b-recorded-1366.png": "9b6da8c2e1bf5169588af92e94314546f608cdc320394129fa81cd7bd92dbf19",
+    "screenshots/bcd-b-recorded-1920.png": "fd2cacd366c98b934d2f8c18b2cbbb8ff951cf5809e82b06b04c0bbac326feee",
+    "screenshots/bcd-b-review-1366.png": "5c510bc2b42a120811af2af8d75a0c12060de7424fa6df9f0b08014929322eae",
+    "screenshots/bcd-b-review-1920.png": "704fa1c19ac1b4c064f04a3c1742a14f268613b7f13e655c4487e7dc82def03b",
+    "screenshots/bcd-b-review-print-1366.png": "605a1b9ff82a4ce9ce2b13eae74db4ea6c18b0c8f6a659e65f38e7ad849b035b",
+    "screenshots/bcd-b-review-print-1920.png": "e29d3a9b357b13c4bb106427a23ed7bbac218693127431f2b9aa5646f9f0257a",
+    "screenshots/bcd-b-unknown-1366.png": "800d3ee0959eb3d6d4288f5c7941733a3f9c1de2fa7f81aa7212a75ad761ac61",
+    "screenshots/bcd-b-unknown-1920.png": "9cc582bd52f73669597c33901fa417eb137e4a0afc2fcb4250df650d47cc62d8",
+    "screenshots/bcd-b-validation-1366.png": "273aa1fd333ede8f54fd9085bd1e3075b4720794ce25832cd6d8a0d44a97e0a8",
+    "screenshots/bcd-b-validation-1920.png": "9da227dab35b82293a9666427b46ce01885216c44509bc4f24dfcd40d1afd2bb",
+    "screenshots/bcd-c-enter-1366.png": "c86aaf4441dcce62e8146843eee409126aace4b3d8204cef2cd3c551cc0d9c84",
+    "screenshots/bcd-c-enter-1920.png": "71bc5e47e0317a5d8a8f6472229313e253edc0d02b75dcb1596eb816e29c1896",
+    "screenshots/bcd-c-gross-liability-review-1366.png": "99c39ef31a1af6a73d68c8e0dd5107cd706398098b605df26af47b08543c7cbd",
+    "screenshots/bcd-c-gross-liability-review-1920.png": "8dc0a743a33bf9807a15098207a8aa84845613af3b2d5a9ac21968454a35ed18",
+    "screenshots/bcd-c-recorded-1366.png": "32922c8f352190f60d011845cc71f2274bab705ef4d6f94833c5b1ca276301ba",
+    "screenshots/bcd-c-recorded-1920.png": "ce19b8587a49f9e70300a09fec1e69907d5ac00442efc9bf8645c24c33aa975f",
+    "screenshots/bcd-c-review-1366.png": "8e63dedcf0ca9df4aa5b3b38607387742bc1a9f6da17b505fa1756fc9adf30af",
+    "screenshots/bcd-c-review-1920.png": "844c55862b647de7d0e7484ebcc3fa9430f5b732ae2583792e8afb2983a13788",
+    "screenshots/bcd-c-unknown-1366.png": "84cabb18930147cb3a4fa900b5d26fa6f6b257c8d19e121165796ef15429dcff",
+    "screenshots/bcd-c-unknown-1920.png": "976a783f023d5cde19f5722f4f3e51f2f8a3cfbc06b705490a973b3f3dd9a9c5",
+    "screenshots/bcd-d-enter-confirmed-1366.png": "2eb0935ea87bfd175cad5f27858a468f91c44d5af3fccc3d476f3833531e70da",
+    "screenshots/bcd-d-enter-confirmed-1920.png": "32e27d2caa6ba4800bc17c4d9a8fe09f59f89884e4f7a8571cff99e1222704a5",
+    "screenshots/bcd-d-recorded-1366.png": "9309b81c49b62fe1194e0ab278893710745cb880677f9f804f05036edb2f3626",
+    "screenshots/bcd-d-recorded-1920.png": "7e4627c3dbeff7cec041cad3147176fd9c125173b03f91a88fe29cb62e555840",
+    "screenshots/bcd-d-review-1366.png": "60c322cb309a7a799ccecee76afba32aaaf5df178bc2dcc55ac3a5ee848f7318",
+    "screenshots/bcd-d-review-1920.png": "d33958ce35e5f294cfbf6a2bc77d697b11bf9024abb0ebbe5baeca798510458b",
+    "screenshots/bcd-d-settled-detail-1366.png": "a7eb3ad67485a35f4c1affbc773a1bbac9e9fb31b464b4489448bde788e27b4c",
+    "screenshots/bcd-d-settled-detail-1920.png": "6242a5e2eed633066e5fb643ba1ea3fc64a618c788132a5408ceea5e85fbbcb3",
+    "screenshots/bcd-d-unknown-1366.png": "628105ba5e0d41196eeff42ecd55257215a96755397d8f3c9bf33d5bd22d37fc",
+    "screenshots/bcd-d-unknown-1920.png": "c4729b0fbbfd111e23f44ae4e22394e38213d0d7208911b7e7fc7ba93125a325",
+    "screenshots/bcd-d-validation-1366.png": "dbe0c16426bb30565ffed896dba29ebf9a92a9cbbfa7d778382d0fd3b00a394c",
+    "screenshots/bcd-d-validation-1920.png": "67856c2346221c889b6895f2f3c866a7cc1a3238d3d320d2d18f389e4150069c",
+    "screenshots/u3a-admin-register-1366.png": "ca20c93a574dcf8a308dec90f70d8d2d6f2a67b4c6f3370ffd9147c257b16e12",
+    "screenshots/u3a-admin-register-1920.png": "7d19171a97ce85baeefbf08b797d0b1221456e61b5c974f28ad4e08dfe6bd570",
+    "screenshots/u3a-management-detail-1366.png": "7befbbcd16e1d6507f6bf3ce88eca341cdcf6d918244dcfd64c8f00812419b41",
+    "screenshots/u3a-management-detail-1920.png": "eb71fb8e1aac094e14472e202eb56cd8dc0beea5387d85772c302aa54510214d",
+    "screenshots/u3a-management-detail-print-1366.png": "1d24bbe8a2fc181c3026da0f24678c77795116ae620172e8f70cb692c898a1f9",
+    "screenshots/u3a-management-detail-print-1920.png": "bdefb3df1ea4183e6abfa3ec934f9c46bf761fdcc3e7136cdb501691f815efe0",
+    "scripts/test_stage2_browser.py": "cd5fe9fa689506f75e14d7d8f11e2078771117ce020bd13ee31e290b008e9269",
+    "scripts/test_stage3_checkpoint4_browser.py": "ef87bc63af9aa34402e3338ac1c24ca374a5bb3d2ce64292e7695e4796231cd3",
+    "scripts/test_stage3_checkpoint5_browser.py": "b3c921be581839445854768e4ecdcc5646b2a02f3e7ca97d414f7f75cf0a1d4c",
+    "scripts/test_stage3_fixture.py": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+    "scripts/test_usability_u2_adapter.js": "93d3ba4ce62bcd66fb7a147827cb018144030b0a323c0278eab2bc0acbccd814",
+    "scripts/test_usability_u2_browser.py": "ee4b0b97996c01249175399ac0fcfb46e17eb34d622def6b9c51f6e7d136561b",
+    "scripts/test_usability_u2_b_browser.py": "6aebd319ed7039ccb6aa5854f9fc5b076ef4d0580bb3cdc4219af1c7927112c7",
+    "scripts/test_usability_u2_c_browser.py": "8d4fffdf24284215e0bda1a8185315aff9fcbfe028bdc10d3acd16f652b2ddb6",
+    "scripts/test_usability_u2_c_records_fixture.php": "b81b65492580ee92ff474d5c31694a919a94b8351e1a31227880c790a3fa8e8e",
+    "scripts/test_usability_u2_reader.php": "c4e84c9bc0d753b1157c0782ff33fbf708150de8f314d7f993cd86007e2a1c8c",
+    "scripts/test_usability_u3_advance_adapter.js": "a07895c28ae8a36ef0a93c089660e9370938a409b7e0760fe25ba19b60149414",
+    "scripts/test_usability_u3_a_browser.py": "13f8672709615cfe4761e4173e41a852d27fe942d51e7299c9fdb19a3e78c286",
+    "scripts/test_usability_u3_a_fixture.php": "5db769a5a72d102c809d4216daf33bc3483364ab779063ea6d7319d4f8f4e883",
+    "scripts/test_usability_u3_a_readback.py": "908f4e83496e0d377e01b93f61873783a7de7caa15b88332ba0ad989f767bbf2",
+    "scripts/test_usability_u3_bcd.php": "0a9fd5ef6dc8d3d4c310d12b4335bb82f22ae4da6de066aa6d3643dc733cd16a",
+    "scripts/test_usability_u3_bcd_browser.py": "084cb94785f3ea9341bb8c454d216d31f97cb2c3dd4d337d3c56660f73005dce",
+    "scripts/test_usability_u3_bcd_edges.php": "bcf35e9312c102882e06630a344859291d065c67686dc41fc52244d0817b5a68",
+    "assets/css/accounting_workspace.css": "f4d7587588cf566c9d3bc5857fe08b56ceb241bc78ed01fb55a0bc062623ddf1",
+    "assets/js/accounting_workspace.js": "de88ec2417b328e4641fad62c52a438d8040d7f613a1b42e68bc37eae4b2c215",
+    "assets/js/advance_presentation.js": "d56611f5f7508626ed36d15fca77d3bc4a00781eebb39059359ffe9dbdce5004"
+  }
+}
