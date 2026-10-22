@@ -9,6 +9,11 @@
     const text=DataTable.render.text();
     const label=value=>String(value??'').trim()||'Not recorded';
     const render=(value,type)=>type==='display'?text.display(label(value)):label(value);
+    const description=(value,type,row)=>{
+        if(type==='filter')return label(value)+' '+(row.correction_search||'');
+        const content=render(value,type);
+        return main&&type==='display'?'<strong class="records-journal-identity">Journal #'+text.display(String(row.journal_id))+'</strong><br>'+content:content;
+    };
     const account=r=>(r.account_code||'#'+r.account_id)+' · '+r.account_name+' · '+r.account_type;
     const table=new DataTable('#records-table',{
         data:data.rows,pageLength:10,lengthChange:false,autoWidth:false,
@@ -16,7 +21,7 @@
         search:{regex:false,smart:true,search:main?data.state.search:''},order:main&&data.state.order.length?data.state.order:[[0,'desc']],orderFixed:{post:[[7,'desc'],[8,'asc']]},
         layout:{topStart:null,topEnd:'search',bottomStart:'info',bottomEnd:{paging:{numbers:false,firstLast:false}}},
         language:{search:'Search records:',info:'Showing _START_–_END_ of _TOTAL_ lines.',infoEmpty:'Showing 0–0 of 0 lines.',infoFiltered:'',emptyTable:'No posted lines match these filters.',zeroRecords:'No lines match your search.',paginate:{previous:'Previous',next:'Next'}},
-        columns:[{data:'entry_date',render},{data:'reference',render},{data:'description',render:(v,type,r)=>type==='filter'?label(v)+' '+(r.correction_search||''):render(v,type)},
+        columns:[{data:'entry_date',render},{data:'reference',render},{data:'description',render:description},
             {data:null,render:(_,type,r)=>render(account(r),type)},
             ...['debit_cents','credit_cents'].map(key=>({data:key,type:'num',className:'records-amount',render:(v,type)=>type==='display'||type==='filter'?money(v):Number(v)})),
             {data:null,orderable:false,searchable:false,render:()=>'<button type="button" class="records-view">View</button>'},

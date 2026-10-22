@@ -19,10 +19,12 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 ?>
 <div class="accounting-workspace advance-register" id="advance-register">
 <header class="aw-header">
-    <div><p class="aw-eyebrow">CASH ADVANCES</p><h1><?= $detail?$esc($detail['number']):'Cash advance register' ?></h1><p>Track released funds, supported liquidations and returned cash.</p></div>
+    <div><p class="aw-eyebrow">CASH ADVANCES</p><h1><?= $detail?$esc($detail['number']):'Cash advance register' ?></h1><p>Track released funds, supported liquidations and returned cash.</p>
+        <?php if($role==='Admin'&&!$detail): ?><div class="ca-next-actions aw-no-print"><a href="cash_advance_entry.php?workflow_kind=advance_release" class="ca-primary-link">Release cash advance</a></div><?php endif; ?>
+    </div>
     <div class="ca-toolbar aw-no-print">
         <?php if($detail): ?><a href="cash_advances.php?as_of=<?= $esc($asof) ?>">Back to advance register</a><?php endif; ?>
-        <?php if($role==='Admin'): ?><a href="cash_advance_entry.php?workflow_kind=advance_release">Release an advance</a><a href="accounting_drafts.php">My drafts</a><?php endif; ?>
+        <?php if($role==='Admin'): ?><a href="accounting_drafts.php">My drafts</a><?php endif; ?>
         <button type="button" id="ca-print">Print</button>
     </div>
 </header>
@@ -41,17 +43,19 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 </form>
 <section class="aw-card ca-advance-summary" aria-labelledby="ca-employee">
     <h2 id="ca-employee"><?= $esc($detail['employee']) ?></h2><p class="ca-purpose"><?= $esc($detail['purpose']) ?></p>
+    <p class="ca-settlement-status">Settlement status: <strong><?= $esc(ucfirst(str_replace('_',' ',$detail['status']))) ?></strong></p>
+    <?php if($detail['can_settle']): ?><nav class="ca-next-actions aw-no-print" aria-label="Settle this advance"><a href="cash_advance_entry.php?workflow_kind=advance_liquidation&amp;advance_id=<?= $id ?>" class="ca-primary-link">Record liquidation</a><a href="cash_advance_entry.php?workflow_kind=advance_return&amp;advance_id=<?= $id ?>" class="ca-primary-link">Return unused cash</a></nav><?php endif; ?>
     <dl class="ca-context">
         <div><dt>Originating project</dt><dd><?= $esc($detail['project']) ?></dd></div>
         <div><dt>Advance control account (current name)</dt><dd><?= $esc($controlNames[$detail['control_account_id']]??'Account #'.$detail['control_account_id']) ?></dd></div>
         <div><dt>Reference</dt><dd><?= $esc($detail['reference']?:'Not provided') ?></dd></div>
     </dl>
     <div class="aw-totals ca-balance-cards"><?php foreach(['outstanding','released','liquidated','returned'] as $k): ?><span<?= $k==='outstanding'?' class="ca-outstanding"':'' ?>><?= ucfirst($k) ?><strong><?= $esc($money($detail[$k])) ?></strong></span><?php endforeach; ?></div>
-    <div class="ca-status-line"><span class="ca-badge"><?= $esc(ucfirst(str_replace('_',' ',$detail['status']))) ?></span><span>Due <?= $esc($detail['due_date']) ?></span><span><?= $detail['overdue_days']>0?$detail['overdue_days'].' days overdue · '.$esc($detail['aging_bucket']):'Not overdue at this date' ?></span></div>
+    <div class="ca-status-line"><span>Due <?= $esc($detail['due_date']) ?></span><span><?= $detail['overdue_days']>0?$detail['overdue_days'].' days overdue · '.$esc($detail['aging_bucket']):'Not overdue at this date' ?></span></div>
     <p class="aw-help">Original released amount: <?= $esc($money($detail['original_released'])) ?>. Balances are effective amounts through the selected date; General Journal reversals provide correction offsets.</p>
     <?php if($detail['lifecycle_date']): ?><p><?= $esc(ucfirst($detail['status'])) ?> from <?= $esc($detail['lifecycle_date']) ?>. <a href="journal_corrections.php?journal_id=<?= (int)$detail['operations'][0]['journal_id'] ?>">View posted correction</a></p><?php endif; ?>
     <?php foreach(['original_advance_id'=>'View original advance','replacement_advance_id'=>'View replacement advance'] as $field=>$label): if($detail[$field]): ?><p><a href="cash_advances.php?advance_id=<?= (int)$detail[$field] ?>&amp;as_of=<?= $esc($asof) ?>"><?= $label ?></a></p><?php endif; endforeach; ?>
-    <?php if($detail['can_settle']): ?><div class="ca-next-actions aw-no-print"><a href="cash_advance_entry.php?workflow_kind=advance_liquidation&amp;advance_id=<?= $id ?>" class="ca-primary-link">Record liquidation</a><a href="cash_advance_entry.php?workflow_kind=advance_return&amp;advance_id=<?= $id ?>">Return unused cash</a></div><p class="aw-help aw-no-print">These actions remain subject to the server's current balance, evidence, lifecycle and reconciliation checks.</p>
+    <?php if($detail['can_settle']): ?><p class="aw-help aw-no-print">These actions remain subject to the server's current balance, evidence, lifecycle and reconciliation checks.</p>
     <?php elseif($historical&&$role==='Admin'): ?><p class="aw-no-print">This historical view does not start settlements. Open today's advance to see its current eligible actions.</p><?php endif; ?>
 </section>
 <section class="aw-card" aria-labelledby="ca-timeline-title">

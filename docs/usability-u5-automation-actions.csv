@@ -1,0 +1,7 @@
+task,declared_start,navigation_controls,page_changes,financial_field_actions,successful_progression_controls,required_evidence_review_confirmation,intentional_validation_probe,find_search_fields,classification
+payment,Dashboard,1,1,5,2,0,0,0,source-audited newly reproduced automation; not human observation
+receipt,Dashboard,1,1,5,2,0,0,0,source-audited newly reproduced automation; not human observation
+release,Cash advance register,1,1,6,2,0,0,0,source-audited newly reproduced automation; not human observation
+liquidation,Prior recorded advance-operation result,2,2,3,2,6,1,0,source-audited newly reproduced automation; not human observation
+return,Prior recorded advance-operation result,2,2,3,2,3,0,0,source-audited newly reproduced automation; not human observation
+correction-find,Journal History,3,2,3,2,0,0,1,source-audited newly reproduced automation; not human observation

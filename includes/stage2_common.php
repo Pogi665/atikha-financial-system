@@ -9,7 +9,8 @@ function stage2_schema(PDO $pdo): bool
 {
     if(!stage2_tables($pdo))return false;
     $n=(int)$pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='journal_drafts' AND COLUMN_NAME IN ('workflow_kind','advance_id','return_confirmation')")->fetchColumn();
-    $t=(int)$pdo->query("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('s2_operations_no_update','s2_operations_no_delete','s2_due_no_update','s2_due_no_delete','s2_advance_identity','s2_advance_no_delete')")->fetchColumn();
+    // SHOW is scoped to this connection's database; retain the same membership check without a cross-schema catalog scan.
+    $t=count($pdo->query("SHOW TRIGGERS WHERE `Trigger` IN ('s2_operations_no_update','s2_operations_no_delete','s2_due_no_update','s2_due_no_delete','s2_advance_identity','s2_advance_no_delete')")->fetchAll());
     $foreign=(int)$pdo->query("SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME IN ('fk_s2_advance_party','fk_s2_advance_project','fk_s2_advance_control','fk_s2_advance_release','fk_s2_advance_actor','fk_s2_draft_advance','fk_s2_operation_advance','fk_s2_operation_journal','fk_s2_operation_draft','fk_s2_operation_line','fk_s2_operation_actor','fk_s2_due_advance','fk_s2_due_actor') AND DELETE_RULE='RESTRICT'")->fetchColumn();
     $engines=(int)$pdo->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('cash_advances','cash_advance_operations','cash_advance_due_changes') AND ENGINE='InnoDB'")->fetchColumn();
     $index=(int)$pdo->query("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cash_advance_operations' AND INDEX_NAME='uq_s2_one_release' AND NON_UNIQUE=0 AND COLUMN_NAME='release_advance_id'")->fetchColumn();

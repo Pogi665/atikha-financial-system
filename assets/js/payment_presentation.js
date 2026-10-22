@@ -7,6 +7,13 @@
         const [whole, fraction = ''] = value.split('.');
         return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'));
     };
+    // Editable ordinary amounts only: accept correctly grouped thousands without
+    // extending the existing decimal/size contract or the server coverage parser.
+    function editableAmount(value) {
+        if (typeof value !== 'string' || !/^[1-9]\d{0,2}(,\d{3})+(\.\d{1,2})?$/.test(value)) return value;
+        const decimal = value.replaceAll(',', '');
+        return cents(decimal) === null ? value : decimal;
+    }
     function mode(p, book = 'CDB') {
         if (!['CDB','CRB'].includes(book) || p.transaction_kind !== 'ordinary' || !Array.isArray(p.lines)) return 'advanced';
         const side = book === 'CRB' ? 'credit_amount' : 'debit_amount';
@@ -47,5 +54,5 @@
             + (coverageMoney(c?.[side]?.covered) ?? 'amount unavailable') + ' supported of '
             + (coverageMoney(c?.[side]?.eligible) ?? 'amount unavailable')).join('; ');
     }
-    scope.PaymentPresentation = Object.freeze({cents, mode, coverageMoney, coverageText});
+    scope.PaymentPresentation = Object.freeze({cents, editableAmount, mode, coverageMoney, coverageText});
 })(typeof window === 'undefined' ? globalThis : window);

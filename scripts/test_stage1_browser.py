@@ -4,6 +4,7 @@ Production config, sessions and uploads are never copied. All external requests 
 import argparse, hashlib, json, os, re, secrets, shutil, socket, struct, subprocess, sys, time, zlib
 from urllib.parse import urlencode
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -80,7 +81,7 @@ try:
         choose_record(lines.nth(1).locator('[data-field="account_id"]'),transport);lines.nth(1).locator('[data-field="debit_amount"]').fill('3000.00');page.locator('#aw-apply-project').click()
         check(lines.nth(0).locator('[data-field="fund_project_id"]').input_value()==project and lines.nth(1).locator('[data-field="fund_project_id"]').input_value()==project,'Explicit apply-all assigns project to all lines')
         check(page.locator('#aw-difference').inner_text()=='₱0.00','Exact browser totals balance split payment')
-        before=journal_count();page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved')")
+        before=journal_count();save_and_resume(page)
         check(journal_count()==before,'Save draft has no journal effect');draft_id=re.search(r'draft_id=(\d+)',page.url).group(1)
         saved_label=page.locator('#aw-draft-label').inner_text()
         page.locator('#aw-party-search').fill('zz-no-such-party')
@@ -89,6 +90,7 @@ try:
         page.keyboard.press('Escape');check(page.locator('#aw-party').input_value()==party and page.locator('#aw-party-search').input_value()==page.locator('#aw-party option:checked').inner_text(),'Escape restores the committed label')
         page.locator('#aw-cash-account-search').fill('stage1 bank');page.keyboard.press('ArrowDown');page.keyboard.press('ArrowDown');page.keyboard.press('Enter')
         check(page.locator('#aw-cash-account').input_value()==bank and page.locator('#aw-draft-label').inner_text()==saved_label,'Keyboard selection of the same record preserves saved state')
+        if not page.locator('#aw-optional').get_attribute('open'):page.locator('#aw-optional summary').click()
         page.locator('#aw-default-project-search').fill('nonmatching query');page.keyboard.press('Tab')
         check(page.locator('#aw-default-project').input_value()==project,'Tab cancels an uncommitted project query')
         page.locator('#aw-cash-account-search').fill('bank stage1');page.screenshot(path=str(run/'selector-1366.png'),full_page=True);page.keyboard.press('Escape')
@@ -109,7 +111,7 @@ try:
         doc.locator('[data-doc-field="declared_amount"]').fill('6000.00');doc.locator('[data-doc-field="accepted_amount"]').fill('6000.00')
         alloc=doc.locator('[data-allocation]');check(alloc.count()==2,'Evidence editor exposes both split allocation lines');alloc.nth(0).fill('5000.00');alloc.nth(1).fill('1000.00');doc.locator('[data-doc-field="reviewed"]').check()
         pg.locator('#aw-review').click();pg.wait_for_selector('#aw-review-panel:not([hidden])')
-        check('Partially covered' in pg.locator('.aw-coverage').inner_text() and '8000.00' in pg.locator('.aw-coverage').inner_text(),'Browser review clearly shows partial evidence against gross allocations')
+        check('Partially covered' in pg.locator('.aw-coverage').inner_text() and '\u20b18,000.00' in pg.locator('.aw-coverage').inner_text(),'Browser review clearly shows partial evidence against gross allocations')
         check(not pg.locator('#aw-entry').is_visible(),'Focused Review hides editing controls');pg.locator('#aw-back').click();pg.locator('#aw-party-search').fill('no such choice')
         check('saved' in pg.locator('#aw-draft-label').inner_text(),'Search typing after Back preserves the saved entry')
         pg.keyboard.press('Escape')

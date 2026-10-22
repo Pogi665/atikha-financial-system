@@ -6,6 +6,7 @@ from datetime import datetime,timedelta
 from decimal import Decimal
 import argparse,hashlib,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -67,7 +68,7 @@ try:
             return {'entry_date':today,'reference':'','description':'Synthetic U2 payment','party_id':str(fixture['party']),'default_project_id':'','cash_account_id':str(fixture['bank']),'cash_amount':cash,'cash_project_id':'','transaction_kind':'ordinary','documents':[], 'lines':[{'client_id':secrets.token_hex(12),'account_id':str(fixture['training']),'fund_project_id':project,'debit_amount':amount,'credit_amount':credit}]}
         def saved(pv):return api('save',{'source_book':'CDB','draft_id':'','submission_key':secrets.token_hex(32),'payload':pv})
         def save_visible():
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved')")
+            save_and_resume(page)
             return re.search(r'draft_id=(\d+)',page.url).group(1)
         def capture(name):
             for w,h in [(1366,768),(1920,1080)]:
@@ -97,7 +98,7 @@ try:
         capture('payment-filled');check(page.locator('#aw-review').bounding_box()['y']+page.locator('#aw-review').bounding_box()['height']<=768,'Simple Review action fits laptop first viewport')
         page.locator('.app-sidebar a[href="cash_disbursement.php"]').click();check(page.locator('#aw-cash-amount').input_value()=='1000','Current task leaves edits intact')
         page.locator('a[href="accounting_drafts.php"]').first.click();check(page.locator('#aw-leave-dialog').is_visible(),'Dirty navigation asks about unsaved edits');page.locator('#aw-leave-stay').click()
-        d=save_visible();before=api('draft',{'draft_id':d},'GET')['payload'];page.locator('[data-payment-mode="advanced"]').click();page.locator('[data-payment-mode="quick"]').click();page.locator('#aw-save').click();ready();after=api('draft',{'draft_id':d},'GET')['payload'];check(before==after,'Mode round trip preserves financial values and stable IDs')
+        d=save_visible();before=api('draft',{'draft_id':d},'GET')['payload'];page.locator('[data-payment-mode="advanced"]').click();page.locator('[data-payment-mode="quick"]').click();save_and_resume(page);ready();after=api('draft',{'draft_id':d},'GET')['payload'];check(before==after,'Mode round trip preserves financial values and stable IDs')
         page.locator('#aw-party-search').focus();page.locator('#aw-party-search').fill('cancel query');page.keyboard.press('Escape');check('saved' in page.locator('#aw-draft-label').inner_text(),'Selector cancellation does not dirty saved draft')
         result=review();visible_review(result);check(not page.locator('#aw-entry').is_visible() and 'not been recorded' in page.locator('#aw-status').inner_text(),'Review is focused and truthfully unrecorded');check('Check where the money' in page.locator('.aw-header').inner_text(),'Review instructions describe checking instead of editing');capture('payment-review')
         check(page.locator('#aw-post').bounding_box()['y']+page.locator('#aw-post').bounding_box()['height']<=768,'Simple Confirm action fits laptop first viewport')

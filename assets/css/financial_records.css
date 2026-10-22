@@ -23,6 +23,7 @@
 .financial-records-page #records-table th, .financial-records-page #records-table td { padding: .75rem .6rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
 .financial-records-page #records-table th { font-weight: 600; color: #475569; background: #f8fafc; }
 .financial-records-page #records-table td { overflow-wrap: anywhere; }
+.financial-records-page #records-table .records-view { white-space: nowrap; overflow-wrap: normal; }
 .financial-records-page #records-table .records-amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .financial-records-page .records-badge { display: inline-block; border-radius: 1rem; padding: .15rem .55rem; font-size: .8rem; }
 .financial-records-page .is-incoming { background: #ecfdf5; color: #065f46; }

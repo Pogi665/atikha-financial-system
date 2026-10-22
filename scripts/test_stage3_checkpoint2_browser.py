@@ -3,6 +3,7 @@ Copies code into a private app; never copies production config, sessions or rece
 """
 import argparse,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -57,7 +58,7 @@ try:
         def ready():
             page.wait_for_selector('#aw-party-search',state='attached');page.wait_for_function("document.getElementById('aw-save').disabled===false")
         def save():
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved') || document.getElementById('aw-error').textContent.length>0");check(not page.locator('#aw-error').inner_text(),'Save: '+page.locator('#aw-error').inner_text())
+            save_and_resume(page);check(not page.locator('#aw-error').inner_text(),'Save: '+page.locator('#aw-error').inner_text())
         def review():
             if not page.locator('#aw-backdate-reason').input_value():page.locator('#aw-backdate-reason').fill('Synthetic historical fixture reviewed after midnight')
             page.locator('#aw-review').click();page.wait_for_function("!document.getElementById('aw-review-panel').hidden || document.getElementById('aw-error').textContent.length>0");check(not page.locator('#aw-error').inner_text(),'Review validation: '+page.locator('#aw-error').inner_text())
@@ -77,7 +78,7 @@ try:
         review();check(page.locator('#aw-post').is_enabled() and 'Reversal preview' in page.locator('#aw-review-content').inner_text(),'Ordinary preview shows exact GJ reversal and offers reviewed posting')
         for width,height in [(1366,768),(1920,1080)]:
             page.set_viewport_size({'width':width,'height':height});check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Comparison fits viewport '+str(width));page.screenshot(path=str(run/f'comparison-{width}.png'),full_page=True)
-        page.locator('#aw-back').click();page.locator('#aw-save').click();page.wait_for_timeout(100)
+        page.locator('#aw-back').click();save_and_resume(page)
         # Reload gets eligible source images after the first save.
         page.reload();ready();reuse=page.locator('#aw-reuse option:not([value=""])').first;image=reuse.get_attribute('value');page.locator('#aw-reuse').select_option(image);page.locator('#aw-attach-reuse').click();page.wait_for_selector('[data-document]')
         check('Prior review' in page.locator('[data-document]').inner_text() and not page.locator('[data-doc-field="reviewed"]').is_checked(),'Reused image displays prior review but never confirms it automatically')

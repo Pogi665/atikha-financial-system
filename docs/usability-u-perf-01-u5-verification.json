@@ -1,0 +1,588 @@
+{
+  "baseline": "f50d79e3d2bf38072946fbfdf543b6699118ad84",
+  "production": {
+    "includes/journal_corrections.php": {
+      "sha256": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+      "git_blob": "3f991fea0af6803aa0ac3fd94590b90d9f32c4d6",
+      "baseline_blob": "b76393e2b07e17676937065415388d9436933e73"
+    },
+    "includes/stage2_common.php": {
+      "sha256": "8544b392c2b74099f91d7362cdb27d7f2c32156b1fe56d67328a3656e9593781",
+      "git_blob": "4428d3acc41780d0cc724901e229b4c1b9140a8c",
+      "baseline_blob": "7be45303fe5a122a8a02dfa302480888cc4ff665"
+    },
+    "includes/stage3_common.php": {
+      "sha256": "1f870d2388adccb963340c7438d35dea5c9f5cf2d590ecf47436ae3582fe7a64",
+      "git_blob": "066f0ef9cc71e36d779c92dc2966d83f6960bbca",
+      "baseline_blob": "009676a91c4339cee683f10050122b31bc19cb8c"
+    },
+    "includes/accounting_entry_page.php": {
+      "sha256": "47365018c421753993df7f195e3d4e9325373db316a79d2dedf826b6cb9b6a76",
+      "git_blob": "5145eeb2033c21e00c7b37e0c03cd015dddd836e",
+      "baseline_blob": "031d77a6aab3757952214e067895c3ffdd26e9d2"
+    },
+    "cash_advances.php": {
+      "sha256": "38027b2bc4b038d6d1f4c4ca1460e47f7fe4b417018cfa254b4fa0349c0117aa",
+      "git_blob": "7802422185389558d3c03428b6880feeba438a3b",
+      "baseline_blob": "f73880b0ba6968c54c57494e2af942fe175f1ab8"
+    },
+    "assets/js/accounting_workspace.js": {
+      "sha256": "9cccbd07d08097a2c9bb5d11c291ef23219421d89c9bb5c2d7ed0486e4b3b229",
+      "git_blob": "1280b70696dcab71e268e0112f6d4319457f960f",
+      "baseline_blob": "95ab41b8557b5bbf865a9b681e9d357e72468441"
+    },
+    "assets/js/financial_records.js": {
+      "sha256": "ab3d77a3775839af2005f7993a63227899d9c626de9738d835be70a0eee685e8",
+      "git_blob": "24f466c9790dc1bc6de7a12c52b8584618b53276",
+      "baseline_blob": "b8b79a69b90d3546b077f8092c55928ce6021f32"
+    },
+    "assets/js/payment_presentation.js": {
+      "sha256": "a0894d99d51f96e43050987666b784bad97b15b5c41591c96f61d81a71d20c20",
+      "git_blob": "8ea7e1b1dc8f7c45ba043f3c9483c53f78191696",
+      "baseline_blob": "7f0b8196a5665b0a63593c8a9766a966e33be1f6"
+    },
+    "assets/css/accounting_workspace.css": {
+      "sha256": "d42217d2b2995bb56d2c03747087ea818048ef6dc4babd490be4de63a7479528",
+      "git_blob": "9f58425d5435536aec5f9a57b6f4d3f1f67fcabd",
+      "baseline_blob": "618a229173ae1fe5c0a514d098ba50fe056bc95d"
+    },
+    "assets/css/financial_records.css": {
+      "sha256": "c0603b2273ffba29d63fd5e3072a7245ee2db7d63542b55eac380f263288d31d",
+      "git_blob": "597fb80e3fc3535cf0d7dc696ed63628fa550ef6",
+      "baseline_blob": "0de26a314898576474723ffeb2c8aab0bfdb470e"
+    }
+  },
+  "suites": {
+    "exact": {
+      "passed": true,
+      "assertions": 16,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u2_reader.php",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "production_pins_match_current": false
+    },
+    "u2a": {
+      "passed": true,
+      "assertions": 124,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u2_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-38724dd5cc",
+      "production_pins_match_current": false
+    },
+    "u2b": {
+      "passed": true,
+      "assertions": 199,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u2_b_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "stage2": {
+      "passed": true,
+      "assertions": 56,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_stage2_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "cp2": {
+      "passed": true,
+      "assertions": 43,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_stage3_checkpoint2_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "cp3": {
+      "passed": true,
+      "assertions": 34,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_stage3_checkpoint3_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "cp4": {
+      "passed": true,
+      "assertions": 48,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_stage3_checkpoint4_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-84c5e3a115",
+      "production_pins_match_current": true
+    },
+    "cp5": {
+      "passed": true,
+      "assertions": 54,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_stage3_checkpoint5_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "u3a": {
+      "passed": true,
+      "assertions": 91,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u3_a_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ],
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u3_a_readback.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-7965c20b75",
+      "production_pins_match_current": true
+    },
+    "u3a_readback": {
+      "passed": true,
+      "assertions": 27,
+      "verification_run": "u3a-readback-485eb5396b",
+      "production_pins_match_current": true
+    },
+    "u4c": {
+      "passed": true,
+      "assertions": 146,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u4_fixture.php",
+          "--fixture=<private-synthetic-fixture>"
+        ],
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u4_browser.py",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=c"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "u4d": {
+      "passed": true,
+      "assertions": 17,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u4_fixture.php",
+          "--fixture=<private-synthetic-fixture>"
+        ],
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u4_browser.py",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=d"
+        ]
+      ],
+      "verification_run": "u5-final-ea315e8fc4",
+      "production_pins_match_current": false
+    },
+    "reader": {
+      "passed": true,
+      "assertions": 116,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_perf_reader.php",
+          "--fixture=<private-synthetic-fixture>",
+          "--baseline-reader=<private-frozen-baseline>",
+          "--baseline-stage2=<private-frozen-baseline>",
+          "--baseline-stage3=<private-frozen-baseline>"
+        ]
+      ],
+      "production_pins_match_current": false
+    },
+    "bcd": {
+      "passed": true,
+      "assertions": 128,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u3_bcd.php",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=b"
+        ],
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u3_bcd_browser.py",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=all"
+        ]
+      ],
+      "verification_run": "u5-final-38724dd5cc",
+      "production_pins_match_current": false
+    },
+    "integrated": {
+      "passed": true,
+      "assertions": 84,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u5_browser.py",
+          "--fixture=<private-synthetic-fixture>"
+        ]
+      ],
+      "verification_run": "u5-final-7965c20b75",
+      "production_pins_match_current": true,
+      "test_source_sha256": "78cd3598aebc7b06e6b5f9c5c4d12069dc8a10ebad484a67916c6681c60c488e"
+    },
+    "bcd_backend": {
+      "passed": true,
+      "assertions": 71,
+      "commands": [
+        [
+          "<python-or-php>",
+          "scripts/test_usability_u3_bcd_edges.php",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=all"
+        ]
+      ],
+      "production_pins_match_current": false
+    },
+    "u4b": {
+      "passed": true,
+      "assertions": 19,
+      "commands": [
+        [
+          "<php>",
+          "scripts/test_usability_u4_fixture.php",
+          "--fixture=<private-synthetic-fixture>"
+        ],
+        [
+          "<python>",
+          "scripts/test_usability_u4_browser.py",
+          "--fixture=<private-synthetic-fixture>",
+          "--gate=b"
+        ]
+      ],
+      "verification_run": "u5-final-0e5b355b2a",
+      "production_pins_match_current": false
+    },
+    "stage1": {
+      "assertions": 68,
+      "passed": true,
+      "verification_run": "u5-final-3a1130434d",
+      "production_pins_match_current": false
+    }
+  },
+  "human_observation": {
+    "main_tasks": "captured with documented assistance and original failures",
+    "own_advance_explanation": "correct, prompted",
+    "changed_task_retests": "Receipt184 save/close/resume/review observed; larger status35 found; final advance34 action controls shown without a new location hint. Original assistance retained.",
+    "evidence": "docs/usability-u5-human-observations.json",
+    "U5_complete": true,
+    "normal_working_login_MFA_tested": false,
+    "human_walkthrough_complete": true,
+    "external_acceptance": false
+  },
+  "working_preservation": {
+    "passed": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audits": 62,
+    "uploads": 53,
+    "permissions_unchanged": true,
+    "all_pinned_files_unchanged": true,
+    "no_working_login": true
+  },
+  "adapters": {
+    "ordinary": 90,
+    "advance": 58,
+    "correction": 41,
+    "followup": 52,
+    "u5_editable_amount": 20
+  },
+  "development_attempts": "Initial integrated selector/download status assumptions, check-constraint-invalid negative fixture, and premature all-gate BCD browser preparation were corrected and rerun on fresh clones. Their partial counts are excluded.",
+  "walkthrough_guard": {
+    "passed": true,
+    "assertions": 13,
+    "human_tasks_performed": true,
+    "qualification": "13 preparation checks; actual later human tasks classified separately in human observations"
+  },
+  "captures": {
+    "automated": 18,
+    "widths": [
+      1366,
+      1920
+    ],
+    "all_inspected": true,
+    "physical_device_testing": false,
+    "final_source_run": "u5-browser-8f573361aa",
+    "additional_current_register_captures": 2,
+    "qualification": "Full-page desktop Edge captures at 1366x768 and 1920x1080. Long reviews require vertical scrolling. No physical-device/cross-browser acceptance."
+  },
+  "human_refinement": {
+    "requested": "Remove Management-approval sentence from ordinary payment and receipt Review, as requested during the actual walkthrough.",
+    "production_file": "includes/accounting_entry_page.php",
+    "readback": "Latest receipt extension changes only ordinary CRB notice; six other review variants are byte-identical to the post-payment-refinement template. Payment earlier readback is dated separately.",
+    "syntax": "PASS",
+    "affected_final_source_suites": {
+      "u2b": 199,
+      "integrated": 64
+    },
+    "human_retest": "Original receipt recovery/recording and later receipt184 shorter-copy review observed; assistance and original grouped failure retained.",
+    "unaffected_evidence": "Other earlier passing suites and performance samples remain dated evidence; comparison-path bytes did not change.",
+    "earlier_payment_checks": {
+      "u2a": 124,
+      "integrated": 64,
+      "status": "Passed before receipt-only extension; dated evidence, not repeated as a new run."
+    },
+    "receipt_captures": {
+      "widths": [
+        1366,
+        1920
+      ],
+      "inspected": true,
+      "short_notice_visible": true,
+      "overflow_observed": false
+    }
+  },
+  "release_discoverability_refinement": {
+    "source": "Actual user walkthrough feedback after reaching register; release action needed a location hint.",
+    "change": "Existing Admin-only release navigation becomes green Release cash advance link/button below heading; same href and existing CSS.",
+    "assertions": {
+      "presentation": 43,
+      "register": 91,
+      "privacy_readback": 27,
+      "integrated": 64
+    },
+    "tests": "Fresh synthetic clones, final five-file production pins; no uncaught JS errors.",
+    "captures": "Original human register and updated component/full-shell1366/1920 register captures inspected; desktop Edge only.",
+    "human_retest": "Initial release discovery assisted. Later actual register view contains promoted action; no separate blind release rediscovery or second release claimed.",
+    "earlier_evidence": "Prior receipt/payment/regression suites remain dated unaffected evidence; no duplicate counts."
+  },
+  "advance_review_refinement": {
+    "requested": "Remove repeated Management-approval sentence from advance Review subtitle and card.",
+    "scope": "Release/liquidation/return presentation only; actual metadata, warnings, financial contracts unchanged.",
+    "scope_proof": "Three advance template variants shortened, six other variants unchanged; JavaScript changed only advance Review subtitle literal.",
+    "final_source_checks": {
+      "b": 56,
+      "c": 35,
+      "d": 37,
+      "integrated": 64
+    },
+    "syntax": "PHP and JS PASS; all existing adapters PASS",
+    "captures": "Six1366/1920 release/liquidation/return Review screenshots inspected with both copies absent and confirm controls visible.",
+    "human_retest": "Shorter Review visible in subsequent human liquidation and return. Release original screenshot predates refinement; no separate release blind retry claimed.",
+    "unaffected_evidence": "Prior suites and performance remain separately dated; no claim every suite was rerun after copy-only edit."
+  },
+  "history_identity_refinement": {
+    "source": "User confusion about two1000 lines and absent186/187 journal identities.",
+    "scope": "Main Journal History display only: existing journal_id above description. No new field/query/column/grouping/filter/sort behavior; cash-book display retained.",
+    "final_source_checks": {
+      "find_inspect": 19,
+      "integrated": 65,
+      "all_seven_source_pins_match": true,
+      "javascript_syntax": "PASS"
+    },
+    "captures": "1366/1920 new Journal History captures inspected; visible repeated journal IDs link to same exact reader.",
+    "known_visual_followup": "Resolved by scoped View white-space rule; inspected 1366/1920 component captures. No query/filter change.",
+    "human_retest": "User subsequently opened original186 with visible IDs and prepared/recorded correction55; initial wrong187 selection and observer-label mismatch retained."
+  },
+  "working_preservation_after_walkthrough_fixes": {
+    "passed": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "uploads": 53,
+    "permissions_unchanged": true,
+    "all_pinned_files_unchanged": true,
+    "no_working_login": true,
+    "stage": "after main human walkthrough and in-scope fixes; limited retests pending"
+  },
+  "walkthrough_guard_after_followups": {
+    "passed": true,
+    "checks": 13
+  },
+  "followup_refinements": {
+    "production_files": 10,
+    "accepted_broad_run": "u5-final-0e5b355b2a",
+    "accepted_integrated_run": "u5-final-7965c20b75",
+    "synthetic_checks": 84,
+    "strict_coverage_parser_unchanged": true,
+    "accounting_writer_or_policy_change": false,
+    "limited_human_retests_pending": false
+  },
+  "followup_development_attempts": [
+    {
+      "run": "u5-final-21c5241416",
+      "accepted": false,
+      "findings": [
+        "Broad status padding pushed Confirm below laptop viewport; fixed by styling only saved messages.",
+        "New test expected cash_amount in review input; corrected to validate authoritative balanced journal lines."
+      ],
+      "resolution": "All affected suites pass on ten current production pins; final integrated rerun includes legacy grouped-draft and saved-feedback captures."
+    }
+  ],
+  "single_save_control_refinement": {
+    "source": "Actual user feedback after draft184 retry",
+    "selected": "Save and close only",
+    "affected_final_byte_verification": "passed",
+    "prior_pins_superseded_for_changed_template_and_workspace_js": true,
+    "original_save_control_id_retained": "aw-save",
+    "visible_duplicate_removed": true,
+    "review_internal_save_unchanged": true,
+    "keyboard_close_and_unverified_response_recovery": "passed in integrated84",
+    "working_preservation": "passed",
+    "new_human_task_completion_inferred": false
+  },
+  "working_preservation_after_single_save_control": {
+    "passed": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "uploads": 53,
+    "permissions_unchanged": true,
+    "all_pinned_files_unchanged": true,
+    "no_working_login": true,
+    "stage": "after receipt184 retry and selected single-save-control refinement; advance human retry pending"
+  },
+  "single_save_control_development": {
+    "first_run": "u5-final-f38c95c828",
+    "intermediate_run": "u5-final-ea315e8fc4",
+    "failed_cases_rerun": "u5-final-38724dd5cc",
+    "final_stage1_run": "u5-final-3a1130434d",
+    "harness_adjustments": [
+      "Resume through actual owner My drafts and confirm same identity and purpose after asynchronous draft loading.",
+      "Check saved/unposted labels after reopening rather than the transient pre-navigation save status.",
+      "Reopen optional section after navigation resets its expansion.",
+      "Stage1 partial-coverage assertion now expects the previously approved peso display, retaining status and exact eligible amount."
+    ]
+  },
+  "single_save_test_hashes": {
+    "browser_workspace_helpers.py": "b6261898560aaab4959608327fc0378148a16128fc8d7b1b7c544f72f843052a",
+    "test_stage1_browser.py": "dcddcd154e46ccc6f509a34f8f019cbb0fe1248e73f26985a6e26c90f46b38a4",
+    "test_stage2_browser.py": "020238a66ea8cd85fd1e147e6bea8b8231d24e67080fa5cf419433cdb69b5c42",
+    "test_stage3_checkpoint2_browser.py": "0209afeed54f3ed19ee3d9b4e2e50ca228c6f7bd590fecd48ffd27d3eaea14eb",
+    "test_stage3_checkpoint3_browser.py": "c1cde6eacf3a743ff1323d40fb6f686cd31c056fb0057a174da3fb5c02551e2b",
+    "test_stage3_checkpoint4_browser.py": "46d8f305a1218d3b013efd080a6c307358959ce78e225db41b4c9d0b15ec54c2",
+    "test_stage3_checkpoint5_browser.py": "dbe64fb68a9b32c9dd9e216081c914f5b8540e8103c40195edf9838990f95df7",
+    "test_usability_u2_browser.py": "c5d80d14228ff1bdc1b522551f02e4ef85fdbd1ce0c3d132a867963b6f63b7b1",
+    "test_usability_u2_b_browser.py": "62c98aab344e2b8196f83b0f9cb4007239dcb80c9ae55b39d37db8614de4bb64",
+    "test_usability_u3_bcd_browser.py": "74b960646e7b8d898cdef6de615bf7ade869767b1a54f669f87fca716480ebdf",
+    "test_usability_u5_browser.py": "0ffb4d33feb654d92567cb46b81f469550636d07cad3e473e44ff3f50acb1a9b",
+    "test_usability_u5_regressions.py": "aeceb5b48b28b7f9c14facf17c0ca9c00d4c45b290e0564aead7efb0b311ee71"
+  },
+  "duplicate_status_refinement": {
+    "source": "Actual user advance35 retry feedback",
+    "production_change": "Detail-only duplicate span removed; larger status and due/overdue fields retained; register badges unchanged",
+    "verified": {
+      "php_lint": true,
+      "register": 91,
+      "readback_privacy": 27,
+      "integrated": 84,
+      "replaced_advance_regression": 48
+    },
+    "readback_development": "Old selector timed out; corrected retained-label selector rerun27 passed with all34 tables unchanged. Old result/log retained.",
+    "screenshots": "settled advance1366/1920 inspected from current integrated run",
+    "human_retry": "User found larger status35, selected removing duplicate; final CA34 supplied screenshot shows one larger Outstanding status and both prominent settlement actions. No new financial submission."
+  },
+  "status_refinement_test_hashes": {
+    "test_usability_u3_a_browser.py": "59c2dbcbc983111b3a37396165d150e2766e8c91147223d5012c279701b29d1c",
+    "test_usability_u3_a_readback.py": "1da48f2230c36e73ed2fdfea0231da878a023e507bf4c37ebe94b7afd910e043",
+    "test_usability_u3_bcd_browser.py": "a2fc7fdec6f7810225c1984e950f6bee07671a7fd33debd0887bcb61649f8690",
+    "test_usability_u5_browser.py": "78cd3598aebc7b06e6b5f9c5c4d12069dc8a10ebad484a67916c6681c60c488e",
+    "test_stage3_checkpoint4_browser.py": "bf1fbead543603b2838093d2bdbfb05f06b126d09301f88fbe0bdb3fc4ccf95e"
+  },
+  "status": "P0/P1/P2/U5-A/U5-B/U5-C implementation and evidence complete; final external exact-source review pending",
+  "working_preservation_final": {
+    "passed": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "protected_upload_files": 53,
+    "all_table_rows_and_schema_unchanged": true,
+    "all_objects_and_permissions_unchanged": true,
+    "all_pinned_files_unchanged": true,
+    "no_working_login": true,
+    "stage": "after completed human walkthrough, limited retests and final source verification"
+  },
+  "evidence_scope": "Current conclusions above supersede earlier dated refinement subrecords. Suites with nonmatching whole-source pins are dated component regression evidence, not claims of a repeat against every final file.",
+  "performance_final_path_pins_match_current": true,
+  "current_test_hashes": {
+    "scripts/browser_workspace_helpers.py": "b6261898560aaab4959608327fc0378148a16128fc8d7b1b7c544f72f843052a",
+    "scripts/observe_usability_u5.py": "b58f44c8e4dfda8bfce75dcab4151c51619b0347144568ab8b455ecace03b31d",
+    "scripts/test_stage1_browser.py": "dcddcd154e46ccc6f509a34f8f019cbb0fe1248e73f26985a6e26c90f46b38a4",
+    "scripts/test_stage2_browser.py": "020238a66ea8cd85fd1e147e6bea8b8231d24e67080fa5cf419433cdb69b5c42",
+    "scripts/test_stage3_checkpoint2_browser.py": "0209afeed54f3ed19ee3d9b4e2e50ca228c6f7bd590fecd48ffd27d3eaea14eb",
+    "scripts/test_stage3_checkpoint3_browser.py": "c1cde6eacf3a743ff1323d40fb6f686cd31c056fb0057a174da3fb5c02551e2b",
+    "scripts/test_stage3_checkpoint4_browser.py": "bf1fbead543603b2838093d2bdbfb05f06b126d09301f88fbe0bdb3fc4ccf95e",
+    "scripts/test_stage3_checkpoint5_browser.py": "dbe64fb68a9b32c9dd9e216081c914f5b8540e8103c40195edf9838990f95df7",
+    "scripts/test_usability_perf_browser.py": "ee323cd201473f3ae072bc535c118b2e959292a6ab12bcd54dc0c89729da19bc",
+    "scripts/test_usability_perf_catalog.php": "1286bf56bc9544b270993507539bd352b825c8f83418feda6b629095b9ff6b13",
+    "scripts/test_usability_perf_fixture.php": "72676fe874f978bc07f088bad7c44e6e0bc3ae0133a2a7ad49087add52b5b064",
+    "scripts/test_usability_perf_reader.php": "72d5cd307a6c488097059dd3b351c2c90f85217e923463c832ca75ec7f777dc3",
+    "scripts/test_usability_u2_b_browser.py": "62c98aab344e2b8196f83b0f9cb4007239dcb80c9ae55b39d37db8614de4bb64",
+    "scripts/test_usability_u2_browser.py": "c5d80d14228ff1bdc1b522551f02e4ef85fdbd1ce0c3d132a867963b6f63b7b1",
+    "scripts/test_usability_u3_a_browser.py": "59c2dbcbc983111b3a37396165d150e2766e8c91147223d5012c279701b29d1c",
+    "scripts/test_usability_u3_a_presentation.py": "a18cb7a9be9c734b45c66e4208673012001b979a7cd950ad8ba65346aacffc37",
+    "scripts/test_usability_u3_a_readback.py": "1da48f2230c36e73ed2fdfea0231da878a023e507bf4c37ebe94b7afd910e043",
+    "scripts/test_usability_u3_bcd_browser.py": "a2fc7fdec6f7810225c1984e950f6bee07671a7fd33debd0887bcb61649f8690",
+    "scripts/test_usability_u4_browser.py": "22aadc0e66f400f3b55a2ce3fbe4cc2e8a915d2072711114441bbf4cadf9b7d3",
+    "scripts/test_usability_u5_adapter.js": "ad04ec8d0702093cb74b4e497d2fd247c6b1b8ad68c24d2dfe5514d1bb832f5d",
+    "scripts/test_usability_u5_browser.py": "78cd3598aebc7b06e6b5f9c5c4d12069dc8a10ebad484a67916c6681c60c488e",
+    "scripts/test_usability_u5_regressions.py": "aeceb5b48b28b7f9c14facf17c0ca9c00d4c45b290e0564aead7efb0b311ee71"
+  },
+  "package_verification": {
+    "patch_forward_reverse_reapply": true,
+    "production_files": 10,
+    "changed_or_new_test_files": 22,
+    "packaged_offline_adapters": [
+      90,
+      58,
+      41,
+      52,
+      20
+    ],
+    "python_ast_php_js_syntax": true,
+    "archive_member_hash_verification": "verified after archive build; reproducible using verify_package.py",
+    "raw_bytes_and_git_normalized_blobs_distinguished": true,
+    "working_preservation_final": true
+  },
+  "observer_closed_normally": true,
+  "packaging_validation_attempts": [
+    "Initial reconstruction compared Git checkout CRLF bytes with LF blobs. The verifier now sets core.autocrlf=false for scratch git apply commands only, without modifying repository/global settings. Forward/reverse/reapply then matched all normalized blobs.",
+    "An overly broad absolute-workspace-path scan also matched historical README documentation. Sensitive-data screening applies to packaged member types and sanitized commands/results; old documented installation paths are not private configuration/session contents."
+  ]
+}

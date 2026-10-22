@@ -1,0 +1,238 @@
+{
+  "baseline": {
+    "small": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 5447.8428000584245,
+          "http_slowest_ms": 6109.581300057471,
+          "visible_repeat_median_ms": 6026.5165999298915,
+          "visible_slowest_ms": 6080.833600019105
+        },
+        "Management": {
+          "http_repeat_median_ms": 10812.92040005792,
+          "http_slowest_ms": 11417.523200041614,
+          "visible_repeat_median_ms": 11152.488699997775,
+          "visible_slowest_ms": 11571.274099987932
+        }
+      },
+      "counts": {
+        "cash_advances": 29,
+        "cash_advance_operations": 60,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 154,
+        "journal_entry_lines": 417,
+        "journal_drafts": 169,
+        "Receipts": 48,
+        "posted_evidence_associations": 40
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "a6ce0ec1b3c400e22391ebf6df2ce7ab4094a65c499f1f5602d3f36374c8d6d1",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa"
+      }
+    },
+    "large": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 5925.7185000460595,
+          "http_slowest_ms": 6359.034799970686,
+          "visible_repeat_median_ms": 5760.118399979547,
+          "visible_slowest_ms": 5954.174599959515
+        },
+        "Management": {
+          "http_repeat_median_ms": 11405.764600029215,
+          "http_slowest_ms": 11495.842000003904,
+          "visible_repeat_median_ms": 11207.632300094701,
+          "visible_slowest_ms": 11999.122499953955
+        }
+      },
+      "counts": {
+        "cash_advances": 100,
+        "cash_advance_operations": 273,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 367,
+        "journal_entry_lines": 843,
+        "journal_drafts": 382,
+        "Receipts": 190,
+        "posted_evidence_associations": 182
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "a6ce0ec1b3c400e22391ebf6df2ce7ab4094a65c499f1f5602d3f36374c8d6d1",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa"
+      }
+    }
+  },
+  "exact-chain-only-development": {
+    "small": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 4678.835000027902,
+          "http_slowest_ms": 5333.409099956043,
+          "visible_repeat_median_ms": 4812.134800013155,
+          "visible_slowest_ms": 5022.560599958524
+        },
+        "Management": {
+          "http_repeat_median_ms": 5052.754799951799,
+          "http_slowest_ms": 5237.556100008078,
+          "visible_repeat_median_ms": 4959.245600039139,
+          "visible_slowest_ms": 5118.760599987581
+        }
+      },
+      "counts": {
+        "cash_advances": 29,
+        "cash_advance_operations": 60,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 154,
+        "journal_entry_lines": 417,
+        "journal_drafts": 169,
+        "Receipts": 48,
+        "posted_evidence_associations": 40
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa"
+      }
+    },
+    "large": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 4832.0230999961495,
+          "http_slowest_ms": 5463.907000026666,
+          "visible_repeat_median_ms": 5025.7133999839425,
+          "visible_slowest_ms": 5910.079200053588
+        },
+        "Management": {
+          "http_repeat_median_ms": 4781.491699977778,
+          "http_slowest_ms": 5216.919599915855,
+          "visible_repeat_median_ms": 4973.258999991231,
+          "visible_slowest_ms": 5565.646899980493
+        }
+      },
+      "counts": {
+        "cash_advances": 100,
+        "cash_advance_operations": 273,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 367,
+        "journal_entry_lines": 843,
+        "journal_drafts": 382,
+        "Receipts": 190,
+        "posted_evidence_associations": 182
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa"
+      }
+    }
+  },
+  "final": {
+    "small": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 518.2185999583453,
+          "http_slowest_ms": 1025.0058000674471,
+          "visible_repeat_median_ms": 587.6948999939486,
+          "visible_slowest_ms": 686.9309999747202
+        },
+        "Management": {
+          "http_repeat_median_ms": 502.6409000856802,
+          "http_slowest_ms": 517.4541000742465,
+          "visible_repeat_median_ms": 586.5080000367016,
+          "visible_slowest_ms": 598.3322999672964
+        }
+      },
+      "counts": {
+        "cash_advances": 29,
+        "cash_advance_operations": 60,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 154,
+        "journal_entry_lines": 417,
+        "journal_drafts": 169,
+        "Receipts": 48,
+        "posted_evidence_associations": 40
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa",
+        "includes/stage2_common.php": "8544b392c2b74099f91d7362cdb27d7f2c32156b1fe56d67328a3656e9593781",
+        "includes/stage3_common.php": "1f870d2388adccb963340c7438d35dea5c9f5cf2d590ecf47436ae3582fe7a64"
+      }
+    },
+    "large": {
+      "summary": {
+        "Admin": {
+          "http_repeat_median_ms": 503.77790001221,
+          "http_slowest_ms": 1069.9010998941958,
+          "visible_repeat_median_ms": 604.8044000053778,
+          "visible_slowest_ms": 663.0765000591055
+        },
+        "Management": {
+          "http_repeat_median_ms": 507.03450001310557,
+          "http_slowest_ms": 536.0982998972759,
+          "visible_repeat_median_ms": 582.2105999104679,
+          "visible_slowest_ms": 616.5657000383362
+        }
+      },
+      "counts": {
+        "cash_advances": 100,
+        "cash_advance_operations": 273,
+        "cash_advance_operation_reversals": 14,
+        "journal_corrections": 42,
+        "journal_entries": 367,
+        "journal_entry_lines": 843,
+        "journal_drafts": 382,
+        "Receipts": 190,
+        "posted_evidence_associations": 182
+      },
+      "chain_length": 1,
+      "php_version": "8.2.12",
+      "server_mode": "PHP built-in development server, one worker; headless Edge",
+      "read_only_unchanged": true,
+      "source_pins": {
+        "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+        "includes/journal_corrections.php": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+        "includes/accounting_query.php": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa",
+        "includes/stage2_common.php": "8544b392c2b74099f91d7362cdb27d7f2c32156b1fe56d67328a3656e9593781",
+        "includes/stage3_common.php": "1f870d2388adccb963340c7438d35dea5c9f5cf2d590ecf47436ae3582fe7a64"
+      }
+    }
+  },
+  "paired_equivalence": {
+    "small": {
+      "entire_role_projections_equal": true,
+      "all_table_fingerprints_equal": true
+    },
+    "large": {
+      "entire_role_projections_equal": true,
+      "all_table_fingerprints_equal": true
+    }
+  }
+}

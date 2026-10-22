@@ -50,13 +50,13 @@ function correction_metadata(PDO $pdo,array $journalIds): array
 }
 function correction_posted_detail(PDO $pdo,int $uid,int $journalId): array
 {
-    correction_reader_guard($pdo,$uid);
     return accounting_read($pdo,function()use($pdo,$uid,$journalId){
+        // The chain's database-backed actor guard and integrity checks share this snapshot.
         $chain=correction_chain($pdo,$uid,$journalId);if(!$chain)throw new JournalProblem('Posted correction not found.',404);
         $ids=[];foreach($chain as $c)$ids=array_merge($ids,array_filter([$c['target_journal_id'],$c['reversal_journal_id'],$c['replacement_journal_id']],fn($v)=>$v!==null));
-        // Existing reader computes coverage before applying association-aware privacy redaction.
-        $records=accounting_records($pdo,accounting_records_filters(['from'=>'','to'=>'']));$journals=[];
-        foreach(array_unique($ids) as $id){if(!isset($records['journals'][$id]))throw new JournalProblem('Correction journal is unavailable.',409);$journals[$id]=$records['journals'][$id];}
+        // Load only this chain, using the same complete coverage/privacy projection as Records.
+        $complete=accounting_complete_journals($pdo,array_values(array_unique($ids)),stage1_schema($pdo));$journals=[];
+        foreach(array_unique($ids) as $id){if(!isset($complete[$id]))throw new JournalProblem('Correction journal is unavailable.',409);$journals[$id]=$complete[$id];}
         return ['chain'=>$chain,'journals'=>$journals];
     });
 }

@@ -1,6 +1,17 @@
+**User walkthrough correction, October22,2026:** user selects keeping only Save and close, removing the redundant separate Save draft control. This is observed UI preference, not a new client accounting or approval policy. Earlier two-control implementation choice is superseded.
+
 # Client context and corrected conversation record
 
+**Latest walkthrough timing selection, October22,2026:** the user explicitly withdrew the immediately prior deferred-only instruction and again permits in-scope usability changes during the human walkthrough. Apply affected verification/retests under the existing combined authorization; financial/schema/privacy scope boundaries remain. The user reports reload returned to entry mode while preserving draft178, accepts that result, and supplies a screenshot of its refreshed Review with the shorter wording. Payment posting and observed completion remain pending. Earlier deferred-only entries below are superseded history.
+
+
+**Walkthrough change timing, user correction October22,2026:** requests for application changes or deletions made during the human U5 walkthrough must be recorded as feedback and implemented only after the walkthrough. The user explicitly allows the already-applied payment-review sentence removal to remain. Keep the application stable for the remaining tasks. This supersedes the earlier immediate-fix sequencing within U5-B; existing in-scope implementation authority, affected verification and any necessary human retest still apply after the observation sequence.
+
+
 Recorded October 6, 2026 from the user messages available in this chat and the repository's plans/delivery reports. This is a curated requirements record, not a verbatim transcript of every turn or independently verified client policy. Earlier assistant responses and externally reviewed attachments are not all available as original files.
+
+
+**U5 user feedback, October22,2026:** while reviewing synthetic payment draft178, the user asked to remove "This review is not Management approval." because the client does not need to see that wording. The selected change is ordinary payment Review copy only; the existing not-recorded/confirm-to-record explanation remains. This records the user's presentation preference, with no new client approval or accounting policy inferred. Original feedback and pre-change screenshot are preserved in the private walkthrough evidence.
 
 ## Purpose and constraints
 

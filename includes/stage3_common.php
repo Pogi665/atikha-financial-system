@@ -12,7 +12,8 @@ function stage3_schema_state(PDO $pdo): array
 {
     $tables=$pdo->query("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('".implode("','",STAGE3_TABLES)."')")->fetchAll(PDO::FETCH_KEY_PAIR);
     $cols=$pdo->query("SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND ((TABLE_NAME='journal_drafts' AND COLUMN_NAME IN ('correction_target_journal_id','correction_mode','workflow_kind')) OR (TABLE_NAME='posted_evidence_associations' AND COLUMN_NAME IN ('source_association_id','correction_id')))")->fetchAll();
-    $triggerRows=$pdo->query("SELECT TRIGGER_NAME,EVENT_OBJECT_TABLE,ACTION_TIMING,EVENT_MANIPULATION,ACTION_STATEMENT FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME LIKE 's3_%'")->fetchAll();$triggers=array_column($triggerRows,'TRIGGER_NAME');
+    // Normalize the current-database metadata to the existing validator's exact fields; do not cache or skip checks.
+    $triggerRows=array_map(fn($r)=>['TRIGGER_NAME'=>$r['Trigger'],'EVENT_OBJECT_TABLE'=>$r['Table'],'ACTION_TIMING'=>$r['Timing'],'EVENT_MANIPULATION'=>$r['Event'],'ACTION_STATEMENT'=>$r['Statement']],$pdo->query("SHOW TRIGGERS WHERE `Trigger` LIKE 's3_%'")->fetchAll());$triggers=array_column($triggerRows,'TRIGGER_NAME');
     $columns=[];$present=count($tables)+count($triggers);
     foreach($cols as $c){$columns[$c['TABLE_NAME'].'.'.$c['COLUMN_NAME']]=$c['COLUMN_TYPE'];if($c['COLUMN_NAME']!=='workflow_kind')$present++;elseif(str_contains($c['COLUMN_TYPE'],"'correction'"))$present++;}
     if(!$present)return ['state'=>'absent','complete'=>false,'problems'=>[]];

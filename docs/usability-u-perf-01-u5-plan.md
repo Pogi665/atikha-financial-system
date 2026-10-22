@@ -1,0 +1,115 @@
+# Combined U-PERF-01 and U5 plan
+
+## Status and delivery structure
+
+**External plan review approved with four clarifications; the user explicitly authorized execution by saying you can proceed.** The user reports the approved U2 follow-up committed/pushed and asks to one-shot the remaining performance work and U5. Local HEAD is `f50d79e3d2bf38072946fbfdf543b6699118ad84` (U2 Follow-Up), initially clean. The supplied reviewer subsequently independently verified live GitHub main at that same commit. Fresh local HEAD and origin/main tracking-ref checks also match; no new live remote fetch was performed to record the review. Only the declared four handoff documents and this plan differ locally. Preserve this planning-only diff as specified in the reviewed execution envelope; it is not an application-baseline mismatch. Existing README/status pre-commit wording is superseded by the current handoff.
+
+Approved internal sequence: **P0 preflight -> P1 controlled diagnosis -> P2 evidence-supported correction/verification -> U5-A integrated checks -> U5-B observed user walkthrough -> U5-C handoff and one final external review.** One reviewed plan and one explicit implementation authorization cover successful internal gates. Keep each performance and U5 gate separately visible; do not hide a missing human observation or unresolved performance result in aggregate assertion totals. A required user interaction is an evidence dependency, not another routine approval cycle.
+
+No database/server/browser test, timing, source edit, configuration change or performance diagnosis ran to prepare this plan. U2/U3/U4 and their approved review packages remain frozen.
+
+## Context inspected and diagnostic limits
+
+Read the [U1 baseline](usability-u1-baseline.md), [original timing CSV](usability-u1-timing.csv), [U2 follow-up approval](usability-u2-followup-approval.md), [U4 delivery](usability-u4-delivery.md), [overall roadmap](usability-completion-plan.md), client context and selected decisions.
+
+U1 measured the advance-linked posted correction comparison, not the advance entry writer. Its small synthetic workload reported repeated HTTP medians about 5.706s Admin / 11.637s Management; its larger workload about 6.146s / 12.227s. These are dated PHP built-in single-worker measurements, not working Apache performance. The small and larger data sets, first/repeat responses, HTTP versus browser navigation samples and role differences must remain distinguishable. No causal explanation or current delay is established by those old numbers.
+
+Current source inspection identifies candidate call paths only:
+
+- `journal_corrections.php` authenticates and resolves a journal/correction identity before calling `correction_posted_detail()`.
+- `includes/journal_corrections.php` guards the reader, obtains and validates a chain, then currently calls `accounting_records()` with unbounded dates before selecting the chain journals.
+- `includes/accounting_query.php` already provides scoped complete-journal loading and an exact posted-journal reader. It calculates coverage before association-aware privacy redaction and supplies correction/gate metadata.
+
+The all-history load and repeated guards/schema/evidence work are profiling candidates, not a proven cause. Do not skip validation/redaction because a faster page is desired, or assume Management's extra time implies unnecessary privacy work.
+
+## P0 - Fresh source, environment and preservation gate
+
+Before operational execution, verify main/local HEAD/origin-main/live remote against the reviewed baseline. Preserve and enumerate the expected documentation-only planning changes rather than requiring a new planning commit that silently changes the measured baseline. The implementation authorization should explicitly include that declared planning diff. Any unrelated source/test/configuration drift must be reconciled before measurements; never reset, stash or silently rebase it.
+
+Establish bounded normal MariaDB identity/readiness, intended port/datadir/recovery0 and isolated test dependencies. If the server is stopped, request the normal user-operated XAMPP start once; if it fails or SQL is unhealthy, stop without repair/retry loops. Do not infer current health from the older recovery or U2 report. Start no working Apache for synthetic checks.
+
+Use only newly guarded disposable atikha_test_* databases, private configuration/sessions/uploads and blocked external transports. Pin fresh read-only working row/schema/object/permission fingerprints and all protected files/configuration if the existing server hosts those databases, then compare them after execution. No working login or financial action is part of this envelope. Preserve approved source/review artifacts and the baseline/candidate synthetic fixtures separately.
+
+**P0 gate:** identities, fixture isolation and fresh preservation checks pass. No migration, restore, recovery helper, account/grant change, server reinstall/upgrade or persistent configuration change.
+
+## P1 - Reproduce and localize the delay
+
+Prepare a small and a larger plausible synthetic workload with a fixed valid advance-linked correction and chain length. Prefer retained validated synthetic data when readable and trustworthy; otherwise build new fixtures through existing supported services. Record actual counts of advances/operations/reversals/corrections/journals/evidence and expected accounting reconciliation. Do not call a new fixture U1 Dataset A/B unless it actually matches the retained snapshot. A near-sized current fixture is explicitly a new workload. The larger workload can target approximately 100 advances and 300 operation/reversal events, reporting actual counts rather than invented client volume.
+
+Complete fixture construction and integrity checks before timing. Use the same target identities, chain, evidence, role, feature settings, source, PHP version/server mode and machine conditions for paired before/after measurements. Clone a frozen fixture for baseline and candidate, preserving logical equality. Record setup/login effects separately; timed posted reads must not change financial/evidence/history data.
+
+For each workload and Admin/Management role, collect one first sample and five repeats for direct HTTP and browser-visible navigation/TTFB. Run requests serially with no concurrent fixture building, regression suites or other test load. First means first in the stated session/run, not a claim of a cold OS/database cache. Do not flush caches, restart MariaDB or alter global settings to manufacture a cold run. Record response status/bytes, per-sample time, repeated median and slowest sample. A 120s ceiling is a safety timeout, never an acceptable-response goal; stop an exceeded request and inspect rather than retrying indefinitely. Do not calculate percentile claims from five repeats.
+
+Profile only isolated copies using existing tools/test-only instrumentation: PHP entry/guard/schema/chain/journal/evidence/privacy/render spans, SQL counts/timing and session/request blocking where relevant. Use read-only EXPLAIN if a demonstrated query needs it. Keep raw traces/parameters/session data private. Profile overhead is measured separately; final user-facing timings use uninstrumented final source. No profiler or extension installation is automatically authorized.
+
+The primary controlled comparison is current baseline versus candidate on identical data. U1 timings are historical context unless all conditions genuinely match. If the delay is no longer reproduced, report that outcome and current timing evidence without inventing a root cause or making a speculative edit.
+
+**P1 gate:** the request is characterized by role/workload and an initiating time cost is evidenced, or a clearly documented not-reproduced outcome is supported by controlled current measurements. Diagnostic observations alone do not count as a repaired system.
+
+## P2 - Narrow read-performance correction and acceptance
+
+Proposed implementation authority is limited to an evidence-supported optimization of the posted correction-comparison read path. This plan intentionally permits a narrow read-path change, unlike earlier presentation-only U stages. It never permits accounting writer/policy changes.
+
+**Approved snapshot clarification:** use one PDO and one consistent repeatable-read snapshot for actor authorization, chain integrity validation, complete target/reversal/replacement reads, coverage, association-aware evidence/privacy projection and correction metadata. Existing nested accounting_read() reuses an open transaction. Keep the trusted active-role check within the authoritative comparison snapshot; an earlier route/session check is not a substitute. Do not split pieces across new connections/transactions or independently time them as if they formed one consistent result. Test consistency at the comparison boundary, including missing/corrupt dependencies and changes between reads on isolated test data.
+
+**Approved integrity clarification:** optimize irrelevant record scope, never financial/privacy checks. Preserve stage3_correction_valid(), association-aware evidence validation, coverage calculation before redaction, active Admin/Management gating, missing/corrupt-chain rejection, complete journal totals, sensitive attachment filtering, Management redaction, permitted flag-independent posted reads and direct-download denial. Prefer the existing complete projection; no client-side netting or new accounting engine.
+
+If P1 proves the unbounded load is material, reuse the existing complete/exact journal loading and privacy projection for the already validated union of original/reversal/replacement IDs. Preserve transaction/snapshot consistency, missing/corrupt-chain rejection, complete lines/totals, coverage-before-redaction, attachment authorization and flag-independent posted reading. Do not substitute a lightweight list projection for the complete comparison. The chain/list/filter/exact-reader contracts, field meanings and role boundaries must remain equivalent.
+
+If P1 instead proves redundant same-request computation is material, request-local reuse is permitted only with explicit keys/scope covering the same PDO/snapshot, actor/role, feature/schema state and data inputs. Do not cache authorization, sensitive projections or lifecycle results across requests, users, mutations or transactions. Prefer existing readers over a new abstraction; no new endpoint, output field, permission or widened raw payload. If another root cause requires changes beyond this bounded read path, stop with the narrow evidence/amendment instead of improvising.
+
+Expected possible production files are `includes/journal_corrections.php`, `includes/accounting_query.php` and the comparison page only if profiling justifies it. Shared gate/evidence helpers require an explicit reviewed amendment if their semantics/lifetime must change. No DDL/index migration, persistent cache, feature flag, global SQL/PHP setting, timeout increase, skipped check or client-side delay mask is an approved fix.
+
+Compare baseline/candidate complete public results and rendered financial content for both roles: ordinary and advance-linked chains, both correction modes, multiple chain steps, missing IDs, corrupted dependency/association rejection, historical/as-of semantics where exposed, flags-off reads, print/JSON and denied direct downloads. No missing privacy property may be 'fixed' by exposing it. Request-local reuse must be tested across roles/connections and after intervening changes to prove it cannot reuse stale authority/data.
+
+Repeat the serial timing protocol with identical fixtures and uninstrumented final bytes. **Approved internal engineering target, not a production SLA or client requirement:** repeated HTTP median <=2s and visible-navigation median <=3s for both roles on both declared workloads, with actual first/five-repeat samples, medians, slowest values, HTTP status/response size, workload counts, role and server/PHP mode reported. Never round a miss such as 2.1 seconds into a 2.0-second pass. This is not a physical-device claim. Do not quietly relax a missed target; report it and obtain an amended criterion if a further fix is outside scope. If baseline already meets the reviewed target and the old delay is not reproduced, an evidence-only no-change outcome is valid, explicitly retaining the unknown historical cause.
+
+**P2 gate:** truthful before/after or no-change timing outcome meets the reviewed target; financial/privacy equivalence and read-only fingerprints pass. U5 preparation can continue independently while an issue is pending, but final U5 completion cannot silently waive this performance gate.
+
+## U5-A - Integrated synthetic workflow verification
+
+Define fixtures and expected outcomes before testing. Use clear NGO-like synthetic labels without invented Atikha facts. Keep each task's initial balance, journals and evidence requirements explicit; compare deltas instead of inventing historical opening balances.
+
+Minimum task path:
+
+1. Record a PHP 1,000 training payment: expense debit / bank credit. Save/resume and no/partial/full optional support are separate variants.
+2. Record PHP 5,000 unrestricted synthetic funds received using an existing eligible income account: bank debit / income credit. Do not infer real grant-recognition policy.
+3. Release PHP 10,000 to a synthetic employee: advance asset debit / bank credit, explicit control account and due date; release is not expense.
+4. Liquidate PHP 8,000 of that advance: supported costs debit / advance control credit; gross support PHP 8,000, outstanding PHP 2,000. Also check the existing withholding example separately: PHP 4,500 costs, PHP 500 liability, PHP 4,000 net reduction, with PHP 4,500 evidence.
+5. Return the remaining PHP 2,000: bank debit / advance control credit with separate bound proof confirmation; final outstanding PHP 0/settled.
+6. Reverse and replace the ordinary PHP 1,000 payment with PHP 900 through the existing version-4 workflow. Preserve original, exact GJ reversal and replacement; net correction increases bank by PHP 100 and reduces expense by PHP 100. Review journals are previews before posting. Gross books still include original/replacement activity.
+7. Find the exact journal, correction comparison and advance detail; Management inspects only authorized read projections. Include draft owner separation, historical views, supporting evidence, print and denied private downloads.
+
+Verify these existing contracts across new tasks and targeted failures: explicit defaults/project tags, exact centavos, balanced journals, gross versus net, no extra writes during uncertain-result replay, stale/failed request preservation, invalid/missing responses, proof/review invalidation, task/navigation labels, correct Enter/Review/Recorded/Unknown states, empty/long-label/slow/failure states and keyboard focus. Run at 1366x768 and 1920x1080; distinguish browser compatibility from physical-platform/device testing as the advisor requested. Do not invent a broad accessibility certification from keyboard checks.
+
+Reuse the approved U1/U2 follow-up counting convention and frozen evidence. Count primary task decisions, navigation controls/page changes, committed fields, progression, mandatory evidence/review/proof and optional work separately. Do not aggregate simple ordinary tasks with required advance evidence or remove safeguards to reduce a count. Historical gaps remain unavailable; source reconstruction never becomes observed client behavior. No invented percentages, universal click target or elapsed-time comparison under unmatched conditions.
+
+Run final-byte checks affected by the actual performance patch, including exact reader/correction/readback/privacy, Stage 3 CP4/CP5, relevant U3-A register/comparison and the integrated task matrix. If shared accounting query behavior changes, broaden to Financial Records request/filter/search/pagination totals and full-entry CRB/CDB versus Journal History line semantics. Preserve U2/U3/U4 adapter/shared-controller evidence and rerun their affected suites for any new presentation fix. Do not mechanically rerun every historical database suite for a larger total. Test failures inside this scope can be corrected and affected checks repeated without a new routine permission request; writer/policy/schema changes require amendment.
+
+**U5-A gate:** expected journals, lifecycle/control reconciliation, correction/evidence/privacy invariants, state behavior, task evidence and inspected captures pass on final source. Automation evidence remains separate from observed use.
+
+## U5-B - Observed user walkthrough
+
+Prepare a fresh disposable demonstration app and guarded visible browser with clearly synthetic data. Existing synthetic-session setup may establish the role before each task; document that setup and do not claim this verifies normal working login/MFA. Never disable production authorization or expose the working app/financial data as the walkthrough fixture. No live OCR/SMTP is required or implied.
+
+**Approved interaction clarification:** finish P0/P1/P2, all independent U5-A checks, fresh synthetic fixture preparation, the guarded visible browser and observation task materials before requesting interaction. Then pause once to tell the user the actual walkthrough is ready. This is a human-observation input dependency, not another plan review or implementation authorization. If the user is unavailable, preserve the ready-to-resume state and keep U5-B pending. Do not request speculative availability during the earlier automated work. The user performs representative payment, receipt, advance settlement and correction/finding tasks, including a Management inspection task. Give the task objective and document facts first; avoid step-by-step coaching that predetermines the result. Observe whether they find the starting action, explain required fields, distinguish draft/review/recorded and recover from a validation prompt. Record completion, assistance, errors, confusion, optional feedback and exact observation boundaries. If assistance is given, mark the task assisted; never invent success/time from automation or reviewer praise. Retest only a changed or failed task after a clearly in-scope usability/presentation fix while retaining the original observation. The same implementation authorization covers that correction, affected automation, human retest and immediate U5-C completion; do not request another routine authorization. A necessary writer/schema/policy/permission/lifecycle/new-service change remains a hard stop.
+
+Do not call an assisted task an unassisted pass. Proposed completion criterion: each required representative task is completed with correct financial state, user explanation of the state transition is observed, and any unresolved confusion/assistance is explicitly accepted as a remaining limitation or corrected/retested. A material repeated usability failure stays open. This is user validation, not Atikha/client acceptance.
+
+**U5-B gate:** an actual user observation exists with honest outcomes. If the user is unavailable, keep this gate pending and deliver the prepared environment/results as partial; do not mark U5 complete by default or treat elapsed time as consent. Availability/interaction can require a pause even under one-shot implementation authority.
+
+## U5-C - Final handoff and external review
+
+Provide a short task guide and an isolated NGO demonstration sequence. Explain task starting points, draft versus Review versus recorded state, required support/proof, uncertainty recovery, finding exact results and Management limits. Publish the guide after the discovery walkthrough or identify any guidance supplied beforehand as assistance; do not use a long manual to excuse an unclear screen.
+
+Produce one consolidated report with separate P0/P1/P2 and U5-A/B/C results, measured SQL/request evidence, classified task/action observations, user participation/assistance, source identities, no-change/changed scope, final-byte tests, timing CSV, screenshots, working preservation comparison and remaining acceptance limits. Keep detailed sessions, raw diagnostic traces and private data private. If the performance correction touched source, include exact baseline/final hashes/blobs, production/test patches, required runnable dependencies and one final exact-source review ZIP. If the walkthrough causes an in-scope source correction, regenerate the package, final source identities and affected regression evidence against the post-walkthrough bytes. Repeat affected timing measurements when the final change can affect the measured path. Reconstruct patches against the declared baseline and verify every packaged hash/image. If no source correction was needed, prepare an evidence-only package rather than inventing a patch.
+
+Update current status/README/roadmap only to the truth actually established: performance verified, automation verified, user walkthrough passed/pending, external approval pending and working/Atikha acceptance separate. Freeze previously approved U2/U3/U4 packages. Do not commit/push unless separately instructed. Stop for one final external review when all gates pass; if a genuine hard stop remains, report the partial outcome without calling both checkpoints complete.
+
+## Exclusions and hard stops
+
+Excluded: working financial postings/receipt mutations, migrations/index changes, repair/restore/cutover, migration-009 diagnosis, backup/health work, provider activation, new accounting/approval/closing rules, writer/lifecycle redesign, schema/role/grant changes, cross-request authorization caching and original Stages 4-7 (running ledger, financial statements, budgets and later OCR/export). U5 validates delivered daily capabilities, not those unfinished future modules. Full Atikha acceptance remains separate.
+
+Stop for source identity/isolation/preservation failures, unstable MariaDB, unexplained working writes, financial/privacy regression outside a clear in-scope defect, a missed performance gate requiring broader change, a new policy/service/schema/permission requirement or any other material scope expansion. Do not reopen database recovery inside this task. Human walkthrough availability is a pending-input gate, not permission to invent its evidence. Successful internal gates otherwise continue without repeated external approval.
+
+**Execution:** the user has supplied the single explicit instruction to implement this approved combined plan. Follow the active delivery/resume record. No further planning round is required. The supplied review includes a recommended execution prompt; recording it does not itself execute or newly authorize database/application operations. After authorization, successful P0/P1/P2/U5-A gates proceed autonomously, the prepared U5-B walkthrough is the one expected human-interaction pause, and the same authorization covers U5-C. No performance correction, U5 test or user acceptance is claimed by this documentation update.

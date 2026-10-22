@@ -1,0 +1,178 @@
+{
+  "classification": "actual human walkthrough with assistance; not client acceptance or production login/MFA",
+  "date": "2026-10-22",
+  "environment": "guarded local synthetic app, visible Edge; synthetic Admin and Management sessions",
+  "timing": "No human elapsed times, percentage improvement, success rate or unassisted completion claims",
+  "main_observations_complete": true,
+  "changed_task_retests_complete": true,
+  "tasks": [
+    {
+      "task": "payment",
+      "draft": 178,
+      "journals": [
+        186
+      ],
+      "amount": "1000.00",
+      "outcome": "recorded and found in history, with assistance",
+      "observations": [
+        "Directed incomplete-entry probe showed missing amount/account errors and preserved other fields.",
+        "User needed simpler explanation of observer question about recording.",
+        "User requested shorter Review copy; accepted refresh returning to saved entry."
+      ],
+      "quote": "yes, it was recorded since i can see it in the history."
+    },
+    {
+      "task": "receipt save/resume/record",
+      "draft": 179,
+      "journals": [
+        187
+      ],
+      "amount": "5000.00",
+      "outcome": "recorded after assisted save/find/resume and grouped-amount recovery",
+      "observations": [
+        "User asked whether to save draft or record.",
+        "Save retained details; user noticed saved message but remained unsure saving had finished.",
+        "Entered 5,000 persisted in draft; reopen inferred Advanced and Review rejected it; assisted correction to 5000.00.",
+        "User again requested removal of Management-approval disclaimer."
+      ],
+      "recording_point_quote": "The last one, when i clicked confirm"
+    },
+    {
+      "task": "advance release, liquidation and return",
+      "advance": 35,
+      "drafts": [
+        180,
+        181,
+        182
+      ],
+      "journals": [
+        188,
+        189,
+        190
+      ],
+      "released": "10000.00",
+      "liquidated": "8000.00",
+      "returned": "2000.00",
+      "outstanding": "0.00",
+      "status": "settled",
+      "outcome": "financial lifecycle settled; navigation/evidence/proof/date assistance retained",
+      "observations": [
+        "Release link was hard to discover; user requested easier access.",
+        "Required due date omitted and supplied with assistance.",
+        "Liquidation and return action navigation required help.",
+        "Manual monetary support allocation and separate bound cash-return proof were guided.",
+        "Zero balance found; small Settled badge required a location hint."
+      ],
+      "comprehension_quote": "i think the two is different, especially liquidation because that one is you use 8000 pesos from the released 10000, and the 2000, you return it. Am i right?",
+      "comprehension_result": "Correct prompted own explanation; 8000 supported spending plus 2000 returned account for the 10000 release."
+    },
+    {
+      "task": "find and correct payment",
+      "original": 186,
+      "correction": 55,
+      "reversal": 191,
+      "replacement": 192,
+      "replacement_amount": "900.00",
+      "draft": 183,
+      "outcome": "recorded after assisted identification/editing and browser-close resume",
+      "observations": [
+        "Initially opened receipt187 instead of payment186.",
+        "Two 1000 debit/credit rows without visible journal identity confused user.",
+        "Observer used full-reader action wording while current modal said Prepare correction draft; preserve observer label mismatch.",
+        "Visible Journal # identity added and seen in subsequent human screenshot.",
+        "User correctly recognized not-recorded preview labels when prompted.",
+        "Accidental browser closure preserved saved draft183; read-only check found unposted, resumed without financial replay."
+      ],
+      "original_preservation_limit": "Human-case check compared original header and amount lines with prior observation, not a full before/after row hash; independent integrated regression proves full-row immutability."
+    },
+    {
+      "task": "Management inspection",
+      "journals": [
+        186,
+        191,
+        192
+      ],
+      "advance": 35,
+      "outcome": "visible read-only transaction and settled timeline inspection, detail navigation assisted",
+      "quote": "i can read the details but dont see any action to record or correct",
+      "observations": [
+        "Event history contains Management exact/comparison read; later Dashboard does not invalidate earlier read.",
+        "User supplied Management register then individual advance detail with three operations and zero/Settled.",
+        "No proof image/download link visible in supplied operation section."
+      ],
+      "limits": [
+        "Synthetic role setup only; normal login/MFA not tested.",
+        "Human screenshot is visible-scope privacy evidence; direct-download and other-channel restrictions are separately automated."
+      ]
+    }
+  ],
+  "agent_observed_fixes": [
+    "Hide stale pre-operation advance context on recorded/uncertain pages",
+    "Promote existing View advance result link",
+    "Keep History View text on one line",
+    "Consistent focused Review disclaimer removal; actual approval metadata preserved"
+  ],
+  "next": "External exact-source review approved. User commit/push of U-PERF-01 + U5 remains pending; full Atikha/client acceptance and later scopes remain separate.",
+  "retests": [
+    {
+      "task": "receipt save/close/find/resume/Review",
+      "draft_id": 184,
+      "result": "Reached expected unposted Review with intended 5000 donor/bank/donation/project/purpose",
+      "evidence": "User screenshot plus retained UI/mutation/visible-state observer events",
+      "observed_sequence": [
+        "Save and close",
+        "save200 id184",
+        "My drafts with184",
+        "Continue",
+        "Review200",
+        "User opens complete debit/credit journal"
+      ],
+      "input_observed": "5000.00",
+      "grouped_input_limit": "This human retry used 5000.00; grouped 5,000 and legacy grouped-draft recovery are covered by separate final automated83-check run. Do not claim newly observed human comma input.",
+      "assistance": "Task facts/goal supplied; no additional click-location hints during this retry. Original assisted/failed receipt attempt retained.",
+      "financial_confirmation": "Not performed in observed retry; screenshot explicitly unrecorded and no post response in retry events.",
+      "subjective_saved_certainty": "Not yet directly reported; ask user simply while proceeding."
+    },
+    {
+      "task": "advance settlement status retry",
+      "advance": 35,
+      "user_quote": "i can see two statuses. We can remove the small one",
+      "visible_status": "Settlement status: Settled plus small duplicate Settled badge",
+      "result": "User found the more prominent status and explicitly requested removing the small duplicate. No new location hint was supplied during this retry.",
+      "selection": "Keep larger labelled authoritative status; remove detail-only small badge; retain due date and overdue information.",
+      "limits": "No elapsed-time or independent accounting-policy claim."
+    },
+    {
+      "task": "outstanding advance action discovery retry",
+      "advance": 34,
+      "user_quote": "i see this",
+      "evidence": "Actual user screenshot plus retained register -> advance34 navigation and visible-state events",
+      "observed": "Outstanding90; one larger status, no duplicate; prominent Record liquidation and Return unused cash controls; due/overdue information retained",
+      "outcome": "Requested screen/controls shown after goal-only prompt; no new location hint in this retry",
+      "financial_mutation": "None observed during retry; user was asked not to submit",
+      "limits": "No claim of a second liquidation/return submission, timing improvement or full blind usability study."
+    }
+  ],
+  "feedback": [
+    {
+      "user_quote": "i saw save draft and save and close. I think that makes it redundant? I think we can remove save draft and leave save and close",
+      "selection": "Keep only Save and close",
+      "source": "Actual human retry feedback",
+      "supersedes": "Agent two-visible-save-controls refinement",
+      "implementation": "Selected single Save and close control implemented in shared focused forms and private walkthrough copy; affected automation passed. Review internal save preserved."
+    },
+    {
+      "user_quote": "i can see two statuses. We can remove the small one",
+      "selection": "Remove the small duplicate detail status badge",
+      "source": "Actual advance35 screenshot and human retry feedback"
+    }
+  ],
+  "human_walkthrough_complete": true,
+  "outcome": "Representative tasks completed with documented assistance; original failures retained; requested in-scope refinements and limited retests captured.",
+  "release_visibility_limit": "Release initially required a location hint. Later actual register view contains the promoted action, but no separate blind release rediscovery or new financial release is claimed.",
+  "historical_refinements_queued_for_retest": [
+    "Distinct Save and close and explicit saved-draft feedback",
+    "Correctly grouped ordinary editable amount normalization; authoritative coverage remains strict",
+    "Prominent server-gated settlement actions and explicit settlement-status label"
+  ]
+}

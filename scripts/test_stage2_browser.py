@@ -4,6 +4,7 @@ Production config, sessions and uploads are never copied. All external requests 
 import argparse, hashlib, json, os, re, secrets, shutil, socket, struct, subprocess, sys, time, zlib
 from urllib.parse import urlencode, urlparse, parse_qsl
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -70,7 +71,7 @@ try:
         def ready():
             page.wait_for_selector('#aw-existing',state='attached');page.wait_for_function("!document.getElementById('aw-existing').disabled || !document.getElementById('aw-posted').hidden")
         def save():
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved')")
+            save_and_resume(page)
         def review():
             page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])')
         def post():

@@ -33,7 +33,7 @@
         if(!response.ok||!data.ok)throw Object.assign(new Error(data.error||'Request failed.'),{status:response.status,uncertain:response.status>=500||response.status<400});
         if(action==='post'&&(!Number.isSafeInteger(data.result?.id)||data.result.id<=0||(advanceFocused&&!AdvancePresentation.positiveId(data.result?.advance_id))))throw Object.assign(new Error('The recorded transaction or advance identity could not be verified. Check the same request.'),{uncertain:true});if(action==='post'&&correctionFocused)CorrectionPresentation.result(data.result,config);return data.result;
     }
-    function message(v){$('aw-status').textContent=v;}
+    function message(v){$('aw-status').textContent=v;$('aw-status').classList.toggle('aw-draft-saved-status',v.startsWith('Draft saved.'));}
     function error(e){if(advanceFocused&&entryStep==='review'&&!token)entryView('enter');if(viewFocused&&entryErrorsShown)entryShowErrors();const p=document.createElement('p');p.textContent=e.message||String(e);$('aw-error').append(p);$('aw-error').focus();}
     function mark(){if(viewFocused){message('');entryView('enter');}if(advanceFocused&&advanceKind==='advance_return')returnProofStatus(read());else if(isAdvance&&$('aw-proof-status'))$('aw-proof-status').textContent='Save and confirm the current return context before review.';dirty=true;token='';$('aw-review-panel').hidden=true;$('aw-draft-label').textContent=(draft?'Draft #'+draft.id:'Unsaved draft')+' · unsaved changes';}
     function select(options,value,empty){const s=document.createElement('select');s.add(new Option(empty,''));options.forEach(([id,label])=>s.add(new Option(label,String(id))));if(value&&!options.some(([id])=>String(id)===String(value))){const unavailable=new Option(value+' (inactive or unavailable)',value);unavailable.disabled=true;s.add(unavailable);}s.value=value||'';return s;}
@@ -106,6 +106,7 @@
         if(isCorrection){correctionPayload.reason=$('aw-correction-reason').value;correctionPayload.backdate_reason=$('aw-backdate-reason').value;}
         Object.entries({'aw-date':'entry_date','aw-reference':'reference','aw-purpose':'description','aw-party':'party_id','aw-default-project':'default_project_id','aw-cash-account':'cash_account_id','aw-cash-amount':'cash_amount','aw-cash-project':'cash_project_id','aw-kind':'transaction_kind','aw-control-account':'control_account_id','aw-due-date':'due_date','aw-approval-name':'approval_name','aw-approval-date':'approval_date','aw-approval-reference':'approval_reference'}).forEach(([id,k])=>{if($(id))state[k]=$(id).value;});
         root.querySelectorAll('[data-line]').forEach(el=>{const l=state.lines.find(l=>l.client_id===el.dataset.line);el.querySelectorAll('[data-field]').forEach(f=>l[f.dataset.field]=f.value);});
+        if(cashFocused){state.cash_amount=PaymentPresentation.editableAmount(state.cash_amount);state.lines.forEach(l=>{l.debit_amount=PaymentPresentation.editableAmount(l.debit_amount);l.credit_amount=PaymentPresentation.editableAmount(l.credit_amount);});}
         root.querySelectorAll('[data-line-note]').forEach(el=>state.line_notes[el.dataset.lineNote]=el.value);
         root.querySelectorAll('[data-document]').forEach(el=>{
             const d=state.documents.find(d=>d.receipt_id===el.dataset.document);
@@ -198,9 +199,15 @@
     }
     function identity(){return {draft_id:String(draft.id),revision:String(draft.revision),submission_key:key};}
     function payloadForSave(){const replacement=read();if(!isCorrection)return replacement;return {entry_date:replacement.entry_date,reason:$('aw-correction-reason').value,backdate_reason:$('aw-backdate-reason').value,replacement:reverseOnly?null:replacement};}
-    async function save(){const payload=payloadForSave();if(!dirty&&draft){if(viewFocused)message('Draft saved. No changes to save. This '+entryNoun+' has not been recorded.');return;}
-        adopt(await api('save',{draft_id:draft?String(draft.id):'',revision:draft?String(draft.revision):'',source_book:book,workflow_kind:advanceKind,advance_id:config.advance_id||'',submission_key:key,target_journal_id:String(config.target_journal_id),mode:config.mode,payload}));message(viewFocused?'Draft saved. This '+entryNoun+' has not been recorded.':'Draft saved. No financial entry has been posted.');if(viewFocused&&entryErrorsShown)entryShowErrors();}
-    function render(){if(isCorrection){$('aw-correction-reason').value=correctionPayload.reason;$('aw-backdate-reason').value=correctionPayload.backdate_reason;showCorrectionContext();}renderMasters();$('aw-date').value=state.entry_date;$('aw-reference').value=state.reference;$('aw-purpose').value=state.description;
+    async function save(){const payload=payloadForSave();if(!dirty&&draft){if(viewFocused)message('Draft saved. No changes to save. Draft #'+draft.id+'. This '+entryNoun+' has not been recorded. Keep editing here, or choose Save and close to leave.');return;}
+        adopt(await api('save',{draft_id:draft?String(draft.id):'',revision:draft?String(draft.revision):'',source_book:book,workflow_kind:advanceKind,advance_id:config.advance_id||'',submission_key:key,target_journal_id:String(config.target_journal_id),mode:config.mode,payload}));message(viewFocused?'Draft saved. Draft #'+draft.id+'. This '+entryNoun+' has not been recorded. Keep editing here, or choose Save and close to leave.':'Draft saved. No financial entry has been posted.');if(viewFocused&&entryErrorsShown)entryShowErrors();}
+    function render(){
+        if(cashFocused&&draft?.state!=='Posted'){
+            let changed=false;const normalize=(object,key)=>{const value=PaymentPresentation.editableAmount(object[key]);if(value!==object[key]){object[key]=value;changed=true;}};
+            normalize(state,'cash_amount');state.lines.forEach(l=>{normalize(l,'debit_amount');normalize(l,'credit_amount');});
+            if(changed){dirty=true;token='';$('aw-draft-label').textContent=(draft?'Draft #'+draft.id:'Unsaved draft')+' · amount formatting updated; save required';message('Thousands separators were removed from editable amounts. Save or Review to save this draft.');}
+        }
+        if(isCorrection){$('aw-correction-reason').value=correctionPayload.reason;$('aw-backdate-reason').value=correctionPayload.backdate_reason;showCorrectionContext();}renderMasters();$('aw-date').value=state.entry_date;$('aw-reference').value=state.reference;$('aw-purpose').value=state.description;
         if(book!=='GJ'){$('aw-cash-amount').value=state.cash_amount;if(state.lines.some(l=>cents(l[book==='CRB'?'debit_amount':'credit_amount'])>0n))$('aw-advanced').checked=true;}
         else $('aw-kind').value=state.transaction_kind;
         if(isAdvance){['due-date','approval-name','approval-date','approval-reference'].forEach(id=>{if($('aw-'+id))$('aw-'+id).value=state[id.replaceAll('-','_')]||'';});
@@ -225,7 +232,12 @@
     $('aw-add-line').addEventListener('click',()=>{read();state.lines.push(freshLine());if(cashFocused)entryMode='split';mark();renderLines();totals();});
     $('aw-advanced')?.addEventListener('change',()=>{read();if(!$('aw-advanced').checked&&state.lines.some(l=>cents(l[book==='CRB'?'debit_amount':'credit_amount'])>0n)){$('aw-advanced').checked=true;error(new Error('Remove opposite-side amounts before returning to simple allocations.'));}renderLines();});
     $('aw-apply-project').addEventListener('click',()=>{read();state.lines.forEach(l=>l.fund_project_id=state.default_project_id);state.cash_project_id=state.default_project_id;mark();render();});
-    $('aw-save').addEventListener('click',()=>run(save));
+    $('aw-save').addEventListener('click',()=>run(async()=>{
+        await save();
+        if(!viewFocused)return;
+        if(!draft||!Number.isSafeInteger(Number(draft.id))||Number(draft.id)<=0||draft.state!=='Draft'||dirty)throw new Error('The saved draft could not be confirmed. Stay here and check My drafts before retrying.');
+        location.href='accounting_drafts.php';
+    }));
     $('aw-entry').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
         await save();if(viewFocused){entryErrorsShown=true;if(entryShowErrors()){entryFocus='aw-error';return;}}token='';const review=await api('review',identity());if(advanceFocused)AdvancePresentation.effect(review,advanceKind);token=review.token;const panel=$('aw-review-content');panel.replaceChildren();
         if(correctionFocused)correctionReviewOriginal(review,panel);if(isCorrection){const heading=document.createElement('h3');heading.textContent='Reversal preview · General Journal · not recorded';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement preview · '+book+' · not recorded';panel.append(h);}}
@@ -376,8 +388,11 @@
         $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
         const title={advance_release:'Release an advance',advance_liquidation:'Record liquidation',advance_return:'Return unused cash'}[advanceKind];
         root.querySelector('h1').textContent={enter:title,review:'Review '+entryNoun,recorded:entryNoun[0].toUpperCase()+entryNoun.slice(1)+' recorded',unknown:'Check recording result'}[step];
-        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter details, review the complete journal, then confirm to record.',review:'Not recorded yet. Check the complete entry. This review is not Management approval.',recorded:'Recorded. Open the linked advance and exact transaction below.',unknown:'This entry may already be recorded. Check the same request before continuing.'}[step];
+        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter details, review the complete journal, then confirm to record.',review:'Not recorded yet. Check the complete entry.',recorded:'Recorded. Open the linked advance and exact transaction below.',unknown:'This entry may already be recorded. Check the same request before continuing.'}[step];
         $('aw-mode-notice').hidden=step!=='enter';$('aw-advance-advisory').hidden=step!=='enter';
+        // This context was loaded before the operation. Never present that old
+        // balance as the current balance after a confirmed posting.
+        $('aw-advance-context').hidden=step==='recorded'||step==='unknown';
         Array.from($('aw-progress').children).forEach((el,i)=>{if(i==={enter:0,review:1,recorded:2,unknown:1}[step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
         if(step==='review')message('Review complete. This '+entryNoun+' has not been recorded.');
         if(step==='recorded')root.querySelectorAll('.aw-columns input,.aw-columns select,.aw-columns textarea,.aw-columns button').forEach(el=>el.disabled=true);

@@ -109,13 +109,13 @@ try:
         check('as_of='+cases['release_date'] in page.get_by_role('link',name='Back to advance register').get_attribute('href'),'Detail Back retains the applied accounting date')
         check(page.get_by_role('link',name="View today's advance").count()==1,'Historical view offers explicit current-date navigation');capture('advance-historical')
         for status,aid in cases['samples'].items():
-            page.goto(base+'/cash_advances.php?advance_id='+str(aid));check(page.locator('.ca-status-line .ca-badge').inner_text().lower().replace(' ','_')==status,'Real detail retains '+status+' lifecycle status')
+            page.goto(base+'/cash_advances.php?advance_id='+str(aid));check(page.locator('.ca-settlement-status strong').inner_text().lower().replace(' ','_')==status,'Real detail retains '+status+' lifecycle status')
             if status in ['settled','cancelled','replaced']:check(page.get_by_role('link',name='Record liquidation',exact=True).count()==0,'No settlement action for '+status)
             if status in ['cancelled','replaced']:check(page.get_by_role('link',name='View posted correction',exact=True).count()>0,'Retired advance retains posted correction comparison')
         if 'settled' in cases['samples']:
             page.goto(base+'/cash_advances.php?advance_id='+str(cases['samples']['settled']));check(page.locator('.ca-operation').count()>=2,'Settled timeline retains all original posted operations');capture('advance-settled')
         page=management.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto(base+'/cash_advances.php');loaded();capture('management-register')
-        check(page.locator('[data-nav-key="payment"]').count()==0 and page.get_by_role('link',name='Release an advance',exact=True).count()==0,'Management gets read navigation without authoring tasks')
+        check(page.locator('[data-nav-key="payment"]').count()==0 and page.locator('a[href="cash_advance_entry.php?workflow_kind=advance_release"]').count()==0,'Management gets read navigation without authoring tasks')
         page.goto(base+'/cash_advances.php?advance_id='+first);check(page.locator('#ca-extension').count()==0 and page.get_by_role('link',name='Record liquidation',exact=True).count()==0,'Management cannot extend or start settlement')
         raw=management.request.get(base+'/cash_advance_actions.php?'+urlencode({'action':'advance','advance_id':first})).json()['result']
         check('external_approval' not in raw and all('private_review' not in op and 'attachments' not in op for op in raw['operations']),'Management detail JSON excludes private review/images/approval context')

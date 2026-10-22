@@ -6,6 +6,7 @@ from datetime import datetime,timedelta
 from decimal import Decimal
 import argparse,hashlib,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -72,7 +73,7 @@ try:
             res=ctx.request.get(base+'/accounting_actions.php?'+urlencode({'action':action,**values})) if method=='GET' else ctx.request.post(base+'/accounting_actions.php',data={'action':action,'csrf_token':session['csrf'],**values})
             check(res.ok,'Ordinary '+action+' succeeds'+(': '+res.text()[:180] if not res.ok else ''));return res.json()['result']
         def save_visible():
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved') && !document.getElementById('aw-save').disabled");return re.search(r'draft_id=(\d+)',page.url).group(1)
+            save_and_resume(page);return re.search(r'draft_id=(\d+)',page.url).group(1)
         def review():
             with page.expect_response(lambda r:r.url.endswith('/accounting_actions.php') and r.request.method=='POST' and r.request.post_data_json.get('action')=='review') as response:page.locator('#aw-review').click()
             page.wait_for_selector('#aw-review-panel:not([hidden])');ready();return response.value.json()['result']

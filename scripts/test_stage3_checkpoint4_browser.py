@@ -3,6 +3,7 @@ Copies code into a private app; never copies production config, sessions or rece
 """
 import argparse,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -96,7 +97,7 @@ try:
         fresh,fs=context('admin@example.invalid');q=fixture['release_request'];q.pop('csrf_token',None);q['review_token']='0000000000.'+'0'*64
         recovered=call('post',q,fresh,fs['csrf']);check(recovered.ok and recovered.json()['result']['replacement_advance_id']==new_id and recovered.json()['result']['duplicate'],'Cross-session expired review recovers release correction')
         q['payload']['replacement']['due_date']='9998-12-31';check(call('post',q,fresh,fs['csrf']).status==409,'Changed advance fields conflict on successful retry')
-        page.goto(base+'/cash_advances.php?advance_id='+str(old_id));check(page.locator('.ca-status-line .ca-badge').inner_text().lower()=='replaced' and page.locator('#ca-extension').count()==0,'Old release detail is Replaced without settlement/extension actions')
+        page.goto(base+'/cash_advances.php?advance_id='+str(old_id));check(page.locator('.ca-settlement-status strong').inner_text().lower()=='replaced' and page.locator('#ca-extension').count()==0,'Old release detail is Replaced without settlement/extension actions')
         check(page.locator('a',has_text='View replacement advance').get_attribute('href').find('advance_id='+str(new_id))>=0,'Old detail navigates to replacement')
         page.goto(base+'/cash_advances.php?advance_id='+str(new_id));check(page.locator('.ca-outstanding strong').inner_text()=='PHP 9,000.00' and page.locator('#ca-extension').count()==1,'New advance detail has correct outstanding and normal actions')
         page.goto(base+'/journal_correction.php?journal_id='+str(fixture['blocked_release']));page.wait_for_function("document.getElementById('aw-correction-eligibility').textContent.includes('Blocking')")
@@ -108,7 +109,7 @@ try:
         check(page.locator('[data-advance-result="replacement_advance_id"]').count()==0 and page.locator('[data-advance-result="original_advance_id"]').get_attribute('href').endswith('='+str(fixture['settlement_advance'])),'Liquidation posting preserves original advance navigation')
         check(page.locator('#aw-posted a[href="financial_records.php?from=&to="]').count()==1,'GJ liquidation result has one Journal History link')
         page.goto(base+'/journal_correction.php?draft_id='+str(fixture['return_draft']));ready();page.locator('#aw-confirm-proof').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Proof confirmed')")
-        page.locator('#aw-cash-amount').fill('1400.00');page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved')")
+        page.locator('#aw-cash-amount').fill('1400.00');save_and_resume(page)
         check('not been confirmed' in page.locator('#aw-proof-status').inner_text(),'Editing the return amount invalidates confirmation visibly')
         page.locator('#aw-cash-amount').fill('1500.00');page.locator('#aw-confirm-proof').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Proof confirmed')");review()
         check('Return proof confirmed' in page.locator('#aw-review-content').inner_text(),'Return review confirms current proof and amount')

@@ -3,6 +3,7 @@ Copies code into a private app; never copies production config, sessions or rece
 """
 import argparse,hashlib,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -68,7 +69,7 @@ try:
             v=ordinary('review',ident);original_request={**ident,'payload':d['payload'],'review_token':v['token']};posted=ordinary('post',original_request)
             page.goto(base+'/journal_correction.php?journal_id='+str(posted['id']));page.wait_for_function("document.getElementById('aw-save') && !document.getElementById('aw-save').disabled")
             page.locator('#aw-correction-reason').fill('Synthetic CP5 visible '+book)
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved')")
+            save_and_resume(page)
             page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])');check(page.locator('#aw-post').is_enabled(),'Ordinary '+book+' correction available while Stage 2 off')
             if book=='CDB':
                 for width,height in [(1366,768),(1920,1080)]:

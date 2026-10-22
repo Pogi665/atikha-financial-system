@@ -94,8 +94,10 @@ try:
         if args.gate in ['b','all']:
             gate='b';before=state();page.goto(base+'/financial_records.php?from=&to=',wait_until='networkidle');page.wait_for_selector('#records-table tbody .records-view')
             check('Find a transaction' in page.locator('h1').inner_text() and 'General Ledger' not in page.locator('h1').inner_text(),'History is not labelled as unfinished running General Ledger')
+            visible_journal=page.locator('#records-table tbody tr').first.locator('.records-journal-identity').inner_text();capture('b-history-journal-identities')
             page.locator('#records-table tbody .records-view').first.click();page.wait_for_selector('#transaction-dialog[open]')
             exact=page.get_by_role('link',name=re.compile('View complete transaction #'));href=exact.get_attribute('href');journal=int(href.split('=')[-1]);exact.click();page.wait_for_selector('.correction-details')
+            check(visible_journal=='Journal #'+str(journal),'Visible history identity opens the same exact journal')
             check('Transaction #'+str(journal) in page.locator('h1').inner_text(),'Modal opens the same exact journal ID')
             check(page.locator('tfoot').inner_text().startswith('Complete entry totals'),'Exact view retains full-entry totals')
             capture('b-exact-transaction')

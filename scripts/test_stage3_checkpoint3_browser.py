@@ -3,6 +3,7 @@ Copies code into a private app; never copies production config, sessions or rece
 """
 import argparse,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
 from pathlib import Path
+from browser_workspace_helpers import save_and_resume
 root=Path(__file__).resolve().parent.parent
 sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
 from playwright.sync_api import sync_playwright
@@ -54,7 +55,7 @@ try:
         def ready():
             page.wait_for_selector('#aw-party-search',state='attached');page.wait_for_function("document.getElementById('aw-save').disabled===false")
         def save():
-            page.locator('#aw-save').click();page.wait_for_function("document.getElementById('aw-status').textContent.includes('Draft saved') || document.getElementById('aw-error').textContent.length>0");check(not page.locator('#aw-error').inner_text(),'Draft saved without validation error')
+            save_and_resume(page);check(not page.locator('#aw-error').inner_text(),'Draft saved without validation error')
         def call(action,values={},actor=None,csrf=None):return (actor or ctx).request.post(base+'/journal_correction_actions.php',data={'action':action,'csrf_token':csrf or session['csrf'],**values})
         if int(sql('SELECT COUNT(*) n FROM journal_corrections WHERE target_journal_id='+str(int(fixture['payment_target'])))[0]['n']):
             entry={'entry_date':time.strftime('%Y-%m-%d'),'reference':'','description':'Synthetic browser original','party_id':str(fixture['party']),'default_project_id':'','cash_account_id':str(fixture['bank']),'cash_amount':'1000.00','cash_project_id':'','transaction_kind':'ordinary','documents':[],'lines':[{'client_id':'browser_cost','account_id':str(fixture['training']),'fund_project_id':'','debit_amount':'1000.00','credit_amount':''}]}

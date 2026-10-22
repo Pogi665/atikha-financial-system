@@ -83,7 +83,7 @@ try:
             if now['status']=='settled' and now['outstanding']=='0.00' and old['outstanding']=='100.00':historical=(candidate,old);break
         check(historical is not None and historical[1]['status']=='outstanding','Actual settled fixture restates to PHP 100.00 outstanding at its release date')
         candidate,old=historical;page.goto(base+'/cash_advances.php?advance_id='+str(candidate['advance_id'])+'&as_of='+candidate['first_date'])
-        check(page.locator('.ca-outstanding strong').inner_text()=='PHP 100.00' and page.locator('.ca-status-line .ca-badge').inner_text()=='Outstanding','Historical HTML retains the authoritative earlier balance and settlement state')
+        check(page.locator('.ca-outstanding strong').inner_text()=='PHP 100.00' and page.locator('.ca-settlement-status strong').inner_text()=='Outstanding','Historical HTML retains the authoritative earlier balance and settlement state')
         for role,ctx in [('admin',admin),('management',management)]:
             pg=ctx.new_page();pg.on('pageerror',lambda e:errors.append(str(e)))
             for label,url in [('register','/cash_advances.php'),('detail','/cash_advances.php?advance_id='+str(first))]:
