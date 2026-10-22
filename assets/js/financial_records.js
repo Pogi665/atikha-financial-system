@@ -262,6 +262,7 @@
         const button=event.target.closest('.records-view');if(!button)return;const row=table.row(button.closest('tr')).data();if(!row)return;
         const j=data.journals[row.journal_id];opener=button;dialog.dataset.transaction=String(row.journal_id);
         const details=document.getElementById('transaction-details');details.replaceChildren();
+        const exactLabel=document.createElement('dt'),exactValue=document.createElement('dd'),exactLink=document.createElement('a');exactLabel.textContent='Complete transaction';exactLink.href='journal_transaction.php?journal_id='+encodeURIComponent(row.journal_id);exactLink.textContent='View complete transaction #'+row.journal_id;exactValue.append(exactLink);details.append(exactLabel,exactValue);
         if(correctionsEnabled&&j.correction_entry_available===true&&j.correction_eligible!==false){const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent='Correction';a.href='journal_correction.php?journal_id='+row.journal_id;a.textContent='Prepare correction draft';dd.append(a);details.append(dt,dd);}
         (j.corrections||[]).forEach(c=>{const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent=c.role;a.href='journal_corrections.php?correction_id='+c.id;a.textContent='Correction #'+c.id+' - accounting date '+c.accounting_date;dd.append(a,document.createTextNode(' - '+c.reason+' (this date may be outside the displayed range)'));details.append(dt,dd);});
         if(row.source_book){const party=row.party_snapshot?JSON.parse(row.party_snapshot):null;[['Originating book',row.source_book],['Payer / payee',party?.name||'Not recorded']].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});}
@@ -274,9 +275,9 @@
             const article=document.createElement('article');article.className='journal-receipt';
             const heading=document.createElement('h3');heading.textContent=a.name;article.append(heading);
             if(a.review){const p=document.createElement('p');p.textContent=a.review.purpose==='amount'?'Reviewed monetary evidence: PHP '+a.review.accepted_amount+' accepted of PHP '+a.review.declared_amount+'; supports '+a.review.support_side+' lines.':a.review.purpose==='legacy'?'Legacy evidence — no monetary review was recorded.':'Reviewed informational document — no monetary coverage.';article.append(p);}
-            const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' ? '+a.size+' bytes ? SHA-256 '+a.sha256;article.append(meta);
+            const technical=document.createElement('details'),ts=document.createElement('summary');ts.textContent='Original file details';technical.append(ts);const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' · '+a.size+' bytes · SHA-256 '+a.sha256;technical.append(meta);article.append(technical);
             const link=document.createElement('a');link.href=a.url;link.target='_blank';link.rel='noopener';link.textContent='View receipt';article.append(link);
-            const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' ? ',download);
+            const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' · ',download);
             container.append(article);
         });
         dialog.showModal();document.getElementById('transaction-close').focus();

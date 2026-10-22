@@ -1,0 +1,632 @@
+diff --git a/accounting_drafts.php b/accounting_drafts.php
+index 6bcbc18ea34ad5f29106a99aaf3817a8cae708ad..6bcec1e5ca080dffefface93e72d900eed90c9b2 100644
+--- a/accounting_drafts.php
++++ b/accounting_drafts.php
+@@ -4,7 +4,7 @@ require_once __DIR__.'/includes/accounting_workspace.php';require_once __DIR__.'
+ try{workspace_guard($pdo,(int)$_SESSION['UserID']);}catch(JournalProblem $e){http_response_code($e->status);exit(htmlspecialchars($e->getMessage(),ENT_QUOTES,'UTF-8'));}
+ layout_begin('My Drafts','accounting_drafts',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/assets/css/accounting_workspace.css').'">');
+ ?>
+-<div class="accounting-workspace"><header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING</p><h1>My drafts</h1><p>Private saved work. Drafts have no effect on financial records.</p></div><div><a href="cash_receipt.php">New receipt</a> · <a href="cash_disbursement.php">New payment</a> · <a href="general_journal.php">New journal</a></div></header>
+-<section class="aw-card"><form id="draft-filters" class="aw-draft-filters"><label>Entry type<select name="source_book"><option value="">All types</option><option>CRB</option><option>CDB</option><option>GJ</option></select></label><label>Last saved from<input name="from" type="date" min="1000-01-01" max="9998-12-31"></label><label>Last saved to<input name="to" type="date" min="1000-01-01" max="9998-12-31"></label><button>Apply filters</button></form><p class="aw-help">Date filters use the last saved date in Asia/Manila. The accounting date remains shown for each draft.</p><p role="status" id="draft-filter-status"></p><p role="status" id="draft-status"></p><p role="alert" id="draft-error"></p><div class="aw-table-wrap"><table class="aw-table"><thead><tr><th>Draft</th><th>Type / accounting date</th><th>Purpose</th><th>Last saved (Asia/Manila)</th><th>Actions</th></tr></thead><tbody id="draft-list"></tbody></table></div></section></div>
++<div class="accounting-workspace"><header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING</p><h1>My drafts</h1><p>Private saved work. Drafts have no effect on financial records.</p></div><div><a href="cash_receipt.php">Record money received</a> · <a href="cash_disbursement.php">Record a payment</a> · <a href="general_journal.php">Other journal entry</a></div></header>
++<section class="aw-card"><form id="draft-filters" class="aw-draft-filters"><label>Source book<select name="source_book"><option value="">All books</option><option>CRB</option><option>CDB</option><option>GJ</option></select></label><label>Last saved from<input name="from" type="date" min="1000-01-01" max="9998-12-31"></label><label>Last saved to<input name="to" type="date" min="1000-01-01" max="9998-12-31"></label><button>Apply filters</button></form><p class="aw-help">Filter by the book, not the task type. Date filters use the last saved date in Asia/Manila. The accounting date remains shown for each draft.</p><p role="status" id="draft-filter-status"></p><p role="status" id="draft-status"></p><p role="alert" id="draft-error"></p><div class="aw-table-wrap"><table class="aw-table"><thead><tr><th>Draft</th><th>Task / accounting date</th><th>Purpose / reason</th><th>Last saved (Asia/Manila)</th><th>Actions</th></tr></thead><tbody id="draft-list"></tbody></table></div></section></div>
+ <script type="application/json" id="draft-data"><?= json_encode(['csrf_token'=>csrf_token()],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) ?></script>
+ <?php layout_end('<script src="assets/js/accounting_drafts.js?v='.filemtime(__DIR__.'/assets/js/accounting_drafts.js').'"></script>'); ?>
+diff --git a/assets/css/accounting_workspace.css b/assets/css/accounting_workspace.css
+index cfdfe9f880568d8d3cbd7120220ae458e2eafb58..618a229173ae1fe5c0a514d098ba50fe056bc95d 100644
+--- a/assets/css/accounting_workspace.css
++++ b/assets/css/accounting_workspace.css
+@@ -118,3 +118,7 @@
+ @media(max-width:1100px){.aw-advance-editor .aw-columns{grid-template-columns:1fr}.aw-advance-editor .aw-header{flex-wrap:wrap}}@media print{.aw-advance-editor #aw-progress,.aw-advance-editor .aw-actions,.aw-advance-editor #aw-mode-notice,.aw-advance-editor #aw-advance-advisory,.aw-advance-editor .aw-header>div:last-child{display:none!important}.aw-advance-editor .aw-payment-summary{break-inside:avoid}}
+ 
+ .aw-advance-editor #aw-liabilities{border-top:2px solid #cbd5e1;margin-top:18px;padding-top:14px}.aw-advance-editor #aw-liquidation-estimate{padding:12px;background:#f1f5f9;border-radius:8px}.aw-advance-editor #aw-unsupported-values{white-space:pre-wrap;overflow-wrap:anywhere}.aw-advance-editor .aw-line h3{font-weight:650;margin-bottom:8px}
++
++/* U4: version 4 correction presentation, separate from ordinary and advance paths. */
++.aw-correction-editor{max-width:1200px}.aw-correction-editor #aw-progress{display:flex;gap:24px;list-style:none;padding:0;margin:18px 0}.aw-correction-editor #aw-progress li{padding:8px 0;color:#64748b;border-bottom:3px solid #e2e8f0}.aw-correction-editor #aw-progress [aria-current=step]{font-weight:700;color:#0f766e;border-color:#0f766e}.aw-correction-editor #aw-mode-notice{padding:12px;background:#f1f5f9;border-radius:8px}.aw-correction-editor #aw-review-content h3{font-size:17px;font-weight:650;margin-top:22px}.aw-correction-editor #aw-review-content .aw-table{margin:12px 0 24px}.aw-correction-editor #aw-unknown{border:2px solid #d97706}.aw-correction-editor #aw-correction-result-links{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.aw-correction-editor #aw-correction-details-error{padding:14px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px}.aw-correction-editor dialog{max-width:600px;border:1px solid #cbd5e1;border-radius:12px;padding:24px}.aw-correction-editor [aria-invalid=true]{border-color:#be123c!important}.aw-correction-editor .aw-actions{flex-wrap:wrap}.aw-correction-editor .aw-table tfoot{font-weight:650}.aw-correction-editor .aw-header{flex-wrap:wrap}.aw-correction-editor p,.aw-correction-editor td{overflow-wrap:anywhere}.aw-correction-editor #aw-status{color:#334155}
++@media print{.aw-correction-editor #aw-progress,.aw-correction-editor #aw-mode-notice,.aw-correction-editor #aw-correction-context .aw-grid,.aw-correction-editor #aw-correction-context>a,.aw-correction-editor #aw-unknown,.aw-correction-editor dialog{display:none!important}.aw-correction-editor .aw-table-wrap{overflow:visible}}
+diff --git a/assets/css/ocr_expense.css b/assets/css/ocr_expense.css
+index dedf3a735b544c1d9e490a07e6cd6f02446250c6..cc5840e13a8d6fe538137138e92edf3ff11b5634 100644
+--- a/assets/css/ocr_expense.css
++++ b/assets/css/ocr_expense.css
+@@ -43,3 +43,6 @@
+ #ocr-progress:empty,#ocr-retry-progress:empty{display:none}#ocr-progress{padding:12px;border-radius:7px;background:#f8fafc;color:#475569;margin-top:16px}#ocr-retry-progress{display:block;max-width:220px}
+ @media(max-width:1200px){.ocr-grid{grid-template-columns:1fr}.ocr-preview-frame img{max-height:500px}.ocr-card{padding:20px}.ocr-header{flex-wrap:wrap}}
+ @media print{.ocr-header>a,.ocr-actions,.ocr-primary{display:none}.ocr-grid{display:block}.ocr-card{margin-bottom:16px}}
++
++/* U4: uncertain mutations remain distinct from extraction success/failure. */
++.ocr-workspace #ocr-mutation-feedback[hidden],.ocr-workspace #ocr-mutation-feedback [hidden]{display:none!important}.ocr-workspace #ocr-mutation-feedback{margin:18px 0;border:1px solid #d97706;padding:18px;border-radius:10px}.ocr-workspace #ocr-mutation-feedback h2{font-weight:700;margin-bottom:8px}.ocr-workspace #ocr-mutation-feedback button,.ocr-workspace #ocr-mutation-feedback a{display:inline-block;margin:10px 12px 0 0}.ocr-workspace #ocr-mutation-feedback button{padding:8px 12px;border:1px solid #64748b;border-radius:6px}.ocr-workspace #ocr-mutation-feedback button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+diff --git a/assets/js/accounting_drafts.js b/assets/js/accounting_drafts.js
+index f214e24273f4f6534767c3097372a051566717d8..586c1f9bc3cb2775f829df717f894dbc1f6053e6 100644
+--- a/assets/js/accounting_drafts.js
++++ b/assets/js/accounting_drafts.js
+@@ -4,6 +4,23 @@
+     const form=document.getElementById('draft-filters'),error=document.getElementById('draft-error'),body=document.getElementById('draft-list');
+     const status=document.getElementById('draft-status'),filterStatus=document.getElementById('draft-filter-status');
+     let sequence=0,pending=null,applied=null;
++    const mutations=new Map();
++    const positive=v=>/^\d+$/.test(String(v))&&Number.isSafeInteger(Number(v))&&Number(v)>0;
++    const task=row=>row.workflow_kind==='correction'
++        ? (row.correction_mode==='reverse_only'?'Reverse an entry recorded by mistake':'Correct a recorded transaction')+' · original journal #'+row.correction_target_journal_id
++        : ({advance_release:'Release an advance',advance_liquidation:'Liquidate an advance',advance_return:'Return unused cash'}[row.workflow_kind]
++            ||{CRB:'Record money received',CDB:'Record a payment',GJ:'Other journal entry'}[row.source_book]);
++    function validate(records){
++        if(!Array.isArray(records)||records.some(row=>!row||!positive(row.id)||!positive(row.revision)||!['CRB','CDB','GJ'].includes(row.source_book)
++            ||!['ordinary','advance_release','advance_liquidation','advance_return','correction',undefined,null,''].includes(row.workflow_kind)
++            ||(row.workflow_kind==='correction'&&(!['reverse_only','reverse_replace'].includes(row.correction_mode)||!positive(row.correction_target_journal_id)))
++            ||typeof row.updated_at_display!=='string')||new Set(records.map(row=>String(row.id))).size!==records.length)throw new Error('Unexpected draft-list response.');
++        return records;
++    }
++    async function readList(snapshot={},signal){
++        const r=await fetch('accounting_actions.php?'+new URLSearchParams({action:'drafts',...snapshot}),{credentials:'same-origin',cache:'no-store',signal});
++        const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not load drafts.');return validate(d.result);
++    }
+     const filters=()=>Object.fromEntries(new FormData(form));
+     function mark(){filterStatus.textContent=!applied||Object.entries(filters()).some(([k,v])=>applied[k]!==v)||Array.from(form.querySelectorAll('input')).some(el=>!el.validity.valid)?'Changes not applied.':'';}
+     function rows(records){
+@@ -11,17 +28,36 @@
+         records.forEach(row=>{
+             const tr=document.createElement('tr');tr.dataset.draftId=String(row.id);
+             const correction=row.workflow_kind==='correction',advance=row.workflow_kind?.startsWith('advance_');
+-            [row.id,(correction?'Correction '+row.correction_mode.replaceAll('_',' ')+' · journal #'+row.correction_target_journal_id:advance?row.workflow_kind.replace('advance_','Advance ').replaceAll('_',' '):row.source_book)+' / '+(row.entry_date||'No accounting date'),row.description||'No purpose yet',row.updated_at_display].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});
++            ['Draft #'+row.id,task(row)+' · '+row.source_book+' / '+(row.entry_date||'No accounting date'),row.description||'No purpose or reason yet',row.updated_at_display].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});
+             const actions=document.createElement('td'),a=document.createElement('a');
+             a.href=(correction?'journal_correction.php':advance?'cash_advance_entry.php':({CRB:'cash_receipt.php',CDB:'cash_disbursement.php',GJ:'general_journal.php'}[row.source_book]))+'?draft_id='+row.id;a.textContent='Continue';actions.append(a,' ');
+             const b=document.createElement('button');b.textContent='Discard';b.type='button';
++            const originalHref=a.getAttribute('href');
++            function sync(){
++                const state=mutations.get(String(row.id));
++                b.disabled=state==='pending'||state==='checking'||state==='gone';
++                b.textContent=state==='unknown'?'Check discard result':state==='pending'?'Discarding…':state==='checking'?'Checking…':state==='gone'?'No longer active':'Discard';
++                if(state){a.removeAttribute('href');a.setAttribute('aria-disabled','true');}else{a.href=originalHref;a.removeAttribute('aria-disabled');}
++            }
++            sync();
+             b.addEventListener('click',async()=>{
+-                if(!confirm('Discard this draft and its reserved images? No posted financial records will change.'))return;
+-                b.disabled=true;error.textContent='';let discarded=false;
++                if(mutations.get(String(row.id))==='unknown'){
++                    mutations.set(String(row.id),'checking');sync();error.textContent='';
++                    try{
++                        // An unfiltered owner-scoped read avoids mistaking an out-of-filter draft for a discard.
++                        const records=await readList(),current=records.find(item=>String(item.id)===String(row.id));
++                        if(!current){mutations.set(String(row.id),'gone');status.textContent='Draft #'+row.id+' is no longer an active draft. No further discard was sent.';}
++                        else if(String(current.revision)!==String(row.revision)){mutations.set(String(row.id),'unknown');throw new Error('This draft changed. Apply filters to load its current revision before taking another action.');}
++                        else{mutations.delete(String(row.id));status.textContent='Draft #'+row.id+' is still saved. Continue or deliberately choose Discard again.';}
++                    }catch(e){mutations.set(String(row.id),'unknown');error.textContent='Discard result remains unverified. '+e.message;}
++                    finally{sync();}return;
++                }
++                if(!confirm('Discard draft #'+row.id+' ('+task(row)+') and its reserved images? No posted financial records will change.'))return;
++                mutations.set(String(row.id),'pending');sync();error.textContent='';let discarded=false;
+                 try{
+                     const r=await fetch(correction?'journal_correction_actions.php':advance?'cash_advance_actions.php':'accounting_actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'discard',csrf_token:csrf,draft_id:String(row.id),revision:String(row.revision)})});
+-                    const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not discard this draft.');discarded=true;b.textContent='Discarded';a.removeAttribute('href');await load();
+-                }catch(e){error.textContent=e.message;if(!discarded&&b.isConnected)b.disabled=false;}
++                    const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Could not discard this draft.');discarded=true;mutations.set(String(row.id),'gone');sync();await load();
++                }catch(e){if(!discarded)mutations.set(String(row.id),'unknown');sync();error.textContent='Discard was not confirmed. Check its result before another action. '+e.message;}
+             });actions.append(b);tr.append(actions);fragment.append(tr);
+         });
+         if(!records.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No saved drafts match these filters.';tr.append(td);fragment.append(tr);}
+@@ -32,9 +68,10 @@
+         const request=++sequence,snapshot=filters();pending?.abort();const controller=new AbortController();pending=controller;
+         error.textContent='';status.textContent='Loading saved drafts...';body.setAttribute('aria-busy','true');
+         try{
+-            const r=await fetch('accounting_actions.php?'+new URLSearchParams({action:'drafts',...snapshot}),{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+-            const d=await r.json();if(request!==sequence)return;if(!r.ok||!d.ok)throw new Error(d.error||'Could not load drafts.');if(!Array.isArray(d.result))throw new Error('Unexpected draft-list response.');
+-            const next=rows(d.result);body.replaceChildren(next);applied=snapshot;status.textContent=d.result.length+' saved draft'+(d.result.length===1?'':'s')+' loaded.';mark();
++            const records=await readList(snapshot,controller.signal);if(request!==sequence)return;
++            // A verified changed revision is safe to resume; an unresolved same-revision mutation remains guarded.
++            records.forEach(row=>{const old=body.querySelector('[data-draft-id="'+row.id+'"]');if(old&&old.dataset.revision!==String(row.revision)&&mutations.get(String(row.id))==='unknown')mutations.delete(String(row.id));});
++            const next=rows(records);Array.from(next.children).forEach(tr=>{const row=records.find(item=>String(item.id)===tr.dataset.draftId);if(row)tr.dataset.revision=String(row.revision);});body.replaceChildren(next);applied=snapshot;status.textContent=records.length+' saved draft'+(records.length===1?'':'s')+' loaded.';mark();
+         }catch(e){if(request!==sequence||e.name==='AbortError')return;status.textContent='';error.textContent=(applied?'The previously loaded list is still shown. ':'')+'Could not apply these filters. '+e.message;mark();}
+         finally{if(request===sequence){body.setAttribute('aria-busy','false');pending=null;}}
+     }
+diff --git a/assets/js/accounting_workspace.js b/assets/js/accounting_workspace.js
+index c6b1b347192874c423fa35723f13cfb923d98942..17f7261caee099c658bd3c24ff441fcfde6323a6 100644
+--- a/assets/js/accounting_workspace.js
++++ b/assets/js/accounting_workspace.js
+@@ -9,12 +9,13 @@
+     const counterpartSide=book==='CRB'?'credit':'debit',oppositeSide=book==='CRB'?'debit':'credit';
+     const advanceKind=config.workflow_kind||'',isAdvance=Boolean(advanceKind),isLiquidation=advanceKind==='advance_liquidation';
+     const advanceFocused=typeof AdvancePresentation!=='undefined'&&AdvancePresentation.enabled(config);
+-    const viewFocused=focused||advanceFocused;
+-    const entryNoun=advanceFocused?AdvancePresentation.names[advanceKind]:book==='CDB'?'payment':book==='CRB'?'receipt':'journal entry';
++    const correctionFocused=typeof CorrectionPresentation!=='undefined'&&CorrectionPresentation.enabled(config);
++    const viewFocused=focused||advanceFocused||correctionFocused;
++    const entryNoun=correctionFocused?(reverseOnly?'reversal':'correction'):advanceFocused?AdvancePresentation.names[advanceKind]:book==='CDB'?'payment':book==='CRB'?'receipt':'journal entry';
+     const $=id=>document.getElementById(id),root=$('entry-workspace');
+     const nonce=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),x=>x.toString(16).padStart(2,'0')).join('');
+     let lists=config.lists,draft=null,key=nonce(),token='',dirty=false,busy=false,documentDetails=[],pendingUpload=null;
+-    let liquidationDetailed=false,confirmedProofKey=null;
++    let liquidationDetailed=false,confirmedProofKey=null,correctionRecorded=false;
+     let busyDisabled=[],entryMode='',entryStep='enter',entryRequest=null,entryErrorsShown=false,leaveDestination='',entryFocus='',entryErrorSignature='';
+     function disableBusyControls(){if(!busy||(!isCorrection&&!advanceFocused))return;root.querySelectorAll('button,input,select,textarea').forEach(el=>{if(!el.disabled){el.disabled=true;busyDisabled.push(el);}});}
+     const freshLine=()=>({client_id:nonce(),account_id:'',fund_project_id:$('aw-default-project')?.value||'',debit_amount:'',credit_amount:''});
+@@ -30,7 +31,7 @@
+         let response;try{response=await fetch(url,options);}catch(e){if(viewFocused)throw Object.assign(new Error('The connection was interrupted. Check the recording result using the same request.'),{uncertain:true});throw e;}let data;try{data=await response.json();}catch{throw Object.assign(new Error('The server response was interrupted. Retry the same action.'),{uncertain:true});}
+         if(typeof data?.ok!=='boolean')throw Object.assign(new Error('The recording response could not be verified. Check the same request.'),{uncertain:true});
+         if(!response.ok||!data.ok)throw Object.assign(new Error(data.error||'Request failed.'),{status:response.status,uncertain:response.status>=500||response.status<400});
+-        if(action==='post'&&(!Number.isSafeInteger(data.result?.id)||data.result.id<=0||(advanceFocused&&!AdvancePresentation.positiveId(data.result?.advance_id))))throw Object.assign(new Error('The recorded transaction or advance identity could not be verified. Check the same request.'),{uncertain:true});return data.result;
++        if(action==='post'&&(!Number.isSafeInteger(data.result?.id)||data.result.id<=0||(advanceFocused&&!AdvancePresentation.positiveId(data.result?.advance_id))))throw Object.assign(new Error('The recorded transaction or advance identity could not be verified. Check the same request.'),{uncertain:true});if(action==='post'&&correctionFocused)CorrectionPresentation.result(data.result,config);return data.result;
+     }
+     function message(v){$('aw-status').textContent=v;}
+     function error(e){if(advanceFocused&&entryStep==='review'&&!token)entryView('enter');if(viewFocused&&entryErrorsShown)entryShowErrors();const p=document.createElement('p');p.textContent=e.message||String(e);$('aw-error').append(p);$('aw-error').focus();}
+@@ -117,7 +118,7 @@
+     function input(value,attr){const i=document.createElement('input');i.value=value||'';i.inputMode='decimal';Object.assign(i.dataset,attr);return i;}
+     function renderLines(){
+         if(cashFocused&&$('aw-cash-project'))$('aw-project-home').after($('aw-cash-project').closest('label'));
+-        destroyRecordSelectors($('aw-lines'));$('aw-lines').replaceChildren();const advanced=advanceFocused||(focused?entryMode==='advanced':book==='GJ'||$('aw-advanced').checked);
++        destroyRecordSelectors($('aw-lines'));$('aw-lines').replaceChildren();const advanced=correctionFocused||advanceFocused||(focused?entryMode==='advanced':book==='GJ'||$('aw-advanced').checked);
+         state.lines.forEach((l,index)=>{
+             const box=document.createElement('div');box.className='aw-line';box.dataset.line=l.client_id;
+             const top=document.createElement('div');top.className='aw-line-top';
+@@ -153,6 +154,7 @@
+         state.documents.forEach(d=>{
+             const box=document.createElement('article');box.className='aw-document';box.dataset.document=d.receipt_id;
+             const heading=document.createElement('h3');heading.textContent=documentDetails.find(x=>String(x.id)===d.receipt_id)?.name||'Image #'+d.receipt_id;box.append(heading);
++            const support=document.createElement('p');support.className='aw-help';support.dataset.supportSummary='';support.setAttribute('role','status');box.append(support);
+             const link=document.createElement('a');link.href=documentDetails.find(x=>String(x.id)===d.receipt_id)?.url||'receipt_attachment.php?receipt_id='+encodeURIComponent(d.receipt_id)+(draft?.state==='Posted'?'&journal_id='+draft.posted_journal_id:'');link.target='_blank';link.rel='noopener';link.textContent='Open original image';box.append(link);
+             const image=document.createElement('img');image.src=link.href;image.alt='Supporting document '+d.receipt_id;box.append(image);
+             const detail=documentDetails.find(x=>String(x.id)===d.receipt_id);
+@@ -162,7 +164,7 @@
+                 const choices=isLiquidation?[['debit','Expenditure / asset debits']]:book==='CRB'?[['credit','Credit allocations']]:book==='CDB'?[['debit','Debit allocations']]:[['debit','Debit lines'],['credit','Credit lines']];
+                 const side=select(choices,d.support_side,'Choose supported side');side.dataset.docField='support_side';box.append(field('Supports',side));
+                 const grid=document.createElement('div');grid.className='aw-grid';
+-                ['declared_amount','accepted_amount'].forEach(k=>grid.append(field(k==='declared_amount'?'Confirmed total (PHP)':'Accepted amount (PHP)',input(d[k],{docField:k}))));box.append(grid);
++                ['declared_amount','accepted_amount'].forEach(k=>grid.append(field(k==='declared_amount'?'Declared document amount (PHP)':'Support amount for this entry (PHP)',input(d[k],{docField:k}))));box.append(grid);
+                 const reason=document.createElement('textarea');reason.value=d.exclusion_reason;reason.maxLength=2000;reason.dataset.docField='exclusion_reason';box.append(field('Reason for excluded amount',reason));
+                 if(isLiquidation){const warning=document.createElement('p');warning.className='aw-document-warning';warning.dataset.partialWarning='';warning.setAttribute('role','status');box.append(warning);updatePartialDocumentWarning(box);}
+                 state.lines.filter(l=>{const a=lists.accounts.find(a=>String(a.CategoryID)===l.account_id);return a&&!Number(a.Is_Cash_Account)&&(!isLiquidation||(['Expense','Asset'].includes(a.Account_Type)&&a.Normal_Balance==='Debit'&&!lists.controls.includes(Number(a.CategoryID))))&&cents(l[d.support_side+'_amount'])>0n;}).forEach(l=>{
+@@ -173,9 +175,18 @@
+             const reviewed=document.createElement('input');reviewed.type='checkbox';reviewed.checked=d.reviewed;reviewed.dataset.docField='reviewed';const reviewLabel=field(' I reviewed the original image and confirmed these details',reviewed);reviewLabel.className='aw-inline';reviewLabel.prepend(reviewed);box.append(reviewLabel);
+             const remove=document.createElement('button');remove.type='button';remove.textContent='Remove from draft';remove.addEventListener('click',()=>run(async()=>{if(!isCorrection||correctionTarget.eligible)await save();adopt(await api('remove',{...identity(),receipt_id:d.receipt_id}));render();message('Document released from this draft.');}));box.append(remove);
+             kind.addEventListener('change',()=>{read();d.reviewed=false;if(kind.value==='amount')d.support_side=book==='CRB'?'credit':'debit';mark();renderDocuments();});
+-            box.append(document.createElement('br'));$('aw-documents').append(box);
++            box.append(document.createElement('br'));$('aw-documents').append(box);updateDocumentSummary(box);
+         });disableBusyControls();
+     }
++    function updateDocumentSummary(box){
++        const d=state.documents.find(item=>item.receipt_id===box.dataset.document),el=box.querySelector('[data-support-summary]');if(!d||!el)return;
++        const review=d.reviewed?'Reviewed for this draft. ':'Needs manual review. ';
++        if(d.purpose!=='amount'){el.textContent=review+'Informational document; no monetary coverage. This is not a payment or authenticity verification.';return;}
++        const declared=cents(d.declared_amount),accepted=cents(d.accepted_amount),allocations=d.allocations.map(a=>cents(a.amount));
++        if(declared===null||accepted===null||allocations.some(a=>a===null)||accepted>declared){el.textContent=review+'Check the declared, supported and allocated amounts. Server Review validates coverage.';return;}
++        const allocated=allocations.reduce((sum,a)=>sum+a,0n);
++        el.textContent=review+'Declared '+money(declared)+' · Support for this entry '+money(accepted)+' · Allocated to lines '+money(allocated)+' · Excluded '+money(declared-accepted)+'. Server Review validates coverage.'+(isLiquidation?' Generated control and liability credits do not provide expenditure support.':'');
++    }
+     function adopt(d){draft=d;key=d.submission_key;if(isCorrection){correctionPayload=structuredClone(d.payload);state=structuredClone(d.payload.replacement||{...state,entry_date:d.payload.entry_date,lines:[],documents:[]});if(d.target)correctionTarget=d.target;}else state=structuredClone(d.payload);if(d.document_details)documentDetails=d.document_details;dirty=false;token='';if(advanceFocused&&advanceKind==='advance_return'){confirmedProofKey=d.return_confirmation?AdvancePresentation.proofKey(state):null;returnProofStatus(state);}else if($('aw-proof-status'))$('aw-proof-status').textContent=d.return_confirmation?'Proof confirmed for the saved amount and documents.':'Proof has not been confirmed for this saved context.';$('aw-draft-label').textContent='Draft #'+d.id+' · saved';
+         const url=new URL(location.href);url.searchParams.set('draft_id',d.id);url.searchParams.delete('receipt_id');history.replaceState(null,'',url);
+     }
+@@ -196,20 +207,20 @@
+             if($('aw-control-account'))replaceSelect('aw-control-account',lists.all_accounts.filter(a=>lists.controls.includes(Number(a.CategoryID))).map(a=>[a.CategoryID,a.Name+' \u00b7 '+(a.Account_Code||'#'+a.CategoryID)]),state.control_account_id,'Select advance control account',true);
+         }
+         if(focused)entryMode=PaymentPresentation.mode(state,book);renderLines();renderDocuments();totals();lockAdvanceContext();if(viewFocused&&entryErrorsShown)entryShowErrors();}
+-    function lockAdvanceContext(){if(viewFocused&&draft?.state==='Posted')entryView('recorded');if(!isAdvance)return;if(!isLiquidation){$('aw-lines').hidden=!(advanceFocused&&state.lines.length);if(advanceFocused){const heading=root.querySelector('#aw-entry .aw-section-heading');heading.hidden=!state.lines.length;heading.querySelector('h2').textContent='Unsupported saved journal lines';} $('aw-advanced')?.closest('label')?.setAttribute('hidden','');}if(config.advance){['aw-party','aw-default-project','aw-cash-project'].forEach(id=>{if($(id))$(id).disabled=true;});root.querySelectorAll('[data-new-master]').forEach(b=>b.hidden=true);$('aw-apply-project').hidden=true;}if(!isLiquidation&&$('aw-cash-project'))$('aw-cash-project').closest('label').hidden=true;syncRecordSelectors();}
++    function lockAdvanceContext(){if(viewFocused&&draft?.state==='Posted'&&(!correctionFocused||correctionRecorded))entryView('recorded');if(!isAdvance)return;if(!isLiquidation){$('aw-lines').hidden=!(advanceFocused&&state.lines.length);if(advanceFocused){const heading=root.querySelector('#aw-entry .aw-section-heading');heading.hidden=!state.lines.length;heading.querySelector('h2').textContent='Unsupported saved journal lines';} $('aw-advanced')?.closest('label')?.setAttribute('hidden','');}if(config.advance){['aw-party','aw-default-project','aw-cash-project'].forEach(id=>{if($(id))$(id).disabled=true;});root.querySelectorAll('[data-new-master]').forEach(b=>b.hidden=true);$('aw-apply-project').hidden=true;}if(!isLiquidation&&$('aw-cash-project'))$('aw-cash-project').closest('label').hidden=true;syncRecordSelectors();}
+ 
+     async function run(op){if(busy)return;busy=true;busyDisabled=[];const disabled=busyDisabled;root.querySelectorAll('button,input,select,textarea').forEach(el=>{if(!el.disabled){el.disabled=true;disabled.push(el);}});syncRecordSelectors();$('aw-error').textContent='';
+-        try{await op();}catch(e){error(e);}finally{busy=false;disabled.forEach(el=>{if(el.isConnected)el.disabled=false;});if(draft?.state==='Posted')root.querySelectorAll('#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-entry button,.aw-columns aside input,.aw-columns aside select,.aw-columns aside textarea,.aw-columns aside button').forEach(el=>el.disabled=true);lockAdvanceContext();if(isCorrection){$('aw-post').disabled=!token||draft?.state==='Posted';if(draft?.state==='Posted'&&$('aw-replacement-book'))$('aw-replacement-book').disabled=true;if(draft)$('aw-correction-mode').disabled=true;if(!correctionTarget.eligible||draft?.state==='Discarded'){root.querySelectorAll('#aw-entry button,#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-upload,#aw-attach,#aw-attach-reuse,#aw-confirm-proof,#aw-replacement-book').forEach(el=>el.disabled=true);}}syncRecordSelectors();restoreMasterFocus();if(advanceFocused)$('aw-post').disabled=!token||draft?.state==='Posted';if(viewFocused){if(entryRequest&&entryStep==='unknown'){root.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);$('aw-check-result').disabled=false;}if(entryFocus){$(entryFocus)?.focus();entryFocus='';}}}
++        try{await op();}catch(e){error(e);}finally{busy=false;disabled.forEach(el=>{if(el.isConnected)el.disabled=false;});if(draft?.state==='Posted')root.querySelectorAll('#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-entry button,.aw-columns aside input,.aw-columns aside select,.aw-columns aside textarea,.aw-columns aside button').forEach(el=>el.disabled=true);lockAdvanceContext();if(isCorrection){$('aw-post').disabled=!token||draft?.state==='Posted';if(draft?.state==='Posted'&&$('aw-replacement-book'))$('aw-replacement-book').disabled=true;if(draft)$('aw-correction-mode').disabled=true;if(!correctionTarget.eligible||draft?.state==='Discarded'){root.querySelectorAll('#aw-entry button,#aw-entry input,#aw-entry select,#aw-entry textarea,#aw-upload,#aw-attach,#aw-attach-reuse,#aw-confirm-proof,#aw-replacement-book').forEach(el=>el.disabled=true);}}syncRecordSelectors();restoreMasterFocus();if(advanceFocused)$('aw-post').disabled=!token||draft?.state==='Posted';if(viewFocused){if(entryRequest&&entryStep==='unknown'){root.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);$('aw-check-result').disabled=false;}if(correctionFocused&&correctionRecorded)root.querySelectorAll('#aw-posted button,.aw-header button').forEach(el=>el.disabled=false);if(entryFocus){$(entryFocus)?.focus();entryFocus='';}}}
+     }
+-    function table(lines){const t=document.createElement('table');t.className='aw-table';const h=document.createElement('tr');['Account','Project','Debit (PHP)','Credit (PHP)'].forEach(v=>{const th=document.createElement('th');th.textContent=v;h.append(th);});t.append(h);lines.forEach(l=>{const tr=document.createElement('tr');[l.account_name,l.project_name,l.debit_amount,l.credit_amount].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});t.append(tr);});return t;}
++    function table(lines){const t=document.createElement('table');t.className='aw-table';const h=document.createElement('tr');['Account','Project','Debit (PHP)','Credit (PHP)'].forEach(v=>{const th=document.createElement('th');th.textContent=v;h.append(th);});t.append(h);lines.forEach(l=>{const tr=document.createElement('tr');[l.account_name,l.project_name,l.debit_amount,l.credit_amount].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});t.append(tr);});if(correctionFocused){let debit=0n,credit=0n;lines.forEach(l=>{const d=cents(l.debit_amount),c=cents(l.credit_amount);if(d===null||c===null)throw new Error('Journal preview contains an invalid amount.');debit+=d;credit+=c;});const foot=document.createElement('tfoot'),tr=document.createElement('tr');['Complete journal totals','',money(debit),money(credit)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});foot.append(tr);t.append(foot);}return t;}
+     // Native selects emit input before change. Document-purpose changes first rebuild
+     // their dependent controls; validate the finished editor in the change handler.
+-    root.addEventListener('input',e=>{if(!busy&&e.target.tagName!=='SELECT'&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){mark();totals();if(viewFocused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);}});
++    root.addEventListener('input',e=>{if(!busy&&e.target.tagName!=='SELECT'&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){mark();totals();if(viewFocused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box){updatePartialDocumentWarning(box);updateDocumentSummary(box);}}});
+     root.addEventListener('change',e=>{if(!busy&&!e.target.hasAttribute('data-record-search')&&e.target.closest('#aw-entry,[data-document]')){
+         if(e.target.dataset.docField&&e.target.dataset.docField!=='reviewed'){const box=e.target.closest('[data-document]');box.querySelector('[data-doc-field="reviewed"]').checked=false;}
+         read();mark();if(e.target.dataset.docField==='support_side'){state.documents.find(d=>d.receipt_id===e.target.closest('[data-document]').dataset.document).allocations=[];renderDocuments();}
+         if(advanceFocused&&isLiquidation&&e.target.dataset.field==='account_id'){renderLines();renderDocuments();}
+-        totals();if(viewFocused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box)updatePartialDocumentWarning(box);
++        totals();if(viewFocused&&entryErrorsShown)entryShowErrors();const box=e.target.closest('[data-document]');if(box){updatePartialDocumentWarning(box);updateDocumentSummary(box);}
+     }});
+     $('aw-add-line').addEventListener('click',()=>{read();state.lines.push(freshLine());if(cashFocused)entryMode='split';mark();renderLines();totals();});
+     $('aw-advanced')?.addEventListener('change',()=>{read();if(!$('aw-advanced').checked&&state.lines.some(l=>cents(l[book==='CRB'?'debit_amount':'credit_amount'])>0n)){$('aw-advanced').checked=true;error(new Error('Remove opposite-side amounts before returning to simple allocations.'));}renderLines();});
+@@ -217,17 +228,18 @@
+     $('aw-save').addEventListener('click',()=>run(save));
+     $('aw-entry').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+         await save();if(viewFocused){entryErrorsShown=true;if(entryShowErrors()){entryFocus='aw-error';return;}}token='';const review=await api('review',identity());if(advanceFocused)AdvancePresentation.effect(review,advanceKind);token=review.token;const panel=$('aw-review-content');panel.replaceChildren();
+-        if(isCorrection){const heading=document.createElement('h3');heading.textContent='Generated exact reversal · General Journal';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement · '+book;panel.append(h);}}
++        if(correctionFocused)correctionReviewOriginal(review,panel);if(isCorrection){const heading=document.createElement('h3');heading.textContent='Reversal preview · General Journal · not recorded';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement preview · '+book+' · not recorded';panel.append(h);}}
+         const summary=document.createElement('p');summary.textContent=review.input.entry_date+' · '+(review.party?.name||'No party')+' · '+review.input.description;panel.append(summary);
+         const cover=document.createElement('div');cover.className='aw-coverage';cover.textContent=advanceFocused?review.coverage.status:review.coverage.status+' — '+(isLiquidation?['debit']:book==='GJ'?['debit','credit']:book==='CRB'?['credit']:['debit']).map(side=>side+': PHP '+review.coverage[side].covered+' supported of PHP '+review.coverage[side].eligible).join('; ');panel.append(cover);
+-        if(advanceFocused)advanceSummary(review,panel);else if(focused)entrySummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(focused){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=entryMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l[oppositeSide+'_amount'])>0n);details.append(summary,wrap);panel.append(details);entryView('review');entryFocus='aw-post';}else{panel.append(wrap);if(advanceFocused){entryView('review');entryFocus='aw-post';}}$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Post reversal':'Post correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
++        if(advanceFocused)advanceSummary(review,panel);else if(focused)entrySummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(focused){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=entryMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l[oppositeSide+'_amount'])>0n);details.append(summary,wrap);panel.append(details);entryView('review');entryFocus='aw-post';}else{if(!reverseOnly)panel.append(wrap);if(advanceFocused||correctionFocused){entryView('review');entryFocus='aw-post';}}$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Confirm and record reversal':'Confirm and record correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
+     });});
+-    $('aw-back').addEventListener('click',()=>{if(viewFocused)entryView('enter');token='';$('aw-review-panel').hidden=true;$('aw-purpose').focus();});
+-    function posted(id,duplicate=false,advanceId=config.advance_id){if(viewFocused){entryRequest=null;entryView('recorded');message(duplicate?'Recorded result recovered. No duplicate '+entryNoun+' was created.':entryNoun[0].toUpperCase()+entryNoun.slice(1)+' recorded.');$('aw-exact-link').href='journal_transaction.php?journal_id='+encodeURIComponent(id);entryFocus='aw-exact-link';}if(advanceFocused)draft.advance_id=advanceId;if(isAdvance){if($('aw-print-label'))$('aw-print-label').textContent='POSTED journal #'+id;if($('aw-advance-link'))$('aw-advance-link').href='cash_advances.php?advance_id='+advanceId;}draft.state='Posted';draft.posted_journal_id=id;dirty=false;token='';renderDocuments();$('aw-review-panel').hidden=true;$('aw-posted').hidden=false;$('aw-draft-label').textContent='Posted journal #'+id;$('aw-posted-message').textContent='Journal #'+id+(duplicate?' was already posted. The existing result was recovered.':' posted successfully.');
++    $('aw-back').addEventListener('click',()=>{if(viewFocused)entryView('enter');token='';$('aw-review-panel').hidden=true;$(correctionFocused?'aw-correction-reason':'aw-purpose').focus();});
++    function posted(id,duplicate=false,advanceId=config.advance_id){if(correctionFocused)correctionRecorded=true;if(viewFocused){entryRequest=null;entryView('recorded');message(duplicate?'Recorded result recovered. No duplicate '+entryNoun+' was created.':entryNoun[0].toUpperCase()+entryNoun.slice(1)+' recorded.');$('aw-exact-link').href='journal_transaction.php?journal_id='+encodeURIComponent(id);entryFocus='aw-exact-link';}if(advanceFocused)draft.advance_id=advanceId;if(isAdvance){if($('aw-print-label'))$('aw-print-label').textContent='POSTED journal #'+id;if($('aw-advance-link'))$('aw-advance-link').href='cash_advances.php?advance_id='+advanceId;}draft.state='Posted';draft.posted_journal_id=id;dirty=false;token='';renderDocuments();$('aw-review-panel').hidden=true;$('aw-posted').hidden=false;$('aw-draft-label').textContent='Posted journal #'+id;$('aw-posted-message').textContent='Journal #'+id+(duplicate?' was already posted. The existing result was recovered.':' posted successfully.');
+         if(book!=='GJ')$('aw-posted-link').href='financial_records.php?view='+book.toLowerCase()+'&from=&to=';$('aw-posted').scrollIntoView();}
+-    $('aw-post').addEventListener('click',()=>run(async()=>{if(viewFocused){entryRequest=structuredClone({...identity(),payload:payloadForSave(),review_token:token});await entryRecord();return;}const result=await api('post',{...identity(),payload:payloadForSave(),review_token:token});posted(result.id,result.duplicate,result.advance_id);if(isCorrection)await showPostedCorrection();}));
++    $('aw-post').addEventListener('click',()=>run(async()=>{if(viewFocused){entryRequest=correctionFocused?CorrectionPresentation.freeze({...identity(),payload:payloadForSave(),review_token:token}):structuredClone({...identity(),payload:payloadForSave(),review_token:token});await entryRecord();return;}const result=await api('post',{...identity(),payload:payloadForSave(),review_token:token});posted(result.id,result.duplicate,result.advance_id);if(isCorrection)await showPostedCorrection();}));
+     async function showPostedCorrection(loaded=null){
+         const d=loaded||await api('draft',{draft_id:String(draft.id)},'GET');
++        if(correctionFocused){const result=CorrectionPresentation.resumed(d,config);correctionResultLinks(result);$('aw-correction-details-error').hidden=true;}
+         correctionTarget=d.target;message('Correction posted. The original journal remains unchanged.');
+         const eligibility=$('aw-correction-eligibility');eligibility.textContent='Corrected on '+d.payload.entry_date+'. The original remains posted and immutable.';
+         const detailLink=document.createElement('a');detailLink.href='journal_corrections.php?journal_id='+config.target_journal_id;detailLink.textContent='View posted correction';eligibility.append(' ',detailLink);
+@@ -236,8 +248,8 @@
+         const panel=$('aw-posted');panel.querySelectorAll('[data-correction-result]').forEach(el=>el.remove());
+         const section=document.createElement('section');section.dataset.correctionResult='1';
+         const a=document.createElement('a');a.href='journal_corrections.php?journal_id='+config.target_journal_id;a.textContent='View posted correction / print comparison';section.append(a);
+-        if(isAdvance){$('aw-advance-navigation').hidden=true;const ids=d.posted_result||{};for(const [key,label] of [['original_advance_id','View original advance'],['replacement_advance_id','View replacement advance']])if(ids[key]){const link=document.createElement('a');link.href='cash_advances.php?advance_id='+ids[key];link.textContent=label;link.dataset.advanceResult=key;section.append(document.createTextNode(' \u00b7 '),link);}}
+-        Object.entries(d.posted_bundle||{}).forEach(([kind,value])=>{const h=document.createElement('h3');h.textContent=kind+' journal #'+value.journal_id;section.append(h,table(value.lines.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));});
++        if(isAdvance&&!correctionFocused){$('aw-advance-navigation').hidden=true;const ids=d.posted_result||{};for(const [key,label] of [['original_advance_id','View original advance'],['replacement_advance_id','View replacement advance']])if(ids[key]){const link=document.createElement('a');link.href='cash_advances.php?advance_id='+ids[key];link.textContent=label;link.dataset.advanceResult=key;section.append(document.createTextNode(' \u00b7 '),link);}}
++        Object.entries(d.posted_bundle||{}).forEach(([kind,value])=>{const h=document.createElement('h3');const exact=document.createElement('a');exact.href='journal_transaction.php?journal_id='+value.journal_id;exact.textContent=kind+' journal #'+value.journal_id;h.append(exact);section.append(h,table(value.lines.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));});
+         panel.append(section);
+         if($('aw-print-label'))$('aw-print-label').textContent='POSTED correction - accounting date '+d.payload.entry_date;
+     }
+@@ -287,12 +299,15 @@
+         const box=$('aw-original');box.replaceChildren();const summary=document.createElement('p');summary.textContent=correctionTarget.journal.entry_date+' · '+(correctionTarget.journal.source_book||'Legacy General Journal')+' · '+correctionTarget.journal.description;box.append(summary,table(correctionTarget.lines.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));
+         const status=$('aw-correction-eligibility');status.textContent=correctionTarget.ineligible_reason||'Eligible target. The original remains immutable.';
+         if(correctionTarget.correction){const a=document.createElement('a');a.href='journal_corrections.php?journal_id='+config.target_journal_id;a.textContent='View posted correction';status.append(' ',a);}
+-        correctionTarget.blockers.forEach(b=>{const p=document.createElement('p');p.textContent='Blocking '+b.operation_kind+' journal #'+b.journal_id;status.append(p);});
++        correctionTarget.blockers.forEach(b=>{const p=document.createElement('p');p.textContent='Blocking '+b.operation_kind+' journal #'+b.journal_id;const link=document.createElement('a');link.href='journal_transaction.php?journal_id='+b.journal_id;link.textContent='View blocking transaction';p.append(' ',link);status.append(p);});
+         $('aw-date').min=correctionTarget.journal.entry_date;$('aw-date').max=config.today;
+     }
+     $('aw-correction-mode')?.addEventListener('change',()=>{
+-        if(dirty&&!confirm('Start another correction mode? Unsaved values will be replaced.')){$('aw-correction-mode').value=config.mode;return;}
+-        dirty=false;location.href='journal_correction.php?journal_id='+config.target_journal_id+'&mode='+$('aw-correction-mode').value;
++        const mode=$('aw-correction-mode').value;$('aw-correction-mode').value=config.mode;
++        if(draft||busy||entryStep==='unknown'){message('A saved correction keeps its mode. Preserve this draft and start a separate task for another mode.');return;}
++        const dest='journal_correction.php?journal_id='+config.target_journal_id+'&mode='+mode;
++        if(correctionFocused&&dirty){leaveDestination=dest;$('aw-leave-error').textContent='';$('aw-leave-dialog').showModal();return;}
++        dirty=false;location.href=dest;
+     });
+     $('aw-replacement-book')?.addEventListener('change',()=>run(async()=>{
+         const next=$('aw-replacement-book').value,p=payloadForSave(),r=p.replacement;
+@@ -303,7 +318,7 @@
+         dirty=false;location.href='journal_correction.php?draft_id='+d.id;
+     }));
+     function entryView(step){
+-        if(advanceFocused){advanceView(step);return;}if(!focused)return;entryStep=step;
++        if(correctionFocused){correctionView(step);return;}if(advanceFocused){advanceView(step);return;}if(!focused)return;entryStep=step;
+         root.querySelector('.aw-columns').hidden=step!=='enter';
+         $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
+         const capital=entryNoun[0].toUpperCase()+entryNoun.slice(1);
+@@ -314,6 +329,47 @@
+         if(step==='review')message('Review complete. This '+entryNoun+' has not been recorded.');
+         if(step==='recorded')root.querySelectorAll('.aw-columns input,.aw-columns select,.aw-columns textarea,.aw-columns button').forEach(el=>el.disabled=true);
+     }
++    function correctionView(step){
++        entryStep=step;root.dataset.correctionStep=step;
++        root.querySelector('.aw-columns').hidden=step!=='enter';
++        if($('aw-reuse-card'))$('aw-reuse-card').hidden=step!=='enter';
++        $('aw-correction-context').querySelector('.aw-grid').hidden=step!=='enter';
++        if($('aw-advance-context'))$('aw-advance-context').hidden=step!=='enter';
++        if($('aw-other-correction-mode'))$('aw-other-correction-mode').hidden=step!=='enter';
++        $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
++        $('aw-mode-notice').hidden=step!=='enter';
++        root.querySelector('h1').textContent={enter:reverseOnly?'Reverse an entry recorded by mistake':'Correct a recorded transaction',review:'Review '+entryNoun+' previews',recorded:'Correction recorded',unknown:'Recording result unknown'}[step];
++        root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Prepare a linked '+entryNoun+'. The original remains in history.',review:'Not recorded yet. Inspect the original and generated journal previews before confirming.',recorded:'Recorded together. Open the exact journals or correction comparison below.',unknown:'This correction may already be recorded. Check the same frozen request before continuing.'}[step];
++        Array.from($('aw-progress').children).forEach((el,i)=>{if(i==={enter:0,review:1,recorded:2,unknown:1}[step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
++        if(step==='review')message('Review complete. These generated journals are previews, not posted transactions.');
++        if(step==='recorded')root.querySelectorAll('.aw-columns input,.aw-columns select,.aw-columns textarea,.aw-columns button').forEach(el=>el.disabled=true);
++    }
++    function correctionValidate(){
++        const errors={};if(!$('aw-correction-reason').value.trim())errors['aw-correction-reason']='Explain why this recorded transaction needs correction.';
++        if(!$('aw-date').value||!$('aw-date').validity.valid)errors['aw-date']='Choose a valid accounting date within the permitted correction dates.';
++        return errors;
++    }
++    function correctionReviewOriginal(review,panel){
++        if(review.mode!==config.mode||!Array.isArray(review.original)||!Array.isArray(review.reversal?.lines)||!review.original.length||!review.reversal.lines.length)throw new Error('Correction previews could not be verified. Review the same saved draft again.');
++        const h=document.createElement('h3'),a=document.createElement('a');a.href='journal_transaction.php?journal_id='+config.target_journal_id;a.textContent='Original journal #'+config.target_journal_id;h.append(a);
++        panel.append(h,table(review.original.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));
++        const reason=document.createElement('p');reason.textContent='Correction reason: '+review.reason;panel.append(reason);
++    }
++    function correctionResultLinks(result){
++        CorrectionPresentation.result(result,config);$('aw-correction-eligibility').textContent='Correction recorded. The original remains posted and unchanged.';$('aw-correction-result-links').replaceChildren();
++        const links=$('aw-correction-result-links');
++        for(const [key,label] of [['target_journal_id','View original'],['reversal_journal_id','View reversal'],['replacement_journal_id','View replacement']]){
++            if(result[key]===null)continue;const a=document.createElement('a');a.href='journal_transaction.php?journal_id='+result[key];a.textContent=label+' #'+result[key];a.dataset.correctionLink=key;links.append(a,' · ');
++        }
++        const compare=document.createElement('a');compare.href='journal_corrections.php?correction_id='+result.correction_id;compare.textContent='Compare correction #'+result.correction_id;links.append(compare);
++        for(const [key,label] of [['original_advance_id','View original advance'],['replacement_advance_id','View replacement advance']])if(CorrectionPresentation.positiveId(result[key])){
++            const a=document.createElement('a');a.href='cash_advances.php?advance_id='+result[key];a.textContent=label+' #'+result[key];a.dataset.advanceResult=key;links.append(' · ',a);
++        }
++        if($('aw-advance-navigation'))$('aw-advance-navigation').hidden=true;
++    }
++    function correctionDetailsUnavailable(e){
++        const el=$('aw-correction-details-error');el.hidden=false;el.querySelector('p').textContent='Correction recorded; full details are temporarily unavailable. Retry this read, not the financial posting. '+e.message;
++    }
+     function advanceView(step){
+         entryStep=step;root.dataset.advanceStep=step;
+         root.querySelector('.aw-columns').hidden=step!=='enter';
+@@ -477,7 +533,7 @@
+         return errors;
+     }
+     function entryShowErrors(){
+-        if(!viewFocused)return 0;const errors=advanceFocused?advanceValidate():entryValidate();
++        if(!viewFocused)return 0;const errors=correctionFocused?correctionValidate():advanceFocused?advanceValidate():entryValidate();
+         const signature=JSON.stringify(errors),entries=Object.entries(errors);
+         // Do not replace a clicked summary link during the field's blur/change event.
+         if(signature===entryErrorSignature&&$('aw-error').querySelectorAll('a').length===entries.length&&entries.every(([id])=>$(id+'-error')&&$(id)?.getAttribute('aria-invalid')==='true'))return entries.length;
+@@ -517,7 +573,7 @@
+     }
+     async function entryRecord(){
+         const recovering=entryStep==='unknown';
+-        try{const result=await api('post',entryRequest);posted(result.id,result.duplicate,result.advance_id);}
++        try{const result=await api('post',entryRequest);posted(result.id,result.duplicate,result.advance_id);if(correctionFocused){correctionResultLinks(result);try{await showPostedCorrection();}catch(e){correctionDetailsUnavailable(e);}}}
+         catch(e){if(recovering||e.uncertain||!e.status){entryView('unknown');message('Recording result is unknown. Keep this draft and check the same request.');entryFocus='aw-check-result';}else{entryRequest=null;entryView('review');}throw e;}
+     }
+     if(focused){
+@@ -543,7 +599,7 @@
+             const a=e.target.closest('a[href]');if(!a||a.target==='_blank'||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.getAttribute('href').startsWith('#'))return;
+             const dest=new URL(a.href,location.href);if(dest.origin!==location.origin)return;
+             if(busy||entryStep==='unknown'){e.preventDefault();message('Wait for the current action or check the recording result before leaving.');return;}
+-            const current=entryStep!=='recorded'&&(advanceFocused?AdvancePresentation.sameTask(a.href,location.href,{workflow_kind:advanceKind,advance_id:config.advance_id,draft_id:draft?.id}):dest.pathname===location.pathname&&!dest.search);if(current){e.preventDefault();return;}
++            const current=entryStep!=='recorded'&&(correctionFocused?CorrectionPresentation.sameTask(a.href,location.href,{...config,draft_id:draft?.id}):advanceFocused?AdvancePresentation.sameTask(a.href,location.href,{workflow_kind:advanceKind,advance_id:config.advance_id,draft_id:draft?.id}):dest.pathname===location.pathname&&!dest.search);if(current){e.preventDefault();return;}
+             if(!dirty)return;e.preventDefault();leaveDestination=a.href;$('aw-leave-error').textContent='';$('aw-leave-dialog').showModal();
+         });
+         $('aw-leave-stay').addEventListener('click',()=>$('aw-leave-dialog').close());
+@@ -552,9 +608,16 @@
+     }
+     if(viewFocused)bindEntryNavigation();
+ 
++    if(correctionFocused){
++        const links=document.createElement('nav');links.id='aw-correction-result-links';links.className='correction-navigation';links.setAttribute('aria-label','Recorded correction journals');$('aw-posted-message').after(links);
++        const unavailable=document.createElement('section');unavailable.id='aw-correction-details-error';unavailable.hidden=true;const p=document.createElement('p'),retry=document.createElement('button');p.setAttribute('role','status');retry.type='button';retry.textContent='Retry correction details';retry.addEventListener('click',()=>run(async()=>{try{await showPostedCorrection();}catch(e){correctionDetailsUnavailable(e);}}));unavailable.append(p,retry);links.after(unavailable);
++        $('aw-unknown').querySelector('h2').textContent='Recording result unknown';
++        const newMode=document.createElement('a');newMode.id='aw-other-correction-mode';newMode.href='journal_correction.php?journal_id='+config.target_journal_id+'&mode='+(reverseOnly?'reverse_replace':'reverse_only');newMode.textContent='Start a separate '+(reverseOnly?'reverse-and-replace':'reverse-only')+' task';$('aw-correction-context').append(newMode);
++        correctionView('enter');
++    }
+     if(advanceFocused)advanceLayout();
+     render();showAdvanceContext();run(async()=>{
+-        if(config.draft_id){const d=await api('draft',{draft_id:config.draft_id},'GET');if(d.source_book!==book)throw new Error('This draft belongs to a different entry page. Open it from My drafts.');adopt(d);render();if(d.state==='Posted'){posted(d.posted_journal_id,true,d.advance_id);if(isCorrection)await showPostedCorrection(d);}if(d.state==='Discarded')throw new Error('This draft was discarded.');}
++        if(config.draft_id){const d=await api('draft',{draft_id:config.draft_id},'GET');if(d.source_book!==book)throw new Error('This draft belongs to a different entry page. Open it from My drafts.');adopt(d);render();if(d.state==='Posted'){if(correctionFocused){const result=CorrectionPresentation.resumed(d,config);posted(result.id,true,result.advance_id);correctionResultLinks(result);await showPostedCorrection(d);}else{posted(d.posted_journal_id,true,d.advance_id);if(isCorrection)await showPostedCorrection(d);}}if(d.state==='Discarded')throw new Error('This draft was discarded.');}
+         await refreshDocuments();if(advanceFocused)employeeAdvances();
+         if(config.receipt_id&&!config.draft_id){await save();adopt(await api('attach',{...identity(),receipt_id:config.receipt_id}));render();message('Image attached to a new private draft. Enter and review the journal manually.');}
+     });
+diff --git a/assets/js/financial_records.js b/assets/js/financial_records.js
+index 1bbd05c2030218dc2a04a6d9d9c793f1f7949607..b8b79a69b90d3546b077f8092c55928ce6021f32 100644
+--- a/assets/js/financial_records.js
++++ b/assets/js/financial_records.js
+@@ -262,6 +262,7 @@
+         const button=event.target.closest('.records-view');if(!button)return;const row=table.row(button.closest('tr')).data();if(!row)return;
+         const j=data.journals[row.journal_id];opener=button;dialog.dataset.transaction=String(row.journal_id);
+         const details=document.getElementById('transaction-details');details.replaceChildren();
++        const exactLabel=document.createElement('dt'),exactValue=document.createElement('dd'),exactLink=document.createElement('a');exactLabel.textContent='Complete transaction';exactLink.href='journal_transaction.php?journal_id='+encodeURIComponent(row.journal_id);exactLink.textContent='View complete transaction #'+row.journal_id;exactValue.append(exactLink);details.append(exactLabel,exactValue);
+         if(correctionsEnabled&&j.correction_entry_available===true&&j.correction_eligible!==false){const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent='Correction';a.href='journal_correction.php?journal_id='+row.journal_id;a.textContent='Prepare correction draft';dd.append(a);details.append(dt,dd);}
+         (j.corrections||[]).forEach(c=>{const dt=document.createElement('dt'),dd=document.createElement('dd'),a=document.createElement('a');dt.textContent=c.role;a.href='journal_corrections.php?correction_id='+c.id;a.textContent='Correction #'+c.id+' - accounting date '+c.accounting_date;dd.append(a,document.createTextNode(' - '+c.reason+' (this date may be outside the displayed range)'));details.append(dt,dd);});
+         if(row.source_book){const party=row.party_snapshot?JSON.parse(row.party_snapshot):null;[['Originating book',row.source_book],['Payer / payee',party?.name||'Not recorded']].forEach(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;details.append(dt,dd);});}
+@@ -274,9 +275,9 @@
+             const article=document.createElement('article');article.className='journal-receipt';
+             const heading=document.createElement('h3');heading.textContent=a.name;article.append(heading);
+             if(a.review){const p=document.createElement('p');p.textContent=a.review.purpose==='amount'?'Reviewed monetary evidence: PHP '+a.review.accepted_amount+' accepted of PHP '+a.review.declared_amount+'; supports '+a.review.support_side+' lines.':a.review.purpose==='legacy'?'Legacy evidence — no monetary review was recorded.':'Reviewed informational document — no monetary coverage.';article.append(p);}
+-            const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' ? '+a.size+' bytes ? SHA-256 '+a.sha256;article.append(meta);
++            const technical=document.createElement('details'),ts=document.createElement('summary');ts.textContent='Original file details';technical.append(ts);const meta=document.createElement('p');meta.textContent='Uploaded by '+label(a.uploaded_by)+' · '+a.size+' bytes · SHA-256 '+a.sha256;technical.append(meta);article.append(technical);
+             const link=document.createElement('a');link.href=a.url;link.target='_blank';link.rel='noopener';link.textContent='View receipt';article.append(link);
+-            const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' ? ',download);
++            const download=document.createElement('a');download.href=a.url+'&download=1';download.textContent='Download receipt';article.append(' · ',download);
+             container.append(article);
+         });
+         dialog.showModal();document.getElementById('transaction-close').focus();
+diff --git a/assets/js/ocr_expense.js b/assets/js/ocr_expense.js
+index 6728210e0da24f507b4475c3a498506d8545fcef..cf1350a9ccde51f750e9fdce973b690eea1bd33b 100644
+--- a/assets/js/ocr_expense.js
++++ b/assets/js/ocr_expense.js
+@@ -47,13 +47,55 @@
+             }
+         });
+     }
+-    document.getElementById('receipt-discard')?.addEventListener('submit', event => {
+-        if (!window.confirm('Discard this unposted receipt and delete its image?')) event.preventDefault();
++    let mutation=null,mutationBusy=false;
++    const feedback=document.getElementById('ocr-mutation-feedback'),mutationStatus=document.getElementById('ocr-mutation-status');
++    const checkState=document.getElementById('ocr-check-state'),replay=document.getElementById('ocr-replay-retry'),openState=document.getElementById('ocr-open-state');
++    function lockMutations(){document.querySelectorAll('#receipt-retry button,#receipt-discard button').forEach(button=>button.disabled=true);}
++    function unknown(text){document.getElementById('ocr-retry-progress').textContent='Action not verified. Check the saved state above.';feedback.hidden=false;lockMutations();checkState.disabled=false;replay.hidden=true;openState.hidden=true;mutationStatus.textContent=text;checkState.focus();}
++    function receiptDocument(doc,id){return doc.querySelector('#receipt-retry input[name="receipt_id"]')?.value===id&&doc.querySelector('.ocr-preview')?.getAttribute('src')==='receipt_attachment.php?receipt_id='+id;}
++    async function sendMutation(request){
++        if(mutationBusy)return;mutationBusy=true;lockMutations();checkState.disabled=true;replay.disabled=true;
++        try{
++            const response=await fetch(request.url,{method:'POST',body:request.payload,credentials:'same-origin',cache:'no-store'});
++            const html=await response.text(),doc=new DOMParser().parseFromString(html,'text/html'),url=new URL(response.url);
++            const local=url.origin===location.origin&&url.pathname.endsWith('/ocr_expense.php');
++            const confirmed=response.ok&&local&&(request.action==='retry'?receiptDocument(doc,request.id):url.searchParams.get('discarded')==='1'&&Array.from(doc.querySelectorAll('[role="status"]')).some(el=>el.textContent.trim()==='Receipt discarded.'));
++            if(!confirmed)throw new Error('The saved action response could not be verified.');
++            mutation=null;location.assign(url.href);
++        }catch(e){unknown('The '+request.action+' response was interrupted or could not be verified. Keep receipt #'+request.id+' and check its saved state before another action. '+e.message);}
++        finally{mutationBusy=false;replay.disabled=false;}
++    }
++    for(const id of ['receipt-retry','receipt-discard'])document.getElementById(id)?.addEventListener('submit',event=>{
++        const receiptForm=event.currentTarget;
++        if(id==='receipt-discard'&&!window.confirm('Discard this unposted receipt and delete its image?')){event.preventDefault();return;}
++        if(!window.fetch)return;
++        event.preventDefault();if(mutation||mutationBusy||receiptForm.querySelector('button').disabled)return;
++        // Freeze the existing form/request identity. A retry never creates a replacement key.
++        const payload=new FormData(receiptForm);mutation={action:payload.get('action'),id:payload.get('receipt_id'),payload,url:new URL(receiptForm.getAttribute('action')||location.href,location.href).href};
++        document.getElementById('ocr-retry-progress').textContent=mutation.action==='retry'?'Reading the saved image…':'Discarding the saved image…';
++        sendMutation(mutation);
++    });
++    checkState?.addEventListener('click',async()=>{
++        if(!mutation||mutationBusy)return;mutationBusy=true;checkState.disabled=true;replay.hidden=true;openState.hidden=true;
++        try{
++            const response=await fetch('ocr_expense.php?receipt='+encodeURIComponent(mutation.id),{credentials:'same-origin',cache:'no-store'});
++            const doc=new DOMParser().parseFromString(await response.text(),'text/html');
++            if(response.status===404&&doc.querySelector('.ocr-error')?.textContent.includes('Receipt not found or unavailable')){
++                document.getElementById('ocr-retry-progress').textContent='Saved state checked. This image is unavailable.';mutationStatus.textContent='Receipt #'+mutation.id+' is no longer available. This read does not establish why; no further retry or discard has been sent.';openState.href='ocr_expense.php';openState.textContent='Return to Scan Receipt';openState.hidden=false;return;
++            }
++            if(!response.ok||!receiptDocument(doc,mutation.id))throw new Error('The current receipt could not be read. Sign in normally if required, then open this same receipt.');
++            const pending=doc.querySelector('.ocr-tag-neutral')?.textContent.trim()==='Reading image';
++            openState.href='ocr_expense.php?receipt='+encodeURIComponent(mutation.id);openState.textContent='Open saved receipt';openState.hidden=false;
++            mutationStatus.textContent=pending?'The saved image is still being read. Wait and check its state again. No retry or discard was sent.':'The saved receipt is available. No retry or discard was sent. '+(mutation.action==='retry'?'Open its current details, or check the original extraction result.':'Open its current details before deliberately deciding whether to discard it again.');
++            document.getElementById('ocr-retry-progress').textContent=pending?'The saved image is still being read.':'Saved state checked. Use the options above.';
++            replay.hidden=pending||mutation.action!=='retry';
++        }catch(e){mutationStatus.textContent='Receipt action remains unverified. '+e.message;}
++        finally{mutationBusy=false;checkState.disabled=false;}
+     });
+-    document.getElementById('receipt-retry')?.addEventListener('submit', event => {
+-        const button = event.currentTarget.querySelector('button');
+-        if (button.disabled) { event.preventDefault(); return; }
+-        button.disabled = true;
+-        document.getElementById('ocr-retry-progress').textContent = 'Reading the saved image…';
++    replay?.addEventListener('click',()=>{if(mutation?.action==='retry'&&!mutationBusy)sendMutation(mutation);});
++    openState?.addEventListener('click',()=>{mutation=null;});
++    document.querySelector('.ocr-workspace')?.addEventListener('click',event=>{
++        const a=event.target.closest('a[href]');if(mutation&&a&&a!==openState&&a.target!=='_blank'){event.preventDefault();mutationStatus.textContent='Check the saved receipt state before continuing to another task.';}
+     });
++    window.addEventListener('beforeunload',event=>{if(mutation){event.preventDefault();event.returnValue='';}});
+ }());
+diff --git a/financial_records.php b/financial_records.php
+index 7d08d637cf619e315f42d2b55d9bdc6dbda5b1fc..7cc701632b51a80320e35dc6e1cf4f8caf35678e 100644
+--- a/financial_records.php
++++ b/financial_records.php
+@@ -46,7 +46,7 @@ try{
+ }catch(InvalidArgumentException $e){http_response_code(400);$filterError=$e->getMessage();}
+ catch(Throwable $e){http_response_code(503);$ledgerError=true;error_log('Journal history: '.$e->getMessage());}
+ }
+-$context=$filters['context'];$title=['crb'=>'Cash Receipts Book','cdb'=>'Cash Disbursements Book'][$context]??'Journal History / General Ledger';
++$context=$filters['context'];$title=['crb'=>'Cash Receipts Book','cdb'=>'Cash Disbursements Book'][$context]??'Find a transaction (Journal History)';
+ $activePage=['crb'=>'crb','cdb'=>'cdb'][$context]??'financial_records';
+ $clearUrl='financial_records.php?from=&to='.($context!=='records'?'&view='.$context:'');
+ $scope=$filters['from']===''&&$filters['to']===''?'all':($filters['from']===substr(accounting_today(),0,7).'-01'&&$filters['to']===accounting_today()?'month':'custom');
+@@ -63,6 +63,8 @@ layout_begin($title,$activePage,[], '<link rel="stylesheet" href="https://cdnjs.
+     </header>
+ <?php if(!$mainView&&$flags['isAdmin']&&stage1_enabled($pdo)): ?>
+ <p class="my-4"><a class="records-view" href="<?= $context==='crb'?'cash_receipt.php':'cash_disbursement.php' ?>">+ New <?= $context==='crb'?'cash receipt':'cash payment' ?></a> · <a href="accounting_drafts.php">My drafts</a></p>
++<?php endif; ?>
++<?php if(!$mainView): ?>
+ <p class="text-sm text-slate-500">Gross originating book activity. Filters and search retain all lines of matching journals. Totals include original and replacement entries; linked General Journal reversals offset originals in the ledger. Book totals alone are not the corrected net cash amount. Older unclassified entries remain in Journal History.</p>
+ <?php endif; ?>
+ <section class="records-card <?= $flags['isExecutive']?'exec-card':'' ?>"><h2>Filter Records</h2>
+diff --git a/includes/accounting_entry_page.php b/includes/accounting_entry_page.php
+index 616ec079cb176b8b102d58c5c256ebdcc4b6040e..031d77a6aab3757952214e067895c3ffdd26e9d2 100644
+--- a/includes/accounting_entry_page.php
++++ b/includes/accounting_entry_page.php
+@@ -10,7 +10,9 @@ $ordinaryCash=$ordinaryWorkspace&&$workspaceBook!=='GJ';
+ $entryNoun=['CDB'=>'payment','CRB'=>'receipt','GJ'=>'journal entry'][$workspaceBook];
+ $isCorrection=isset($correctionConfig);$reverseOnly=$isCorrection&&$correctionConfig['mode']==='reverse_only';
+ $advanceFocused=!$isCorrection&&($advanceConfig['advance_presentation']??false)&&in_array($advanceMode,['advance_release','advance_liquidation','advance_return'],true);
+-$entryFocused=$ordinaryWorkspace||$advanceFocused;
++$correctionFocused=$isCorrection&&($correctionConfig['correction_presentation']??false);
++$entryFocused=$ordinaryWorkspace||$advanceFocused||$correctionFocused;
++if($correctionFocused)$entryNoun=$reverseOnly?'reversal':'correction';
+ if($advanceFocused)$entryNoun=['advance_release'=>'advance release','advance_liquidation'=>'liquidation','advance_return'=>'cash return'][$advanceMode];
+ $title=$advanceMode!==null?['advance_release'=>'Release cash advance','advance_liquidation'=>'Liquidate cash advance','advance_return'=>'Return unused cash'][$advanceMode]:['CRB'=>'New cash receipt','CDB'=>'New cash payment','GJ'=>'New journal entry'][$workspaceBook];
+ $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+@@ -23,13 +25,14 @@ if($isCorrection){
+ }else $entryActive=$advanceMode!==null?'cash_advances':['CRB'=>'receipt','CDB'=>'payment','GJ'=>'general_journal'][$workspaceBook];
+ layout_begin($title,$entryActive,[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/../assets/css/accounting_workspace.css').'">');
+ ?>
+-<div class="accounting-workspace <?= $ordinaryWorkspace?'aw-payment':'' ?> <?= $advanceFocused?'aw-advance-editor':'' ?> <?= $reverseOnly?'aw-reverse-only':'' ?>" id="entry-workspace">
+-<header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING · <?= $workspaceBook ?></p><h1><?= $title ?></h1><p><?= $entryFocused?'Enter the '.$entryNoun.' details, review, then confirm to record.':'Prepare an entry, save your draft, then review the complete debit and credit posting.' ?></p></div><div><a href="accounting_drafts.php">My drafts</a><?php if($isCorrection): ?> &middot; <button type="button" class="aw-no-print" onclick="window.print()">Print comparison</button><?php endif; ?><?php if($advanceMode): ?> &middot; <a href="cash_advances.php">Advance register</a> &middot; <button type="button" onclick="window.print()">Print draft</button><?php endif; ?></div></header>
++<div class="accounting-workspace <?= $ordinaryWorkspace?'aw-payment':'' ?> <?= $advanceFocused?'aw-advance-editor':'' ?> <?= $reverseOnly?'aw-reverse-only':'' ?> <?= $correctionFocused?'aw-correction-editor':'' ?>" id="entry-workspace">
++<header class="aw-header"><div><p class="aw-eyebrow">DAILY ACCOUNTING · <?= $workspaceBook ?></p><h1><?= $title ?></h1><p><?= $entryFocused?'Enter the '.$entryNoun.' details, review, then confirm to record.':'Prepare an entry, save your draft, then review the complete debit and credit posting.' ?></p></div><div><a href="accounting_drafts.php">My drafts</a><?php if($isCorrection): ?> &middot; <button type="button" class="aw-no-print" onclick="window.print()">Print comparison</button><?php endif; ?><?php if($advanceMode): ?> &middot; <a href="cash_advances.php">Advance register</a><?php if(!$isCorrection): ?> &middot; <button type="button" onclick="window.print()">Print draft</button><?php endif; ?><?php endif; ?></div></header>
+ <?php if($isCorrection&&!$advanceMode): ?><p id="aw-print-label" class="aw-print-label">DRAFT &mdash; not a posted financial record</p><?php endif; ?><?php if($advanceMode): ?><p id="aw-print-label" class="aw-print-label">DRAFT &mdash; not a posted financial record</p><section class="aw-card" id="aw-advance-context" aria-live="polite"></section><?php endif; ?>
+ <?php if($ordinaryWorkspace): ?><a class="aw-context-back" href="financial_records.php?<?= $workspaceBook==='GJ'?'from=&amp;to=':'view='.strtolower($workspaceBook).'&amp;from=&amp;to=' ?>">Back to <?= $workspaceBook==='GJ'?'Journal History':($workspaceBook==='CRB'?'receipts book':'payments book') ?></a><ol id="aw-progress" aria-label="<?= ucfirst($entryNoun) ?> progress"><li aria-current="step">1 Enter details</li><li>2 Review</li><li>3 Recorded</li></ol><p id="aw-mode-notice"></p><?php endif; ?>
+ <?php if($advanceFocused): ?><ol id="aw-progress" aria-label="Advance progress"><li aria-current="step">1 Enter details</li><li>2 Review</li><li>3 Recorded</li></ol><p id="aw-mode-notice">Generated control lines are checked by the server. Review the complete journal before recording.</p><p id="aw-advance-advisory" class="aw-help" role="status" aria-live="polite"></p><?php endif; ?>
+ <p id="aw-status" role="status" aria-live="polite"></p><p id="aw-error" role="alert" tabindex="-1"></p>
+-<?php if($isCorrection): ?><section class="aw-card" id="aw-correction-context"><h2>Original journal #<?= $esc($correctionConfig['target_journal_id']) ?></h2><div id="aw-original"></div><p id="aw-correction-eligibility" role="status"></p><div class="aw-grid"><label>Correction mode<select id="aw-correction-mode" <?= $draftId!==null?'disabled':'' ?>><option value="reverse_replace" <?= !$reverseOnly?'selected':'' ?>>Reverse and replace</option><option value="reverse_only" <?= $reverseOnly?'selected':'' ?>>Reverse only</option></select></label><?php if(!$advanceMode&&!$reverseOnly): ?><label>Replacement book<select id="aw-replacement-book"><option value="CRB" <?= $workspaceBook==='CRB'?'selected':'' ?>>Cash Receipts Book</option><option value="CDB" <?= $workspaceBook==='CDB'?'selected':'' ?>>Cash Disbursements Book</option><option value="GJ" <?= $workspaceBook==='GJ'?'selected':'' ?>>General Journal</option></select></label><?php endif; ?></div><p>Original records remain unchanged. The generated reversal goes to General Journal. Drafts and previews do not change financial records.</p></section><?php endif; ?>
++<?php if($correctionFocused): ?><ol id="aw-progress" aria-label="Correction progress"><li aria-current="step">1 Prepare correction</li><li>2 Review previews</li><li>3 Recorded</li></ol><p id="aw-mode-notice">The original remains in history. A reversal does not record an actual return of cash.</p><?php endif; ?>
++<?php if($isCorrection): ?><section class="aw-card" id="aw-correction-context"><h2>Original journal #<?= $esc($correctionConfig['target_journal_id']) ?></h2><div id="aw-original"></div><p id="aw-correction-eligibility" role="status"></p><div class="aw-grid"><label>Correction mode<select id="aw-correction-mode" <?= $draftId!==null?'disabled':'' ?>><option value="reverse_replace" <?= !$reverseOnly?'selected':'' ?>>Correct a recorded transaction (reverse and replace)</option><option value="reverse_only" <?= $reverseOnly?'selected':'' ?>>Reverse an entry recorded by mistake (reverse only)</option></select></label><?php if(!$advanceMode&&!$reverseOnly): ?><label>Replacement book<select id="aw-replacement-book"><option value="CRB" <?= $workspaceBook==='CRB'?'selected':'' ?>>Cash Receipts Book</option><option value="CDB" <?= $workspaceBook==='CDB'?'selected':'' ?>>Cash Disbursements Book</option><option value="GJ" <?= $workspaceBook==='GJ'?'selected':'' ?>>General Journal</option></select></label><?php endif; ?></div><p>Original records remain unchanged. The generated reversal goes to General Journal. Drafts and previews do not change financial records.</p></section><?php endif; ?>
+ <div class="aw-columns"><form id="aw-entry" novalidate class="aw-card">
+ <?php if($ordinaryCash): ?><div class="aw-payment-modes" aria-label="Entry presentation"><button type="button" data-payment-mode="quick">Quick form</button><button type="button" data-payment-mode="split">Split allocations</button><button type="button" data-payment-mode="advanced">Advanced journal</button></div><?php endif; ?><h2>Transaction details <span id="aw-draft-label">Unsaved draft</span></h2>
+ <div class="aw-grid"><label>Date<input id="aw-date" type="date" value="<?= journal_today() ?>" min="1000-01-01" <?= ($workspaceBook!=='GJ'||$advanceMode)?'max="'.journal_today().'"':'' ?>></label>
+@@ -55,9 +58,9 @@ layout_begin($title,$entryActive,[], '<link rel="stylesheet" href="assets/css/ac
+ <div id="aw-documents"></div><?php if($advanceMode==='advance_return'): ?><p id="aw-proof-status" role="status"></p><button type="button" id="aw-confirm-proof">Confirm return proof</button><?php endif; ?><p class="aw-help" id="aw-evidence-help"><?= $advanceMode==='advance_liquidation'?'Monetary evidence must fully cover every expenditure or eligible asset debit. Informational documents and the advance-control credit do not add expenditure coverage.':($advanceMode==='advance_return'?'Reviewed informational proof and confirmation are required for this return. Monetary evidence allocations are not used.':($advanceMode?'Reviewed informational release proof is optional. Monetary evidence allocations are not used.':'Monetary support covers noncash allocations. Informational documents do not add monetary coverage. Missing or partial support will be shown at review.')) ?></p></aside></div>
+ <?php if($isCorrection&&!$reverseOnly): ?><section class="aw-card" id="aw-reuse-card"><h2>Reuse an original image</h2><p>The prior review is a reference. Review the image again and explain any changed purpose or amounts.</p><div class="aw-grid"><label>Eligible target image<select id="aw-reuse"></select></label><button type="button" id="aw-attach-reuse">Attach target image</button></div></section><?php endif; ?>
+ <section class="aw-card" id="aw-review-panel" hidden><h2><?= $entryFocused?'Review '.$entryNoun:'Review before posting' ?></h2><p><?= $entryFocused?'Not recorded yet. Check these details before confirming. This review is not Management approval.':'This checks the accounting entry. It does not record management approval.' ?></p><div id="aw-review-content"></div><div class="aw-actions"><button type="button" id="aw-back">Back to editing</button><button type="button" class="aw-primary" id="aw-post"><?= $entryFocused?'Confirm and record '.$entryNoun:'Post' ?> <?= $entryFocused?'':($workspaceBook==='CRB'?'receipt':($workspaceBook==='CDB'?'payment':'journal')) ?></button></div></section>
+-<section class="aw-card" id="aw-posted" hidden><h2><?= $entryFocused?ucfirst($entryNoun).' recorded':'Entry posted' ?></h2><?php if($entryFocused): ?><p>Finished. This <?= $entryNoun ?> is now in the accounting records.</p><a id="aw-exact-link" class="aw-record-link">View this transaction</a><?php endif; ?><?php if($advanceMode): ?><span id="aw-advance-navigation"><a id="aw-advance-link" href="cash_advances.php">View advance</a> &middot; </span><?php endif; ?><p id="aw-posted-message"></p><?php if($workspaceBook!=='GJ'): ?><a id="aw-posted-link" href="financial_records.php?view=<?= strtolower($workspaceBook) ?>&amp;from=&amp;to=">View <?= $workspaceBook==='CRB'?'Cash Receipts Book':'Cash Disbursements Book' ?></a> · <?php endif; ?><a id="aw-history-link" href="financial_records.php?from=&amp;to=">View Journal History</a> · <a href="<?= $advanceMode?'cash_advance_entry.php?workflow_kind=advance_release':['CRB'=>'cash_receipt.php','CDB'=>'cash_disbursement.php','GJ'=>'general_journal.php'][$workspaceBook] ?>"><?= $advanceFocused?'Release another advance':'Prepare another entry' ?></a></section>
++<section class="aw-card" id="aw-posted" hidden><h2><?= $entryFocused?ucfirst($entryNoun).' recorded':'Entry posted' ?></h2><?php if($entryFocused): ?><p>Finished. This <?= $entryNoun ?> is now in the accounting records.</p><a id="aw-exact-link" class="aw-record-link">View this transaction</a><?php endif; ?><?php if($advanceMode): ?><span id="aw-advance-navigation"><a id="aw-advance-link" href="cash_advances.php">View advance</a> &middot; </span><?php endif; ?><p id="aw-posted-message"></p><?php if($workspaceBook!=='GJ'): ?><a id="aw-posted-link" href="financial_records.php?view=<?= strtolower($workspaceBook) ?>&amp;from=&amp;to=">View <?= $workspaceBook==='CRB'?'Cash Receipts Book':'Cash Disbursements Book' ?></a> · <?php endif; ?><a id="aw-history-link" href="financial_records.php?from=&amp;to=">View Journal History</a> · <a href="<?= $correctionFocused?'financial_records.php':($advanceMode?'cash_advance_entry.php?workflow_kind=advance_release':['CRB'=>'cash_receipt.php','CDB'=>'cash_disbursement.php','GJ'=>'general_journal.php'][$workspaceBook]) ?>"><?= $correctionFocused?'Find another transaction to correct':($advanceFocused?'Release another advance':'Prepare another entry') ?></a></section>
+ <?php if($entryFocused): ?><section class="aw-card" id="aw-unknown" hidden><h2>Check recording result</h2><p>The response was interrupted. The <?= $entryNoun ?> may already be recorded. Check the same request before editing or starting another entry.</p><button type="button" id="aw-check-result" class="aw-primary">Check recording result</button></section><dialog id="aw-leave-dialog"><h2>Leave with unsaved changes?</h2><p>Your last saved draft remains available. The latest edits have not been saved.</p><p id="aw-leave-error" role="alert"></p><div class="aw-actions"><button type="button" id="aw-leave-stay">Stay</button><button type="button" id="aw-leave-unsaved">Leave without latest edits</button><button type="button" id="aw-leave-save" class="aw-primary">Save draft and leave</button></div></dialog><?php endif; ?>
+ <dialog id="aw-master-dialog"><form id="aw-master-form"><h2 id="aw-master-title">New master</h2><label>Name<input name="name" required maxlength="100"></label><label id="aw-master-code-label">Project code<input name="code" maxlength="30"></label><label id="aw-master-type-label">Party type<select name="party_type"><option value="person">Person</option><option value="organization">Organization</option></select></label><label>Description (optional)<textarea name="description" maxlength="2000"></textarea></label><p id="aw-master-error" role="alert"></p><div class="aw-actions"><button type="button" id="aw-master-cancel">Cancel</button><button class="aw-primary">Create and select</button></div></form></dialog>
+ </div>
+ <script type="application/json" id="workspace-data"><?= json_encode(($correctionConfig??[])+($advanceConfig??[])+['ordinary_workspace'=>$ordinaryWorkspace,'book'=>$workspaceBook,'csrf_token'=>csrf_token(),'lists'=>$lists,'draft_id'=>is_string($_GET['draft_id']??null)?$_GET['draft_id']:'','receipt_id'=>is_string($_GET['receipt_id']??null)?$_GET['receipt_id']:''],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_QUOT|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script>
+-<?php layout_end(($advanceFocused?'<script src="assets/js/advance_presentation.js?v='.filemtime(__DIR__.'/../assets/js/advance_presentation.js').'"></script>':'').($ordinaryWorkspace?'<script src="assets/js/payment_presentation.js?v='.filemtime(__DIR__.'/../assets/js/payment_presentation.js').'"></script>':'').'<script src="assets/js/accounting_workspace.js?v='.filemtime(__DIR__.'/../assets/js/accounting_workspace.js').'"></script>'); ?>
++<?php layout_end(($correctionFocused?'<script src="assets/js/correction_presentation.js?v='.filemtime(__DIR__.'/../assets/js/correction_presentation.js').'"></script>':'').($advanceFocused?'<script src="assets/js/advance_presentation.js?v='.filemtime(__DIR__.'/../assets/js/advance_presentation.js').'"></script>':'').($ordinaryWorkspace?'<script src="assets/js/payment_presentation.js?v='.filemtime(__DIR__.'/../assets/js/payment_presentation.js').'"></script>':'').'<script src="assets/js/accounting_workspace.js?v='.filemtime(__DIR__.'/../assets/js/accounting_workspace.js').'"></script>'); ?>
+diff --git a/journal_correction.php b/journal_correction.php
+index 74e8d901b3f844bccad7573108393611d8a67cb6..22c1369deb6e2a293a098f556afabf8d4bce4d45 100644
+--- a/journal_correction.php
++++ b/journal_correction.php
+@@ -11,7 +11,7 @@ try{
+     if($mode==='')$mode='reverse_replace';if(!in_array($mode,['reverse_only','reverse_replace'],true))throw new JournalProblem('Choose a valid correction mode.');
+     $requestedBook=$d?$d['source_book']:journal_string($_GET,'book',true);if($requestedBook==='')$requestedBook=$t['journal']['source_book']?:'GJ';
+     $workspaceBook=correction_book($t,$mode,$requestedBook);
+-    $correctionConfig=['is_correction'=>true,'today'=>journal_today(),'endpoint'=>'journal_correction_actions.php','target'=>$t,'target_journal_id'=>$targetId,'mode'=>$mode,'initial_payload'=>$d?$d['payload']:correction_seed($t,$mode,$workspaceBook)];
++    $correctionConfig=['is_correction'=>true,'correction_presentation'=>true,'today'=>journal_today(),'endpoint'=>'journal_correction_actions.php','target'=>$t,'target_journal_id'=>$targetId,'mode'=>$mode,'initial_payload'=>$d?$d['payload']:correction_seed($t,$mode,$workspaceBook)];
+     if($mode==='reverse_replace'&&$t['operation']){
+         $a=$t['advance'];$advanceConfig=['workflow_kind'=>'advance_'.$t['operation']['operation_kind'],'advance_id'=>$a['id'],'advance'=>['party_id'=>$a['party_id'],'originating_project_id'=>$a['originating_project_id'],'number'=>advance_number((int)$a['id']),'employee'=>json_decode($a['party_snapshot'],true)['name'],'outstanding'=>'See advance register','due_date'=>$a['initial_due_date'],'original_party'=>json_decode($a['party_snapshot'],true),'original_project'=>$a['project_snapshot']===null?null:json_decode($a['project_snapshot'],true)]];
+         if($t['operation']['operation_kind']==='release')unset($advanceConfig['advance']);
+diff --git a/journal_corrections.php b/journal_corrections.php
+index 8b40573639a53f3b30effb34fd875d70fed533ae..5d90c441796d3dc7e586bddec90df5b900581df9 100644
+--- a/journal_corrections.php
++++ b/journal_corrections.php
+@@ -23,7 +23,7 @@ layout_begin('Posted corrections','financial_records',[], '<link rel="stylesheet
+ <?php if($detail): ?>
+ <p>At this correction date, the original and exact reversal cancel. <?= $c['replacement_journal_id']===null?'The corrected net ledger effect is zero.':'The replacement below is the corrected net ledger effect.' ?> Later corrections remain separate steps in this chain.</p>
+ <?php foreach(['target_journal_id'=>'Original','reversal_journal_id'=>'Generated reversal','replacement_journal_id'=>'Replacement'] as $key=>$label): if($c[$key]===null)continue;$j=$detail['journals'][$c[$key]];$h=$j['header'];$party=$h['party_snapshot']?json_decode($h['party_snapshot'],true):null; ?>
+-<div class="correction-journal"><h3><?= $esc($label) ?> journal #<?= $esc($c[$key]) ?> &mdash; <?= $esc($h['source_book']) ?></h3><p>Accounting date <?= $esc($h['entry_date']) ?> &middot; <?= $esc($party['name']??'No party') ?> &middot; Reference: <?= $esc($h['reference']??'Not recorded') ?></p><p><?= $esc($h['description']) ?></p><p>Evidence: <?= $esc($j['evidence_coverage']['status']??'Not recorded') ?></p>
++<div class="correction-journal"><h3><a href="journal_transaction.php?journal_id=<?= $esc($c[$key]) ?>"><?= $esc($label) ?> journal #<?= $esc($c[$key]) ?></a> &mdash; <?= $esc($h['source_book']) ?></h3><p>Accounting date <?= $esc($h['entry_date']) ?> &middot; <?= $esc($party['name']??'No party') ?> &middot; Reference: <?= $esc($h['reference']??'Not recorded') ?></p><p><?= $esc($h['description']) ?></p><p>Evidence: <?= $esc($j['evidence_coverage']['status']??'Not recorded') ?></p>
+ <div class="aw-table-wrap"><table class="aw-table"><thead><tr><th>Account</th><th>Project</th><th>Debit (PHP)</th><th>Credit (PHP)</th></tr></thead><tbody>
+ <?php foreach($j['lines'] as $line): ?><tr><td><?= $esc(($line['account_code']??'#'.$line['account_id']).' - '.$line['account_name']) ?></td><td><?= $esc($line['project_name_snapshot']??'Organization operations') ?></td><td><?= $esc($line['debit_amount']) ?></td><td><?= $esc($line['credit_amount']) ?></td></tr><?php endforeach; ?>
+ </tbody><tfoot><tr><th colspan="2">Complete entry totals</th><td><?= $esc(ledger_decimal((int)$j['debit_cents'])) ?></td><td><?= $esc(ledger_decimal((int)$j['credit_cents'])) ?></td></tr></tfoot></table></div>
+diff --git a/journal_transaction.php b/journal_transaction.php
+index 3a9835ea090363854f3a67c6f70556e5cb6cae61..685cb6180cfc2d12cad3eaa350fecedb0415e1ec 100644
+--- a/journal_transaction.php
++++ b/journal_transaction.php
+@@ -17,6 +17,7 @@ $createdDisplay=($h['recorded_timezone']??null)==='UTC'?(new DateTimeImmutable($
+ layout_begin('Recorded transaction #'.$id,'financial_records',[], '<link rel="stylesheet" href="assets/css/accounting_workspace.css?v='.filemtime(__DIR__.'/assets/css/accounting_workspace.css').'">');
+ ?>
+ <div class="accounting-workspace correction-details">
++<?php if(($_SESSION['Role']??'')==='Admin'&&($j['correction_entry_available']??false)===true&&($j['correction_eligible']??false)===true): ?><section class="aw-card aw-correction-entry"><h2>Need to correct this transaction?</h2><p>The original stays in history. The next step checks correction availability and any linked-operation blockers before recording anything.</p><a href="journal_correction.php?journal_id=<?= $esc($id) ?>">Correct a recorded transaction</a> · <a href="journal_correction.php?journal_id=<?= $esc($id) ?>&amp;mode=reverse_only">Reverse an entry recorded by mistake</a><p class="aw-help">To record an actual return of unused advance cash, use its Cash advances detail instead.</p></section><?php endif; ?>
+ <header class="aw-header"><div><p class="aw-eyebrow">RECORDED · READ ONLY</p><h1>Transaction #<?= $id ?></h1><p>The complete recorded entry. Corrections preserve this original history.</p></div><a href="<?= $esc($back) ?>">Back to <?= $book==='CDB'?'payments book':($book==='CRB'?'receipts book':'Journal History') ?></a></header>
+ <section class="aw-card"><h2><?= $esc($h['description']) ?></h2><p>Accounting date: <?= $esc($h['entry_date']) ?> · <?= $esc($book) ?></p><p>Party: <?= $esc($party['name']??'Not recorded') ?> · Reference: <?= $esc($h['reference']?:'Not provided') ?></p><p>Recorded by <?= $esc($h['posted_by']??'Historical actor') ?> · <?= $esc($createdDisplay) ?></p>
+ <div class="aw-coverage">Evidence: <?= $esc($j['evidence_coverage']['status']??'Not recorded') ?><?php foreach(['debit','credit'] as $side): if(!isset($j['evidence_coverage'][$side]))continue;$c=$j['evidence_coverage'][$side]; ?><p><?= $esc(ucfirst($side)) ?>: PHP <?= $esc($c['covered']??'Not recorded') ?> supported of PHP <?= $esc($c['eligible']) ?></p><?php endforeach; ?></div>
+diff --git a/ocr_expense.php b/ocr_expense.php
+index a05a7262807f2dbdb24ef428634abed0057d83d6..6c9739fa9913774187a6a8d6f5a9e25e9c7018bc 100644
+--- a/ocr_expense.php
++++ b/ocr_expense.php
+@@ -55,6 +55,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
+ <?php if($receipt):?><a class="ocr-secondary" href="ocr_expense.php">Scan another receipt</a><?php endif;?></header>
+ <?php if($error):?><p class="ocr-error" role="alert"><?= $escape($error) ?></p><?php endif;?>
+ <?php if(isset($_GET['discarded'])):?><p role="status">Receipt discarded.</p><?php endif;?>
++<section id="ocr-mutation-feedback" class="ocr-warning" hidden aria-labelledby="ocr-mutation-heading"><h2 id="ocr-mutation-heading">Receipt action not verified</h2><p id="ocr-mutation-status" role="status" aria-live="polite"></p><button type="button" id="ocr-check-state">Check saved receipt state</button> <button type="button" id="ocr-replay-retry" hidden>Check original extraction result</button> <a id="ocr-open-state" hidden>Open saved receipt</a></section>
+ <?php if($available):?>
+ <ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload image</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Check details</li><li><span>3</span>Review journal</li></ol>
+ <div class="ocr-grid">
+diff --git a/assets/js/correction_presentation.js b/assets/js/correction_presentation.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..f89ed2053a3dc15851575d9689c983d18cd12c8c
+--- /dev/null
++++ b/assets/js/correction_presentation.js
+@@ -0,0 +1,39 @@
++/* Version 4 presentation only. Writers, canonical requests and eligibility stay server-owned. */
++(function(scope){
++    'use strict';
++    const positiveId=v=>Number.isSafeInteger(v)&&v>0;
++    function enabled(c){return c.is_correction===true&&c.correction_presentation===true;}
++    function freeze(request){const copy=structuredClone(request);function lock(v){if(v&&typeof v==='object'){Object.values(v).forEach(lock);Object.freeze(v);}return v;}return lock(copy);}
++    function result(r,c){
++        const bad=()=>{throw Object.assign(new Error('The correction bundle identity could not be verified. Check the same request.'),{uncertain:true});};
++        if(!r||!['id','correction_id','target_journal_id','reversal_journal_id'].every(k=>positiveId(r[k]))||r.target_journal_id!==Number(c.target_journal_id)||typeof r.duplicate!=='boolean')bad();
++        const replacing=c.mode==='reverse_replace';
++        if(replacing?!positiveId(r.replacement_journal_id):r.replacement_journal_id!==null)bad();
++        if(r.id!==(replacing?r.replacement_journal_id:r.reversal_journal_id)||r.reversal_journal_id===r.target_journal_id||r.replacement_journal_id===r.target_journal_id||r.replacement_journal_id===r.reversal_journal_id)bad();
++        const op=c.target?.operation;
++        if(op){
++            if(!positiveId(r.original_advance_id)||r.original_advance_id!==Number(op.advance_id)||!positiveId(r.advance_id))bad();
++            if(replacing&&op.operation_kind==='release'){
++                if(!positiveId(r.replacement_advance_id)||r.replacement_advance_id===r.original_advance_id||r.advance_id!==r.replacement_advance_id)bad();
++            }else if(r.replacement_advance_id!==null||r.advance_id!==r.original_advance_id)bad();
++        }
++        return r;
++    }
++    function resumed(d,c){
++        const bundle=d.posted_bundle,chain=d.chain;
++        if(!bundle?.reversal||!Array.isArray(chain))throw new Error('Posted correction details could not be verified. Retry the saved draft read.');
++        const rows=chain.filter(row=>row.target_journal_id===Number(c.target_journal_id)&&row.reversal_journal_id===bundle.reversal.journal_id&&row.mode===c.mode);
++        if(rows.length!==1)throw new Error('Posted correction chain could not be verified.');
++        const row=rows[0];
++        const r={...(d.posted_result||{}),id:d.posted_journal_id,correction_id:row.id,target_journal_id:row.target_journal_id,reversal_journal_id:row.reversal_journal_id,replacement_journal_id:row.replacement_journal_id,duplicate:true};
++        if((c.mode==='reverse_replace'&&bundle.replacement?.journal_id!==row.replacement_journal_id)||(c.mode==='reverse_only'&&bundle.replacement))throw new Error('Posted correction bundle is inconsistent.');
++        return result(r,c);
++    }
++    function sameTask(href,current,c){
++        const a=new URL(href,current),b=new URL(current);if(a.origin!==b.origin||a.pathname!==b.pathname)return false;
++        if(c.draft_id)return a.searchParams.get('draft_id')===String(c.draft_id);
++        return !a.searchParams.has('draft_id')&&a.searchParams.get('journal_id')===String(c.target_journal_id)&&(a.searchParams.get('mode')||'reverse_replace')===c.mode&&(a.searchParams.get('book')||c.book)===c.book;
++    }
++    const api=Object.freeze({positiveId,enabled,freeze,result,resumed,sameTask});
++    if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.CorrectionPresentation=api;
++})(globalThis);

@@ -1,0 +1,219 @@
+{
+  "baseline": "b6e9ca8f26e66820f4deeb4c4d2361e7e3cd0302",
+  "final_suite_results": {
+    "u2a": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u2b": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_b_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "reader": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_reader.php",
+          "exit": 0
+        }
+      ]
+    },
+    "bcd": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u3_bcd.php",
+          "exit": 0
+        },
+        {
+          "runner": "test_usability_u3_bcd_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u2c": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_c_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u4": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u4_fixture.php",
+          "exit": 0
+        },
+        {
+          "runner": "test_usability_u4_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "backend": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u3_bcd_edges.php",
+          "exit": 0
+        }
+      ]
+    },
+    "stage2": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage2_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp3": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint3_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp2": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint2_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u3a": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u3_a_browser.py",
+          "exit": 0
+        },
+        {
+          "runner": "test_usability_u3_a_readback.py",
+          "exit": 0
+        }
+      ]
+    },
+    "receipt": {
+      "passed": true,
+      "affected_rerun": true,
+      "commands": [
+        {
+          "runner": "test_receipt_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp5": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint5_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp4": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint4_browser.py",
+          "exit": 0
+        }
+      ]
+    }
+  },
+  "working_comparison": {
+    "passed": true,
+    "read_only_comparison": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "protected_upload_files": 53,
+    "working_financial_evidence_objects_permissions_unchanged": true,
+    "working_configuration_mysql_binary_ini_apache_config_unchanged": true,
+    "normal_sql_identity": {
+      "port": 3306,
+      "datadir": "C:\\xampp\\mysql\\data\\",
+      "version": "10.4.32-MariaDB",
+      "recovery": 0
+    }
+  },
+  "visual_review": {
+    "passed": true,
+    "viewports": [
+      [
+        1366,
+        768
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "capture": "Full-page PNGs at the named viewport; image height may exceed viewport height.",
+    "screenshots": {
+      "a-draft-result-1366.png": "b148fe5036293d88ce3060f1fba1d68d4a626f44f89af2b589af7fa3ee269230",
+      "a-draft-result-1920.png": "cfd85cb5618e1dc32803d14b2f91cfbd74123f26b2ea6857a6858ad6fd2f9e3b",
+      "b-correction-comparison-1366.png": "abbaf50e3570b75f29f621c89c0ef7b10721e6ecac5698bdfc725dc3fa5d5e55",
+      "b-correction-comparison-1920.png": "1871d936786b12f82b73b81cbd8173bc68ef6e1b61ada274d3293597d6d15589",
+      "b-exact-transaction-1366.png": "361b7f5434535a73b9634d8c66beba6ce6c8b52194ecf961e3b26f7a2101e6ea",
+      "b-exact-transaction-1920.png": "52daab73ac81011e704aae4a1809f2b1c2207b5fc0293b0d3856b44c80813034",
+      "c-release-correction-recorded-1366.png": "d02b1521a7c34f018b0ff1e35db07e76ee21263b75666dfdebcf160f1a85b0b8",
+      "c-release-correction-recorded-1920.png": "e5badf2e5c09fc32af7971c6dcc46529086112f69dcc4124156069e1a7b6e324",
+      "c-return-correction-review-1366.png": "21b1ec86c7cb9731d57f4c4e8aaff64969c06e1ab63583a499bc2ae635aadcfd",
+      "c-return-correction-review-1920.png": "6ca79e0be901bcd825dbbafe8d5d21a2e99a5a93126b723898f36982354e2552",
+      "c-reversal-review-1366.png": "cd156b35a57b2f8a8ac3ba20ceb561859cd26d698e871fdedbf583ce1ddb304d",
+      "c-reversal-review-1920.png": "bf09610cc48fde3b97c9c745612cee5cba848477dba79f9bdf73445ce34b464c",
+      "d-ocr-unverified-1366.png": "868505402028ede4da668e36133ca425e18d35145c27faa6d110abec629f0ddf",
+      "d-ocr-unverified-1920.png": "52063d358950588835ae3705887a99f6b66138e9e8c426277e8c867cbe677d45",
+      "d-support-guidance-1366.png": "a19d9609f5204f40fa1be26e96fd55694d79868d13350152195449f98a7ae5a3",
+      "d-support-guidance-1920.png": "080366d0a28b0ee29501b9320448fe4103c3828af92696fe4321d6913624e6ff"
+    },
+    "inspection": "All 16 final U4 captures inspected: draft uncertainty, exact reader, posted comparison, ordinary reversal preview, advance-return correction preview, recorded release correction, support guidance and OCR uncertainty. No page overflow or obstructed actions found. Financial figures/identities are also covered by connected assertions."
+  },
+  "patch_reconstruction_passed": true,
+  "u4_gates": {
+    "passed": true,
+    "gate": "all",
+    "checks": {
+      "a": 64,
+      "b": 15,
+      "c": 145,
+      "d": 17,
+      "e": 0
+    },
+    "errors": []
+  }
+}

@@ -1,0 +1,657 @@
+diff --git a/scripts/test_receipt_browser.py b/scripts/test_receipt_browser.py
+index e1887c8f8e80ca16c9d660dac2486766e1d443a2..9bba6db6cc169ccb8de428a056ebfba47acb1a63 100644
+--- a/scripts/test_receipt_browser.py
++++ b/scripts/test_receipt_browser.py
+@@ -17,7 +17,7 @@ else:
+     if not args.database or not re.fullmatch(r'atikha_test_phase4_[a-z0-9]+',args.database):parser.error('New disposable receipt database required')
+     bootstrap=subprocess.check_output([php,str(root/'scripts/test_receipt_journal.php'),'--database='+args.database],text=True);print(bootstrap,end='')
+     evidence=Path(re.search(r'Private evidence: (.+)',bootstrap).group(1).strip())/'receipts'
+-if not re.fullmatch(r'atikha_test_phase4_[a-z0-9]+',args.database):parser.error('Disposable receipt database required')
++if not re.fullmatch(r'atikha_test_(?:phase4_[a-z0-9]+|stage1_u4receipt[a-z0-9]+)',args.database):parser.error('Disposable receipt database required')
+ run=root/'.migration-private'/('receipt-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
+ for path in root.glob('*.php'):
+     if path.name not in ['db_connect.php','config.php']:shutil.copy2(path,app/path.name)
+@@ -45,11 +45,18 @@ function gemini_request(array $payload,?int $timeout=null,?int $connect=null):ar
+ def sql(query,mutate=False):
+     code='<?php require '+ps(str(root/'scripts/cli_common.php'))+';$pdo=cli_db('+ps(args.database)+');echo json_encode('+('$pdo->exec('+ps(query)+')' if mutate else '$pdo->query('+ps(query)+')->fetchAll()')+');'
+     return json.loads(subprocess.check_output([php],input=code,text=True))
+-def user(name,role='Admin'):
+-    email=name+'@browser.invalid'
++# A fresh U4 complete-schema clone supplies the schema without old migration bootstrap.
++if args.database.startswith('atikha_test_stage1_u4receipt'):
++    sql("INSERT INTO Categories(Name,Type,Account_Type,Normal_Balance,Is_Cash_Account,Is_Active) VALUES ('Phase4 Bank',NULL,'Asset','Debit',1,1)",True)
++
++def user(name,role='Admin',email=None):
++    email=email or name+'@browser.invalid'
+     sql("INSERT INTO Users (FullName,Email,Role,Password,Is_Active) VALUES ('Browser "+name+"','"+email+"','"+role+"','not-a-login-hash',1)",True)
+     sql("INSERT INTO user_identities (UserID,FullName,Email,Role) SELECT UserID,FullName,Email,Role FROM Users WHERE Email='"+email+"'",True)
+     return email
++if args.database.startswith('atikha_test_stage1_u4receipt'):
++    user('other','Admin','other@receipt.invalid');user('management','Management','management@receipt.invalid')
++
+ def login(email):
+     return json.loads(subprocess.check_output([php,str(app/'scripts/http_fixture.php'),'--database='+args.database,'--sessions='+str(sessions),'--email='+email,'--test-login'],text=True))
+ def png(w=64,h=64,noise=False,pad=0):
+@@ -198,12 +205,12 @@ try:
+             scan=context(user('supplement'+mode));q=scan.new_page();q.on('pageerror',lambda e:errors.append(str(e)))
+             outcome=scan.request.post(base+'/ocr_extract.php',multipart=payload(scan,mode)).json();rid2=outcome['data']['receipt_id']
+             q.goto(base+'/ocr_expense.php?receipt='+str(rid2));q.set_viewport_size({'width':1366,'height':768})
+-            check(outcome['data']['status']=='Failed' and expected in q.locator('.ocr-warning').inner_text(),'Specific '+mode+' guidance survives receipt extraction and rendering')
++            check(outcome['data']['status']=='Failed' and expected in q.locator('.ocr-card .ocr-warning').inner_text(),'Specific '+mode+' guidance survives receipt extraction and rendering')
+             check('PRIVATE_PROVIDER_DETAIL' not in q.content() and q.get_by_role('link',name='Review in General Journal').is_visible() and counts()==before,'Failure retains manual General Journal access without exposing provider details or posting')
+             if mode=='busy':
+                 # Insert an older-style completed attempt; never rewrite immutable existing rows.
+                 sql("INSERT INTO receipt_ocr_attempts(receipt_id,requested_by_user_id,request_key,state,started_at,completed_at,source_hash,catalog_fingerprint,model,schema_version,raw_response,error_message) SELECT receipt_id,requested_by_user_id,'"+secrets.token_hex(32)+"','Failed',UTC_TIMESTAMP(),UTC_TIMESTAMP(),source_hash,catalog_fingerprint,model,schema_version,raw_response,'Automatic extraction was unavailable. Retry or enter the details manually.' FROM receipt_ocr_attempts WHERE id="+str(outcome['data']['attempt_id']),True)
+-                q.reload();check('AI service is busy' in q.locator('.ocr-warning').inner_text(),'Historical generic failures display their saved 503 reason without rewriting attempts')
++                q.reload();check('AI service is busy' in q.locator('.ocr-card .ocr-warning').inner_text(),'Historical generic failures display their saved 503 reason without rewriting attempts')
+                 q.screenshot(path=str(run/'scan-busy-1366.png'),full_page=True)
+                 q.set_viewport_size({'width':1920,'height':1080});q.screenshot(path=str(run/'scan-busy-1920.png'),full_page=True)
+                 check(q.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Busy desktop view has no page overflow')
+diff --git a/scripts/test_stage2_browser.py b/scripts/test_stage2_browser.py
+index 539e0b030dab715bbe1203ec67ded72f8fe9617b..cf03f9bd5bc0422f85f9265c2d0ba1ab50e21444 100644
+--- a/scripts/test_stage2_browser.py
++++ b/scripts/test_stage2_browser.py
+@@ -115,7 +115,7 @@ try:
+         page.locator('[data-doc-field="declared_amount"]').fill('invalid')
+         check(page.locator('[data-partial-warning]').is_hidden(),'Invalid document amount never displays a fabricated unused amount')
+         page.locator('[data-doc-field="declared_amount"]').fill('10000.00');page.locator('[data-doc-field="exclusion_reason"]').fill('Synthetic personal costs excluded');proof_review();save()
+-        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+liq_id+'"]');check(row.locator('a').get_attribute('href')=='cash_advance_entry.php?draft_id='+liq_id and 'Advance liquidation' in row.inner_text(),'My Drafts labels and resumes v3 liquidation')
++        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+liq_id+'"]');check(row.locator('a').get_attribute('href')=='cash_advance_entry.php?draft_id='+liq_id and 'Liquidate an advance' in row.inner_text(),'My Drafts labels and resumes v3 liquidation')
+         row.locator('a').click();ready();check(page.locator('[data-doc-field="accepted_amount"]').input_value()=='8000.00','Resume retains manual evidence and allocations')
+         check('\u20b12,000.00' in page.locator('[data-partial-warning]').inner_text(),'Resumed liquidation retains partial-document explanation')
+         review();check(page.locator('.aw-coverage').inner_text()=='Fully covered' and all(page.locator('#aw-review-content dt').filter(has_text=re.compile('^'+re.escape(label)+'$')).locator('xpath=following-sibling::dd[1]').inner_text()=='PHP 8,000.00' for label in ['Gross costs / asset purchases','Gross reviewed monetary support','Advance reduction']),'Liquidation review uses gross expenditure coverage only')
+diff --git a/scripts/test_stage3_checkpoint2_browser.py b/scripts/test_stage3_checkpoint2_browser.py
+index 92b5d488eb2f2cf45d4cb811ab07a14ca61fe0ea..bc53a8f5fc71245411ca93565b78a7081a03ec77 100644
+--- a/scripts/test_stage3_checkpoint2_browser.py
++++ b/scripts/test_stage3_checkpoint2_browser.py
+@@ -74,7 +74,7 @@ try:
+         check(page.locator('#aw-correction-mode').is_disabled(),'Saved correction mode remains immutable')
+         committed=page.locator('#aw-party').input_value();page.locator('#aw-party-search').fill('no matching record zz');page.keyboard.press('Enter');page.keyboard.press('Escape')
+         check(page.locator('#aw-party').input_value()==committed and 'unsaved' not in page.locator('#aw-draft-label').inner_text(),'Visible search cancellation keeps draft ID selection and revision unchanged')
+-        review();check(page.locator('#aw-post').is_enabled() and 'Generated exact reversal' in page.locator('#aw-review-content').inner_text(),'Ordinary preview shows exact GJ reversal and offers reviewed posting')
++        review();check(page.locator('#aw-post').is_enabled() and 'Reversal preview' in page.locator('#aw-review-content').inner_text(),'Ordinary preview shows exact GJ reversal and offers reviewed posting')
+         for width,height in [(1366,768),(1920,1080)]:
+             page.set_viewport_size({'width':width,'height':height});check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Comparison fits viewport '+str(width));page.screenshot(path=str(run/f'comparison-{width}.png'),full_page=True)
+         page.locator('#aw-back').click();page.locator('#aw-save').click();page.wait_for_timeout(100)
+@@ -105,7 +105,7 @@ try:
+         check(mctx.request.get(base+'/receipt_attachment.php?receipt_id='+image+'&draft_id='+draft_id).status==404,'Management cannot fetch draft-scoped evidence bytes')
+         octx,osession=context('other@example.invalid');check(octx.request.get(base+'/journal_correction_actions.php?action=draft&draft_id='+draft_id).status==404,'Other Admin cannot read private correction draft')
+         # My Drafts resumes/discards through the dedicated route.
+-        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+draft_id+'"]');check('Correction reverse replace' in row.inner_text() and row.locator('a').get_attribute('href')=='journal_correction.php?draft_id='+draft_id,'My Drafts labels and resumes correction context')
++        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+draft_id+'"]');check('Correct a recorded transaction' in row.inner_text() and row.locator('a').get_attribute('href')=='journal_correction.php?draft_id='+draft_id,'My Drafts labels and resumes correction context')
+         row.locator('a').click();ready()
+         if page.locator('#aw-replacement-book').input_value()=='GJ':
+             with page.expect_navigation(wait_until='domcontentloaded'):page.locator('#aw-replacement-book').select_option('CRB')
+@@ -114,7 +114,7 @@ try:
+         ready()
+         check(page.locator('[data-line]').count()>=2 and page.locator('#aw-correction-reason').input_value().startswith('Synthetic'),'Explicit replacement book change preserves complete lines and correction reason')
+         page.goto(base+'/journal_correction.php?journal_id='+str(fixture['release_target'])+'&mode=reverse_only');ready();page.locator('#aw-correction-reason').fill('Duplicate synthetic release');save();review()
+-        check(page.locator('.aw-columns aside').is_hidden() and page.locator('#aw-review-content').inner_text().count('Replacement ·')==0,'Reverse-only workspace hides replacement and evidence claims')
++        check(page.locator('.aw-columns aside').is_hidden() and page.locator('#aw-review-content').inner_text().count('Replacement preview ·')==0,'Reverse-only workspace hides replacement and evidence claims')
+         page.screenshot(path=str(run/'reverse-only-1366.png'),full_page=True)
+         # Review an existing supported replacement liquidation using the visible saved draft.
+         if fixture.get('liquidation_draft'):
+diff --git a/scripts/test_stage3_checkpoint3_browser.py b/scripts/test_stage3_checkpoint3_browser.py
+index fc5f78149c9e6f025ed9cc080b632bf49e6236a3..d823aa979ad80f5780f680c2d9d48f5c63d9f25c 100644
+--- a/scripts/test_stage3_checkpoint3_browser.py
++++ b/scripts/test_stage3_checkpoint3_browser.py
+@@ -69,7 +69,7 @@ try:
+         page.locator('#aw-cash-amount').fill('900.00');page.locator('#aw-lines [data-field="debit_amount"]').fill('900.00');save()
+         draft_id=re.search(r'draft_id=(\d+)',page.url).group(1)
+         selected=page.locator('#aw-party').input_value();page.locator('#aw-party-search').fill('unknown search');page.keyboard.press('Escape');check(page.locator('#aw-party').input_value()==selected,'Visible selector cancellation preserves record')
+-        page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])');check(page.locator('#aw-post').is_enabled() and 'Generated exact reversal' in page.locator('#aw-review-content').inner_text(),'Ordinary reviewed comparison enables atomic posting')
++        page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])');check(page.locator('#aw-post').is_enabled() and 'Reversal preview' in page.locator('#aw-review-content').inner_text(),'Ordinary reviewed comparison enables atomic posting')
+         for width,height in [(1366,768),(1920,1080)]:
+             page.set_viewport_size({'width':width,'height':height});check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Review fits '+str(width));page.screenshot(path=str(run/f'review-{width}.png'),full_page=True)
+         loaded=ctx.request.get(base+'/journal_correction_actions.php?action=draft&draft_id='+draft_id).json()['result'];token=page.evaluate("document.getElementById('aw-post').disabled")
+@@ -78,7 +78,7 @@ try:
+             if not lost[0] and route.request.method=='POST' and route.request.post_data_json.get('action')=='post':lost[0]=True;route.fetch();route.abort('failed')
+             else:route.continue_()
+         page.route('**/journal_correction_actions.php',lose_post);page.locator('#aw-post').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0");check(int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])==before+2,'Lost successful response still commits exactly two journals')
+-        page.locator('#aw-post').click();page.wait_for_selector('#aw-posted:not([hidden])');page.unroute('**/journal_correction_actions.php',lose_post)
++        page.locator('#aw-check-result').click();page.wait_for_selector('#aw-posted:not([hidden])');page.unroute('**/journal_correction_actions.php',lose_post)
+         check('already posted' in page.locator('#aw-posted-message').inner_text() and int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])==before+2,'Visible retry recovers original bundle without duplicate posting')
+         page.wait_for_selector('[data-correction-result]');check(page.locator('.aw-columns').is_hidden() and '900.00' in page.locator('#aw-posted').inner_text() and 'Correction posted' in page.locator('#aw-status').inner_text() and 'Corrected on' in page.locator('#aw-correction-eligibility').inner_text(),'Posted UI shows immutable lines and accurate posted status')
+         check(page.locator('#aw-posted a[href="financial_records.php?view=cdb&from=&to="]').count()==1 and page.locator('#aw-posted a[href="financial_records.php?from=&to="]').count()==1,'Posted links contain CDB and Journal History once')
+@@ -104,7 +104,7 @@ try:
+         other,osession=context('other@example.invalid');check(other.request.get(base+'/journal_correction_actions.php?action=draft&draft_id='+draft_id).status==404,'Another Admin cannot read owned posted draft');check(other.request.get(base+'/journal_corrections.php?journal_id='+str(fixture['payment_target'])).ok,'Other active Admin can read public posted financial comparison')
+         config(False);check(manager.request.get(base+'/journal_corrections.php?journal_id='+str(fixture['private_advance_journal'])).ok,'Posted chain remains readable with UI flag disabled');check(ctx.request.get(base+'/journal_correction_actions.php?action=draft&draft_id='+draft_id).status==503,'Disabled flag blocks correction workspace');config()
+         # Reverse only on the latest replacement; no false new cash movement/replacement.
+-        page.goto(base+'/journal_correction.php?journal_id='+str(replacement)+'&mode=reverse_only');ready();page.locator('#aw-correction-reason').fill('Duplicate synthetic replacement');save();page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])');check(page.locator('#aw-post').is_enabled() and page.locator('#aw-post').inner_text()=='Post reversal','Reverse-only review offers exact reversal');page.locator('#aw-post').click();page.wait_for_selector('#aw-posted:not([hidden])');check(page.locator('#aw-posted').inner_text().count('replacement journal #')==0 and page.locator('#aw-history-link').count()==1,'Reverse-only posted result has no replacement and one history link')
++        page.goto(base+'/journal_correction.php?journal_id='+str(replacement)+'&mode=reverse_only');ready();page.locator('#aw-correction-reason').fill('Duplicate synthetic replacement');save();page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])');check(page.locator('#aw-post').is_enabled() and page.locator('#aw-post').inner_text()=='Confirm and record reversal','Reverse-only review offers exact reversal');page.locator('#aw-post').click();page.wait_for_selector('#aw-posted:not([hidden])');check(page.locator('#aw-posted').inner_text().count('replacement journal #')==0 and page.locator('#aw-history-link').count()==1,'Reverse-only posted result has no replacement and one history link')
+         check(int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])==before+3,'Browser posted exactly one bundle and one reversal-only journal');check(not errors,'Posting/detail/history browser paths have no JavaScript errors');browser.close()
+     print('Stage 3 checkpoint 3 browser checks: '+str(checks));print('Private browser artifacts: '+str(run))
+ finally:
+diff --git a/scripts/test_stage3_checkpoint4_browser.py b/scripts/test_stage3_checkpoint4_browser.py
+index aa7f280df005a9b1975ae977596b203eacba67c9..ff52eb19edef835559bfdac10eead70e0d57c3ad 100644
+--- a/scripts/test_stage3_checkpoint4_browser.py
++++ b/scripts/test_stage3_checkpoint4_browser.py
+@@ -86,7 +86,7 @@ try:
+             else:route.continue_()
+         page.route('**/journal_correction_actions.php',lose);page.locator('#aw-post').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0")
+         check(int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])==before+2,'Lost release correction response commits one atomic bundle')
+-        page.locator('#aw-post').click();page.wait_for_selector('[data-advance-result="replacement_advance_id"]');page.unroute('**/journal_correction_actions.php',lose)
++        page.locator('#aw-check-result').click();page.wait_for_selector('[data-advance-result="replacement_advance_id"]');page.unroute('**/journal_correction_actions.php',lose)
+         new_id=int(re.search(r'advance_id=(\d+)',page.locator('[data-advance-result="replacement_advance_id"]').get_attribute('href')).group(1))
+         old_id=int(re.search(r'advance_id=(\d+)',page.locator('[data-advance-result="original_advance_id"]').get_attribute('href')).group(1))
+         check(new_id!=old_id and 'already posted' in page.locator('#aw-posted-message').inner_text(),'Visible release retry recovers distinct old/new identity links')
+diff --git a/scripts/test_usability_u2_b_browser.py b/scripts/test_usability_u2_b_browser.py
+index a00a2f55efdb71142a2de32a166daf6644fc2435..79e84755d42a6512816c6321d11aab0981dbaf87 100644
+--- a/scripts/test_usability_u2_b_browser.py
++++ b/scripts/test_usability_u2_b_browser.py
+@@ -157,7 +157,7 @@ try:
+         d=saved(gj_payload('transfer'),'GJ');open_entry('GJ',d['id']);review();recovery('transfer','GJ')
+         # No scalar OCR routing redesign: unreserved failed extraction stays manual GJ.
+         config(ocr=True);image=sql("SELECT r.ReceiptID FROM Receipts r WHERE r.OCR_Status='Failed' AND r.JournalEntryID IS NULL AND NOT EXISTS(SELECT 1 FROM draft_evidence_reservations d WHERE d.receipt_id=r.ReceiptID) LIMIT 1")[0]['ReceiptID'];page.goto(base+'/general_journal.php?receipt_id='+str(image));check(page.locator('#journal-form').count()==1 and page.locator('#entry-workspace').count()==0,'Scalar OCR handoff keeps its separate GJ form');check('Automatic extraction failed' in page.locator('.journal-receipt-review').inner_text() and page.locator('#receipt-currency-confirmed').count()==1,'OCR failed extraction retains manual review and currency confirmation');config()
+-        page.goto(base+'/cash_advance_entry.php?workflow_kind=advance_release');check(page.locator('.aw-advance-editor #aw-progress').count()==1 and page.locator('#aw-control-account').count()==1 and page.locator('.aw-payment').count()==0 and page.locator('[data-payment-mode]').count()==0,'Advance release stays on its dedicated advance-focused branch');page.goto(base+'/journal_correction.php?journal_id='+str(fixture['ordinary_journal']));check(page.locator('#aw-progress').count()==0 and page.locator('#aw-correction-reason').count()==1,'Correction retains dedicated branch')
++        page.goto(base+'/cash_advance_entry.php?workflow_kind=advance_release');check(page.locator('.aw-advance-editor #aw-progress').count()==1 and page.locator('#aw-control-account').count()==1 and page.locator('.aw-payment').count()==0 and page.locator('[data-payment-mode]').count()==0,'Advance release stays on its dedicated advance-focused branch');page.goto(base+'/journal_correction.php?journal_id='+str(fixture['ordinary_journal']));check(page.locator('.aw-correction-editor #aw-progress').count()==1 and page.locator('.aw-payment').count()==0 and page.locator('#aw-correction-reason').count()==1,'Correction retains dedicated branch')
+         manager,ms=context('management@example.invalid');before_state=state()
+         for route in ['cash_receipt.php','general_journal.php']:check(manager.request.get(base+'/'+route,max_redirects=0).status==403,'Management cannot enter '+route)
+         res=manager.request.get(base+'/journal_transaction.php?journal_id='+str(fixture['advance_journal']));check(res.ok and 'receipt_attachment.php' not in res.text() and state()==before_state,'Management exact read retains private evidence restrictions and no writes');manager.close()
+diff --git a/scripts/test_usability_u2_browser.py b/scripts/test_usability_u2_browser.py
+index 46c529de69467b0c07362589d15d29fbd23886dd..b7b57d69a85320cfa883062a888f2f7e04f9691d 100644
+--- a/scripts/test_usability_u2_browser.py
++++ b/scripts/test_usability_u2_browser.py
+@@ -156,7 +156,7 @@ try:
+         for value,status in [('0',400),('-1',400),('4294967296',400),('abc',400),('999999999',404)]:check(ctx.request.get(base+'/journal_transaction.php?journal_id='+value).status==status,'Exact reader rejects '+value)
+         check(ctx.request.get(base+'/journal_transaction.php?journal_id[]=1').status==400,'Exact reader rejects array IDs');check(ctx.request.post(base+'/journal_transaction.php?journal_id='+journal).status==405,'Exact reader is GET only')
+         anonymous=browser.new_context();check(anonymous.request.get(base+'/journal_transaction.php?journal_id='+journal,max_redirects=0).status==302,'Unauthenticated exact read redirects to login');anonymous.close()
+-        page.goto(base+'/cash_receipt.php');ready();check(page.locator('#entry-workspace').get_attribute('data-payment-mode')=='quick','U2-B receipt opts into faithful ordinary presentation');page.goto(base+'/journal_correction.php?journal_id='+fixture['ordinary_journal'].__str__());check(page.locator('#aw-correction-reason').count()==1 and page.locator('#aw-progress').count()==0,'Correction workspace retains its dedicated presentation')
++        page.goto(base+'/cash_receipt.php');ready();check(page.locator('#entry-workspace').get_attribute('data-payment-mode')=='quick','U2-B receipt opts into faithful ordinary presentation');page.goto(base+'/journal_correction.php?journal_id='+fixture['ordinary_journal'].__str__());check(page.locator('#aw-correction-reason').count()==1 and page.locator('.aw-correction-editor #aw-progress').count()==1 and page.locator('.aw-payment').count()==0,'Correction workspace retains its dedicated presentation')
+         check(not errors,'Payment and retained shared routes have no uncaught JavaScript errors')
+         (run/'results.json').write_text(json.dumps({'checks':checks,'browser':browser.version,'database':db,'screenshots':sorted(p.name for p in run.glob('*.png')),'page_errors':errors},indent=2))
+         files={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for folder in ['includes','assets','scripts'] for p in (root/folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts};files.update({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in root.glob('*.php') if p.name!='config.php'});(run/'source-manifest.json').write_text(json.dumps(files,sort_keys=True,indent=2))
+diff --git a/scripts/test_usability_u4_browser.py b/scripts/test_usability_u4_browser.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..12c69c2de447eaf47380f8a7d4db3d1fec986512
+--- /dev/null
++++ b/scripts/test_usability_u4_browser.py
+@@ -0,0 +1,235 @@
++"""U4 connected gates on a fresh guarded synthetic full-schema clone only."""
++from html.parser import HTMLParser
++from itertools import product
++from pathlib import Path
++from urllib.parse import urlencode
++import argparse,hashlib,json,os,re,secrets,shutil,socket,subprocess,sys,time
++root=Path(__file__).resolve().parent.parent
++sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
++from playwright.sync_api import sync_playwright
++parser=argparse.ArgumentParser();parser.add_argument('--fixture',required=True);parser.add_argument('--browser',default='msedge');parser.add_argument('--gate',choices=['a','b','c','d','all'],default='a');args=parser.parse_args()
++fixture_path=Path(args.fixture).resolve();private=(root/'.migration-private').resolve()
++if not fixture_path.is_relative_to(private):parser.error('Private fixture required')
++fixture=json.loads(fixture_path.read_text());db=fixture['database'];evidence=Path(fixture['receipt_root']).resolve()
++if not re.fullmatch(r'atikha_test_stage1_u4[a-z0-9]+',db) or not evidence.is_relative_to(private):parser.error('Disposable database/private evidence required')
++php=r'C:\xampp\php\php.exe';run=private/('u4-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
++for path in root.glob('*.php'):
++    if path.name not in ['config.php','db_connect.php']:shutil.copy2(path,app/path.name)
++for name in ['includes','assets','scripts','vendor']:shutil.copytree(root/name,app/name)
++def ps(v):return "'"+str(v).replace('\\','\\\\').replace("'","\\'")+"'"
++def connect(name=db):
++    assert re.fullmatch(r'atikha_test_stage1_u4[a-z0-9]+',name)
++    dsn='mysql:host='+os.environ.get('ATIKHA_DB_HOST','127.0.0.1')+';dbname='+name+';charset=utf8mb4'
++    (app/'db_connect.php').write_text('<?php $pdo=new PDO('+','.join(ps(v) for v in [dsn,os.environ.get('ATIKHA_DB_USER','root'),os.environ.get('ATIKHA_DB_PASSWORD','')])+',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);',encoding='utf-8')
++def config(s1=True,s2=True,s3=True,ocr=True):
++    flags=dict(STAGE1_WORKSPACE_ENABLED=s1,STAGE2_ADVANCES_ENABLED=s2,STAGE3_CORRECTIONS_ENABLED=s3,OCR_JOURNAL_ENABLED=ocr)
++    (app/'config.php').write_text('<?php '+''.join('define('+ps(k)+','+str(v).lower()+');' for k,v in flags.items())+'define(\'GEMINI_API_KEY\',\'synthetic-no-network\');define(\'RECEIPT_UPLOAD_DIR\','+ps(evidence)+');',encoding='utf-8')
++connect();config()
++def sql(query,write=False,name=db):
++    assert re.fullmatch(r'atikha_test_stage1_u4[a-z0-9]+',name)
++    code='<?php require '+ps(root/'scripts/cli_common.php')+';$p=cli_db('+ps(name)+');echo json_encode('+('$p->exec('+ps(query)+')' if write else '$p->query('+ps(query)+')->fetchAll()')+');'
++    return json.loads(subprocess.check_output([php],input=code,text=True))
++def login(email):return json.loads(subprocess.check_output([php,str(app/'scripts/http_fixture.php'),'--database='+db,'--sessions='+str(sessions),'--email='+email,'--test-login'],text=True))
++def state():
++    code='<?php require '+ps(root/'scripts/cli_common.php')+';$p=cli_db('+ps(db)+');$p->exec("SET TRANSACTION READ ONLY");$p->beginTransaction();$tables=$p->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE=\'BASE TABLE\' ORDER BY TABLE_NAME")->fetchAll();$out=[];foreach($tables as $t){$n=$t["TABLE_NAME"];$out[$n]=hash("sha256",json_encode($p->query("SELECT * FROM `".$n."` ORDER BY 1")->fetchAll(),JSON_THROW_ON_ERROR));}$p->rollBack();echo json_encode($out);'
++    return json.loads(subprocess.check_output([php],input=code,text=True))
++
++sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close();base=f'http://127.0.0.1:{port}'
++# Copied-app transport double plus disabled PHP transports: no provider call is possible.
++g=app/'includes/gemini_client.php';g.write_text(g.read_text(encoding='utf-8').replace('function gemini_request(', 'function original_gemini_request(')+"\nfunction gemini_request(array $payload,?int $timeout=null,?int $connect=null):array{return ['ok'=>false,'raw'=>'synthetic failure','text'=>'','error'=>'Synthetic unavailable provider'];}\n",encoding='utf-8')
++router=run/'router.php';router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);if(preg_match('~^/(uploads|scripts|includes|vendor)/~',$p)||preg_match('~^/(forecast_ai|gemini|anomaly_scan|audit_summary|external_email|send_email)~',$p)){http_response_code(403);exit('Blocked isolated boundary');}return false;",encoding='utf-8')
++log=(run/'server.log').open('w',encoding='utf-8');server=subprocess.Popen([php,'-d','session.save_path='+str(sessions),'-d','disable_functions=curl_exec,mail,fsockopen,stream_socket_client','-S',f'127.0.0.1:{port}','-t',str(app),str(router)],stdout=log,stderr=log)
++checks={k:0 for k in 'abcde'};gate='a';errors=[];success=False
++def check(ok,label):
++    if not ok:raise AssertionError(label)
++    checks[gate]+=1;print('PASS '+gate.upper()+': '+label,flush=True)
++try:
++    with sync_playwright() as pw:
++        browser=pw.chromium.launch(channel=args.browser,headless=True)
++        def context(email):
++            c=browser.new_context(viewport={'width':1366,'height':768});c.route(re.compile(r'^https?://(?!127\.0\.0\.1:)'),lambda r:r.abort());ss=login(email);c.add_cookies([{'name':'PHPSESSID','value':ss['session'],'url':base}]);return c,ss
++        admin,session=context('admin@example.invalid');manager,ms=context('management@example.invalid');page=admin.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
++        def capture(label):
++            for width,height in [(1366,768),(1920,1080)]:
++                page.set_viewport_size({'width':width,'height':height});page.evaluate('window.scrollTo(0,0)');check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),label+' fits '+str(width));page.screenshot(path=str(run/(label+'-'+str(width)+'.png')),full_page=True)
++            page.set_viewport_size({'width':1366,'height':768})
++        if args.gate in ['a','all']:
++            before=state();page.goto(base+'/accounting_drafts.php',wait_until='networkidle')
++            page.wait_for_function("document.querySelector('#draft-status').textContent.includes('loaded')")
++            check(page.locator('label:has(select[name=source_book])').inner_text().startswith('Source book'),'Book filter is not presented as workflow filter')
++            records=admin.request.get(base+'/accounting_actions.php?action=drafts').json()['result']
++            for row in records:
++                tr=page.locator('[data-draft-id="'+str(row['id'])+'"]');href=tr.locator('a').get_attribute('href');kind=row['workflow_kind']
++                expected='journal_correction.php' if kind=='correction' else 'cash_advance_entry.php' if kind.startswith('advance_') else {'CRB':'cash_receipt.php','CDB':'cash_disbursement.php','GJ':'general_journal.php'}[row['source_book']]
++                check(href==expected+'?draft_id='+str(row['id']),'Persisted '+kind+' dispatch retains draft #'+str(row['id']))
++            check(manager.request.get(base+'/accounting_drafts.php').status==403,'Management cannot open private drafts')
++            check(manager.request.get(base+'/accounting_actions.php?action=drafts').status==403,'Management cannot read private draft JSON')
++            check(state()==before,'All draft list/page reads leave every application table unchanged')
++            html=page.locator('#draft-list').inner_html()
++            def fail_list(route):route.fulfill(status=503,json={'ok':False,'error':'Synthetic unavailable list'})
++            page.route('**/accounting_actions.php?action=drafts*',fail_list)
++            page.locator('button:has-text("Apply filters")').click();page.wait_for_function("document.querySelector('#draft-error').textContent.includes('Synthetic')")
++            check(page.locator('#draft-list').inner_html()==html,'Failed refresh preserves the complete prior successful list')
++            page.unroute('**/accounting_actions.php?action=drafts*',fail_list)
++            def malformed_list(route):route.fulfill(json={'ok':True,'result':[{'id':1}]})
++            page.route('**/accounting_actions.php?action=drafts*',malformed_list);page.locator('button:has-text("Apply filters")').click();page.wait_for_function("document.querySelector('#draft-error').textContent.includes('Unexpected')")
++            check(page.locator('#draft-list').inner_html()==html,'Malformed draft projection cannot replace a verified list')
++            page.unroute('**/accounting_actions.php?action=drafts*',malformed_list)
++            # Create a private ordinary draft through the unchanged public contract.
++            payload={'entry_date':time.strftime('%Y-%m-%d'),'reference':'U4-SYNTHETIC','description':'Synthetic saved outreach travel','party_id':str(fixture['party']),'default_project_id':'','cash_account_id':str(fixture['bank']),'cash_amount':'100.00','cash_project_id':'','transaction_kind':'ordinary','lines':[{'client_id':'f'*64,'account_id':str(fixture['training']),'fund_project_id':'','debit_amount':'100.00','credit_amount':''}],'documents':[]}
++            saved=admin.request.post(base+'/accounting_actions.php',data={'action':'save','csrf_token':session['csrf'],'draft_id':'','submission_key':secrets.token_hex(32),'source_book':'CDB','payload':payload}).json()
++            assert saved['ok'],saved
++            did=saved['result']['id'];page.reload(wait_until='networkidle');page.wait_for_selector('[data-draft-id="'+str(did)+'"]')
++            def lose_discard(route):
++                if route.request.method=='POST' and route.request.post_data_json.get('action')=='discard':
++                    response=route.fetch();assert response.json()['ok'];route.abort()
++                else:route.continue_()
++            page.route('**/accounting_actions.php',lose_discard)
++            row=page.locator('[data-draft-id="'+str(did)+'"]');row.get_by_role('button',name='Discard',exact=True).click();page.wait_for_function("document.querySelector('#draft-error').textContent.includes('not confirmed')")
++            check(row.locator('a').get_attribute('href') is None,'Actual committed lost discard response disables Continue')
++            after=state();row.get_by_role('button',name='Check discard result',exact=True).click();page.wait_for_function("document.querySelector('#draft-status').textContent.includes('no longer an active')")
++            check(state()==after and row.get_by_role('button').is_disabled(),'Result check sends no second mutation and retains safe inactive row')
++            page.unroute('**/accounting_actions.php',lose_discard)
++            capture('a-draft-result')
++        if args.gate in ['b','all']:
++            gate='b';before=state();page.goto(base+'/financial_records.php?from=&to=',wait_until='networkidle');page.wait_for_selector('#records-table tbody .records-view')
++            check('Find a transaction' in page.locator('h1').inner_text() and 'General Ledger' not in page.locator('h1').inner_text(),'History is not labelled as unfinished running General Ledger')
++            page.locator('#records-table tbody .records-view').first.click();page.wait_for_selector('#transaction-dialog[open]')
++            exact=page.get_by_role('link',name=re.compile('View complete transaction #'));href=exact.get_attribute('href');journal=int(href.split('=')[-1]);exact.click();page.wait_for_selector('.correction-details')
++            check('Transaction #'+str(journal) in page.locator('h1').inner_text(),'Modal opens the same exact journal ID')
++            check(page.locator('tfoot').inner_text().startswith('Complete entry totals'),'Exact view retains full-entry totals')
++            capture('b-exact-transaction')
++            mp=manager.new_page();mp.goto(base+'/journal_transaction.php?journal_id='+str(journal),wait_until='networkidle')
++            check(mp.locator('.aw-correction-entry').count()==0,'Management exact reader exposes no correction authoring action')
++            mp.goto(base+'/financial_records.php?view=crb&from=&to=',wait_until='networkidle')
++            check('Gross originating book activity' in mp.locator('.records-page').inner_text(),'Management receives truthful gross book explanation')
++            correction=sql('SELECT id,target_journal_id,reversal_journal_id,replacement_journal_id FROM journal_corrections ORDER BY id LIMIT 1')[0]
++            page.goto(base+'/journal_corrections.php?correction_id='+str(correction['id']),wait_until='networkidle')
++            for field in ['target_journal_id','reversal_journal_id','replacement_journal_id']:
++                if correction[field] is not None:check(page.locator('.correction-journal h3 a[href="journal_transaction.php?journal_id='+str(correction[field])+'"]').count()>=1,'Posted comparison links actual '+field)
++            capture('b-correction-comparison')
++            config(s1=False,s2=False,s3=False,ocr=False)
++            check(manager.request.get(base+'/journal_corrections.php?correction_id='+str(correction['id'])).ok,'Posted comparison remains readable with authoring flags off')
++            check(manager.request.get(base+'/journal_transaction.php?journal_id='+str(journal)).ok,'Exact posted reader remains available with UI flags off')
++            config();check(state()==before,'Finding and inspection leave every application table unchanged')
++        if args.gate in ['c','all']:
++            gate='c';cases=json.loads((fixture_path.parent/'u4-cases.json').read_text());assert cases['database']==db
++            for case in cases['ordinary']+cases['advance']:
++                label=case.get('book',case.get('kind'))+'-'+case['mode'];did=case['draft_id']
++                page.goto(base+'/journal_correction.php?draft_id='+str(did),wait_until='networkidle');page.wait_for_function("document.querySelector('#aw-save').disabled===false")
++                check(page.locator('#aw-correction-mode').is_disabled(),'Saved mode remains immutable '+label)
++                expected='cash_advances' if 'kind' in case else {'CRB':'crb','CDB':'cdb','GJ':'financial_records'}[case['book']]
++                check(page.locator('a[aria-current=page]').get_attribute('data-nav-key')==expected,'Trusted original provenance drives navigation '+label)
++                if case is cases['ordinary'][0]:
++                    before_mode=state();page.locator('#aw-correction-mode').evaluate("el=>{el.value='reverse_replace';el.dispatchEvent(new Event('change',{bubbles:true}))}")
++                    check(page.locator('#aw-correction-mode').input_value()=='reverse_only' and state()==before_mode,'Forced saved-mode change restores persisted mode without converting the draft')
++                    reason=page.locator('#aw-correction-reason').input_value()+' updated synthetic wording';page.locator('#aw-correction-reason').fill(reason)
++                    page.locator('.aw-header a[href="accounting_drafts.php"]').click();page.wait_for_selector('#aw-leave-dialog[open]');page.locator('#aw-leave-stay').click()
++                    check(page.locator('#aw-correction-reason').input_value()==reason,'Correction Stay retains edited reason')
++                    def fail_save(route):
++                        if route.request.method=='POST' and route.request.post_data_json.get('action')=='save':route.fulfill(status=503,json={'ok':False,'error':'Synthetic failed correction save'})
++                        else:route.continue_()
++                    page.route('**/journal_correction_actions.php',fail_save);page.locator('.aw-header a[href="accounting_drafts.php"]').click();page.locator('#aw-leave-save').click();page.wait_for_function("document.querySelector('#aw-leave-error').textContent.includes('Synthetic')")
++                    check(page.locator('#aw-leave-dialog').is_visible() and page.locator('#aw-correction-reason').input_value()==reason and state()==before_mode,'Failed correction Save-and-leave preserves input and every table')
++                    page.locator('#aw-leave-stay').click();page.unroute('**/journal_correction_actions.php',fail_save)
++                    page.locator('.aw-header a[href="accounting_drafts.php"]').click();page.locator('#aw-leave-save').click();page.wait_for_url('**/accounting_drafts.php')
++                    page.goto(base+'/journal_correction.php?draft_id='+str(did),wait_until='networkidle');page.wait_for_function("document.querySelector('#aw-save').disabled===false")
++                    check(page.locator('#aw-correction-reason').input_value()==reason and page.locator('#aw-correction-mode').is_disabled(),'Successful Save-and-leave preserves the same correction identity and mode')
++                page.locator('#aw-review').click();page.wait_for_selector('#aw-review-panel:not([hidden])')
++                check(page.locator('#aw-error').inner_text()=='' and 'preview' in page.locator('#aw-review-content').inner_text(),'Full correction previews load '+label)
++                links=page.locator('#aw-review-content a').evaluate_all('(nodes)=>nodes.map(n=>n.getAttribute("href"))')
++                check(links==['journal_transaction.php?journal_id='+str(case['target'])],'Only the original has an exact journal link before posting '+label)
++                expected_tables=2 if case['mode']=='reverse_only' else 3
++                check(page.locator('#aw-review-content table tfoot').count()==expected_tables,'Every original/reversal/replacement preview has complete totals '+label)
++                if case is cases['ordinary'][0]:capture('c-reversal-review')
++                if case is cases['advance'][-1]:capture('c-return-correction-review')
++                posts=[];refreshes=[];lost=[False];detail_failure=[case is cases['ordinary'][0]]
++                def lose(route):
++                    request=route.request
++                    if request.method=='POST' and request.post_data_json.get('action')=='post':
++                        posts.append(request.post_data_json);response=route.fetch();assert response.json().get('ok'),response.text()
++                        if not lost[0]:
++                            lost[0]=True
++                            if label=='GJ-reverse_replace':
++                                body=response.json();body['result'].pop('reversal_journal_id');route.fulfill(response=response,json=body)
++                            else:route.abort()
++                        else:route.fulfill(response=response)
++                    elif request.method=='GET' and 'action=draft' in request.url and detail_failure[0]:route.fulfill(status=503,json={'ok':False,'error':'Synthetic detail-read failure'})
++                    else:route.continue_()
++                def session_read(route):refreshes.append(route.request.url);route.continue_()
++                page.route('**/journal_correction_actions.php*',lose);page.route('**/accounting_actions.php?action=session',session_read)
++                page.locator('#aw-post').click();page.wait_for_selector('#aw-unknown:not([hidden])')
++                check(page.locator('.aw-columns').is_hidden() and page.locator('#aw-posted').is_hidden(),'Unknown result freezes editor and withholds success '+label)
++                if case is cases['ordinary'][0]:
++                    old_url=page.url;page.locator('.aw-header a[href="accounting_drafts.php"]').click();check(page.url==old_url and page.locator('#aw-unknown').is_visible(),'Uncertain correction blocks navigation that would lose its frozen request')
++                committed=state();page.locator('#aw-check-result').click();page.wait_for_selector('#aw-posted:not([hidden])')
++                page.wait_for_selector('#aw-correction-details-error:not([hidden])' if detail_failure[0] else '[data-correction-result]')
++                check(len(posts)==2 and refreshes and {k:v for k,v in posts[0].items() if k!='csrf_token'}=={k:v for k,v in posts[1].items() if k!='csrf_token'},'CSRF refresh replays exact frozen request '+label)
++                check(state()==committed,'Committed replay adds no journal/correction/advance operation/audit or any other table write '+label)
++                check(page.locator('[data-correction-link=reversal_journal_id]').count()==1 and page.locator('[data-correction-link=target_journal_id]').get_attribute('href').endswith('='+str(case['target'])),'Recorded bundle exposes actual exact identities '+label)
++                if detail_failure[0]:
++                    check(page.locator('#aw-correction-details-error').is_visible() and page.locator('#aw-unknown').is_hidden(),'Failed secondary detail read retains recorded state')
++                    detail_failure[0]=False;page.get_by_role('button',name='Retry correction details').click();page.wait_for_selector('#aw-correction-details-error[hidden]',state='attached');check(len(posts)==2 and state()==committed,'Details retry is read-only and does not repeat financial posting')
++                page.unroute('**/journal_correction_actions.php*',lose);page.unroute('**/accounting_actions.php?action=session',session_read)
++                check(page.get_by_role('link',name='Find another transaction to correct').get_attribute('href')=='financial_records.php' and page.locator('#aw-other-correction-mode').is_hidden(),'Recorded result returns to transaction selection rather than reusing corrected target '+label)
++                if case is cases['advance'][1]:capture('c-release-correction-recorded')
++                page.reload(wait_until='networkidle');page.wait_for_selector('[data-correction-result]')
++                check(page.locator('[data-correction-link=target_journal_id]').get_attribute('href').endswith('='+str(case['target'])) and state()==committed,'Saved posted draft reload recovers the same bundle without writes '+label)
++        if args.gate in ['d','all']:
++            import struct,zlib
++            gate='d'
++            def png():
++                def chunk(k,d):return struct.pack('>I',len(d))+k+d+struct.pack('>I',zlib.crc32(k+d)&0xffffffff)
++                pixels=b''.join(b'\0'+os.urandom(64*4) for _ in range(64))
++                return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',64,64,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(pixels))+chunk(b'IEND',b'')
++            journals=sql('SELECT COUNT(*) n FROM journal_entries')[0]['n']
++            page.goto(base+'/cash_disbursement.php',wait_until='networkidle');page.wait_for_function("document.querySelector('#aw-save').disabled===false")
++            page.locator('[data-line] [data-field=account_id]').first.select_option(str(fixture['training']),force=True)
++            page.locator('#aw-document-group > summary').click()
++            page.locator('#aw-cash-amount').fill('100.00');page.locator('#aw-upload').set_input_files({'name':'Synthetic U4 allocation support.png','mimeType':'image/png','buffer':png()})
++            page.wait_for_selector('[data-document]');doc=page.locator('[data-document]').first;doc.locator('[data-doc-field=purpose]').select_option('amount')
++            for name,value in [('declared_amount','120.00'),('accepted_amount','100.00')]:doc.locator('[data-doc-field='+name+']').fill(value)
++            doc.locator('[data-doc-field=exclusion_reason]').fill('Synthetic excluded personal amount');doc.locator('[data-allocation]').first.fill('100.00');doc.locator('[data-doc-field=reviewed]').check()
++            check(all(text in doc.locator('[data-support-summary]').inner_text() for text in ['Reviewed for this draft','120.00','100.00','20.00']),'Declared/support/allocated/excluded amounts remain separate')
++            doc.locator('[data-doc-field=declared_amount]').fill('130.00');doc.locator('[data-doc-field=exclusion_reason]').click()
++            check(not doc.locator('[data-doc-field=reviewed]').is_checked() and 'Needs manual review' in doc.locator('[data-support-summary]').inner_text(),'Changing evidence invalidates review rather than claiming verification')
++            capture('d-support-guidance')
++            page.goto(base+'/ocr_expense.php',wait_until='networkidle');page.locator('#receipt-image').set_input_files({'name':'Synthetic U4 receipt.png','mimeType':'image/png','buffer':png()});page.locator('#receipt-upload button').click()
++            page.wait_for_function("document.querySelector('#receipt-retry')||document.querySelector('#ocr-progress a')")
++            if page.locator('#ocr-progress a').count():page.locator('#ocr-progress a').click()
++            page.wait_for_selector('#receipt-retry')
++            rid=page.locator('#receipt-retry input[name=receipt_id]').input_value();key=page.locator('#receipt-retry input[name=request_key]').input_value()
++            check(page.get_by_role('link',name='Review in General Journal').get_attribute('href')=='general_journal.php?receipt_id='+rid,'OCR failure retains exact General Journal-only manual handoff')
++            config(s1=False);manual=admin.request.get(base+'/general_journal.php?receipt_id='+rid);check(manual.ok and 'General Journal' in manual.text(),'Scalar manual handoff remains available with Stage 1 off');config()
++            check(manager.request.get(base+'/ocr_expense.php?receipt='+rid).status==403 and manager.request.get(base+'/receipt_attachment.php?receipt_id='+rid).status in [403,404],'Management cannot read OCR workspace or private image')
++            requests=[];lost=[False]
++            def lost_retry(route):
++                if route.request.method=='POST':
++                    requests.append(route.request.post_data)
++                    if not lost[0]:lost[0]=True;response=route.fetch();assert response.ok;route.abort()
++                    else:route.continue_()
++                else:route.continue_()
++            page.route('**/ocr_expense.php',lost_retry);page.locator('#receipt-retry button').click();page.wait_for_selector('#ocr-mutation-feedback:not([hidden])')
++            check(page.locator('#receipt-retry button').is_disabled() and page.locator('#receipt-discard button').is_disabled(),'Lost retry response blocks blind second mutation')
++            check('Reading the saved image' not in page.locator('#ocr-retry-progress').inner_text(),'Unverified result clears stale reading progress')
++            committed=state();page.locator('#ocr-check-state').click();page.wait_for_selector('#ocr-replay-retry:not([hidden])')
++            check(state()==committed and len(requests)==1,'Saved-state check is read-only and does not retry extraction')
++            capture('d-ocr-unverified');page.locator('#ocr-replay-retry').click();page.wait_for_selector('#receipt-retry');page.wait_for_function("document.querySelector('#receipt-retry button').disabled===false")
++            check(len(requests)==2 and all(key in body for body in requests) and state()==committed,'Same-key extraction replay creates no attempt/audit/other table write')
++            page.unroute('**/ocr_expense.php',lost_retry)
++            lost=[False];requests=[]
++            def lost_discard(route):
++                if route.request.method=='POST':requests.append(route.request.post_data);response=route.fetch();assert response.ok;route.abort()
++                else:route.continue_()
++            page.route('**/ocr_expense.php',lost_discard);page.locator('#receipt-discard button').click();page.wait_for_selector('#ocr-mutation-feedback:not([hidden])')
++            discarded=state();page.locator('#ocr-check-state').click();page.wait_for_function("document.querySelector('#ocr-mutation-status').textContent.includes('no longer available')")
++            check(state()==discarded and len(requests)==1 and page.locator('#ocr-replay-retry').is_hidden(),'Lost discard is checked without a second destructive action')
++            check(page.locator('#receipt-discard button').is_disabled() and 'does not establish why' in page.locator('#ocr-mutation-status').inner_text(),'Unavailable receipt is not falsely labelled confirmed discard')
++            page.unroute('**/ocr_expense.php',lost_discard)
++            check(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n']==journals,'Evidence and OCR mutations never post a financial journal')
++        check(not errors,'No uncaught JavaScript errors')
++        browser.close();success=True
++finally:
++    server.terminate();server.wait(timeout=15);log.close()
++    (run/'results.json').write_text(json.dumps({'passed':success,'gate':args.gate,'checks':checks,'errors':errors},indent=2),encoding='utf-8')
++    print('U4_RUN: '+str(run),flush=True)
+diff --git a/scripts/test_usability_u4_fixture.php b/scripts/test_usability_u4_fixture.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..a639d22bf9a6bdf6e8bb6dd979cc9921beea4a1a
+--- /dev/null
++++ b/scripts/test_usability_u4_fixture.php
+@@ -0,0 +1,51 @@
++<?php
++/** Synthetic U4 targets through existing writers, on a fresh full-schema clone only. */
++define('ATIKHA_ISOLATED_TEST',true);require __DIR__.'/cli_common.php';
++$o=getopt('',['fixture:']);$private=realpath(__DIR__.'/../.migration-private');$path=realpath($o['fixture']??'');
++cli_require($path&&str_starts_with($path,$private.DIRECTORY_SEPARATOR),'Private synthetic fixture required.');
++$f=json_decode(file_get_contents($path),true,64,JSON_THROW_ON_ERROR);$db=$f['database'];cli_require((bool)preg_match('/\Aatikha_test_stage1_u4[a-z0-9]+\z/',$db),'Fresh U4 database required.');
++$receiptRoot=realpath($f['receipt_root']);cli_require($receiptRoot&&str_starts_with($receiptRoot,$private.DIRECTORY_SEPARATOR),'Private synthetic images required.');
++cli_require(!file_exists(dirname($path).'/u4-cases.json'),'Do not reuse a consumed U4 preparation.');
++define('RECEIPT_UPLOAD_DIR',$receiptRoot);define('STAGE1_WORKSPACE_ENABLED',true);define('STAGE2_ADVANCES_ENABLED',true);define('STAGE3_CORRECTIONS_ENABLED',true);define('OCR_JOURNAL_ENABLED',false);
++require __DIR__.'/../includes/cash_advance.php';require __DIR__.'/../includes/correction_posting.php';
++$p=cli_db($db);cli_require(stage2_enabled($p)&&stage3_enabled($p),'Complete schema required; no migrations.');
++$uid=(int)$p->query("SELECT UserID FROM Users WHERE Email='admin@example.invalid' AND Is_Active=1")->fetchColumn();cli_require($uid>0,'Synthetic owner required.');$_SESSION=['UserID'=>$uid,'Role'=>'Admin'];
++$s2=json_decode(file_get_contents(dirname($path).'/stage2-fixture.json'),true,64,JSON_THROW_ON_ERROR);
++function u4r(array $v):array{return $v+['csrf_token'=>csrf_token()];}
++function u4id(array $d):array{return ['draft_id'=>(string)$d['id'],'revision'=>(string)$d['revision'],'submission_key'=>$d['submission_key']];}
++function u4payload(array $f):array{return ['entry_date'=>journal_today(),'reference'=>'U4-SYNTHETIC-'.bin2hex(random_bytes(5)),'description'=>'Synthetic community training correction target','party_id'=>(string)$f['employee'],'default_project_id'=>'','cash_account_id'=>(string)$f['bank'],'cash_amount'=>'100.00','cash_project_id'=>'','transaction_kind'=>'ordinary','lines'=>[],'documents'=>[],'control_account_id'=>(string)$f['control'],'due_date'=>journal_today(),'approval_name'=>'','approval_date'=>'','approval_reference'=>'','line_notes'=>[]];}
++function u4line(int $account,string $debit,string $credit):array{return ['client_id'=>bin2hex(random_bytes(20)),'account_id'=>(string)$account,'fund_project_id'=>'','debit_amount'=>$debit,'credit_amount'=>$credit];}
++function u4asave(PDO $p,int $uid,string $kind,array $payload,?int $advance=null,?array $d=null):array{return advance_save($p,$uid,u4r(($d?u4id($d):['draft_id'=>'','submission_key'=>bin2hex(random_bytes(32))])+['workflow_kind'=>$kind,'advance_id'=>$advance===null?'':(string)$advance,'payload'=>$payload]));}
++function u4post(PDO $p,int $uid,array $d,bool $advance):array{$r=$advance?advance_review($p,$uid,u4r(u4id($d))):workspace_review($p,$uid,u4r(u4id($d)));$input=u4r(u4id($d)+['payload'=>$d['payload'],'review_token'=>$r['token']]);return $advance?advance_post($p,$uid,$input):workspace_post($p,$uid,$input);}
++function u4support(PDO $p,int $uid,array $d,bool $correction,bool $monetary):array{
++    $im=imagecreatetruecolor(64,64);imagefill($im,0,0,random_int(0,0xffffff));ob_start();imagepng($im);$bytes=ob_get_clean();imagedestroy($im);$name=bin2hex(random_bytes(16)).'.png';file_put_contents(RECEIPT_UPLOAD_DIR.'/'.$name,$bytes);
++    $q=$p->prepare("INSERT INTO Receipts(File_Path,Original_Filename,Mime_Type,File_Size,File_SHA256,UploadedBy_UserID,OCR_Status) VALUES(?,?,'image/png',?,?,?,'Failed')");$q->execute(['uploads/receipts/'.$name,'Synthetic U4 support.png',strlen($bytes),hash('sha256',$bytes),$uid]);$rid=(int)$p->lastInsertId();
++    $q=$p->prepare("INSERT INTO receipt_ocr_attempts(receipt_id,requested_by_user_id,request_key,state,started_at,completed_at,source_hash,catalog_fingerprint,model,schema_version,error_message) VALUES(?,?,?,'Failed',UTC_TIMESTAMP(),UTC_TIMESTAMP(),?,?,'manual',?,'Synthetic manual review')");$q->execute([$rid,$uid,bin2hex(random_bytes(32)),hash('sha256',$bytes),hash('sha256','manual'),RECEIPT_SCHEMA_VERSION]);
++    $d=$correction?correction_attach($p,$uid,u4r(u4id($d)+['receipt_id'=>(string)$rid])):workspace_attach($p,$uid,u4r(u4id($d)),$rid);
++    $payload=$d['payload'];$replacement=&$payload;if($correction)$replacement=&$payload['replacement'];$doc=&$replacement['documents'][count($replacement['documents'])-1];$doc['reviewed']=true;
++    if($monetary){$doc['purpose']='amount';$doc['support_side']='debit';$doc['declared_amount']=$doc['accepted_amount']='100.00';$doc['allocations']=[['client_id'=>$replacement['lines'][0]['client_id'],'amount'=>'100.00']];}unset($doc,$replacement);
++    return $correction?correction_save($p,$uid,u4r(u4id($d)+['source_book'=>$d['source_book'],'mode'=>$d['correction_mode'],'target_journal_id'=>(string)$d['correction_target_journal_id'],'payload'=>$payload])):u4asave($p,$uid,$d['workflow_kind'],$payload,(int)$d['advance_id'],$d);
++}
++$cases=['database'=>$db,'ordinary'=>[],'advance'=>[]];
++foreach(['CRB','CDB','GJ'] as $book)foreach(['reverse_only','reverse_replace'] as $mode){
++    $payload=u4payload($s2);$payload['party_id']=(string)$f['party'];$payload['lines']=$book==='GJ'?[u4line((int)$s2['training'],'100.00',''),u4line((int)$s2['bank'],'','100.00')]:[u4line((int)($book==='CRB'?$f['income']:$s2['training']),$book==='CDB'?'100.00':'',$book==='CRB'?'100.00':'')];
++    if($book==='GJ')$payload['cash_account_id']=$payload['cash_amount']='';
++    $d=workspace_save($p,$uid,u4r(['draft_id'=>'','submission_key'=>bin2hex(random_bytes(32)),'source_book'=>$book,'payload'=>$payload]));$posted=u4post($p,$uid,$d,false);$target=correction_entry_target($p,(int)$posted['id']);$replacementBook=correction_book($target,$mode,$book);$seed=correction_seed($target,$mode,$replacementBook);$seed['reason']='Synthetic U4 '.$book.' '.$mode.' reason';
++    $cd=correction_save($p,$uid,u4r(['draft_id'=>'','submission_key'=>bin2hex(random_bytes(32)),'target_journal_id'=>(string)$posted['id'],'mode'=>$mode,'source_book'=>$replacementBook,'payload'=>$seed]));
++    $cases['ordinary'][]=['draft_id'=>$cd['id'],'target'=>$posted['id'],'book'=>$book,'mode'=>$mode];
++}
++foreach(['release','liquidation','return'] as $kind)foreach(['reverse_only','reverse_replace'] as $mode){
++    $payload=u4payload($s2);$payload['cash_amount']='1000.00';$release=u4asave($p,$uid,'advance_release',$payload);$posted=u4post($p,$uid,$release,true);$advance=(int)$posted['advance_id'];
++    if($kind!=='release'){
++        $payload=u4payload($s2);$payload['control_account_id']=$payload['due_date']=$payload['party_id']='';
++        if($kind==='liquidation'){$payload['cash_account_id']=$payload['cash_amount']='';$payload['lines']=[u4line((int)$s2['training'],'100.00','')];}
++        $d=u4asave($p,$uid,'advance_'.$kind,$payload,$advance);$d=u4support($p,$uid,$d,false,$kind==='liquidation');
++        if($kind==='return')$d=advance_confirm($p,$uid,u4r(u4id($d)));
++        $posted=u4post($p,$uid,$d,true);
++    }
++    $target=correction_entry_target($p,(int)$posted['id']);$book=correction_book($target,$mode,'GJ');$seed=correction_seed($target,$mode,$book);$seed['reason']='Synthetic U4 advance '.$kind.' '.$mode.' reason';
++    $cd=correction_save($p,$uid,u4r(['draft_id'=>'','submission_key'=>bin2hex(random_bytes(32)),'target_journal_id'=>(string)$posted['id'],'mode'=>$mode,'source_book'=>$book,'payload'=>$seed]));
++    if($mode==='reverse_replace'&&$kind!=='release'){$cd=u4support($p,$uid,$cd,true,$kind==='liquidation');if($kind==='return')$cd=correction_confirm($p,$uid,u4r(u4id($cd)));}
++    $cases['advance'][]=['draft_id'=>$cd['id'],'target'=>$posted['id'],'kind'=>$kind,'advance_id'=>$advance,'mode'=>$mode];
++}
++file_put_contents(dirname($path).'/u4-cases.json',json_encode($cases,JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR));echo 'Prepared 12 synthetic correction cases through existing writers; no migrations.'.PHP_EOL;
+diff --git a/scripts/test_usability_u4_adapter.js b/scripts/test_usability_u4_adapter.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..fe7ecef7728752e2e9b9dc138a1a1d32c0e0d273
+--- /dev/null
++++ b/scripts/test_usability_u4_adapter.js
+@@ -0,0 +1,34 @@
++'use strict';
++const assert=require('node:assert/strict'),C=require('../assets/js/correction_presentation.js');let checks=0;
++function check(label,fn){fn();checks++;console.log('PASS: '+label);}
++const ordinary={is_correction:true,correction_presentation:true,mode:'reverse_replace',target_journal_id:8,target:{operation:null},book:'CDB'};
++const bundle={id:11,correction_id:3,target_journal_id:8,reversal_journal_id:10,replacement_journal_id:11,duplicate:false};
++check('Correction opt-in excludes ordinary/advance',()=>{assert(C.enabled(ordinary));assert(!C.enabled({ordinary_workspace:true}));assert(!C.enabled({workflow_kind:'advance_release'}));});
++check('Complete replacement bundle accepted',()=>assert.equal(C.result(bundle,ordinary),bundle));
++for(const key of ['id','correction_id','target_journal_id','reversal_journal_id','replacement_journal_id'])for(const value of [null,0,'11',-1])check('Reject invalid '+key+' '+value,()=>assert.throws(()=>C.result({...bundle,[key]:value},ordinary)));
++check('Reject wrong original',()=>assert.throws(()=>C.result({...bundle,target_journal_id:9},ordinary)));
++check('Reject primary journal not replacement',()=>assert.throws(()=>C.result({...bundle,id:10},ordinary)));
++check('Reject duplicate journal identities',()=>assert.throws(()=>C.result({...bundle,id:10,replacement_journal_id:10},ordinary)));
++const reverse={...ordinary,mode:'reverse_only'},reversed={...bundle,id:10,replacement_journal_id:null};
++check('Reverse-only bundle accepted without replacement',()=>C.result(reversed,reverse));
++check('Reverse-only rejects fabricated replacement',()=>assert.throws(()=>C.result(bundle,reverse)));
++const release={...ordinary,target:{operation:{advance_id:4,operation_kind:'release'}}};
++const advanced={...bundle,original_advance_id:4,replacement_advance_id:5,advance_id:5};
++check('Release preserves original and new advance identities',()=>C.result(advanced,release));
++check('Release cannot reuse original identity as replacement',()=>assert.throws(()=>C.result({...advanced,advance_id:4,replacement_advance_id:4},release)));
++for(const kind of ['liquidation','return']){
++ const config={...release,target:{operation:{advance_id:4,operation_kind:kind}}};
++ check(kind+' retains original advance',()=>C.result({...advanced,advance_id:4,replacement_advance_id:null},config));
++ check(kind+' rejects another advance',()=>assert.throws(()=>C.result(advanced,config)));
++}
++check('Advance reversal-only retains original even without advanceConfig',()=>C.result({...reversed,advance_id:4,original_advance_id:4,replacement_advance_id:null},{...release,mode:'reverse_only'}));
++const posted={posted_journal_id:11,posted_result:{},chain:[{...bundle,id:3,mode:'reverse_replace'}],posted_bundle:{reversal:{journal_id:10},replacement:{journal_id:11}}};
++check('Posted reload derives bundle from public chain',()=>assert.equal(C.resumed(posted,ordinary).correction_id,3));
++check('Posted reload rejects missing replacement',()=>assert.throws(()=>C.resumed({...posted,posted_bundle:{reversal:{journal_id:10}}},ordinary)));
++check('Posted reload rejects ambiguous chain',()=>assert.throws(()=>C.resumed({...posted,chain:[...posted.chain,...posted.chain]},ordinary)));
++check('Frozen request is independent and recursively immutable',()=>{const original={payload:{replacement:{documents:[{receipt_id:'6'}]}},submission_key:'original'};const frozen=C.freeze(original);original.payload.replacement.documents[0].receipt_id='9';assert.equal(frozen.payload.replacement.documents[0].receipt_id,'6');assert.throws(()=>{frozen.payload.replacement.documents[0].receipt_id='8';});});
++const url='http://127.0.0.1/journal_correction.php?draft_id=20';
++check('Same saved correction is a no-op link',()=>assert(C.sameTask('?draft_id=20',url,{...ordinary,draft_id:20})));
++check('Another correction mode is a separate task',()=>assert(!C.sameTask('?journal_id=8&mode=reverse_only',url,{...ordinary,draft_id:20})));
++check('Another unsaved target is separate',()=>assert(!C.sameTask('?journal_id=9',url,ordinary)));
++console.log('U4 correction adapter: '+checks+' assertions passed.');
+diff --git a/scripts/test_usability_u4_regressions.py b/scripts/test_usability_u4_regressions.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..e48915d7dbd4e7541b579d7217f948d0fcc1d563
+--- /dev/null
++++ b/scripts/test_usability_u4_regressions.py
+@@ -0,0 +1,73 @@
++"""Final-byte U4 affected suites. Each financial suite gets a new guarded synthetic clone.
++Requires an existing private complete-schema synthetic source and disabled PHP transports.
++Never loads working configuration or bootstraps/migrates the working database.
++"""
++from pathlib import Path
++from concurrent.futures import ThreadPoolExecutor,as_completed
++import argparse,ast,hashlib,json,os,re,secrets,subprocess,sys
++root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve()
++ap=argparse.ArgumentParser();ap.add_argument('--source-fixture',required=True);ap.add_argument('--only',default='all');a=ap.parse_args()
++source=Path(a.source_fixture).resolve();assert source.is_relative_to(private)
++metadata=json.loads(source.read_text());assert re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',metadata['database'])
++assert Path(metadata['receipt_root']).resolve().is_relative_to(private)
++env=os.environ.copy();env.pop('ATIKHA_TEST_INLINE_ROUTINES',None);env['PYTHONIOENCODING']='utf-8';php='C:/xampp/php/php.exe'
++guard=json.loads(subprocess.check_output([php],input='<?php echo json_encode(["url"=>ini_get("allow_url_fopen"),"disabled"=>ini_get("disable_functions")]);',text=True,env=env))
++assert guard['url'] in ['','0'] and all(n in guard['disabled'].split(',') for n in ['curl_exec','stream_socket_client','fsockopen','mail']), 'Disable server transports before testing.'
++production=['accounting_drafts.php','financial_records.php','journal_transaction.php','journal_correction.php','journal_corrections.php','ocr_expense.php','includes/accounting_entry_page.php','assets/js/accounting_drafts.js','assets/js/financial_records.js','assets/js/accounting_workspace.js','assets/js/correction_presentation.js','assets/js/ocr_expense.js','assets/css/accounting_workspace.css','assets/css/ocr_expense.css']
++run=private/('u4-final-'+secrets.token_hex(5));run.mkdir();pins={n:hashlib.sha256((root/n).read_bytes()).hexdigest() for n in production};(run/'source-pins.json').write_text(json.dumps(pins,indent=2))
++(private/'u4-final-current.json').write_text(json.dumps({'run':str(run)}))
++suites={
++ 'u4':('test_usability_u4_browser.py','stage3-checkpoint5-fixture.json','u4'),
++ 'u2a':('test_usability_u2_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'u2b':('test_usability_u2_b_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'u2c':('test_usability_u2_c_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'reader':('test_usability_u2_reader.php','stage3-checkpoint5-fixture.json','u4reg'),
++ 'bcd':('test_usability_u3_bcd_browser.py','stage3-checkpoint5-fixture.json','u3bcd'),
++ 'backend':('test_usability_u3_bcd_edges.php','stage3-checkpoint5-fixture.json','u3bcd'),
++ 'u3a':('test_usability_u3_a_browser.py','stage3-checkpoint5-fixture.json','u3a'),
++ 'stage2':('test_stage2_browser.py','stage2-fixture.json','u4reg'),
++ 'cp2':('test_stage3_checkpoint2_browser.py','stage3-checkpoint2-fixture.json','u4reg'),
++ 'cp3':('test_stage3_checkpoint3_browser.py','stage3-checkpoint3-fixture.json','u4reg'),
++ 'cp4':('test_stage3_checkpoint4_browser.py','stage3-checkpoint4-fixture.json','u4reg'),
++ 'cp5':('test_stage3_checkpoint5_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'receipt':('test_receipt_browser.py','stage3-checkpoint5-fixture.json','u4receipt')}
++chosen=list(suites) if a.only=='all' else a.only.split(',');assert all(n in suites for n in chosen)
++def command(cmd,folder,label,timeout=900):
++    with (folder/(label+'.stdout.log')).open('w',encoding='utf-8') as out,(folder/(label+'.stderr.log')).open('w',encoding='utf-8') as err:
++        r=subprocess.run(cmd,env=env,cwd=root,stdout=out,stderr=err,timeout=timeout)
++    return {'command':cmd,'exit':r.returncode}
++offline=run/'offline';offline.mkdir();offline_results=[]
++for n in production:
++    if n.endswith('.php'):offline_results.append(command([php,'-l',str(root/n)],offline,n.replace('/','_')))
++    if n.endswith('.js'):offline_results.append(command(['node','--check',str(root/n)],offline,n.replace('/','_')))
++for n in ['test_usability_u4_adapter.js','test_usability_u2_adapter.js','test_usability_u3_advance_adapter.js']:
++    offline_results.append(command(['node',str(root/'scripts'/n)],offline,n))
++for n in ['test_usability_u4_browser.py','test_usability_u4_regressions.py','test_receipt_browser.py','test_stage3_checkpoint2_browser.py','test_stage3_checkpoint3_browser.py','test_stage3_checkpoint4_browser.py','test_usability_u2_browser.py','test_usability_u2_b_browser.py']:
++    ast.parse((root/'scripts'/n).read_text(encoding='utf-8'))
++assert all(r['exit']==0 for r in offline_results), 'Offline checks failed; inspect private logs.'
++(run/'offline-results.json').write_text(json.dumps(offline_results,indent=2))
++def execute(name):
++    script,fixture_name,prefix=suites[name];folder=run/name;folder.mkdir();db='atikha_test_stage1_'+prefix+secrets.token_hex(5)
++    clone=command([sys.executable,str(root/'scripts/test_stage3_fixture.py'),'--fixture='+str(source.with_name(fixture_name)),'--database='+db],folder,'clone',180)
++    if clone['exit']:return {'passed':False,'stage':'clone','command':clone}
++    fixture=re.search(r'Cloned fixture: (.+)',(folder/'clone.stdout.log').read_text()).group(1).strip();commands=[]
++    if name=='u4':commands.append([php,str(root/'scripts/test_usability_u4_fixture.php'),'--fixture='+fixture])
++    if name=='bcd':commands.append([php,str(root/'scripts/test_usability_u3_bcd.php'),'--fixture='+fixture,'--gate=b'])
++    commands.append(([sys.executable] if script.endswith('.py') else [php])+[str(root/'scripts'/script),'--fixture='+fixture]+(['--gate=all'] if name in ['u4','bcd','backend'] else []))
++    if name=='u3a':commands.append([sys.executable,str(root/'scripts/test_usability_u3_a_readback.py'),'--fixture='+fixture])
++    evidence=[]
++    for i,cmd in enumerate(commands):
++        evidence.append(command(cmd,folder,str(i),1800))
++        if evidence[-1]['exit']:break
++    same=all(hashlib.sha256((root/n).read_bytes()).hexdigest()==h for n,h in pins.items())
++    result={'passed':evidence[-1]['exit']==0 and same,'source_pins_match':same,'fixture':fixture,'commands':evidence};(folder/'result.json').write_text(json.dumps(result,indent=2));return result
++results={}
++with ThreadPoolExecutor(max_workers=3) as pool:
++    jobs={pool.submit(execute,n):n for n in chosen}
++    for job in as_completed(jobs):
++        n=jobs[job]
++        try:results[n]=job.result()
++        except BaseException as e:results[n]={'passed':False,'exception':repr(e)}
++        (run/'results.json').write_text(json.dumps(results,indent=2));print('U4_FINAL '+n+' '+('PASS' if results[n]['passed'] else 'FAIL')+' '+str(run/n),flush=True)
++print('U4_FINAL_RUN: '+str(run),flush=True)
++sys.exit(0 if all(r['passed'] for r in results.values()) else 1)
+diff --git a/scripts/package_usability_u4_review.py b/scripts/package_usability_u4_review.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..5fd72c744c7571f6a7f3b78adb4f26fd43138466
+--- /dev/null
++++ b/scripts/package_usability_u4_review.py
+@@ -0,0 +1,71 @@
++"""Package exact U4 source only after every final suite and working-state comparison passed."""
++from pathlib import Path
++import argparse,datetime,difflib,hashlib,json,re,shutil,subprocess,zipfile
++root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();baseline='b6e9ca8f26e66820f4deeb4c4d2361e7e3cd0302'
++ap=argparse.ArgumentParser();ap.add_argument('--verification-run',required=True);a=ap.parse_args();run=Path(a.verification_run).resolve();assert run.is_relative_to(private)
++results=json.loads((run/'results.json').read_text());expected={'u4','u2a','u2b','u2c','reader','bcd','backend','u3a','stage2','cp2','cp3','cp4','cp5','receipt'}
++assert set(results)==expected and all(r['passed'] for r in results.values()),'Every required final suite must pass.'
++production=json.loads((run/'source-pins.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
++assert all(sha(root/n)==h for n,h in production.items()),'Production source changed after final verification.'
++working=json.loads((run/'working-final.json').read_text());assert working['passed'],'Working-state comparison must pass.'
++visual=json.loads((run/'visual-review.json').read_text());assert visual['passed'],'Visual review must be recorded.'
++def git(*args):return subprocess.check_output(['git',*args],cwd=root)
++assert git('rev-parse','HEAD').decode().strip()==baseline,'Checkpoint baseline changed.'
++changed=git('diff','--name-only').decode().splitlines();tests=[n for n in changed if n.startswith('scripts/') and n.endswith(('.py','.php','.js'))]
++tests+=['scripts/test_usability_u4_browser.py','scripts/test_usability_u4_fixture.php','scripts/test_usability_u4_adapter.js','scripts/test_usability_u4_regressions.py','scripts/package_usability_u4_review.py']
++def patch(names):
++    existing=[];new=[]
++    for n in names:
++        check=subprocess.run(['git','cat-file','-e',baseline+':'+n],cwd=root,capture_output=True)
++        (existing if check.returncode==0 else new).append(n)
++    output=git('diff','--full-index','--no-ext-diff',baseline,'--',*existing).decode('utf-8') if existing else ''
++    for n in new:
++        text=(root/n).read_text(encoding='utf-8');blob=git('hash-object','--path='+n,n).decode().strip()
++        output+='diff --git a/'+n+' b/'+n+'\nnew file mode 100644\nindex '+'0'*40+'..'+blob+'\n'+''.join(difflib.unified_diff([],text.splitlines(keepends=True),fromfile='/dev/null',tofile='b/'+n))
++    return output
++docs=root/'docs';(docs/'usability-u4-production.patch').write_text(patch(list(production)),encoding='utf-8',newline='\n');(docs/'usability-u4-tests.patch').write_text(patch(tests),encoding='utf-8',newline='\n')
++# Prove both patches reconstruct the final normalized source from the declared baseline.
++check=run/('patch-check-'+datetime.datetime.now().strftime('%H%M%S%f'));check.mkdir()
++for n in list(production)+tests:
++    old=subprocess.run(['git','show',baseline+':'+n],cwd=root,capture_output=True)
++    if old.returncode==0:p=check/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(old.stdout)
++for name in ['usability-u4-production.patch','usability-u4-tests.patch']:
++    subprocess.run(['git','apply','--directory='+str(check.relative_to(root)).replace('\\','/'),str(docs/name)],cwd=root,check=True)
++for n in list(production)+tests:assert (check/n).read_bytes().replace(b'\r\n',b'\n')==(root/n).read_bytes().replace(b'\r\n',b'\n'),n
++summary={'baseline':baseline,'final_suite_results':{n:{'passed':r['passed'],'affected_rerun':r.get('affected_rerun',False),'commands':[{'runner':Path(c['command'][1]).name,'exit':c['exit']} for c in r['commands']]} for n,r in results.items()},'working_comparison':working,'visual_review':visual,'patch_reconstruction_passed':True}
++u4out=(run/'u4/1.stdout.log').read_text(encoding='utf-8');image_run=Path(re.search(r'U4_RUN: (.+)',u4out).group(1).strip());assert image_run.resolve().is_relative_to(private)
++summary['u4_gates']=json.loads((image_run/'results.json').read_text())
++(docs/'usability-u4-verification-results.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
++log=[]
++for n in sorted(results):
++    log.append('SUITE '+n+' PASS\n')
++    for p in sorted(Path(results[n].get('artifact_directory',run/n)).glob('*.stdout.log')):
++        if p.name.startswith('clone'):continue
++        text=p.read_text(encoding='utf-8');text=re.sub(r'C:[^\r\n]*?\.migration-private[^\r\n]*','<private isolated artifacts>',text,flags=re.I);log.append(p.name+'\n'+text+'\n')
++for p in sorted((run/'offline').glob('*.stdout.log')):log.append('OFFLINE '+p.name+'\n'+p.read_text(encoding='utf-8')+'\n')
++(docs/'usability-u4-verification-log.txt').write_text(''.join(log),encoding='utf-8')
++dependencies=['assets/js/payment_presentation.js','assets/js/advance_presentation.js','scripts/test_usability_u2_adapter.js','scripts/test_usability_u3_advance_adapter.js','scripts/cli_common.php','scripts/http_fixture.php','scripts/test_stage3_fixture.py']
++for r in results.values():
++    dependencies += ['scripts/'+Path(c['command'][1]).name for c in r['commands']]
++documents=['README.md','docs/project-status.md','docs/project-decisions.md','docs/usability-completion-plan.md','docs/usability-u3-bcd-approval.md','docs/usability-u4-plan.md','docs/usability-u4-delivery.md','docs/usability-u4-reviewer-notes.md','docs/usability-u4-production.patch','docs/usability-u4-tests.patch','docs/usability-u4-verification-results.json','docs/usability-u4-verification-log.txt']
++files=sorted(set(list(production)+tests+dependencies+documents));images=sorted(image_run.glob('*.png'));assert images
++for p in images:assert visual['screenshots'].get(p.name)==sha(p),'Screenshot not covered by final visual-review record.'
++manifest={'baseline':baseline,'status':'ready for external exact-source review; not committed/pushed','production':{},'packaged_files':{n:sha(root/n) for n in files},'screenshots':{p.name:sha(p) for p in images},'dependencies':'Reconstruct runtime from the declared public baseline; pure adapter dependencies are included. Private DB/session/evidence fixtures are excluded.'}
++contracts=['includes/accounting_query.php','includes/accounting_workspace.php','includes/cash_advance.php','includes/cash_advance_lifecycle.php','includes/correction_drafts.php','includes/correction_posting.php','includes/receipt_ocr.php','accounting_actions.php','cash_advance_actions.php','journal_correction_actions.php','ocr_extract.php']
++manifest['unchanged_contracts']={}
++for n in contracts:
++    old=git('rev-parse',baseline+':'+n).decode().strip();current=git('hash-object','--path='+n,n).decode().strip();assert old==current,n
++    manifest['unchanged_contracts'][n]=current
++for n in production:
++    old=subprocess.run(['git','rev-parse',baseline+':'+n],cwd=root,capture_output=True)
++    manifest['production'][n]={'sha256':sha(root/n),'git_blob':git('hash-object','--path='+n,n).decode().strip(),'baseline_git_blob':old.stdout.decode().strip() if old.returncode==0 else None}
++mf=docs/'usability-u4-source-manifest.json';mf.write_text(json.dumps(manifest,indent=2),encoding='utf-8');files.append(str(mf.relative_to(root)))
++archive=docs/'usability-u4-review-package.zip'
++with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
++    for n in files:z.write(root/n,n)
++    for p in images:z.write(p,'screenshots/'+p.name)
++with zipfile.ZipFile(archive) as z:
++    for n,h in manifest['packaged_files'].items():assert hashlib.sha256(z.read(n)).hexdigest()==h,n
++    for n,h in manifest['screenshots'].items():assert hashlib.sha256(z.read('screenshots/'+n)).hexdigest()==h,n
++(docs/'usability-u4-review-package.sha256').write_text(sha(archive)+'  '+archive.name+'\n',encoding='utf-8')
++print('U4 review package verified:',archive,'files',len(files),'screenshots',len(images),'sha256',sha(archive))

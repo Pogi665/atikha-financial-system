@@ -1,0 +1,1799 @@
+SUITE backend PASS
+0.stdout.log
+PASS b: Review changes none of all application tables
+PASS b: Public effect exactly whitelists the actual validated prepared timeline
+PASS b: Existing canonical input/outstanding remain unchanged
+PASS b: Projection does not mutate saved payload
+PASS b: New release has explicit null prior balances and authoritative proposed outstanding
+PASS b: Release generates the complete journal and permits no proof
+PASS b: Release creates asset outstanding
+PASS b: Release source book is CDB
+PASS b: Generated designated control debit creates an asset, not an expense
+PASS b: Expired-review same-request replay recovers identities with no write
+PASS b: Changed successful replay conflicts without any table write
+PASS b: Employee advisory contract gives all-page count/totals independently of first25 rows
+PASS c: Unsupported liquidation preserves all tables
+PASS c: Review changes none of all application tables
+PASS c: Public effect exactly whitelists the actual validated prepared timeline
+PASS c: Existing canonical input/outstanding remain unchanged
+PASS c: Projection does not mutate saved payload
+PASS c: 10000 release and 8000 supported liquidation projects 2000
+PASS c: Expired-review same-request replay recovers identities with no write
+PASS c: Changed successful replay conflicts without any table write
+PASS c: Actual partial liquidation matches authoritative projection
+PASS c: Net-only 4000 support cannot cover 4500 gross costs preserves all tables
+PASS c: Review changes none of all application tables
+PASS c: Public effect exactly whitelists the actual validated prepared timeline
+PASS c: Existing canonical input/outstanding remain unchanged
+PASS c: Projection does not mutate saved payload
+PASS c: Gross evidence and net control reduction remain distinct
+PASS c: Liability and generated control credit add no evidence denominator
+PASS c: Evidence cannot be assigned to a liability preserves all tables
+PASS c: Gross-liability liquidation settles exactly 4000 outstanding
+PASS c: Posted image cannot be reused for an ordinary liquidation preserves all tables
+PASS c: Review changes none of all application tables
+PASS c: Public effect exactly whitelists the actual validated prepared timeline
+PASS c: Existing canonical input/outstanding remain unchanged
+PASS c: Projection does not mutate saved payload
+PASS c: Backdated multi-project asset/cost review retains explicit current-balance basis
+PASS d: Return without proof preserves all tables
+PASS d: Reviewed proof without explicit confirmation preserves all tables
+PASS d: Unrelated wording preserves server proof context
+PASS d: Bound cash_amount change clears server confirmation
+PASS d: Bound cash_account_id change clears server confirmation
+PASS d: Bound entry_date change clears server confirmation
+PASS d: Bound document_review change clears server confirmation
+PASS d: Review changes none of all application tables
+PASS d: Public effect exactly whitelists the actual validated prepared timeline
+PASS d: Existing canonical input/outstanding remain unchanged
+PASS d: Projection does not mutate saved payload
+PASS d: Return proof has no expenditure evidence denominator
+PASS d: 10000 release /8000 liquidation /2000 return projects zero
+PASS d: Expired-review same-request replay recovers identities with no write
+PASS d: Changed successful replay conflicts without any table write
+PASS d: Full unused-cash return settles original advance
+PASS d: Further return against settled advance preserves all tables
+PASS d: Review changes none of all application tables
+PASS d: Public effect exactly whitelists the actual validated prepared timeline
+PASS d: Existing canonical input/outstanding remain unchanged
+PASS d: Projection does not mutate saved payload
+PASS d: Review changes none of all application tables
+PASS d: Public effect exactly whitelists the actual validated prepared timeline
+PASS d: Existing canonical input/outstanding remain unchanged
+PASS d: Projection does not mutate saved payload
+PASS d: Multiple partial returns before liquidation preserve remaining250
+Gate results: {"b":12,"c":24,"d":26}
+Cases: <private isolated artifacts>
+PASS integration: Liquidation cannot move cash preserves all tables
+PASS integration: Unexplained liability credit preserves all tables
+PASS integration: Fully supported excess claim preserves all tables
+PASS integration: Actual concurrent settlements consume remaining balance once
+PASS integration: Inactive original employee/project remain settleable through historical references
+PASS integration: Another administrator cannot read private draft preserves all tables
+PASS integration: Management database identity cannot be forged into writer preserves all tables
+PASS integration: All control accounts reconcile after integration writes
+PASS integration: Every journal remains exactly balanced
+Integration boundary checks: 9
+
+SUITE bcd PASS
+0.stdout.log
+PASS b: Review changes none of all application tables
+PASS b: Public effect exactly whitelists the actual validated prepared timeline
+PASS b: Existing canonical input/outstanding remain unchanged
+PASS b: Projection does not mutate saved payload
+PASS b: New release has explicit null prior balances and authoritative proposed outstanding
+PASS b: Release generates the complete journal and permits no proof
+PASS b: Release creates asset outstanding
+PASS b: Release source book is CDB
+PASS b: Generated designated control debit creates an asset, not an expense
+PASS b: Expired-review same-request replay recovers identities with no write
+PASS b: Changed successful replay conflicts without any table write
+PASS b: Employee advisory contract gives all-page count/totals independently of first25 rows
+Gate results: {"b":12,"c":0,"d":0}
+Cases: <private isolated artifacts>
+
+1.stdout.log
+PASS b: Release uses separate advance-focused Enter state
+PASS b: Advance never uses ordinary Quick/Split
+PASS b: No control account is silently selected
+PASS b: Generated release lines are not editable
+PASS b: Missing employee error targets visible selector
+PASS b: Summary focuses visible employee field
+PASS b: b-validation fits 1366
+PASS b: b-validation fits 1920
+PASS b: Selector typing never triggers employee advisory
+PASS b: Advisory uses committed employee all-page count/totals
+PASS b: Advisory reuses existing employee-filtered register read
+PASS b: Older A response cannot overwrite newer A after A-B-A selection
+PASS b: Save is explicitly distinct from recording
+PASS b: b-enter fits 1366
+PASS b: b-enter fits 1920
+PASS b: Unverifiable balance effect blocks confirmation without posting
+PASS b: Release review exposes authoritative asset effect
+PASS b: Complete generated two-line journal is reviewable
+PASS b: Review hides editable controls
+PASS b: b-review fits 1366
+PASS b: b-review fits 1920
+PASS b: Editing invalidates review
+PASS b: Stay preserves edits
+PASS b: Failed Save and leave retains input/dialog
+PASS b: Actual isolated commit preceded lost response
+PASS b: Lost response leaves exactly one posted journal/operation
+PASS b: Only release creates a new advance
+PASS b: Uncertain result blocks controlled navigation
+PASS b: Uncertain result freezes editor
+PASS b: b-unknown fits 1366
+PASS b: b-unknown fits 1920
+PASS b: Recovery replays identical financial request; only CSRF may refresh
+PASS b: Recovery creates no additional journal/operation/audit
+PASS b: Recorded exposes exact returned journal and advance identities
+PASS b: Recovered result is explicit
+PASS b: b-recorded fits 1366
+PASS b: b-recorded fits 1920
+PASS b: Posted draft resumes same recorded identity
+PASS b: Recorded advance link opens actual linked detail
+PASS b: Actual isolated commit preceded unverifiable returned advance ID
+PASS b: Lost response leaves exactly one posted journal/operation
+PASS b: Only release creates a new advance
+PASS b: Uncertain result blocks controlled navigation
+PASS b: Uncertain result freezes editor
+PASS b: b-malformed-id-unknown fits 1366
+PASS b: b-malformed-id-unknown fits 1920
+PASS b: Recovery replays identical financial request; only CSRF may refresh
+PASS b: Recovery creates no additional journal/operation/audit
+PASS b: Recorded exposes exact returned journal and advance identities
+PASS b: Recovered result is explicit
+PASS b: b-malformed-id-recorded fits 1366
+PASS b: b-malformed-id-recorded fits 1920
+PASS b: Optional release proof and staff-recorded external approval are explicit
+PASS b: Release review print remains a draft and hides financial action
+PASS b: b-review-print fits 1366
+PASS b: b-review-print fits 1920
+PASS c: Liquidation uses advance-focused Enter state
+PASS c: Linked employee is fixed
+PASS c: Originating project is fixed while cost projects remain independent
+PASS c: Focused cost field hides only the zero credit
+PASS c: Unsupported claim stays unposted in editor
+PASS c: c-enter fits 1366
+PASS c: c-enter fits 1920
+PASS c: Resume preserves stable cost/document allocation identity
+PASS c: Review shows gross support and authoritative remaining 2000
+PASS c: Liquidation review includes generated control credit
+PASS c: c-review fits 1366
+PASS c: c-review fits 1920
+PASS c: Actual isolated commit preceded lost response
+PASS c: Lost response leaves exactly one posted journal/operation
+PASS c: Only release creates a new advance
+PASS c: Uncertain result blocks controlled navigation
+PASS c: Uncertain result freezes editor
+PASS c: c-unknown fits 1366
+PASS c: c-unknown fits 1920
+PASS c: Recovery replays identical financial request; only CSRF may refresh
+PASS c: Recovery creates no additional journal/operation/audit
+PASS c: Recorded exposes exact returned journal and advance identities
+PASS c: Recovered result is explicit
+PASS c: c-recorded fits 1366
+PASS c: c-recorded fits 1920
+PASS c: Liability credits have a distinct explanatory area
+PASS c: Liability explanation error focuses its visible note
+PASS c: 4000 net evidence cannot support 4500 gross cost
+PASS c: Evidence offers cost debit only, no liability/control target
+PASS c: Excluded-image reuse restriction is explained before recording
+PASS c: Gross4500 liability500 reduction4000 remaining6000 are distinct server values
+PASS c: c-gross-liability-review fits 1366
+PASS c: c-gross-liability-review fits 1920
+PASS c: Explicit debit/credit view remains available losslessly
+PASS c: Saved liquidation can leave for register
+PASS d: Return uses dedicated focused Enter state
+PASS d: Missing proof and separate confirmation are linked visible errors
+PASS d: Summary focuses separate proof-confirmation action
+PASS d: d-validation fits 1366
+PASS d: d-validation fits 1920
+PASS d: Informational return proof has no monetary allocation inputs
+PASS d: Manual review alone cannot bypass proof confirmation
+PASS d: Confirmation visibly identifies advance, amount and accounting date
+PASS d: Unrelated purpose wording keeps proof binding
+PASS d: Server save preserves unrelated wording confirmation
+PASS d: d-enter-confirmed fits 1366
+PASS d: d-enter-confirmed fits 1920
+PASS d: Changed amount immediately stales visible confirmation
+PASS d: Changed receiving account stales confirmation
+PASS d: Changed accounting date stales confirmation
+PASS d: Changed reviewed proof stales confirmation
+PASS d: Return review shows bound proof and authoritative zero outstanding
+PASS d: Complete generated cash/control return journal is reviewable
+PASS d: d-review fits 1366
+PASS d: d-review fits 1920
+PASS d: Actual isolated commit preceded lost response
+PASS d: Lost response leaves exactly one posted journal/operation
+PASS d: Only release creates a new advance
+PASS d: Uncertain result blocks controlled navigation
+PASS d: Uncertain result freezes editor
+PASS d: d-unknown fits 1366
+PASS d: d-unknown fits 1920
+PASS d: Recovery replays identical financial request; only CSRF may refresh
+PASS d: Recovery creates no additional journal/operation/audit
+PASS d: Recorded exposes exact returned journal and advance identities
+PASS d: Recovered result is explicit
+PASS d: d-recorded fits 1366
+PASS d: d-recorded fits 1920
+PASS d: 10000/8000/2000 browser workflow actually settles the original advance
+PASS d: d-settled-detail fits 1366
+PASS d: d-settled-detail fits 1920
+PASS d: No uncaught JavaScript errors
+U3_BCD_BROWSER_PASSED: {"b": 56, "c": 35, "d": 37}
+Evidence: <private isolated artifacts>
+
+SUITE cp2 PASS
+0.stdout.log
+PASS: Comparison shows immutable original lines
+PASS: Save: 
+PASS: Saved correction mode remains immutable
+PASS: Visible search cancellation keeps draft ID selection and revision unchanged
+PASS: Review validation: 
+PASS: Ordinary preview shows exact GJ reversal and offers reviewed posting
+PASS: Comparison fits viewport 1366
+PASS: Comparison fits viewport 1920
+PASS: Reused image displays prior review but never confirms it automatically
+PASS: Owner draft-scoped original-image URL returns protected bytes
+PASS: Save: 
+PASS: Resume preserves fresh manual review and reason
+PASS: Review validation: 
+PASS: Lost v4 upload response recovers one private image with context retained
+PASS: Remove new upload preserves posted reused image
+PASS: Ordinary review rejects v4 draft
+PASS: Advance review rejects v4 draft
+PASS: Ordinary remove rejects v4 draft
+PASS: Advance remove rejects v4 draft
+PASS: Ordinary discard rejects v4 draft
+PASS: Advance discard rejects v4 draft
+PASS: Incomplete posting request is rejected with no financial mutation
+PASS: Management cannot read private correction draft
+PASS: Management cannot discard private correction draft
+PASS: Management cannot fetch draft-scoped evidence bytes
+PASS: Other Admin cannot read private correction draft
+PASS: My Drafts labels and resumes correction context
+PASS: Explicit replacement book change preserves complete lines and correction reason
+PASS: Save: 
+PASS: Review validation: 
+PASS: Reverse-only workspace hides replacement and evidence claims
+PASS: Review validation: 
+PASS: Liquidation preview displays gross cost coverage only
+PASS: Review validation: 
+PASS: Return replacement confirms current amount and reused proof
+PASS: Save: 
+PASS: Changed return replacement amount clears confirmation
+PASS: Stale correction shows reason, permitted posted link and disabled review
+PASS: Posted correction reopening shows immutable posted bundle, not editable original
+PASS: Disabled Stage 3 flag blocks correction workspace actions
+PASS: Draft privacy remains effective with Stage 3 flag disabled
+PASS: Every browser action leaves journal count unchanged
+PASS: Correction browser workflows have no JavaScript errors
+Stage 3 checkpoint 2 browser checks: 43
+Private browser artifacts: <private isolated artifacts>
+
+SUITE cp3 PASS
+0.stdout.log
+PASS: Original 1000 payment is read-only
+PASS: Draft saved without validation error
+PASS: Visible selector cancellation preserves record
+PASS: Ordinary reviewed comparison enables atomic posting
+PASS: Review fits 1366
+PASS: Review fits 1920
+PASS: Lost successful response still commits exactly two journals
+PASS: Visible retry recovers original bundle without duplicate posting
+PASS: Posted UI shows immutable lines and accurate posted status
+PASS: Posted links contain CDB and Journal History once
+PASS: Posted mode remains read-only
+PASS: Posted draft reopening shows the same complete bundle
+PASS: New-session expired-token retry recovers posted correction
+PASS: Changed-content durable key conflicts
+PASS: Posted detail separates accounting/recorded dates and net effect
+PASS: Correction reason is escaped in detail rendering
+PASS: Detail fits 1366
+PASS: Detail fits 1920
+PASS: Print media hides navigation
+PASS: Posted correction list links to comparisons
+PASS: Cash-book search retains full original and replacement entries
+PASS: Cash-book journal detail links dated correction outside filter scope
+PASS: Journal History includes original/reversal/replacement lines in correction search
+PASS: Management cannot open private posted draft
+PASS: Management comparison redacts advance documents without losing coverage
+PASS: Another Admin cannot read owned posted draft
+PASS: Other active Admin can read public posted financial comparison
+PASS: Posted chain remains readable with UI flag disabled
+PASS: Disabled flag blocks correction workspace
+PASS: Draft saved without validation error
+PASS: Reverse-only review offers exact reversal
+PASS: Reverse-only posted result has no replacement and one history link
+PASS: Browser posted exactly one bundle and one reversal-only journal
+PASS: Posting/detail/history browser paths have no JavaScript errors
+Stage 3 checkpoint 3 browser checks: 34
+Private browser artifacts: <private isolated artifacts>
+
+SUITE cp4 PASS
+0.stdout.log
+PASS: Review has no error
+PASS: Release review enables posting and explains new identity
+PASS: release-review fits 1366
+PASS: release-review fits 1920
+PASS: Lost release correction response commits one atomic bundle
+PASS: Visible release retry recovers distinct old/new identity links
+PASS: Release result retains CDB and Journal History navigation
+PASS: release-posted fits 1366
+PASS: release-posted fits 1920
+PASS: Posted draft reopening keeps replacement ID and read-only bundle
+PASS: Cross-session expired review recovers release correction
+PASS: Changed advance fields conflict on successful retry
+PASS: Old release detail is Replaced without settlement/extension actions
+PASS: Old detail navigates to replacement
+PASS: New advance detail has correct outstanding and normal actions
+PASS: Release with effective settlements shows blockers and disables review
+PASS: Review has no error
+PASS: Liquidation review covers gross cost once
+PASS: liquidation-review fits 1366
+PASS: liquidation-review fits 1920
+PASS: Liquidation posting preserves original advance navigation
+PASS: GJ liquidation result has one Journal History link
+PASS: Editing the return amount invalidates confirmation visibly
+PASS: Review has no error
+PASS: Return review confirms current proof and amount
+PASS: return-review fits 1366
+PASS: return-review fits 1920
+PASS: Return replacement result links CRB
+PASS: Detail shows effective balance and original/reversal/replacement timeline
+PASS: settlement-detail fits 1366
+PASS: settlement-detail fits 1920
+PASS: Print media hides editable actions
+PASS: Register replaced filter retains full reconciliation
+PASS: Register cancelled filter retains full reconciliation
+PASS: retired-register fits 1366
+PASS: retired-register fits 1920
+PASS: Unapplied filter edits retain displayed print scope
+PASS: Failed refresh preserves rows and applied print filters
+PASS: Printed register labels page and all-matching totals
+PASS: Management and other Admin cannot read owned advance correction draft
+PASS: Management existing history/book response redacts only private advance evidence 
+PASS: Management existing history/book response redacts only private advance evidence &view=crb
+PASS: Management existing history/book response redacts only private advance evidence &view=cdb
+PASS: Management correction comparison retains supported status without images
+PASS: Management cannot download reused advance image
+PASS: Disabled accounting UI flags do not weaken comparison/download privacy
+PASS: Visible release/liquidation/return flows post exactly three two-journal bundles
+PASS: Advance correction browser flows have no JavaScript errors
+Stage 3 checkpoint 4 browser checks: 48
+Private browser artifacts: <private isolated artifacts>
+
+SUITE cp5 PASS
+0.stdout.log
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary CRB correction available while Stage 2 off
+PASS: Visible CRB correction posts with Stage 2 off
+PASS: Original CRB HTTP request recovers original journal in new session with no writes
+PASS: Changed original CRB retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary CDB correction available while Stage 2 off
+PASS: CP5 review fits 1366
+PASS: CP5 review fits 1920
+PASS: Visible CDB correction posts with Stage 2 off
+PASS: Original CDB HTTP request recovers original journal in new session with no writes
+PASS: Changed original CDB retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary GJ correction available while Stage 2 off
+PASS: Visible GJ correction posts with Stage 2 off
+PASS: Original GJ HTTP request recovers original journal in new session with no writes
+PASS: Changed original GJ retry conflicts without writes
+PASS: Ordinary HTTP save
+PASS: Ordinary HTTP review
+PASS: Ordinary HTTP post
+PASS: Ordinary transfer correction available while Stage 2 off
+PASS: Visible transfer correction posts with Stage 2 off
+PASS: Original transfer HTTP request recovers original journal in new session with no writes
+PASS: Changed original transfer retry conflicts without writes
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance route rejects /journal_correction_actions.php
+PASS: Paused advance post HTTP rejects before mutation
+PASS: Paused advance review HTTP rejects before mutation
+PASS: Paused advance discard HTTP rejects before mutation
+PASS: Paused advance remove HTTP rejects before mutation
+PASS: Paused advance upload HTTP rejects before mutation
+PASS: Paused advance confirm_return_proof HTTP rejects before mutation
+PASS: All paused advance HTTP actions preserve journals/evidence/drafts/audits
+PASS: Records availability hides advance correction start while preserving ordinary global gate
+PASS: Records retain eligible ordinary correction starts with Stage 2 off
+PASS: Management comparison remains readable without advance image links
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (True, True, False)
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (False, True, True)
+PASS: Disabled Stage 1/3 flags preserve draft and block entry
+PASS: Posted financial privacy remains with flags (False, False, False)
+PASS: Advance draft resumes after Stage 2 reenabled
+PASS: Checkpoint 5 browser paths have no uncaught errors
+Stage 3 checkpoint 5 browser checks: 54
+Private browser artifacts: <private isolated artifacts>
+
+SUITE reader PASS
+0.stdout.log
+PASS: Scoped reader retains every line and exact totals
+PASS: Scoped header retains identity and stored creation timestamp
+PASS: Durable timestamp provenance marks UTC without rewriting its stored value
+PASS: Legacy timestamp provenance remains unknown without rewriting its stored value
+PASS: Direct access retains target_journal_id
+PASS: Direct access retains reversal_journal_id
+PASS: Direct access retains replacement_journal_id
+PASS: Reused evidence URLs use the relevant posted association
+PASS: Posted inspection is not restricted to private draft owner
+PASS: Database Management identity overrides forged session role and keeps financial summary
+PASS: Anonymous service read rejects
+PASS: Missing posted record rejects
+PASS: Inactive actor rejects
+PASS: Unposted journal is not exposed
+PASS: Posted reads and rolled-back denial fixtures preserve data and audits
+PASS: Exact adapter uses a scoped ID reader instead of all-history or advance comparison
+U2 reader checks: 16
+
+SUITE receipt PASS
+0.stdout.log
+PASS: Real multipart upload/extraction create zero financial records
+PASS: Uploaded and stored original bytes/hash match exactly
+PASS: Same multipart request retries return original receipt
+PASS: Upload key with different bytes conflicts
+PASS: Unposted evidence private to uploader
+PASS: Uploader preview returns original bytes and safe headers
+PASS: Isolated HTTP router denies direct receipt URLs
+PASS: OCR strings displayed as text, never executable HTML
+PASS: Admin sidebar exposes Scan Receipt after deployment gate
+PASS: Credit account starts blank and posting disabled
+PASS: Two proposed lines use exact centavo amounts
+PASS: PHP currency confirmation required even when amounts balance
+PASS: Complete reviewed entry enables Post Entry
+PASS: OCR-assisted journal has no page overflow at 1024px
+PASS: Explicit button posts one balanced journal and linked evidence
+PASS: All active Admins and Management can view posted evidence
+PASS: Posted evidence supports safe downloads
+PASS: Mismatched journal association denied
+PASS: Anonymous evidence access denied
+PASS: Posted identical image rejected before Gemini extraction
+PASS: Journal dialog exposes evidence without duplicating line rows
+PASS: Failed failure retains evidence for manual journal preparation
+PASS: Failed badjson retains evidence for manual journal preparation
+PASS: Ambiguous date/invalid amount/nonexistent account remain blank
+PASS: Foreign receipt not automatically copied into PHP amounts
+PASS: Large valid PNG accepted under size/pixel bounds
+PASS: Downscaled PNG sent as actual JPEG MIME
+PASS: OCR transport uses bounded request/connect timeouts
+PASS: Exact 8 MiB valid image accepted
+PASS: 8 MiB plus one byte rejected
+PASS: Forged image MIME/nonimage bytes rejected
+PASS: Oversized image dimensions rejected before decoding
+PASS: Upload CSRF failure has no financial side effects
+PASS: Management upload denied
+PASS: Extraction endpoint rejects GET
+PASS: Explicit retry allowed within five-call window
+PASS: Explicit retry allowed within five-call window
+PASS: Explicit retry allowed within five-call window
+PASS: Explicit retry allowed within five-call window
+PASS: Sixth extraction within five minutes throttled
+PASS: Throttled retry preserves last completed proposal
+PASS: Rate-limited new upload has a recoverable manual proposal
+PASS: Deactivated Admin loses receipt access immediately
+PASS: Board replacement keeps one successful attachment control
+PASS: Board route stores replacement bytes in isolated application
+PASS: Board attachment removal does not submit previous bytes
+PASS: Upload action uses the accounting workspace accent color
+PASS: Selected-image preview is local and posts nothing
+PASS: Actual browser AJAX upload hands off to review without posting
+PASS: Processed details have a readable total and review status
+PASS: Account suggestions use escaped labels rather than raw IDs
+PASS: Discard UI removes only unposted evidence and posts nothing
+PASS: Specific busy guidance survives receipt extraction and rendering
+PASS: Failure retains manual General Journal access without exposing provider details or posting
+PASS: Historical generic failures display their saved 503 reason without rewriting attempts
+PASS: Busy desktop view has no page overflow
+PASS: Manual retry reads the same saved image without duplicating it or posting
+PASS: General Journal handoff remains review only after busy
+PASS: Specific limit guidance survives receipt extraction and rendering
+PASS: Failure retains manual General Journal access without exposing provider details or posting
+PASS: General Journal handoff remains review only after limit
+PASS: Specific badkey guidance survives receipt extraction and rendering
+PASS: Failure retains manual General Journal access without exposing provider details or posting
+PASS: General Journal handoff remains review only after badkey
+PASS: Specific failure guidance survives receipt extraction and rendering
+PASS: Failure retains manual General Journal access without exposing provider details or posting
+PASS: General Journal handoff remains review only after failure
+PASS: Browser reports no JavaScript errors
+Completed 68 HTTP/browser checks. Screenshots/private app: <private isolated artifacts>
+
+SUITE stage2 PASS
+0.stdout.log
+PASS: Release hides editable allocation lines
+PASS: Release explains its optional informational evidence policy
+PASS: Inline person creation restores focus to visible selector
+PASS: Release draft saves with no financial posting
+PASS: Search cancellation preserves selected employee and saved revision
+PASS: Release review shows the generated control line
+PASS: Release exposes separate book/history destinations
+PASS: Posted release selector is read only
+PASS: Reopening a posted advance draft recovers its navigation
+PASS: Settlement fixes original employee identity
+PASS: Liquidation explains unused-image restriction before review or posting
+PASS: Liquidation footer states full expenditure coverage instead of ordinary partial support
+PASS: Missing liquidation evidence fails visibly and retains draft
+PASS: v3 lost upload response retries one reserved document without losing advance context
+PASS: Fully accepted image has no excluded-amount warning
+PASS: Partial acceptance shows exact unused amount without changing financial allocations
+PASS: Invalid document amount never displays a fabricated unused amount
+PASS: My Drafts labels and resumes v3 liquidation
+PASS: Resume retains manual evidence and allocations
+PASS: Resumed liquidation retains partial-document explanation
+PASS: Liquidation review uses gross expenditure coverage only
+PASS: Liquidation shows Journal History once
+PASS: Return footer describes proof and confirmation requirements
+PASS: Changing the return amount clears bound proof confirmation
+PASS: Changed return requires explicit confirmation again
+PASS: Return routes to CRB
+PASS: Detail shows release/liquidation/return and settled balance
+PASS: Print view hides application navigation
+PASS: Register fits 1366px laptop without page overflow
+PASS: Filtered register keeps full-account reconciliation
+PASS: Failed register refresh preserves prior results
+PASS: Failed refresh preserves printable applied scope and labels
+PASS: Printed summary records all applied filters as safe text
+PASS: First page distinguishes printed rows from all-matching totals
+PASS: Unsaved filter edits do not change printed applied labels
+PASS: Pagination retains applied filters and explicitly labels the current page
+PASS: Printed register retains filters, row scope and totals basis while hiding controls
+PASS: Stale response cannot overwrite newer empty results, print labels or totals basis
+PASS: Ordinary attach rejects v3 context
+PASS: Ordinary remove rejects v3 context
+PASS: Ordinary discard rejects v3 context
+PASS: Management print/detail contains no private image links
+PASS: Management history/book privacy with Stage 2 True view history
+PASS: Management history/book privacy with Stage 2 True view crb
+PASS: Management history/book privacy with Stage 2 True view cdb
+PASS: Management image bytes denied with Stage 2 True
+PASS: Management history/book privacy with Stage 2 False view history
+PASS: Management history/book privacy with Stage 2 False view crb
+PASS: Management history/book privacy with Stage 2 False view cdb
+PASS: Management image bytes denied with Stage 2 False
+PASS: Advance privacy also survives the Stage 1 UI flag being disabled
+PASS: Management cannot read private advance drafts
+PASS: Management cannot mutate advances
+PASS: Anonymous advance API is denied
+PASS: HTTP retry across sessions and expired token recovers posted liquidation
+PASS: Advance browser workflows have no JavaScript errors
+Stage 2 browser checks: 56
+Private browser artifacts: <private isolated artifacts>
+
+SUITE u2a PASS
+0.stdout.log
+PASS: Blank payment starts faithfully in Quick
+PASS: payment-empty fits 1366
+PASS: payment-empty fits 1920
+PASS: Review saves incomplete draft without posting
+PASS: Quick amount error uses payment wording
+PASS: payment-invalid fits 1366
+PASS: payment-invalid fits 1920
+PASS: Correcting purpose preserves unrelated errors
+PASS: Error summary focuses visible payee combobox
+PASS: Search query is not selected payee or error recovery
+PASS: One deliberate amount edit updates represented debit
+PASS: payment-filled fits 1366
+PASS: payment-filled fits 1920
+PASS: Simple Review action fits laptop first viewport
+PASS: Current task leaves edits intact
+PASS: Dirty navigation asks about unsaved edits
+PASS: Ordinary draft succeeds: 
+PASS: Ordinary draft succeeds: 
+PASS: Mode round trip preserves financial values and stable IDs
+PASS: Selector cancellation does not dirty saved draft
+PASS: Visible Pay from and cash project match authoritative review
+PASS: Every allocation is visible before confirmation
+PASS: Visible allocation matches server account, amount, side and actual project
+PASS: Review is focused and truthfully unrecorded
+PASS: Review instructions describe checking instead of editing
+PASS: payment-review fits 1366
+PASS: payment-review fits 1920
+PASS: Simple Confirm action fits laptop first viewport
+PASS: Back to editing preserves amounts
+PASS: Recorded state replaces editor and stale title
+PASS: Recorded controls, including optional documents, remain read only
+PASS: payment-recorded fits 1366
+PASS: payment-recorded fits 1920
+PASS: Recorded instructions describe the completed result
+PASS: Exact read returns complete entry and performs no data writes
+PASS: Exact durable UTC timestamp converts to Manila
+PASS: Optional absent reference says Not provided
+PASS: Legacy timestamp remains stored and explicitly unknown timezone
+PASS: Timestamp presentation reads leave database state unchanged
+PASS: Recorded link opens exact journal
+PASS: payment-exact fits 1366
+PASS: payment-exact fits 1920
+PASS: Reopened posted draft links to original exact identity
+PASS: Quick project creation assigns actual common tags and returns visible focus
+PASS: Inline payee creation retains complete long label
+PASS: payment-long-label fits 1366
+PASS: payment-long-label fits 1920
+PASS: Committed closed selector keeps its complete long label visible
+PASS: payment-long-label-closed fits 1366
+PASS: payment-long-label-closed fits 1920
+PASS: Ordinary draft succeeds: 
+PASS: Ordinary draft succeeds: 
+PASS: Evidence review and stable allocation identity survive presentation changes
+PASS: Excess support rejects review without trimming amounts or allocations
+PASS: Ordinary save succeeds: 
+PASS: Ordinary draft succeeds: 
+PASS: Quick Asset counterpart remains its selected account
+PASS: Ordinary save succeeds: 
+PASS: Ordinary draft succeeds: 
+PASS: Quick Liability counterpart remains its selected account
+PASS: Blank CDB split amount keeps visible Debit inline error
+PASS: CDB summary targets visible Debit, never hidden Credit
+PASS: CDB split error link focuses visible Amount
+PASS: Ordinary save succeeds: 
+PASS: Loaded 900/ preserves required detailed mode
+PASS: Ordinary draft succeeds: 
+PASS: Loaded malformed/mismatched payload not automatically rewritten
+PASS: Ordinary save succeeds: 
+PASS: Loaded / preserves required detailed mode
+PASS: Ordinary draft succeeds: 
+PASS: Loaded malformed/mismatched payload not automatically rewritten
+PASS: Ordinary save succeeds: 
+PASS: Loaded 1000/-1 preserves required detailed mode
+PASS: Ordinary draft succeeds: 
+PASS: Loaded malformed/mismatched payload not automatically rewritten
+PASS: Ordinary save succeeds: 
+PASS: Loaded 1000/bad preserves required detailed mode
+PASS: Ordinary draft succeeds: 
+PASS: Loaded malformed/mismatched payload not automatically rewritten
+PASS: Ordinary save succeeds: 
+PASS: Visible Pay from and cash project match authoritative review
+PASS: Every allocation is visible before confirmation
+PASS: Visible allocation matches server account, amount, side and actual project
+PASS: Visible allocation matches server account, amount, side and actual project
+PASS: Split review retains complete cash and both allocations
+PASS: Split breakdown is visible without opening the journal
+PASS: payment-split fits 1366
+PASS: payment-split fits 1920
+PASS: Ordinary save succeeds: 
+PASS: Visible Pay from and cash project match authoritative review
+PASS: Every allocation is visible before confirmation
+PASS: Visible allocation matches server account, amount, side and actual project
+PASS: Visible allocation matches server account, amount, side and actual project
+PASS: Withholding summary shows authoritative gross, liability and cash
+PASS: Evidence denominator remains gross expenditure
+PASS: Complex credit entry exposes the complete journal
+PASS: payment-withholding fits 1366
+PASS: payment-withholding fits 1920
+PASS: Unknown result prevents editing/new request
+PASS: Transport interruption has useful same-request wording
+PASS: Uncertain instructions explain result recovery
+PASS: payment-unknown fits 1366
+PASS: payment-unknown fits 1920
+PASS: Lost-response recovery preserves frozen identity through reauthentication
+PASS: Recovered result is explicitly explained
+PASS: payment-recovered fits 1366
+PASS: payment-recovered fits 1920
+PASS: Failed Save-and-leave retains edits and intent
+PASS: Starting later drafts leaves earlier posted draft intact
+PASS: Management exact history redacts private evidence with flags (True, True, True)
+PASS: Exact Management reads leave financial/audit/draft state unchanged
+PASS: Management exact history redacts private evidence with flags (False, False, False)
+PASS: Exact Management reads leave financial/audit/draft state unchanged
+PASS: Exact reader rejects 0
+PASS: Exact reader rejects -1
+PASS: Exact reader rejects 4294967296
+PASS: Exact reader rejects abc
+PASS: Exact reader rejects 999999999
+PASS: Exact reader rejects array IDs
+PASS: Exact reader is GET only
+PASS: Unauthenticated exact read redirects to login
+PASS: U2-B receipt opts into faithful ordinary presentation
+PASS: Correction workspace retains its dedicated presentation
+PASS: Payment and retained shared routes have no uncaught JavaScript errors
+U2-A browser/HTTP checks: 124
+Private browser artifacts: <private isolated artifacts>
+
+SUITE u2b PASS
+0.stdout.log
+PASS: Blank receipt uses Quick
+PASS: receipt-enter fits 1366
+PASS: receipt-enter fits 1920
+PASS: Quick receipt error uses receipt wording
+PASS: Payer error associated with visible combobox
+PASS: receipt-validation fits 1366
+PASS: receipt-validation fits 1920
+PASS: Correcting purpose retains unresolved receipt errors
+PASS: Receipt error link focuses visible payer
+PASS: Quick receipt edit updates credit only
+PASS: Ordinary draft succeeds
+PASS: Ordinary draft succeeds
+PASS: Receipt mode round trip preserves IDs, amounts and projects
+PASS: Receipt Back opens the receipts book
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Receipt Review replaces editor and is not recorded
+PASS: Simple receipt complete journal remains expandable
+PASS: receipt-review fits 1366
+PASS: receipt-review fits 1920
+PASS: Receipt Back retains amounts
+PASS: Editing after receipt review becomes unsaved
+PASS: Receipt completion has consistent title
+PASS: Receipt posted controls all read only
+PASS: receipt-recorded fits 1366
+PASS: receipt-recorded fits 1920
+PASS: Receipt exact reader is complete and read only
+PASS: Receipt result opens its exact journal
+PASS: receipt-exact fits 1366
+PASS: receipt-exact fits 1920
+PASS: Reloaded receipt resolves original identity
+PASS: Blank second CRB allocation blocks Review
+PASS: CRB Split exposes Credit/Amount and hides Debit
+PASS: CRB blank inline error associates with visible amount
+PASS: CRB blank summary links Credit, never hidden Debit
+PASS: CRB blank summary focuses visible Amount
+PASS: receipt-split-blank-validation fits 1366
+PASS: receipt-split-blank-validation fits 1920
+PASS: Explicit zero CRB amount retains visible error
+PASS: Advanced CRB retains its visible Debit validation target
+PASS: Correcting CRB amount clears only its resolved error
+PASS: Ordinary save succeeds
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Ordinary draft succeeds
+PASS: Receipt Liability counterpart retains its accounting meaning
+PASS: Ordinary save succeeds
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Ordinary draft succeeds
+PASS: Receipt Equity counterpart retains its accounting meaning
+PASS: Ordinary save succeeds
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Ordinary draft succeeds
+PASS: Receipt Asset counterpart retains its accounting meaning
+PASS: Ordinary save succeeds
+PASS: Restored invalid/mismatched receipt stays split
+PASS: Ordinary draft succeeds
+PASS: Restored receipt raw values remain unchanged
+PASS: Ordinary save succeeds
+PASS: Restored invalid/mismatched receipt stays split
+PASS: Ordinary draft succeeds
+PASS: Restored receipt raw values remain unchanged
+PASS: Ordinary save succeeds
+PASS: Restored invalid/mismatched receipt stays advanced
+PASS: Ordinary draft succeeds
+PASS: Restored receipt raw values remain unchanged
+PASS: Ordinary save succeeds
+PASS: Restored invalid/mismatched receipt stays advanced
+PASS: Ordinary draft succeeds
+PASS: Restored receipt raw values remain unchanged
+PASS: Ordinary save succeeds
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Split receipt has visible amount breakdown
+PASS: receipt-split fits 1366
+PASS: receipt-split fits 1920
+PASS: Ordinary save succeeds
+PASS: Receipt summary uses received cash semantics
+PASS: Cash account and actual project match server review
+PASS: All receipt allocations visible before confirmation
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Allocation account, side, amount and project match authoritative review
+PASS: Complex receipt opens complete journal
+PASS: CRB monetary denominator uses noncash credits
+PASS: receipt-advanced fits 1366
+PASS: receipt-advanced fits 1920
+PASS: Receipt inline project selects common actual tags and restores focus
+PASS: Closed long payer label stays readable
+PASS: receipt-long-label fits 1366
+PASS: receipt-long-label fits 1920
+PASS: Unreviewed receipt evidence blocks Review
+PASS: Receipt support defaults to credit
+PASS: Ordinary draft succeeds
+PASS: Ordinary draft succeeds
+PASS: Receipt evidence and IDs survive mode changes
+PASS: Receipt review reports authoritative partial credit support
+PASS: receipt-support fits 1366
+PASS: receipt-support fits 1920
+PASS: Excess receipt support rejected without trimming
+PASS: Unknown receipt result freezes editing
+PASS: receipt-unknown fits 1366
+PASS: receipt-unknown fits 1920
+PASS: Reauthenticated receipt retry retains original financial request
+PASS: Recovered receipt creates exactly one journal
+PASS: receipt-recovered fits 1366
+PASS: receipt-recovered fits 1920
+PASS: Ordinary draft succeeds
+PASS: Stay retains latest receipt edits
+PASS: Ordinary draft succeeds
+PASS: Leave without latest edits preserves saved receipt
+PASS: General Journal never offers Quick/Split
+PASS: GJ retains both accounting sides
+PASS: journal-enter fits 1366
+PASS: journal-enter fits 1920
+PASS: GJ allows no party and links purpose error
+PASS: journal-validation fits 1366
+PASS: journal-validation fits 1920
+PASS: Ordinary save succeeds
+PASS: GJ preserves its existing future-date contract
+PASS: GJ coverage separates debit and credit
+PASS: GJ focused Review keeps complete journal open
+PASS: GJ review contains both full authoritative lines
+PASS: journal-review fits 1366
+PASS: journal-review fits 1920
+PASS: GJ Back preserves independent projects
+PASS: GJ recorded title matches state
+PASS: journal-recorded fits 1366
+PASS: journal-recorded fits 1920
+PASS: Reopened GJ links exact posted journal
+PASS: Ordinary save succeeds
+PASS: GJ imbalance retains independent amounts
+PASS: journal-unbalanced fits 1366
+PASS: journal-unbalanced fits 1920
+PASS: Ordinary save succeeds
+PASS: GJ inline default context leaves actual line tags intact
+PASS: Keyboard opens GJ supporting documents
+PASS: GJ document group remains open after upload
+PASS: GJ partial support stays on its chosen side
+PASS: journal-support fits 1366
+PASS: journal-support fits 1920
+PASS: Ordinary save succeeds
+PASS: GJ dirty Back asks about unsaved changes
+PASS: GJ failed Save-and-leave retains edits and destination
+PASS: Ordinary draft succeeds
+PASS: GJ Save-and-leave waits for acknowledged persistence
+PASS: Ordinary draft succeeds
+PASS: Starting another GJ leaves saved drafts intact
+PASS: Ordinary save succeeds
+PASS: Unknown journal result freezes editing
+PASS: journal-unknown fits 1366
+PASS: journal-unknown fits 1920
+PASS: Reauthenticated journal retry retains original financial request
+PASS: Recovered journal creates exactly one journal
+PASS: journal-recovered fits 1366
+PASS: journal-recovered fits 1920
+PASS: Ordinary save succeeds
+PASS: Transfer keeps detailed GJ presentation
+PASS: Transfer authoritative review identifies entry kind
+PASS: Transfer complete cash debit/credit journal visible
+PASS: transfer-review fits 1366
+PASS: transfer-review fits 1920
+PASS: Recorded transfer retains authoritative kind
+PASS: transfer-recorded fits 1366
+PASS: transfer-recorded fits 1920
+PASS: Ordinary save succeeds
+PASS: Server rejects noncash transfer without repairing the entry
+PASS: transfer-invalid fits 1366
+PASS: transfer-invalid fits 1920
+PASS: Ordinary save succeeds
+PASS: Unknown transfer result freezes editing
+PASS: transfer-unknown fits 1366
+PASS: transfer-unknown fits 1920
+PASS: Reauthenticated transfer retry retains original financial request
+PASS: Recovered transfer creates exactly one journal
+PASS: transfer-recovered fits 1366
+PASS: transfer-recovered fits 1920
+PASS: Scalar OCR handoff keeps its separate GJ form
+PASS: OCR failed extraction retains manual review and currency confirmation
+PASS: Advance release stays on its dedicated advance-focused branch
+PASS: Correction retains dedicated branch
+PASS: Management cannot enter cash_receipt.php
+PASS: Management cannot enter general_journal.php
+PASS: Management exact read retains private evidence restrictions and no writes
+PASS: Receipt flag off fails closed
+PASS: GJ flag off retains scalar form
+PASS: Receipt/GJ/transfer and retained routes have no uncaught JavaScript errors: []
+U2-B browser/HTTP checks: 199
+Private browser artifacts: <private isolated artifacts>
+
+SUITE u2c PASS
+0.stdout.log
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, False, False, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, False, False, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, False, False, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, False, False, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, False, True, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, False, True, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, False, True, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, False, True, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, True, False, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, True, False, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, True, False, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, True, False, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, True, True, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, True, True, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (False, True, True, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (False, True, True, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, False, False, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, False, False, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, False, False, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, False, False, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, False, True, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, False, True, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, False, True, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, False, True, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, True, False, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, True, False, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, True, False, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, True, False, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, True, True, False)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, True, True, False)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Navigation probe permitted Admin
+PASS: Admin exact task visibility (True, True, True, True)
+PASS: Admin ordered nonempty groups without duplicate links
+PASS: Admin preserves exact existing URLs/date defaults
+PASS: Admin unique accessible read location
+PASS: Navigation probe permitted Management
+PASS: Management exact task visibility (True, True, True, True)
+PASS: Management ordered nonempty groups without duplicate links
+PASS: Management preserves exact existing URLs/date defaults
+PASS: Management unique accessible read location
+PASS: Admin normal destination opens dashboard
+PASS: Admin real route has correct current key dashboard
+PASS: Admin normal destination opens payment
+PASS: Admin real route has correct current key payment
+PASS: Admin normal destination opens receipt
+PASS: Admin real route has correct current key receipt
+PASS: Admin normal destination opens general_journal
+PASS: Admin real route has correct current key general_journal
+PASS: Admin normal destination opens ocr_expense
+PASS: Admin real route has correct current key ocr_expense
+PASS: Admin normal destination opens accounting_drafts
+PASS: Admin real route has correct current key accounting_drafts
+PASS: Admin normal destination opens cash_advances
+PASS: Admin real route has correct current key cash_advances
+PASS: Admin normal destination opens financial_records
+PASS: Admin real route has correct current key financial_records
+PASS: Admin normal destination opens crb
+PASS: Admin real route has correct current key crb
+PASS: Admin normal destination opens cdb
+PASS: Admin real route has correct current key cdb
+PASS: Admin normal destination opens reports
+PASS: Admin real route has correct current key reports
+PASS: Admin normal destination opens external_email
+PASS: Admin real route has correct current key external_email
+PASS: Admin normal destination opens board_messages
+PASS: Admin real route has correct current key board_messages
+PASS: Admin normal destination opens accounting_setup
+PASS: Admin real route has correct current key accounting_setup
+PASS: Admin normal destination opens admin_accounts
+PASS: Admin real route has correct current key admin_accounts
+PASS: Admin normal destination opens admin_users
+PASS: Admin real route has correct current key admin_users
+PASS: Admin normal destination opens audit_trail
+PASS: Admin real route has correct current key audit_trail
+PASS: Management normal destination opens dashboard
+PASS: Management real route has correct current key dashboard
+PASS: Management normal destination opens cash_advances
+PASS: Management real route has correct current key cash_advances
+PASS: Management normal destination opens financial_records
+PASS: Management real route has correct current key financial_records
+PASS: Management normal destination opens crb
+PASS: Management real route has correct current key crb
+PASS: Management normal destination opens cdb
+PASS: Management real route has correct current key cdb
+PASS: Management normal destination opens reports
+PASS: Management real route has correct current key reports
+PASS: Management normal destination opens external_email
+PASS: Management real route has correct current key external_email
+PASS: Management normal destination opens management_reviews
+PASS: Management real route has correct current key management_reviews
+PASS: Management normal destination opens board_inbox
+PASS: Management real route has correct current key board_inbox
+PASS: Management direct authoring/admin access denied cash_receipt.php
+PASS: Management direct authoring/admin access denied cash_disbursement.php
+PASS: Management direct authoring/admin access denied general_journal.php
+PASS: Management direct authoring/admin access denied accounting_drafts.php
+PASS: Management direct authoring/admin access denied accounting_setup.php
+PASS: Management direct authoring/admin access denied admin_accounts.php
+PASS: Management direct authoring/admin access denied admin_users.php
+PASS: Management direct authoring/admin access denied audit_trail.php
+PASS: Management direct authoring/admin access denied ocr_expense.php
+PASS: Management direct authoring/admin access denied board_messages.php
+PASS: Management direct authoring/admin access denied journal_correction.php
+PASS: All-role navigation/flag/default-route pass leaves every application table unchanged
+PASS: Actual page current location receipt
+PASS: admin-receipt-task fits 1366
+PASS: admin-receipt-task fits 1920
+PASS: Links remain direct nav children
+PASS: Keyboard navigation has visible focus outline
+PASS: Keyboard reaches last task within scrollable sidebar
+PASS: admin-sidebar-keyboard-bottom fits 1366
+PASS: admin-sidebar-keyboard-bottom fits 1920
+PASS: Actual page current location accounting_drafts
+PASS: admin-drafts-current fits 1366
+PASS: admin-drafts-current fits 1920
+PASS: Actual page current location crb
+PASS: admin-receipts-book fits 1366
+PASS: admin-receipts-book fits 1920
+PASS: Actual page current location general_journal
+PASS: Actual page current location cash_advances
+PASS: Actual page current location financial_records
+PASS: Actual page current location financial_records
+PASS: Actual page current location cdb
+PASS: management-payments-book fits 1366
+PASS: management-payments-book fits 1920
+PASS: Print hides navigation
+PASS: management-book-print fits 1366
+PASS: management-book-print fits 1920
+PASS: Current receipt sidebar task preserves unsaved edits
+PASS: Grouped sidebar asks before leaving dirty receipt
+PASS: receipt-dirty-sidebar-leave fits 1366
+PASS: receipt-dirty-sidebar-leave fits 1920
+PASS: Stay from sidebar keeps latest edits
+PASS: Failed sidebar Save-and-leave retains edit/destination
+PASS: Sidebar Save-and-leave waits for one acknowledged private draft
+PASS: Stage 1 off retains scalar GJ and independent OCR
+PASS: Actual page current location general_journal
+PASS: admin-flags-off-scalar fits 1366
+PASS: admin-flags-off-scalar fits 1920
+PASS: Stage 1 off rejects receipt entry
+PASS: Ordinary correction remains available with Stage 2 off
+PASS: Advance correction pauses with Stage 2 off
+PASS: Actual page current location crb
+PASS: Correction uses eligible persisted target CRB reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: crb-reverse-only-current fits 1366
+PASS: crb-reverse-only-current fits 1920
+PASS: Actual page current location crb
+PASS: Correction uses eligible persisted target CRB reverse_replace
+PASS: Actual page current location crb
+PASS: Actual page current location cdb
+PASS: Correction uses eligible persisted target CDB reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: Actual page current location cdb
+PASS: Correction uses eligible persisted target CDB reverse_replace
+PASS: Actual page current location cdb
+PASS: Actual page current location financial_records
+PASS: Correction uses eligible persisted target GJ reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: Actual page current location financial_records
+PASS: Correction uses eligible persisted target GJ reverse_replace
+PASS: Actual page current location financial_records
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target release reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: release-reverse-only-current fits 1366
+PASS: release-reverse-only-current fits 1920
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target release reverse_replace
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target liquidation reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target liquidation reverse_replace
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target return reverse_only
+PASS: Reverse-only current state works without advance display config
+PASS: Actual page current location cash_advances
+PASS: Correction uses eligible persisted target return reverse_replace
+PASS: Correction page/mode/replacement-book navigation creates no financial/draft/evidence writes
+PASS: Synthetic correction draft saved CRB reverse_only
+PASS: Actual page current location crb
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved CRB reverse_replace
+PASS: Actual page current location crb
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved CDB reverse_only
+PASS: Actual page current location cdb
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved CDB reverse_replace
+PASS: Actual page current location cdb
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved GJ reverse_only
+PASS: Actual page current location financial_records
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved GJ reverse_replace
+PASS: Actual page current location financial_records
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved release reverse_only
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved release reverse_replace
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved liquidation reverse_only
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved liquidation reverse_replace
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved return reverse_only
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Synthetic correction draft saved return reverse_replace
+PASS: Actual page current location cash_advances
+PASS: Reopened correction keeps provenance with no page-read writes
+PASS: Legacy original provenance fixture available
+PASS: Actual page current location financial_records
+PASS: Account-filtered CRB retains every complete originating journal
+PASS: CRB full-entry amounts balance across all matching rows
+PASS: CRB search totals include all pages and complete entries
+PASS: CRB pagination keeps all-matching totals
+PASS: crb-whole-entry-search fits 1366
+PASS: crb-whole-entry-search fits 1920
+PASS: Account-filtered CDB retains every complete originating journal
+PASS: CDB full-entry amounts balance across all matching rows
+PASS: CDB search totals include all pages and complete entries
+PASS: CDB pagination keeps all-matching totals
+PASS: cdb-whole-entry-search fits 1366
+PASS: cdb-whole-entry-search fits 1920
+PASS: Journal History retains account-line filtering instead of expanding journals
+PASS: History retains corrected original, generated reversal and replacement
+PASS: Failed history refresh preserves applied scope, rows and totals
+PASS: Late history response cannot overwrite newer applied results
+PASS: history-applied-filters fits 1366
+PASS: history-applied-filters fits 1920
+PASS: Records search/filter/pagination/failure checks do not mutate financial, draft or evidence tables
+PASS: Management exact advance privacy survives flags (True, True, True)
+PASS: Management exact advance privacy survives flags (True, False, True)
+PASS: Management exact advance privacy survives flags (False, False, False)
+PASS: Missing stage1 prerequisite hides dependent tasks
+PASS: Missing stage2 prerequisite hides dependent tasks
+PASS: Missing ocr prerequisite hides dependent tasks
+PASS: Anonymous authoring redirects to login
+PASS: Unsupported invented identity cannot enter through a cached session
+PASS: Unsupported cached role cannot override trusted Management identity
+PASS: Inactive account cannot use a navigation destination
+PASS: Navigation browser pages have no uncaught JavaScript errors: []
+U2-C browser/HTTP checks: 368
+Private browser artifacts: <private isolated artifacts>
+
+SUITE u3a PASS
+0.stdout.log
+PASS: Advance register retains U2-C current location
+PASS: Healthy independent reconciliation is visible
+PASS: Full healthy reconciliation is secondary
+PASS: Reconciliation shortcut opens details and focuses its summary
+PASS: Real synthetic matching advances use two 25-row pages
+PASS: All-page totals retain exact server amounts with separators
+PASS: Purpose and long project labels render as safe literal text
+PASS: Populated results are distinct from empty state
+PASS: Real second page retains all-match count and page-only scope
+PASS: Pagination retains applied filters while labelling unapplied edits
+PASS: admin-register fits 1366
+PASS: admin-register fits 1920
+PASS: Successful snapshot contains #ca-totals
+PASS: Successful snapshot contains #ca-rows
+PASS: Successful snapshot contains #ca-basis
+PASS: Successful snapshot contains #ca-applied-filters
+PASS: Successful snapshot contains #ca-print-scope
+PASS: Successful snapshot contains #ca-health-message
+PASS: Failed refresh preserves rows/totals/date/filters/reconciliation atomically
+PASS: register-refresh-failed fits 1366
+PASS: register-refresh-failed fits 1920
+PASS: Malformed success response cannot partially replace the applied snapshot
+PASS: Deliberately late response cannot replace newer no-match result
+PASS: Actual no-match query has contextual empty guidance
+PASS: register-no-matches fits 1366
+PASS: register-no-matches fits 1920
+PASS: Unfiltered discrepancy remains prominent outside display filters
+PASS: Full discrepancy details remain inspectable
+PASS: register-discrepancy-double fits 1366
+PASS: register-discrepancy-double fits 1920
+PASS: Printed register keeps scope/totals and hides mutation/filter controls
+PASS: register-print fits 1366
+PASS: register-print fits 1920
+PASS: Print restores disclosure state on return to screen
+PASS: Detail shows posted release and outstanding without counting drafts
+PASS: Due today is separate from overdue status
+PASS: Both settlement actions bind the original advance identity
+PASS: Deadline extension is secondary
+PASS: admin-advance-detail fits 1366
+PASS: admin-advance-detail fits 1920
+PASS: Timeline opens exact existing journal independently of list filters
+PASS: Historical view has no settlement/extension actions
+PASS: Detail Back retains the applied accounting date
+PASS: Historical view offers explicit current-date navigation
+PASS: advance-historical fits 1366
+PASS: advance-historical fits 1920
+PASS: Real detail retains settled lifecycle status
+PASS: No settlement action for settled
+PASS: Real detail retains outstanding lifecycle status
+PASS: Real detail retains partially_settled lifecycle status
+PASS: Real detail retains replaced lifecycle status
+PASS: No settlement action for replaced
+PASS: Retired advance retains posted correction comparison
+PASS: Real detail retains cancelled lifecycle status
+PASS: No settlement action for cancelled
+PASS: Retired advance retains posted correction comparison
+PASS: Settled timeline retains all original posted operations
+PASS: advance-settled fits 1366
+PASS: advance-settled fits 1920
+PASS: management-register fits 1366
+PASS: management-register fits 1920
+PASS: Management gets read navigation without authoring tasks
+PASS: Management cannot extend or start settlement
+PASS: Management detail JSON excludes private review/images/approval context
+PASS: management-detail fits 1366
+PASS: management-detail fits 1920
+PASS: Printed Management detail includes full journals and hides sidebar
+PASS: management-detail-print fits 1366
+PASS: management-detail-print fits 1920
+PASS: Advance surface retains Stage 1/2 gate (False, False)
+PASS: Advance surface retains Stage 1/2 gate (True, False)
+PASS: Advance surface retains Stage 1/2 gate (False, True)
+PASS: Empty-register presentation double differs from a filtered no-match result
+PASS: register-empty-double fits 1366
+PASS: register-empty-double fits 1920
+PASS: First-load failure cannot claim reconciliation or print a successful register
+PASS: Initial HTTP failure has neutral unavailable styling instead of healthy/discrepancy styling
+PASS: Initial HTTP failure hides unverified reconciliation link/details and labels its basis
+PASS: Initial failure cannot open an empty reconciliation disclosure
+PASS: register-first-load-unavailable fits 1366
+PASS: register-first-load-unavailable fits 1920
+PASS: Unverifiable first HTTP response cannot expose verified details/printing
+PASS: Real successful retry restores verified health and full reconciliation
+PASS: All 34 application tables unchanged across real read/navigation/print and response-double phases
+PASS: Failed extension retains entered fields
+PASS: Failed extension has no application writes
+PASS: extension-failed fits 1366
+PASS: extension-failed fits 1920
+PASS: Successful extension is preserved in deadline history
+PASS: Stale revision fails without replacing deadline/history or entered fields
+PASS: U3-A pages have no uncaught JavaScript errors
+U3-A checks: 91
+Private artifacts: <private isolated artifacts>
+
+1.stdout.log
+PASS: Privacy fixture contains real associated synthetic image evidence
+PASS: Admin detail exposes existing authorized evidence links
+PASS: Evidence-bearing Management JSON excludes private properties
+PASS: Evidence-bearing Management HTML contains no evidence URLs
+PASS: Evidence-bearing Management print retains complete journals without private links
+PASS: Management download denied with Stage 1/2 (True, True)
+PASS: Management download denied with Stage 1/2 (True, True)
+PASS: Management download denied with Stage 1/2 (True, False)
+PASS: Management download denied with Stage 1/2 (True, False)
+PASS: Management download denied with Stage 1/2 (False, False)
+PASS: Management download denied with Stage 1/2 (False, False)
+PASS: Real extended deadline applies today and preserves prior-date deadline history
+PASS: Historical HTML displays the actual earlier deadline without future history
+PASS: Actual settled fixture restates to PHP 100.00 outstanding at its release date
+PASS: Historical HTML retains the authoritative earlier balance and settlement state
+PASS: admin register native viewport has no horizontal overflow at 1366
+PASS: admin register native viewport has no horizontal overflow at 1920
+PASS: admin detail native viewport has no horizontal overflow at 1366
+PASS: admin detail native viewport has no horizontal overflow at 1920
+PASS: Deadline disclosure accepts real keyboard focus
+PASS: Keyboard opens deadline disclosure
+PASS: management register native viewport has no horizontal overflow at 1366
+PASS: management register native viewport has no horizontal overflow at 1920
+PASS: management detail native viewport has no horizontal overflow at 1366
+PASS: management detail native viewport has no horizontal overflow at 1920
+PASS: All 34 application tables unchanged across evidence-bearing readback
+PASS: Readback pages have no uncaught JavaScript errors
+U3-A readback checks: 27
+Private artifacts: <private isolated artifacts>
+
+SUITE u4 PASS
+0.stdout.log
+Prepared 12 synthetic correction cases through existing writers; no migrations.
+
+1.stdout.log
+PASS A: Book filter is not presented as workflow filter
+PASS A: Persisted correction dispatch retains draft #205
+PASS A: Persisted correction dispatch retains draft #202
+PASS A: Persisted correction dispatch retains draft #199
+PASS A: Persisted correction dispatch retains draft #196
+PASS A: Persisted correction dispatch retains draft #193
+PASS A: Persisted correction dispatch retains draft #191
+PASS A: Persisted correction dispatch retains draft #189
+PASS A: Persisted correction dispatch retains draft #187
+PASS A: Persisted correction dispatch retains draft #185
+PASS A: Persisted correction dispatch retains draft #183
+PASS A: Persisted correction dispatch retains draft #181
+PASS A: Persisted correction dispatch retains draft #179
+PASS A: Persisted correction dispatch retains draft #177
+PASS A: Persisted correction dispatch retains draft #174
+PASS A: Persisted correction dispatch retains draft #173
+PASS A: Persisted correction dispatch retains draft #170
+PASS A: Persisted correction dispatch retains draft #169
+PASS A: Persisted correction dispatch retains draft #166
+PASS A: Persisted correction dispatch retains draft #165
+PASS A: Persisted correction dispatch retains draft #141
+PASS A: Persisted correction dispatch retains draft #139
+PASS A: Persisted correction dispatch retains draft #137
+PASS A: Persisted correction dispatch retains draft #133
+PASS A: Persisted correction dispatch retains draft #121
+PASS A: Persisted correction dispatch retains draft #116
+PASS A: Persisted advance_liquidation dispatch retains draft #111
+PASS A: Persisted correction dispatch retains draft #97
+PASS A: Persisted correction dispatch retains draft #82
+PASS A: Persisted correction dispatch retains draft #71
+PASS A: Persisted correction dispatch retains draft #70
+PASS A: Persisted correction dispatch retains draft #69
+PASS A: Persisted correction dispatch retains draft #68
+PASS A: Persisted correction dispatch retains draft #64
+PASS A: Persisted advance_return dispatch retains draft #44
+PASS A: Persisted advance_release dispatch retains draft #43
+PASS A: Persisted advance_release dispatch retains draft #42
+PASS A: Persisted advance_release dispatch retains draft #41
+PASS A: Persisted advance_liquidation dispatch retains draft #40
+PASS A: Persisted advance_liquidation dispatch retains draft #39
+PASS A: Persisted advance_liquidation dispatch retains draft #38
+PASS A: Persisted advance_liquidation dispatch retains draft #37
+PASS A: Persisted advance_liquidation dispatch retains draft #36
+PASS A: Persisted advance_liquidation dispatch retains draft #35
+PASS A: Persisted advance_liquidation dispatch retains draft #34
+PASS A: Persisted advance_release dispatch retains draft #32
+PASS A: Persisted advance_liquidation dispatch retains draft #29
+PASS A: Persisted advance_return dispatch retains draft #18
+PASS A: Persisted ordinary dispatch retains draft #13
+PASS A: Persisted ordinary dispatch retains draft #12
+PASS A: Persisted ordinary dispatch retains draft #11
+PASS A: Persisted ordinary dispatch retains draft #10
+PASS A: Persisted ordinary dispatch retains draft #8
+PASS A: Persisted ordinary dispatch retains draft #1
+PASS A: Persisted ordinary dispatch retains draft #7
+PASS A: Management cannot open private drafts
+PASS A: Management cannot read private draft JSON
+PASS A: All draft list/page reads leave every application table unchanged
+PASS A: Failed refresh preserves the complete prior successful list
+PASS A: Malformed draft projection cannot replace a verified list
+PASS A: Actual committed lost discard response disables Continue
+PASS A: Result check sends no second mutation and retains safe inactive row
+PASS A: a-draft-result fits 1366
+PASS A: a-draft-result fits 1920
+PASS B: History is not labelled as unfinished running General Ledger
+PASS B: Modal opens the same exact journal ID
+PASS B: Exact view retains full-entry totals
+PASS B: b-exact-transaction fits 1366
+PASS B: b-exact-transaction fits 1920
+PASS B: Management exact reader exposes no correction authoring action
+PASS B: Management receives truthful gross book explanation
+PASS B: Posted comparison links actual target_journal_id
+PASS B: Posted comparison links actual reversal_journal_id
+PASS B: Posted comparison links actual replacement_journal_id
+PASS B: b-correction-comparison fits 1366
+PASS B: b-correction-comparison fits 1920
+PASS B: Posted comparison remains readable with authoring flags off
+PASS B: Exact posted reader remains available with UI flags off
+PASS B: Finding and inspection leave every application table unchanged
+PASS C: Saved mode remains immutable CRB-reverse_only
+PASS C: Trusted original provenance drives navigation CRB-reverse_only
+PASS C: Forced saved-mode change restores persisted mode without converting the draft
+PASS C: Correction Stay retains edited reason
+PASS C: Failed correction Save-and-leave preserves input and every table
+PASS C: Successful Save-and-leave preserves the same correction identity and mode
+PASS C: Full correction previews load CRB-reverse_only
+PASS C: Only the original has an exact journal link before posting CRB-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals CRB-reverse_only
+PASS C: c-reversal-review fits 1366
+PASS C: c-reversal-review fits 1920
+PASS C: Unknown result freezes editor and withholds success CRB-reverse_only
+PASS C: Uncertain correction blocks navigation that would lose its frozen request
+PASS C: CSRF refresh replays exact frozen request CRB-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write CRB-reverse_only
+PASS C: Recorded bundle exposes actual exact identities CRB-reverse_only
+PASS C: Failed secondary detail read retains recorded state
+PASS C: Details retry is read-only and does not repeat financial posting
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target CRB-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes CRB-reverse_only
+PASS C: Saved mode remains immutable CRB-reverse_replace
+PASS C: Trusted original provenance drives navigation CRB-reverse_replace
+PASS C: Full correction previews load CRB-reverse_replace
+PASS C: Only the original has an exact journal link before posting CRB-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals CRB-reverse_replace
+PASS C: Unknown result freezes editor and withholds success CRB-reverse_replace
+PASS C: CSRF refresh replays exact frozen request CRB-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write CRB-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities CRB-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target CRB-reverse_replace
+PASS C: Saved posted draft reload recovers the same bundle without writes CRB-reverse_replace
+PASS C: Saved mode remains immutable CDB-reverse_only
+PASS C: Trusted original provenance drives navigation CDB-reverse_only
+PASS C: Full correction previews load CDB-reverse_only
+PASS C: Only the original has an exact journal link before posting CDB-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals CDB-reverse_only
+PASS C: Unknown result freezes editor and withholds success CDB-reverse_only
+PASS C: CSRF refresh replays exact frozen request CDB-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write CDB-reverse_only
+PASS C: Recorded bundle exposes actual exact identities CDB-reverse_only
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target CDB-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes CDB-reverse_only
+PASS C: Saved mode remains immutable CDB-reverse_replace
+PASS C: Trusted original provenance drives navigation CDB-reverse_replace
+PASS C: Full correction previews load CDB-reverse_replace
+PASS C: Only the original has an exact journal link before posting CDB-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals CDB-reverse_replace
+PASS C: Unknown result freezes editor and withholds success CDB-reverse_replace
+PASS C: CSRF refresh replays exact frozen request CDB-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write CDB-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities CDB-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target CDB-reverse_replace
+PASS C: Saved posted draft reload recovers the same bundle without writes CDB-reverse_replace
+PASS C: Saved mode remains immutable GJ-reverse_only
+PASS C: Trusted original provenance drives navigation GJ-reverse_only
+PASS C: Full correction previews load GJ-reverse_only
+PASS C: Only the original has an exact journal link before posting GJ-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals GJ-reverse_only
+PASS C: Unknown result freezes editor and withholds success GJ-reverse_only
+PASS C: CSRF refresh replays exact frozen request GJ-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write GJ-reverse_only
+PASS C: Recorded bundle exposes actual exact identities GJ-reverse_only
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target GJ-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes GJ-reverse_only
+PASS C: Saved mode remains immutable GJ-reverse_replace
+PASS C: Trusted original provenance drives navigation GJ-reverse_replace
+PASS C: Full correction previews load GJ-reverse_replace
+PASS C: Only the original has an exact journal link before posting GJ-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals GJ-reverse_replace
+PASS C: Unknown result freezes editor and withholds success GJ-reverse_replace
+PASS C: CSRF refresh replays exact frozen request GJ-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write GJ-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities GJ-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target GJ-reverse_replace
+PASS C: Saved posted draft reload recovers the same bundle without writes GJ-reverse_replace
+PASS C: Saved mode remains immutable release-reverse_only
+PASS C: Trusted original provenance drives navigation release-reverse_only
+PASS C: Full correction previews load release-reverse_only
+PASS C: Only the original has an exact journal link before posting release-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals release-reverse_only
+PASS C: Unknown result freezes editor and withholds success release-reverse_only
+PASS C: CSRF refresh replays exact frozen request release-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write release-reverse_only
+PASS C: Recorded bundle exposes actual exact identities release-reverse_only
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target release-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes release-reverse_only
+PASS C: Saved mode remains immutable release-reverse_replace
+PASS C: Trusted original provenance drives navigation release-reverse_replace
+PASS C: Full correction previews load release-reverse_replace
+PASS C: Only the original has an exact journal link before posting release-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals release-reverse_replace
+PASS C: Unknown result freezes editor and withholds success release-reverse_replace
+PASS C: CSRF refresh replays exact frozen request release-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write release-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities release-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target release-reverse_replace
+PASS C: c-release-correction-recorded fits 1366
+PASS C: c-release-correction-recorded fits 1920
+PASS C: Saved posted draft reload recovers the same bundle without writes release-reverse_replace
+PASS C: Saved mode remains immutable liquidation-reverse_only
+PASS C: Trusted original provenance drives navigation liquidation-reverse_only
+PASS C: Full correction previews load liquidation-reverse_only
+PASS C: Only the original has an exact journal link before posting liquidation-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals liquidation-reverse_only
+PASS C: Unknown result freezes editor and withholds success liquidation-reverse_only
+PASS C: CSRF refresh replays exact frozen request liquidation-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write liquidation-reverse_only
+PASS C: Recorded bundle exposes actual exact identities liquidation-reverse_only
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target liquidation-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes liquidation-reverse_only
+PASS C: Saved mode remains immutable liquidation-reverse_replace
+PASS C: Trusted original provenance drives navigation liquidation-reverse_replace
+PASS C: Full correction previews load liquidation-reverse_replace
+PASS C: Only the original has an exact journal link before posting liquidation-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals liquidation-reverse_replace
+PASS C: Unknown result freezes editor and withholds success liquidation-reverse_replace
+PASS C: CSRF refresh replays exact frozen request liquidation-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write liquidation-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities liquidation-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target liquidation-reverse_replace
+PASS C: Saved posted draft reload recovers the same bundle without writes liquidation-reverse_replace
+PASS C: Saved mode remains immutable return-reverse_only
+PASS C: Trusted original provenance drives navigation return-reverse_only
+PASS C: Full correction previews load return-reverse_only
+PASS C: Only the original has an exact journal link before posting return-reverse_only
+PASS C: Every original/reversal/replacement preview has complete totals return-reverse_only
+PASS C: Unknown result freezes editor and withholds success return-reverse_only
+PASS C: CSRF refresh replays exact frozen request return-reverse_only
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write return-reverse_only
+PASS C: Recorded bundle exposes actual exact identities return-reverse_only
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target return-reverse_only
+PASS C: Saved posted draft reload recovers the same bundle without writes return-reverse_only
+PASS C: Saved mode remains immutable return-reverse_replace
+PASS C: Trusted original provenance drives navigation return-reverse_replace
+PASS C: Full correction previews load return-reverse_replace
+PASS C: Only the original has an exact journal link before posting return-reverse_replace
+PASS C: Every original/reversal/replacement preview has complete totals return-reverse_replace
+PASS C: c-return-correction-review fits 1366
+PASS C: c-return-correction-review fits 1920
+PASS C: Unknown result freezes editor and withholds success return-reverse_replace
+PASS C: CSRF refresh replays exact frozen request return-reverse_replace
+PASS C: Committed replay adds no journal/correction/advance operation/audit or any other table write return-reverse_replace
+PASS C: Recorded bundle exposes actual exact identities return-reverse_replace
+PASS C: Recorded result returns to transaction selection rather than reusing corrected target return-reverse_replace
+PASS C: Saved posted draft reload recovers the same bundle without writes return-reverse_replace
+PASS D: Declared/support/allocated/excluded amounts remain separate
+PASS D: Changing evidence invalidates review rather than claiming verification
+PASS D: d-support-guidance fits 1366
+PASS D: d-support-guidance fits 1920
+PASS D: OCR failure retains exact General Journal-only manual handoff
+PASS D: Scalar manual handoff remains available with Stage 1 off
+PASS D: Management cannot read OCR workspace or private image
+PASS D: Lost retry response blocks blind second mutation
+PASS D: Unverified result clears stale reading progress
+PASS D: Saved-state check is read-only and does not retry extraction
+PASS D: d-ocr-unverified fits 1366
+PASS D: d-ocr-unverified fits 1920
+PASS D: Same-key extraction replay creates no attempt/audit/other table write
+PASS D: Lost discard is checked without a second destructive action
+PASS D: Unavailable receipt is not falsely labelled confirmed discard
+PASS D: Evidence and OCR mutations never post a financial journal
+PASS D: No uncaught JavaScript errors
+U4_RUN: <private isolated artifacts>
+
+OFFLINE accounting_drafts.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\accounting_drafts.php
+
+OFFLINE assets_js_accounting_drafts.js.stdout.log
+
+OFFLINE assets_js_accounting_workspace.js.stdout.log
+
+OFFLINE assets_js_correction_presentation.js.stdout.log
+
+OFFLINE assets_js_financial_records.js.stdout.log
+
+OFFLINE assets_js_ocr_expense.js.stdout.log
+
+OFFLINE financial_records.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\financial_records.php
+
+OFFLINE includes_accounting_entry_page.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\includes\accounting_entry_page.php
+
+OFFLINE journal_correction.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\journal_correction.php
+
+OFFLINE journal_corrections.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\journal_corrections.php
+
+OFFLINE journal_transaction.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\journal_transaction.php
+
+OFFLINE ocr_expense.php.stdout.log
+No syntax errors detected in C:\xampp\htdocs\Financial Management System\ocr_expense.php
+
+OFFLINE test_usability_u2_adapter.js.stdout.log
+U2 adapter checks: 90
+
+OFFLINE test_usability_u3_advance_adapter.js.stdout.log
+PASS: advance_release explicitly opts in
+PASS: advance_release cannot opt corrections in
+PASS: advance_release does not opt in by book alone
+PASS: advance_liquidation explicitly opts in
+PASS: advance_liquidation cannot opt corrections in
+PASS: advance_liquidation does not opt in by book alone
+PASS: advance_return explicitly opts in
+PASS: advance_return cannot opt corrections in
+PASS: advance_return does not opt in by book alone
+PASS: Unsupported/ordinary branch remains excluded {"ordinary_workspace":true,"book":"CDB"}
+PASS: Unsupported/ordinary branch remains excluded {"advance_presentation":true,"workflow_kind":"mystery"}
+PASS: Unsupported/ordinary branch remains excluded {"advance_presentation":true,"is_correction":true}
+PASS: Exact string money 0.00
+PASS: Exact string money 10000.00
+PASS: Exact string money 9999999999999.99
+PASS: Reject malformed money null
+PASS: Reject malformed money 100
+PASS: Reject malformed money 1
+PASS: Reject malformed money 1.001
+PASS: Reject malformed money -1.00
+PASS: Reject malformed money 1e3
+PASS: Reject malformed money NaN
+PASS: Reject malformed money 99999999999999.99
+PASS: Release effect is exact and nonmutating
+PASS: Settlement effect advance_liquidation
+PASS: Settlement effect advance_return
+PASS: Reject invalid release projection accounting_date 2026-02-30
+PASS: Reject invalid release projection accounting_date 2026-10-19
+PASS: Reject invalid release projection balance_as_of 2026-13-01
+PASS: Reject invalid release projection new_advance_outstanding 10000
+PASS: Reject invalid release projection before_outstanding 0.00
+PASS: Reject invalid release projection new_advance_outstanding null
+PASS: Projection whitelists display fields
+PASS: Reject invalid recorded ID 0
+PASS: Reject invalid recorded ID -1
+PASS: Reject invalid recorded ID 1.5
+PASS: Reject invalid recorded ID 1
+PASS: Reject invalid recorded ID null
+PASS: Reject invalid recorded ID 9007199254740992
+PASS: Positive recorded IDs
+PASS: Same unsaved task ignores query order
+PASS: Different task ?advance_id=6&workflow_kind=advance_return
+PASS: Different task ?advance_id=5&workflow_kind=advance_liquidation
+PASS: Different task cash_advances.php
+PASS: Different task https://example.invalid/cash_advance_entry.php?advance_id=5&workflow_kind=advance_return
+PASS: Saved task requires same draft identity
+PASS: Unrelated wording does not stale proof binding
+PASS: Equivalent amount formatting does not stale proof
+PASS: Bound field stales proof entry_date
+PASS: Bound field stales proof cash_account_id
+PASS: Bound field stales proof cash_amount
+PASS: Reviewed document change stales proof
+Advance adapter checks: 52
+PASS: Focused liquidation retains representable costs
+PASS: Detailed liquidation preserves unsupported values {"client_id":"a","account_id":"1","fund_project_id":"","debit_amount":"bad","credit_amount":""}
+PASS: Detailed liquidation preserves unsupported values {"client_id":"a","account_id":"1","fund_project_id":"","debit_amount":"4500.00","credit_amount":"1.00"}
+PASS: Detailed liquidation preserves unsupported values {"client_id":"a","account_id":"1","fund_project_id":"","debit_amount":"4500.00","credit_amount":"","mystery":"preserve"}
+PASS: Detailed liquidation preserves unsupported values {"client_id":"a","account_id":"9","fund_project_id":"","debit_amount":"4500.00","credit_amount":""}
+PASS: Liability debit cannot be hidden
+Final advance adapter checks: 58
+
+OFFLINE test_usability_u4_adapter.js.stdout.log
+PASS: Correction opt-in excludes ordinary/advance
+PASS: Complete replacement bundle accepted
+PASS: Reject invalid id null
+PASS: Reject invalid id 0
+PASS: Reject invalid id 11
+PASS: Reject invalid id -1
+PASS: Reject invalid correction_id null
+PASS: Reject invalid correction_id 0
+PASS: Reject invalid correction_id 11
+PASS: Reject invalid correction_id -1
+PASS: Reject invalid target_journal_id null
+PASS: Reject invalid target_journal_id 0
+PASS: Reject invalid target_journal_id 11
+PASS: Reject invalid target_journal_id -1
+PASS: Reject invalid reversal_journal_id null
+PASS: Reject invalid reversal_journal_id 0
+PASS: Reject invalid reversal_journal_id 11
+PASS: Reject invalid reversal_journal_id -1
+PASS: Reject invalid replacement_journal_id null
+PASS: Reject invalid replacement_journal_id 0
+PASS: Reject invalid replacement_journal_id 11
+PASS: Reject invalid replacement_journal_id -1
+PASS: Reject wrong original
+PASS: Reject primary journal not replacement
+PASS: Reject duplicate journal identities
+PASS: Reverse-only bundle accepted without replacement
+PASS: Reverse-only rejects fabricated replacement
+PASS: Release preserves original and new advance identities
+PASS: Release cannot reuse original identity as replacement
+PASS: liquidation retains original advance
+PASS: liquidation rejects another advance
+PASS: return retains original advance
+PASS: return rejects another advance
+PASS: Advance reversal-only retains original even without advanceConfig
+PASS: Posted reload derives bundle from public chain
+PASS: Posted reload rejects missing replacement
+PASS: Posted reload rejects ambiguous chain
+PASS: Frozen request is independent and recursively immutable
+PASS: Same saved correction is a no-op link
+PASS: Another correction mode is a separate task
+PASS: Another unsaved target is separate
+U4 correction adapter: 41 assertions passed.
+

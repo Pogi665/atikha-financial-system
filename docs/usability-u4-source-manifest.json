@@ -1,0 +1,163 @@
+{
+  "baseline": "b6e9ca8f26e66820f4deeb4c4d2361e7e3cd0302",
+  "status": "ready for external exact-source review; not committed/pushed",
+  "production": {
+    "accounting_drafts.php": {
+      "sha256": "ab225325427fbaf1c316f726b250b1e9a595972b03e55d17a1a7e98310727c45",
+      "git_blob": "6bcec1e5ca080dffefface93e72d900eed90c9b2",
+      "baseline_git_blob": "6bcbc18ea34ad5f29106a99aaf3817a8cae708ad"
+    },
+    "financial_records.php": {
+      "sha256": "b86cadb1a0f8ff147b644b1031e8a2abc44f9b9dd18eef96932767a113a24851",
+      "git_blob": "7cc701632b51a80320e35dc6e1cf4f8caf35678e",
+      "baseline_git_blob": "7d08d637cf619e315f42d2b55d9bdc6dbda5b1fc"
+    },
+    "journal_transaction.php": {
+      "sha256": "9d8fc9cac4649d91f0d76378b0937579f4695b55db7111b3046de7a9cdd496ec",
+      "git_blob": "685cb6180cfc2d12cad3eaa350fecedb0415e1ec",
+      "baseline_git_blob": "3a9835ea090363854f3a67c6f70556e5cb6cae61"
+    },
+    "journal_correction.php": {
+      "sha256": "f682ab95da9e0876b6ec1728886d8f2b11597a55ad11efcd3cc0746ad33c01f1",
+      "git_blob": "22c1369deb6e2a293a098f556afabf8d4bce4d45",
+      "baseline_git_blob": "74e8d901b3f844bccad7573108393611d8a67cb6"
+    },
+    "journal_corrections.php": {
+      "sha256": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+      "git_blob": "5d90c441796d3dc7e586bddec90df5b900581df9",
+      "baseline_git_blob": "8b40573639a53f3b30effb34fd875d70fed533ae"
+    },
+    "ocr_expense.php": {
+      "sha256": "54426ab64e05248e792de1ba4af84d396734f4d05474a62f7297f625e8dc27ae",
+      "git_blob": "6c9739fa9913774187a6a8d6f5a9e25e9c7018bc",
+      "baseline_git_blob": "a05a7262807f2dbdb24ef428634abed0057d83d6"
+    },
+    "includes/accounting_entry_page.php": {
+      "sha256": "23504bf967fe4e5bb56c0401c2f52f48b408aac218b37ead77aa41438439a81f",
+      "git_blob": "031d77a6aab3757952214e067895c3ffdd26e9d2",
+      "baseline_git_blob": "616ec079cb176b8b102d58c5c256ebdcc4b6040e"
+    },
+    "assets/js/accounting_drafts.js": {
+      "sha256": "53d6a85505cd46a615e674949a1cd5761bd187ed959c1b47995259861cc363b5",
+      "git_blob": "586c1f9bc3cb2775f829df717f894dbc1f6053e6",
+      "baseline_git_blob": "f214e24273f4f6534767c3097372a051566717d8"
+    },
+    "assets/js/financial_records.js": {
+      "sha256": "debbf0e8d295232b16e45ded7da8c1669b28ceb10be68da8460be0dc5c277228",
+      "git_blob": "b8b79a69b90d3546b077f8092c55928ce6021f32",
+      "baseline_git_blob": "1bbd05c2030218dc2a04a6d9d9c793f1f7949607"
+    },
+    "assets/js/accounting_workspace.js": {
+      "sha256": "2f3c39b1df491e10cc3e108fdb7d86a1ac7d7923ace41c9f5e13a1b52b027086",
+      "git_blob": "17f7261caee099c658bd3c24ff441fcfde6323a6",
+      "baseline_git_blob": "c6b1b347192874c423fa35723f13cfb923d98942"
+    },
+    "assets/js/correction_presentation.js": {
+      "sha256": "35e240b342b8fc0e99fee56aadb96a91a83317d44c87ff25de6d1deaf3d7cb90",
+      "git_blob": "f89ed2053a3dc15851575d9689c983d18cd12c8c",
+      "baseline_git_blob": null
+    },
+    "assets/js/ocr_expense.js": {
+      "sha256": "2d6401e5b966a0499e6e252ac1968ecdd028d71fac7aaa95b735d4fac5c09693",
+      "git_blob": "cf1350a9ccde51f750e9fdce973b690eea1bd33b",
+      "baseline_git_blob": "6728210e0da24f507b4475c3a498506d8545fcef"
+    },
+    "assets/css/accounting_workspace.css": {
+      "sha256": "7928eac3c912bf8b60071b81b1eeb96221b977d2e17ca8d42854803794820dee",
+      "git_blob": "618a229173ae1fe5c0a514d098ba50fe056bc95d",
+      "baseline_git_blob": "cfdfe9f880568d8d3cbd7120220ae458e2eafb58"
+    },
+    "assets/css/ocr_expense.css": {
+      "sha256": "5ac0c37c6a015332fcb4ac2cbbde0cd46bf88ef93f79c15ecc9cc0e51bdcd7ee",
+      "git_blob": "cc5840e13a8d6fe538137138e92edf3ff11b5634",
+      "baseline_git_blob": "dedf3a735b544c1d9e490a07e6cd6f02446250c6"
+    }
+  },
+  "packaged_files": {
+    "README.md": "09c3438ce8f4c2aa5e65017dd60f1cf04cf5f5d8013798361ffcbf852d55d1c8",
+    "accounting_drafts.php": "ab225325427fbaf1c316f726b250b1e9a595972b03e55d17a1a7e98310727c45",
+    "assets/css/accounting_workspace.css": "7928eac3c912bf8b60071b81b1eeb96221b977d2e17ca8d42854803794820dee",
+    "assets/css/ocr_expense.css": "5ac0c37c6a015332fcb4ac2cbbde0cd46bf88ef93f79c15ecc9cc0e51bdcd7ee",
+    "assets/js/accounting_drafts.js": "53d6a85505cd46a615e674949a1cd5761bd187ed959c1b47995259861cc363b5",
+    "assets/js/accounting_workspace.js": "2f3c39b1df491e10cc3e108fdb7d86a1ac7d7923ace41c9f5e13a1b52b027086",
+    "assets/js/advance_presentation.js": "d56611f5f7508626ed36d15fca77d3bc4a00781eebb39059359ffe9dbdce5004",
+    "assets/js/correction_presentation.js": "35e240b342b8fc0e99fee56aadb96a91a83317d44c87ff25de6d1deaf3d7cb90",
+    "assets/js/financial_records.js": "debbf0e8d295232b16e45ded7da8c1669b28ceb10be68da8460be0dc5c277228",
+    "assets/js/ocr_expense.js": "2d6401e5b966a0499e6e252ac1968ecdd028d71fac7aaa95b735d4fac5c09693",
+    "assets/js/payment_presentation.js": "4a17086aac66117d359e2413d85b9d5ff8868f88cebcbc21dd89846835b8254d",
+    "docs/project-decisions.md": "023adceb2fa28a1a3cb393c06591e54f729db6874a844180ff1cf0cca14f59cc",
+    "docs/project-status.md": "bceda4c752d12f633994feddae2e8cb0e6965d2cd45914981f2987139552c9f2",
+    "docs/usability-completion-plan.md": "3228a8bc715c02b881c06ec72444b1ae83f2078b9e32c991f94ce47f11f1e12d",
+    "docs/usability-u3-bcd-approval.md": "94fbcf2cade594658b2cc2f891bdee15b496f287fb4d6731e67cb0f20b2b0c1a",
+    "docs/usability-u4-delivery.md": "9fa3aaa32c9cbb3e06a5eb2276b30a5a37d813aa1819c86e735418605d7e9da8",
+    "docs/usability-u4-plan.md": "35c05f48eff732ae6f1ce1dafcfa736c878c999bae764013f10c57b90c132565",
+    "docs/usability-u4-production.patch": "0aa685c09b45b6bb451d5478e77f5836e53aadae98fd3decfaa4a1d4fb8aefcc",
+    "docs/usability-u4-reviewer-notes.md": "8466d971e4dbce09a9212d7ff92d96c705ddae26bc140833e38a1defd4ed2eac",
+    "docs/usability-u4-tests.patch": "0b18a852ffa2595b4ed12438c2332d73671d70fd3538b37eb1587a6987ad06f6",
+    "docs/usability-u4-verification-log.txt": "212f44aebbfc031a2783ab1b925b09345288e5464833e659e885bc63c5397d52",
+    "docs/usability-u4-verification-results.json": "34d37394d222f91e31cb1e1cb0616782350f535aec2cc2c4c7728186660d78ee",
+    "financial_records.php": "b86cadb1a0f8ff147b644b1031e8a2abc44f9b9dd18eef96932767a113a24851",
+    "includes/accounting_entry_page.php": "23504bf967fe4e5bb56c0401c2f52f48b408aac218b37ead77aa41438439a81f",
+    "journal_correction.php": "f682ab95da9e0876b6ec1728886d8f2b11597a55ad11efcd3cc0746ad33c01f1",
+    "journal_corrections.php": "8fef781ec71d295c17ad3f1e7f0696efbbe4a75553baa5f1bef75d30cc410b24",
+    "journal_transaction.php": "9d8fc9cac4649d91f0d76378b0937579f4695b55db7111b3046de7a9cdd496ec",
+    "ocr_expense.php": "54426ab64e05248e792de1ba4af84d396734f4d05474a62f7297f625e8dc27ae",
+    "scripts/cli_common.php": "de7cb81f69a9dee30f3e53fcc593e4a799627a6418c16c7040c26de69f62dfc0",
+    "scripts/http_fixture.php": "ae3f271747563e29b7e9bda2a4a5b2cab676eebb718fe2373f27a1b6eba13fb7",
+    "scripts/package_usability_u4_review.py": "797516b03c951265cb10cc77160fa1f32c39ee835aa58c04750fedb020e5c44a",
+    "scripts/test_receipt_browser.py": "c6bf1a716a12cbb8244f344130c8732a9861c59e426d63d24cb7a4a1b5e7f96a",
+    "scripts/test_stage2_browser.py": "811654692cd6b3003e09bf0cf0f01f14c6c1b3200eb9ae2559499198ad371693",
+    "scripts/test_stage3_checkpoint2_browser.py": "3f68e4b33f1d2894b01b4501f7c3d03d36d4df9d4df627697a1f8c7eb5b02945",
+    "scripts/test_stage3_checkpoint3_browser.py": "f2dc36742bdbed350378944496cbfd1bea4ac1c3f4a53502a6aafb4f4173aeae",
+    "scripts/test_stage3_checkpoint4_browser.py": "d5b99dd46879861acf8d9a0b32bb8b3a688cdb29ca8005e2658f3da717f4cbaf",
+    "scripts/test_stage3_checkpoint5_browser.py": "b3c921be581839445854768e4ecdcc5646b2a02f3e7ca97d414f7f75cf0a1d4c",
+    "scripts/test_stage3_fixture.py": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+    "scripts/test_usability_u2_adapter.js": "93d3ba4ce62bcd66fb7a147827cb018144030b0a323c0278eab2bc0acbccd814",
+    "scripts/test_usability_u2_b_browser.py": "689d409ce7b0c9029ab6850ca3bfca6962755e3b0b5f927b96f49ab599b4413a",
+    "scripts/test_usability_u2_browser.py": "8a055e1145fafc3bfe304577614171381cdb32d36ba100aa97969ae3dd3ff686",
+    "scripts/test_usability_u2_c_browser.py": "8d4fffdf24284215e0bda1a8185315aff9fcbfe028bdc10d3acd16f652b2ddb6",
+    "scripts/test_usability_u2_reader.php": "c4e84c9bc0d753b1157c0782ff33fbf708150de8f314d7f993cd86007e2a1c8c",
+    "scripts/test_usability_u3_a_browser.py": "13f8672709615cfe4761e4173e41a852d27fe942d51e7299c9fdb19a3e78c286",
+    "scripts/test_usability_u3_a_readback.py": "908f4e83496e0d377e01b93f61873783a7de7caa15b88332ba0ad989f767bbf2",
+    "scripts/test_usability_u3_advance_adapter.js": "a07895c28ae8a36ef0a93c089660e9370938a409b7e0760fe25ba19b60149414",
+    "scripts/test_usability_u3_bcd.php": "0a9fd5ef6dc8d3d4c310d12b4335bb82f22ae4da6de066aa6d3643dc733cd16a",
+    "scripts/test_usability_u3_bcd_browser.py": "084cb94785f3ea9341bb8c454d216d31f97cb2c3dd4d337d3c56660f73005dce",
+    "scripts/test_usability_u3_bcd_edges.php": "bcf35e9312c102882e06630a344859291d065c67686dc41fc52244d0817b5a68",
+    "scripts/test_usability_u4_adapter.js": "750ad7234cc6976f00fd9fa613fd2da0a923861c06a67ee350df46ee51b65211",
+    "scripts/test_usability_u4_browser.py": "6b31f9dff90352524d90cc585be53bc30c345faa6e2e940a99f45325ee6c2660",
+    "scripts/test_usability_u4_fixture.php": "7a340ff61ad96f9f4072e00ec6a571dbb2223ff95b7caea575a579295c88bb12",
+    "scripts/test_usability_u4_regressions.py": "6e37fe20448f9bb3fd8061c17c1e78ed416d9755ea9644204cf34b32e53dfae4"
+  },
+  "screenshots": {
+    "a-draft-result-1366.png": "b148fe5036293d88ce3060f1fba1d68d4a626f44f89af2b589af7fa3ee269230",
+    "a-draft-result-1920.png": "cfd85cb5618e1dc32803d14b2f91cfbd74123f26b2ea6857a6858ad6fd2f9e3b",
+    "b-correction-comparison-1366.png": "abbaf50e3570b75f29f621c89c0ef7b10721e6ecac5698bdfc725dc3fa5d5e55",
+    "b-correction-comparison-1920.png": "1871d936786b12f82b73b81cbd8173bc68ef6e1b61ada274d3293597d6d15589",
+    "b-exact-transaction-1366.png": "361b7f5434535a73b9634d8c66beba6ce6c8b52194ecf961e3b26f7a2101e6ea",
+    "b-exact-transaction-1920.png": "52daab73ac81011e704aae4a1809f2b1c2207b5fc0293b0d3856b44c80813034",
+    "c-release-correction-recorded-1366.png": "d02b1521a7c34f018b0ff1e35db07e76ee21263b75666dfdebcf160f1a85b0b8",
+    "c-release-correction-recorded-1920.png": "e5badf2e5c09fc32af7971c6dcc46529086112f69dcc4124156069e1a7b6e324",
+    "c-return-correction-review-1366.png": "21b1ec86c7cb9731d57f4c4e8aaff64969c06e1ab63583a499bc2ae635aadcfd",
+    "c-return-correction-review-1920.png": "6ca79e0be901bcd825dbbafe8d5d21a2e99a5a93126b723898f36982354e2552",
+    "c-reversal-review-1366.png": "cd156b35a57b2f8a8ac3ba20ceb561859cd26d698e871fdedbf583ce1ddb304d",
+    "c-reversal-review-1920.png": "bf09610cc48fde3b97c9c745612cee5cba848477dba79f9bdf73445ce34b464c",
+    "d-ocr-unverified-1366.png": "868505402028ede4da668e36133ca425e18d35145c27faa6d110abec629f0ddf",
+    "d-ocr-unverified-1920.png": "52063d358950588835ae3705887a99f6b66138e9e8c426277e8c867cbe677d45",
+    "d-support-guidance-1366.png": "a19d9609f5204f40fa1be26e96fd55694d79868d13350152195449f98a7ae5a3",
+    "d-support-guidance-1920.png": "080366d0a28b0ee29501b9320448fe4103c3828af92696fe4321d6913624e6ff"
+  },
+  "dependencies": "Reconstruct runtime from the declared public baseline; pure adapter dependencies are included. Private DB/session/evidence fixtures are excluded.",
+  "unchanged_contracts": {
+    "includes/accounting_query.php": "894b0e9e4ecf1c81bed6f2d4583d34da11e96963",
+    "includes/accounting_workspace.php": "2d36ffe1fa08f2c5a9bb0af133155ae15a451a7c",
+    "includes/cash_advance.php": "2171b1e153e610f1f77d6baf7a640cb49dd37f74",
+    "includes/cash_advance_lifecycle.php": "388e261a262916047b74dd3267373fb17d9b7c24",
+    "includes/correction_drafts.php": "2e1ea170b489b7e7a2ce6023b532eb841069825a",
+    "includes/correction_posting.php": "22811d4fa5b3c91344648e8a3f379d0e2a6eec47",
+    "includes/receipt_ocr.php": "8cb1a9ddeba9104d448b9f1c89b13472f9e16a24",
+    "accounting_actions.php": "70fcb544d81b3aed06d8cfd3f2f1edfa5da669dc",
+    "cash_advance_actions.php": "a71b4feadb6713482dc381bc0b0e300fa8f624c0",
+    "journal_correction_actions.php": "54693bffddea810ee79d0341b85f7009a95359f1",
+    "ocr_extract.php": "bbe9fa9ff55624e7be141864fd9ada8165cbaef7"
+  }
+}

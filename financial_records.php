@@ -46,7 +46,7 @@ try{
 }catch(InvalidArgumentException $e){http_response_code(400);$filterError=$e->getMessage();}
 catch(Throwable $e){http_response_code(503);$ledgerError=true;error_log('Journal history: '.$e->getMessage());}
 }
-$context=$filters['context'];$title=['crb'=>'Cash Receipts Book','cdb'=>'Cash Disbursements Book'][$context]??'Journal History / General Ledger';
+$context=$filters['context'];$title=['crb'=>'Cash Receipts Book','cdb'=>'Cash Disbursements Book'][$context]??'Find a transaction (Journal History)';
 $activePage=['crb'=>'crb','cdb'=>'cdb'][$context]??'financial_records';
 $clearUrl='financial_records.php?from=&to='.($context!=='records'?'&view='.$context:'');
 $scope=$filters['from']===''&&$filters['to']===''?'all':($filters['from']===substr(accounting_today(),0,7).'-01'&&$filters['to']===accounting_today()?'month':'custom');
@@ -63,6 +63,8 @@ layout_begin($title,$activePage,[], '<link rel="stylesheet" href="https://cdnjs.
     </header>
 <?php if(!$mainView&&$flags['isAdmin']&&stage1_enabled($pdo)): ?>
 <p class="my-4"><a class="records-view" href="<?= $context==='crb'?'cash_receipt.php':'cash_disbursement.php' ?>">+ New <?= $context==='crb'?'cash receipt':'cash payment' ?></a> · <a href="accounting_drafts.php">My drafts</a></p>
+<?php endif; ?>
+<?php if(!$mainView): ?>
 <p class="text-sm text-slate-500">Gross originating book activity. Filters and search retain all lines of matching journals. Totals include original and replacement entries; linked General Journal reversals offset originals in the ledger. Book totals alone are not the corrected net cash amount. Older unclassified entries remain in Journal History.</p>
 <?php endif; ?>
 <section class="records-card <?= $flags['isExecutive']?'exec-card':'' ?>"><h2>Filter Records</h2>

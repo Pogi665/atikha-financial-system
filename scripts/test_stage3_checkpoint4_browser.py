@@ -86,7 +86,7 @@ try:
             else:route.continue_()
         page.route('**/journal_correction_actions.php',lose);page.locator('#aw-post').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0")
         check(int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])==before+2,'Lost release correction response commits one atomic bundle')
-        page.locator('#aw-post').click();page.wait_for_selector('[data-advance-result="replacement_advance_id"]');page.unroute('**/journal_correction_actions.php',lose)
+        page.locator('#aw-check-result').click();page.wait_for_selector('[data-advance-result="replacement_advance_id"]');page.unroute('**/journal_correction_actions.php',lose)
         new_id=int(re.search(r'advance_id=(\d+)',page.locator('[data-advance-result="replacement_advance_id"]').get_attribute('href')).group(1))
         old_id=int(re.search(r'advance_id=(\d+)',page.locator('[data-advance-result="original_advance_id"]').get_attribute('href')).group(1))
         check(new_id!=old_id and 'already posted' in page.locator('#aw-posted-message').inner_text(),'Visible release retry recovers distinct old/new identity links')

@@ -55,6 +55,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if($receipt):?><a class="ocr-secondary" href="ocr_expense.php">Scan another receipt</a><?php endif;?></header>
 <?php if($error):?><p class="ocr-error" role="alert"><?= $escape($error) ?></p><?php endif;?>
 <?php if(isset($_GET['discarded'])):?><p role="status">Receipt discarded.</p><?php endif;?>
+<section id="ocr-mutation-feedback" class="ocr-warning" hidden aria-labelledby="ocr-mutation-heading"><h2 id="ocr-mutation-heading">Receipt action not verified</h2><p id="ocr-mutation-status" role="status" aria-live="polite"></p><button type="button" id="ocr-check-state">Check saved receipt state</button> <button type="button" id="ocr-replay-retry" hidden>Check original extraction result</button> <a id="ocr-open-state" hidden>Open saved receipt</a></section>
 <?php if($available):?>
 <ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload image</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Check details</li><li><span>3</span>Review journal</li></ol>
 <div class="ocr-grid">

@@ -43,3 +43,6 @@
 #ocr-progress:empty,#ocr-retry-progress:empty{display:none}#ocr-progress{padding:12px;border-radius:7px;background:#f8fafc;color:#475569;margin-top:16px}#ocr-retry-progress{display:block;max-width:220px}
 @media(max-width:1200px){.ocr-grid{grid-template-columns:1fr}.ocr-preview-frame img{max-height:500px}.ocr-card{padding:20px}.ocr-header{flex-wrap:wrap}}
 @media print{.ocr-header>a,.ocr-actions,.ocr-primary{display:none}.ocr-grid{display:block}.ocr-card{margin-bottom:16px}}
+
+/* U4: uncertain mutations remain distinct from extraction success/failure. */
+.ocr-workspace #ocr-mutation-feedback[hidden],.ocr-workspace #ocr-mutation-feedback [hidden]{display:none!important}.ocr-workspace #ocr-mutation-feedback{margin:18px 0;border:1px solid #d97706;padding:18px;border-radius:10px}.ocr-workspace #ocr-mutation-feedback h2{font-weight:700;margin-bottom:8px}.ocr-workspace #ocr-mutation-feedback button,.ocr-workspace #ocr-mutation-feedback a{display:inline-block;margin:10px 12px 0 0}.ocr-workspace #ocr-mutation-feedback button{padding:8px 12px;border:1px solid #64748b;border-radius:6px}.ocr-workspace #ocr-mutation-feedback button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}

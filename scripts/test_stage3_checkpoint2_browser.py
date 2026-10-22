@@ -74,7 +74,7 @@ try:
         check(page.locator('#aw-correction-mode').is_disabled(),'Saved correction mode remains immutable')
         committed=page.locator('#aw-party').input_value();page.locator('#aw-party-search').fill('no matching record zz');page.keyboard.press('Enter');page.keyboard.press('Escape')
         check(page.locator('#aw-party').input_value()==committed and 'unsaved' not in page.locator('#aw-draft-label').inner_text(),'Visible search cancellation keeps draft ID selection and revision unchanged')
-        review();check(page.locator('#aw-post').is_enabled() and 'Generated exact reversal' in page.locator('#aw-review-content').inner_text(),'Ordinary preview shows exact GJ reversal and offers reviewed posting')
+        review();check(page.locator('#aw-post').is_enabled() and 'Reversal preview' in page.locator('#aw-review-content').inner_text(),'Ordinary preview shows exact GJ reversal and offers reviewed posting')
         for width,height in [(1366,768),(1920,1080)]:
             page.set_viewport_size({'width':width,'height':height});check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Comparison fits viewport '+str(width));page.screenshot(path=str(run/f'comparison-{width}.png'),full_page=True)
         page.locator('#aw-back').click();page.locator('#aw-save').click();page.wait_for_timeout(100)
@@ -105,7 +105,7 @@ try:
         check(mctx.request.get(base+'/receipt_attachment.php?receipt_id='+image+'&draft_id='+draft_id).status==404,'Management cannot fetch draft-scoped evidence bytes')
         octx,osession=context('other@example.invalid');check(octx.request.get(base+'/journal_correction_actions.php?action=draft&draft_id='+draft_id).status==404,'Other Admin cannot read private correction draft')
         # My Drafts resumes/discards through the dedicated route.
-        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+draft_id+'"]');check('Correction reverse replace' in row.inner_text() and row.locator('a').get_attribute('href')=='journal_correction.php?draft_id='+draft_id,'My Drafts labels and resumes correction context')
+        page.goto(base+'/accounting_drafts.php');page.wait_for_function("document.getElementById('draft-status').textContent.includes('loaded')");row=page.locator('tr[data-draft-id="'+draft_id+'"]');check('Correct a recorded transaction' in row.inner_text() and row.locator('a').get_attribute('href')=='journal_correction.php?draft_id='+draft_id,'My Drafts labels and resumes correction context')
         row.locator('a').click();ready()
         if page.locator('#aw-replacement-book').input_value()=='GJ':
             with page.expect_navigation(wait_until='domcontentloaded'):page.locator('#aw-replacement-book').select_option('CRB')
@@ -114,7 +114,7 @@ try:
         ready()
         check(page.locator('[data-line]').count()>=2 and page.locator('#aw-correction-reason').input_value().startswith('Synthetic'),'Explicit replacement book change preserves complete lines and correction reason')
         page.goto(base+'/journal_correction.php?journal_id='+str(fixture['release_target'])+'&mode=reverse_only');ready();page.locator('#aw-correction-reason').fill('Duplicate synthetic release');save();review()
-        check(page.locator('.aw-columns aside').is_hidden() and page.locator('#aw-review-content').inner_text().count('Replacement ·')==0,'Reverse-only workspace hides replacement and evidence claims')
+        check(page.locator('.aw-columns aside').is_hidden() and page.locator('#aw-review-content').inner_text().count('Replacement preview ·')==0,'Reverse-only workspace hides replacement and evidence claims')
         page.screenshot(path=str(run/'reverse-only-1366.png'),full_page=True)
         # Review an existing supported replacement liquidation using the visible saved draft.
         if fixture.get('liquidation_draft'):
