@@ -1,0 +1,248 @@
+{
+  "baseline": "65de5c8c8b91a62083cc7244145db255b575ae88",
+  "final_suite_results": {
+    "followup": {
+      "passed": true,
+      "affected_rerun": true,
+      "commands": [
+        {
+          "runner": "test_usability_u2_followup_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u2a": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u2b": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u2_b_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u4d": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u4_fixture.php",
+          "exit": 0
+        },
+        {
+          "runner": "test_usability_u4_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "stage2": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage2_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp5": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint5_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "cp4": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_stage3_checkpoint4_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "receipt": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_receipt_browser.py",
+          "exit": 0
+        }
+      ]
+    },
+    "u4c": {
+      "passed": true,
+      "affected_rerun": false,
+      "commands": [
+        {
+          "runner": "test_usability_u4_fixture.php",
+          "exit": 0
+        },
+        {
+          "runner": "test_usability_u4_browser.py",
+          "exit": 0
+        }
+      ]
+    }
+  },
+  "working_comparison": {
+    "passed": true,
+    "read_only_comparison": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "protected_upload_files": 53,
+    "working_rows_schema_objects_permissions_unchanged": true,
+    "working_uploads_config_mysql_binary_ini_apache_config_unchanged": true,
+    "sql_identity": {
+      "port": 3306,
+      "datadir": "C:\\xampp\\mysql\\data\\",
+      "version": "10.4.32-MariaDB",
+      "recovery": 0
+    }
+  },
+  "visual_review": {
+    "passed": true,
+    "viewports": [
+      [
+        1366,
+        768
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "capture": "Headless Edge full-page captures; heights may exceed viewport.",
+    "screenshots": {
+      "coverage-unavailable-1366.png": "7a8e194416746251c3c898e69f98ada974b4e951b2abe4b81f536673aafd6b30",
+      "coverage-unavailable-1920.png": "0e327ddc4442e76c7020743de1e9a6dc7a4a890fd523b853a3f2ae458ba4dac1",
+      "payment-coverage-1366.png": "7f8a10faf861a4f1ae264e8054ac1bcfcce9d34d3bf8fef0af7ebfc72f6b7db3",
+      "payment-coverage-1920.png": "6fd5dd190d690dcd6aaba779fe4da0e15a8b63619ffc4f498421ccc91d7b4ad6",
+      "payment-full-coverage-1366.png": "239574737add61935668cd485398262df6285e39b5b5bb208b259f8aafa93d71",
+      "payment-full-coverage-1920.png": "0f7659022eea4f56602bcff538809b3f9c809d812d15ee92e78de45784bb25c7",
+      "payment-partial-coverage-1366.png": "b936fd7fa0f2286b2be53ebfc4e2b823b77e3c352b65728f2aaf114a43f7ba21",
+      "payment-partial-coverage-1920.png": "0fa871d5f594da68f5efbe5244315110d014ab6ae8e489387670f63e04194320",
+      "receipt-coverage-1366.png": "ca1e108c7c2c75e17cc6c84084396255408d339dce1dcfe66d742e34d0cbef26",
+      "receipt-coverage-1920.png": "b6c35ccd40c1f556770c0b746b948d69234479b60665f20f484bc0c2b99725d1",
+      "transfer-not-applicable-1366.png": "2e26797d6a223a4f4ee40abb8d250995eb9a846696ad880a1593b7c3942f81ad",
+      "transfer-not-applicable-1920.png": "fa266e657765da598f406f296e583a17a9c29cfb0aa2b58bb923a257c0d7529b"
+    },
+    "inspection": "All 12 final captures viewed individually: payment/receipt zero support, payment partial/full support, unavailable amount and internal transfer N/A. Readable amounts/actions, no horizontal overflow. Existing server status is retained alongside unavailable fields; invalid data never becomes a monetary zero."
+  },
+  "patch_reconstruction_passed": true,
+  "focused_results": {
+    "passed": true,
+    "checks": 32,
+    "errors": [],
+    "action_traces": [
+      {
+        "task": "payment",
+        "classification": "newly reproduced",
+        "revision": "65de5c8c8b91a62083cc7244145db255b575ae88",
+        "source": "final production hashes recorded by orchestrator",
+        "navigation_controls": 1,
+        "page_changes": 1,
+        "fields": 5,
+        "progression": 2,
+        "required_evidence_actions": 0,
+        "optional_actions": 0,
+        "actions": [
+          [
+            "navigation",
+            "Dashboard sidebar direct task to cash_disbursement.php"
+          ],
+          [
+            "field",
+            "Select party"
+          ],
+          [
+            "field",
+            "Enter purpose"
+          ],
+          [
+            "field",
+            "Select cash or bank account"
+          ],
+          [
+            "field",
+            "Enter one common amount"
+          ],
+          [
+            "field",
+            "Select counterpart account"
+          ],
+          [
+            "progression",
+            "Review (includes saving)"
+          ],
+          [
+            "progression",
+            "Confirm and record"
+          ]
+        ]
+      },
+      {
+        "task": "receipt",
+        "classification": "newly reproduced",
+        "revision": "65de5c8c8b91a62083cc7244145db255b575ae88",
+        "source": "final production hashes recorded by orchestrator",
+        "navigation_controls": 1,
+        "page_changes": 1,
+        "fields": 5,
+        "progression": 2,
+        "required_evidence_actions": 0,
+        "optional_actions": 0,
+        "actions": [
+          [
+            "navigation",
+            "Dashboard sidebar direct task to cash_receipt.php"
+          ],
+          [
+            "field",
+            "Select party"
+          ],
+          [
+            "field",
+            "Enter purpose"
+          ],
+          [
+            "field",
+            "Select cash or bank account"
+          ],
+          [
+            "field",
+            "Enter one common amount"
+          ],
+          [
+            "field",
+            "Select counterpart account"
+          ],
+          [
+            "progression",
+            "Review (includes saving)"
+          ],
+          [
+            "progression",
+            "Confirm and record"
+          ]
+        ]
+      }
+    ]
+  }
+}

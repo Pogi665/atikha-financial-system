@@ -1,0 +1,353 @@
+diff --git a/scripts/test_usability_u2_b_browser.py b/scripts/test_usability_u2_b_browser.py
+index 79e84755d42a6512816c6321d11aab0981dbaf87..cb645d09cbbb1c7ba9cd7df209f43719277dfd4e 100644
+--- a/scripts/test_usability_u2_b_browser.py
++++ b/scripts/test_usability_u2_b_browser.py
+@@ -135,7 +135,7 @@ try:
+         for cash,amount,opposite,mode in [('1000','900','','split'),('1000','','','split'),('1000','1000','-1','advanced'),('1000','1000','bad','advanced')]:
+             d=saved(payload(cash,amount,opposite));open_entry('CRB',d['id']);check(page.locator('#entry-workspace').get_attribute('data-payment-mode')==mode,'Restored invalid/mismatched receipt stays '+mode);save_visible();check(api('draft',{'draft_id':str(d['id'])},'GET')['payload']==d['payload'],'Restored receipt raw values remain unchanged')
+         projects=sql('SELECT id FROM projects WHERE is_active=1 ORDER BY id LIMIT 2');pv=payload(credit='600',project=str(projects[0]['id']));pv['cash_project_id']=str(projects[1]['id']);pv['lines'].append({**pv['lines'][0],'client_id':'second-receipt','credit_amount':'400','fund_project_id':str(projects[1]['id'])});d=saved(pv);open_entry('CRB',d['id']);result=review();visible_review(result);check('600.00' in page.locator('.aw-review-breakdown').inner_text() and '400.00' in page.locator('.aw-review-breakdown').inner_text(),'Split receipt has visible amount breakdown');capture('receipt-split')
+-        pv=payload('1000','1200');pv['lines'].append({'client_id':'receipt-debit','account_id':str(fixture['tax']),'fund_project_id':'','debit_amount':'200','credit_amount':''});d=saved(pv);open_entry('CRB',d['id']);result=review();visible_review(result);check(page.locator('#aw-review-content details').get_attribute('open') is not None,'Complex receipt opens complete journal');check('1200.00' in page.locator('.aw-coverage').inner_text(),'CRB monetary denominator uses noncash credits');capture('receipt-advanced')
++        pv=payload('1000','1200');pv['lines'].append({'client_id':'receipt-debit','account_id':str(fixture['tax']),'fund_project_id':'','debit_amount':'200','credit_amount':''});d=saved(pv);open_entry('CRB',d['id']);result=review();visible_review(result);check(page.locator('#aw-review-content details').get_attribute('open') is not None,'Complex receipt opens complete journal');check('\u20b11,200.00' in page.locator('.aw-coverage').inner_text(),'CRB monetary denominator uses noncash credits');capture('receipt-advanced')
+         open_entry();fill_receipt();page.locator('[data-new-master="projects"]').click();page.locator('#aw-master-form [name="name"]').fill('Synthetic U2-B community project');page.locator('#aw-master-form [name="code"]').fill('U2B-'+secrets.token_hex(4));page.locator('#aw-master-form button.aw-primary').click();page.wait_for_selector('#aw-master-dialog:not([open])',state='attached');ready();check(page.locator('#aw-cash-project').input_value()==page.locator('[data-field="fund_project_id"]').input_value()!='' and page.evaluate("document.activeElement.id==='aw-cash-project-search'"),'Receipt inline project selects common actual tags and restores focus')
+         page.locator('[data-new-master="parties"]').click();page.locator('#aw-master-form [name="name"]').fill('Synthetic donor with a long organization name for receipt selection and readable committed labels');page.locator('#aw-master-form button.aw-primary').click();page.wait_for_selector('#aw-master-dialog:not([open])',state='attached');ready();page.keyboard.press('Escape');page.locator('#aw-purpose').focus();check(page.locator('#aw-party').locator('..').locator('.aw-record-full-label').is_visible(),'Closed long payer label stays readable');capture('receipt-long-label')
+         page.locator('#aw-document-group summary').click();page.locator('#aw-upload').set_input_files({'name':'Synthetic U2-B credit proof.png','mimeType':'image/png','buffer':png()});page.wait_for_selector('[data-document]');ready();doc=page.locator('[data-document]');page.locator('#aw-review').click();page.wait_for_selector('#aw-error a');check('Review this document' in page.locator('#aw-error').inner_text(),'Unreviewed receipt evidence blocks Review');doc.locator('[data-doc-field="purpose"]').select_option('amount');check(doc.locator('[data-doc-field="support_side"]').input_value()=='credit','Receipt support defaults to credit');doc.locator('[data-doc-field="declared_amount"]').fill('800');doc.locator('[data-doc-field="accepted_amount"]').fill('800');doc.locator('[data-allocation]').fill('800');doc.locator('[data-doc-field="reviewed"]').check();d=save_visible();support=api('draft',{'draft_id':d},'GET')['payload'];page.locator('[data-payment-mode="advanced"]').click();page.locator('[data-payment-mode="quick"]').click();save_visible();check(api('draft',{'draft_id':d},'GET')['payload']==support,'Receipt evidence and IDs survive mode changes');result=review();check(result['coverage']['status']=='Partially covered' and result['coverage']['credit']=={'eligible':'1000.00','covered':'800.00'},'Receipt review reports authoritative partial credit support');capture('receipt-support');page.locator('#aw-back').click();page.locator('#aw-cash-amount').fill('600');page.locator('#aw-review').click();page.wait_for_function("document.getElementById('aw-error').textContent.length>0 && !document.getElementById('aw-save').disabled");check(not page.locator('#aw-review-panel').is_visible() and doc.locator('[data-allocation]').input_value()=='800','Excess receipt support rejected without trimming')
+diff --git a/scripts/test_usability_u2_browser.py b/scripts/test_usability_u2_browser.py
+index b7b57d69a85320cfa883062a888f2f7e04f9691d..b8aac053886eba18263c0e55ece16a4c1dbeff73 100644
+--- a/scripts/test_usability_u2_browser.py
++++ b/scripts/test_usability_u2_browser.py
+@@ -130,7 +130,7 @@ try:
+         for cash,amount,credit,expected in [('1000','900','','split'),('1000','','','split'),('1000','1000','-1','advanced'),('1000','1000','bad','advanced')]:
+             loaded=saved(payload(cash,amount,credit));open_payment(loaded['id']);check(page.locator('#entry-workspace').get_attribute('data-payment-mode')==expected,'Loaded '+amount+'/'+credit+' preserves required detailed mode');save_visible();stored=api('draft',{'draft_id':str(loaded['id'])},'GET');check(stored['payload']==loaded['payload'],'Loaded malformed/mismatched payload not automatically rewritten')
+         projects=sql('SELECT id FROM projects WHERE is_active=1 ORDER BY id LIMIT 2');split=payload('1000','600',project=str(projects[0]['id']));split['cash_project_id']=str(projects[1]['id']);split['default_project_id']=str(projects[1]['id']);split['lines'].append({**split['lines'][0],'client_id':'split-second','debit_amount':'400','fund_project_id':str(projects[1]['id'])});loaded=saved(split);open_payment(loaded['id']);result=review();visible_review(result);check(page.locator('#aw-review-content details table tr').count()==4,'Split review retains complete cash and both allocations');check('600.00' in page.locator('.aw-review-breakdown').inner_text() and '400.00' in page.locator('.aw-review-breakdown').inner_text(),'Split breakdown is visible without opening the journal');capture('payment-split')
+-        pv=payload('4000','4500');pv['lines'].append({'client_id':'tax','account_id':str(fixture['tax']),'fund_project_id':'','debit_amount':'','credit_amount':'500'});loaded=saved(pv);open_payment(loaded['id']);result=review();visible_review(result);check(all(v in page.locator('.aw-payment-summary').inner_text() for v in ['4,500','500','4,000']),'Withholding summary shows authoritative gross, liability and cash');check('4500.00' in page.locator('.aw-coverage').inner_text(),'Evidence denominator remains gross expenditure');check(page.locator('#aw-review-content details').get_attribute('open') is not None and page.locator('#aw-review-content details table').is_visible(),'Complex credit entry exposes the complete journal');capture('payment-withholding')
++        pv=payload('4000','4500');pv['lines'].append({'client_id':'tax','account_id':str(fixture['tax']),'fund_project_id':'','debit_amount':'','credit_amount':'500'});loaded=saved(pv);open_payment(loaded['id']);result=review();visible_review(result);check(all(v in page.locator('.aw-payment-summary').inner_text() for v in ['4,500','500','4,000']),'Withholding summary shows authoritative gross, liability and cash');check('\u20b14,500.00' in page.locator('.aw-coverage').inner_text(),'Evidence denominator remains gross expenditure');check(page.locator('#aw-review-content details').get_attribute('open') is not None and page.locator('#aw-review-content details table').is_visible(),'Complex credit entry exposes the complete journal');capture('payment-withholding')
+         # Lose the response after a real disposable commit, then reauthenticate and replay identical identity.
+         open_payment();fill();review();post_requests=[];lost=[False]
+         def interrupt(route):
+diff --git a/scripts/test_usability_u2_followup_browser.py b/scripts/test_usability_u2_followup_browser.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..b8cc2ffebdc95ef80a6d8f708d255676d8d1f684
+--- /dev/null
++++ b/scripts/test_usability_u2_followup_browser.py
+@@ -0,0 +1,113 @@
++"""U2 follow-up current action traces and authoritative coverage display checks.
++Copies code into a private app; never copies production config, sessions or receipts.
++"""
++from urllib.parse import urlencode
++from datetime import datetime,timedelta
++from decimal import Decimal
++import argparse,hashlib,json,os,re,secrets,shutil,socket,struct,subprocess,sys,time,zlib
++from pathlib import Path
++root=Path(__file__).resolve().parent.parent
++sys.path.insert(0,str(root/'.migration-private/journal-test-deps'))
++from playwright.sync_api import sync_playwright
++parser=argparse.ArgumentParser();parser.add_argument('--fixture',required=True);parser.add_argument('--browser',default='msedge');args=parser.parse_args()
++fixture_path=Path(args.fixture).resolve()
++if not fixture_path.is_relative_to(root/'.migration-private'):parser.error('Private disposable fixture required')
++fixture=json.loads(fixture_path.read_text());db=fixture['database']
++if not re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',db):parser.error('Disposable database required')
++php=r'C:\xampp\php\php.exe';evidence=Path(fixture['receipt_root']).resolve()
++if not evidence.is_relative_to(root/'.migration-private'):parser.error('Private evidence required')
++run=root/'.migration-private'/('u2followup-browser-'+secrets.token_hex(5));app=run/'app';app.mkdir(parents=True);sessions=run/'sessions';sessions.mkdir()
++for path in root.glob('*.php'):
++    if path.name not in ['db_connect.php','config.php']:shutil.copy2(path,app/path.name)
++for name in ['includes','assets','scripts','vendor']:shutil.copytree(root/name,app/name)
++def ps(v):return "'"+v.replace('\\','\\\\').replace("'","\\'")+"'"
++dsn='mysql:host='+os.environ.get('ATIKHA_DB_HOST','127.0.0.1')+';dbname='+db+';charset=utf8mb4'
++(app/'db_connect.php').write_text('<?php $pdo=new PDO('+','.join(ps(v) for v in [dsn,os.environ.get('ATIKHA_DB_USER','root'),os.environ.get('ATIKHA_DB_PASSWORD','')])+',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);',encoding='utf-8')
++def config(stage1=True,stage2=True,stage3=True,ocr=False):
++    (app/'config.php').write_text("<?php define('STAGE1_WORKSPACE_ENABLED',"+str(stage1).lower()+");define('STAGE2_ADVANCES_ENABLED',"+str(stage2).lower()+");define('STAGE3_CORRECTIONS_ENABLED',"+str(stage3).lower()+");define('OCR_JOURNAL_ENABLED',"+str(ocr).lower()+");define('RECEIPT_UPLOAD_DIR',"+ps(str(evidence))+");",encoding='utf-8')
++config()
++def sql(query):
++    code='<?php require '+ps(str(root/'scripts/cli_common.php'))+';$p=cli_db('+ps(db)+');echo json_encode($p->query('+ps(query)+')->fetchAll());'
++    return json.loads(subprocess.check_output([php],input=code,text=True))
++def login(email):return json.loads(subprocess.check_output([php,str(app/'scripts/http_fixture.php'),'--database='+db,'--sessions='+str(sessions),'--email='+email,'--test-login'],text=True))
++def png():
++    def chunk(k,d):return struct.pack('>I',len(d))+k+d+struct.pack('>I',zlib.crc32(k+d)&0xffffffff)
++    rows=b''.join(b'\0'+bytes([secrets.randbelow(255),50,100,255])*64 for _ in range(64))
++    return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',64,64,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(rows))+chunk(b'IEND',b'')
++sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close();base=f'http://127.0.0.1:{port}'
++router=run/'router.php';router.write_text("<?php if(preg_match('~^/(?:uploads/|scripts/|includes/|vendor/|forecast_ai\\.php)~',parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH))){http_response_code(403);exit;}return false;",encoding='utf-8')
++log=(run/'server.log').open('w',encoding='utf-8');server=subprocess.Popen([php,'-d','session.save_path='+str(sessions),'-S',f'127.0.0.1:{port}','-t',str(app),str(router)],stdout=log,stderr=log)
++
++checks=0;trace=[];errors=[];success=False
++
++def check(ok,label):
++    global checks
++    if not ok:raise AssertionError(label)
++    checks+=1;print('PASS: '+label,flush=True)
++try:
++    for _ in range(60):
++        try:
++            with socket.create_connection(('127.0.0.1',port),timeout=.2):break
++        except OSError:time.sleep(.1)
++    with sync_playwright() as playwright:
++        browser=playwright.chromium.launch(channel=args.browser,headless=True)
++        ctx=browser.new_context(viewport={'width':1366,'height':768});ctx.route(re.compile(r'^https?://(?!127\.0\.0\.1:)'),lambda route:route.abort())
++        session=login('admin@example.invalid');ctx.add_cookies([{'name':'PHPSESSID','value':session['session'],'url':base}]);page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
++        def ready():page.wait_for_function("document.getElementById('aw-existing') && (!document.getElementById('aw-existing').disabled || !document.getElementById('aw-posted').hidden)")
++        def choose(control,value):
++            label=control.locator('option[value="'+str(value)+'"]').text_content();combo=control.locator('..').locator('.aw-record-selector');combo.get_by_role('combobox').fill(label);combo.locator('[role="option"][data-value="'+str(value)+'"]').click()
++        def capture(name):
++            for w,h in [(1366,768),(1920,1080)]:
++                page.set_viewport_size({'width':w,'height':h});page.evaluate('window.scrollTo(0,0)');check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),name+' fits '+str(w));page.screenshot(path=str(run/(name+'-'+str(w)+'.png')),full_page=True)
++            page.set_viewport_size({'width':1366,'height':768})
++        def review():
++            with page.expect_response(lambda r:r.url.endswith('/accounting_actions.php') and r.request.method=='POST' and r.request.post_data_json.get('action')=='review') as response:page.locator('#aw-review').click()
++            data=response.value.json();assert data.get('ok'),data;page.wait_for_selector('#aw-review-panel:not([hidden])');ready();return data['result']
++        def filled(route,account):
++            page.goto(base+'/'+route);ready();choose(page.locator('#aw-party'),fixture['party']);page.locator('#aw-purpose').fill('Synthetic follow-up ordinary task');choose(page.locator('#aw-cash-account'),fixture['bank']);page.locator('#aw-cash-amount').fill('1000');choose(page.locator('[data-field="account_id"]').first,account)
++        for task,route,account,side in [('payment','cash_disbursement.php',fixture['training'],'debit'),('receipt','cash_receipt.php',fixture['income'],'credit')]:
++            # Preparation/navigation to the declared Dashboard start is not a measured task action.
++            page.goto(base+'/dashboard.php',wait_until='networkidle');url=page.url;page.locator('.app-sidebar a[href="'+route+'"]').click();ready()
++            events=[('navigation','Dashboard sidebar direct task to '+route)]
++            check(page.url!=url and page.url.endswith('/'+route),'One navigation control reaches '+task+' editor')
++            choose(page.locator('#aw-party'),fixture['party']);events.append(('field','Select party'))
++            page.locator('#aw-purpose').fill('Synthetic follow-up '+task);events.append(('field','Enter purpose'))
++            choose(page.locator('#aw-cash-account'),fixture['bank']);events.append(('field','Select cash or bank account'))
++            page.locator('#aw-cash-amount').fill('1000');events.append(('field','Enter one common amount'))
++            choose(page.locator('[data-field="account_id"]').first,account);events.append(('field','Select counterpart account'))
++            check(page.locator('[data-field="'+side+'_amount"]').first.input_value()=='1000','One amount also sets '+task+' counterpart')
++            r=review();events.append(('progression','Review (includes saving)'))
++            check(r['coverage'][side]=={'eligible':'1000.00','covered':'0.00'},task+' authoritative amounts unchanged')
++            check(page.locator('.aw-coverage').inner_text()=='No monetary support \u2014 '+side+': ₱0.00 supported of ₱1,000.00',task+' formats exact zero and thousand')
++            capture(task+'-coverage')
++            page.locator('#aw-post').focus();check(page.evaluate("document.activeElement.id==='aw-post'"),task+' confirmation has keyboard focus');page.keyboard.press('Enter');page.wait_for_selector('#aw-posted:not([hidden])');ready();events.append(('progression','Confirm and record'))
++            href=page.locator('#aw-exact-link').get_attribute('href');jid=re.search(r'journal_id=(\d+)',href).group(1)
++            check(sql('SELECT source_book FROM journal_entries WHERE id='+jid)[0]['source_book']==('CDB' if task=='payment' else 'CRB'),'Measured '+task+' ends at real exact recorded journal')
++            trace.append({'task':task,'classification':'newly reproduced','revision':os.environ['ATIKHA_FOLLOWUP_BASELINE'],'source':'final production hashes recorded by orchestrator','navigation_controls':1,'page_changes':1,'fields':5,'progression':2,'required_evidence_actions':0,'optional_actions':0,'actions':events})
++        filled('cash_disbursement.php',fixture['training']);page.locator('#aw-document-group summary').click();page.locator('#aw-upload').set_input_files({'name':'Synthetic follow-up proof.png','mimeType':'image/png','buffer':png()});page.wait_for_selector('[data-document]');ready();doc=page.locator('[data-document]')
++        doc.locator('[data-doc-field="purpose"]').select_option('amount');doc.locator('[data-doc-field="declared_amount"]').fill('1000');doc.locator('[data-doc-field="accepted_amount"]').fill('400');doc.locator('[data-allocation]').fill('400');doc.locator('[data-doc-field="exclusion_reason"]').fill('Synthetic document includes an amount outside this entry.');doc.locator('[data-doc-field="reviewed"]').check();r=review()
++        check(r['coverage']['status']=='Partially covered' and '₱400.00 supported of ₱1,000.00' in page.locator('.aw-coverage').inner_text(),'Partial support preserves the authoritative denominator');capture('payment-partial-coverage')
++        page.locator('#aw-back').click();ready();doc.locator('[data-doc-field="accepted_amount"]').fill('1000');doc.locator('[data-allocation]').fill('1000');doc.locator('[data-doc-field="reviewed"]').check();r=review()
++        check(r['coverage']['status']=='Fully covered' and '₱1,000.00 supported of ₱1,000.00' in page.locator('.aw-coverage').inner_text(),'Full support formats both exact values');capture('payment-full-coverage')
++        # Malformed authoritative coverage must never use the editable empty-as-zero rule.
++        def corrupt(route):
++            if route.request.method=='POST' and route.request.post_data_json.get('action')=='review':
++                response=route.fetch();data=response.json();assert data['ok'];data['result']['coverage']['debit']['covered']='';route.fulfill(response=response,json=data)
++            else:route.continue_()
++        page.locator('#aw-back').click();page.route('**/accounting_actions.php',corrupt);review();text=page.locator('.aw-coverage').inner_text();check('amount unavailable supported of ₱1,000.00' in text and '₱0.00' not in text,'Malformed covered amount is unavailable rather than fabricated zero');capture('coverage-unavailable');page.unroute('**/accounting_actions.php',corrupt)
++        page.goto(base+'/general_journal.php');ready();today=page.locator('#aw-date').input_value()
++        payload={'entry_date':today,'description':'Synthetic follow-up transfer','reference':'','party_id':'','default_project_id':'','cash_account_id':'','cash_amount':'','cash_project_id':'','transaction_kind':'transfer','documents':[],'lines':[{'client_id':secrets.token_hex(12),'account_id':str(fixture['bank']),'fund_project_id':'','debit_amount':'1000','credit_amount':''},{'client_id':secrets.token_hex(12),'account_id':str(fixture['bank']),'fund_project_id':'','debit_amount':'','credit_amount':'1000'}]}
++        # Use only a known second synthetic cash account from the existing fixture list.
++        response=ctx.request.get(base+'/accounting_actions.php?action=lists').json();assert response['ok'];cash=[a for a in response['result']['accounts'] if int(a['Is_Cash_Account']) and str(a['CategoryID'])!=str(fixture['bank'])];assert cash;payload['lines'][1]['account_id']=str(cash[0]['CategoryID'])
++        saved=ctx.request.post(base+'/accounting_actions.php',data={'action':'save','csrf_token':session['csrf'],'draft_id':'','submission_key':secrets.token_hex(32),'source_book':'GJ','payload':payload}).json();assert saved['ok'],saved
++        page.goto(base+'/general_journal.php?draft_id='+str(saved['result']['id']));ready();r=review();text=page.locator('.aw-coverage').inner_text()
++        check(r['input']['transaction_kind']=='transfer' and r['coverage']['status']=='Not applicable' and all(r['coverage'][s]['eligible']=='0.00' for s in ['debit','credit']),'Transfer N/A conditions are server-reviewed')
++        check('no eligible noncash line' in text and 'supported of' not in text and 'debit:' not in text,'Transfer explanation replaces zero-of-zero only');check(page.locator('#aw-review-content details table').is_visible(),'Transfer full journal remains inspectable');capture('transfer-not-applicable')
++        def inconsistent(route):
++            if route.request.method=='POST' and route.request.post_data_json.get('action')=='review':
++                response=route.fetch();data=response.json();assert data['ok'];data['result']['coverage']['credit']['eligible']='0.01';route.fulfill(response=response,json=data)
++            else:route.continue_()
++        page.locator('#aw-back').click();page.route('**/accounting_actions.php',inconsistent);review();text=page.locator('.aw-coverage').inner_text();check('credit: ₱0.00 supported of ₱0.01' in text and 'no eligible noncash' not in text,'Inconsistent transfer eligibility remains visible');page.unroute('**/accounting_actions.php',inconsistent)
++        check(not errors,'No uncaught JavaScript errors');ctx.close();browser.close();success=True
++finally:
++    server.terminate();server.wait(timeout=10);log.close();(run/'results.json').write_text(json.dumps({'passed':success,'checks':checks,'errors':errors,'action_traces':trace},indent=2),encoding='utf-8');print('U2_FOLLOWUP_RUN: '+str(run),flush=True)
+diff --git a/scripts/test_usability_u2_followup_adapter.js b/scripts/test_usability_u2_followup_adapter.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b7e774e244aad211c093cc366a8ecca07e7c0dc
+--- /dev/null
++++ b/scripts/test_usability_u2_followup_adapter.js
+@@ -0,0 +1,32 @@
++'use strict';
++require('../assets/js/payment_presentation.js');
++const assert=require('node:assert/strict'),P=globalThis.PaymentPresentation;
++let checks=0;
++function equal(actual,expected,label){assert.deepEqual(actual,expected,label);checks++;console.log('PASS: '+label);}
++for(const [raw,expected] of [['0.00','\u20b10.00'],['0.01','\u20b10.01'],['1000.00','\u20b11,000.00'],['1234567.89','\u20b11,234,567.89'],['9999999999999.99','\u20b19,999,999,999,999.99'],['19999999999999.98','\u20b119,999,999,999,999.98']]){
++    equal(P.coverageMoney(raw),expected,'Exact server amount '+raw);
++}
++for(const raw of [null,undefined,'',0,1,NaN,{},[],' ','0','1.0','1.000','00.00','01.00','-1.00','+1.00','1e3','1,000.00','NaN','Infinity','1000.00x','0.00\n','999999999999999.01','1000000000000000.00']){
++    equal(P.coverageMoney(raw),null,'Reject authoritative '+JSON.stringify(raw));
++}
++const make=(book='GJ',kind='ordinary',status='Partially covered')=>({input:{source_book:book,transaction_kind:kind},coverage:{status,debit:{eligible:'1000.00',covered:'400.00'},credit:{eligible:'200.00',covered:'0.00'}}});
++let r=make();equal(P.coverageText(r),'Partially covered — debit: \u20b1400.00 supported of \u20b11,000.00; credit: \u20b10.00 supported of \u20b1200.00','Preserve independent side values');
++equal(P.coverageText(make('CDB')),'Partially covered — debit: \u20b1400.00 supported of \u20b11,000.00','Cash payment supports debit side');
++equal(P.coverageText(make('CRB')),'Partially covered — credit: \u20b10.00 supported of \u20b1200.00','Cash receipt supports credit side');
++r=make('CDB','ordinary','Fully covered');r.coverage.debit.covered='1000.00';equal(P.coverageText(r),'Fully covered — debit: \u20b11,000.00 supported of \u20b11,000.00','Full support preserves server status');
++function transfer(){const v=make('GJ','transfer','Not applicable');for(const s of ['debit','credit'])v.coverage[s]={eligible:'0.00',covered:'0.00'};return v;}
++const explanation='Not applicable — monetary supporting-document coverage has no eligible noncash line in this internal cash transfer.';
++equal(P.coverageText(transfer()),explanation,'Reviewed zero-eligible transfer explains N/A');
++for(const [key,value] of [['source_book','CDB'],['source_book','CRB'],['transaction_kind','ordinary']]){r=transfer();r.input[key]=value;equal(P.coverageText(r).includes('debit:')||P.coverageText(r).includes('credit:'),true,'No special explanation for '+key+' '+value);}
++r=transfer();r.coverage.status='Fully covered';equal(P.coverageText(r).includes('debit:'),true,'Status disagreement preserves side detail');
++for(const side of ['debit','credit']){
++    r=transfer();r.coverage[side].eligible='0.01';equal(P.coverageText(r).includes('\u20b10.01'),true,'Nonzero '+side+' eligibility remains visible');
++    r=transfer();r.coverage[side].covered='0.01';equal(P.coverageText(r).includes('\u20b10.01'),true,'Inconsistent '+side+' support remains visible');
++    for(const field of ['covered','eligible']){r=transfer();r.coverage[side][field]='';const s=P.coverageText(r);equal(s.includes('amount unavailable')&&s.includes('debit:')&&s.includes('credit:'),true,'Invalid '+side+' '+field+' cannot become N/A or zero');}
++}
++equal(P.coverageText(null).includes('unavailable'),true,'Missing review is unavailable');
++r=make();delete r.coverage;equal(P.coverageText(r).includes('unavailable'),true,'Missing coverage is unavailable');
++r=make();r.coverage.status=null;equal(P.coverageText(r).startsWith('Coverage status unavailable'),true,'Missing status is unavailable');
++r=transfer();const before=JSON.stringify(r);P.coverageText(r);equal(JSON.stringify(r),before,'Formatting leaves reviewed input and values untouched');
++equal(P.cents(''),0n,'Editable parser retains its existing separate contract');
++console.log('U2 follow-up adapter checks: '+checks);
+diff --git a/scripts/test_usability_u2_followup_regressions.py b/scripts/test_usability_u2_followup_regressions.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b34f6f747cf6f4d206e3f17b82bd9fdef0dd614
+--- /dev/null
++++ b/scripts/test_usability_u2_followup_regressions.py
+@@ -0,0 +1,69 @@
++"""Final-byte U2 follow-up affected suites. Each financial suite gets a new guarded synthetic clone.
++Requires an existing private complete-schema synthetic source and disabled PHP transports.
++Never loads working configuration or bootstraps/migrates the working database.
++"""
++from pathlib import Path
++from concurrent.futures import ThreadPoolExecutor,as_completed
++import argparse,ast,hashlib,json,os,re,secrets,subprocess,sys
++root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve()
++ap=argparse.ArgumentParser();ap.add_argument('--source-fixture',required=True);ap.add_argument('--only',default='all');a=ap.parse_args()
++source=Path(a.source_fixture).resolve();assert source.is_relative_to(private)
++metadata=json.loads(source.read_text());assert re.fullmatch(r'atikha_test_stage1_[a-z0-9]+',metadata['database'])
++assert Path(metadata['receipt_root']).resolve().is_relative_to(private)
++env=os.environ.copy();env.pop('ATIKHA_TEST_INLINE_ROUTINES',None);env['PYTHONIOENCODING']='utf-8';env['ATIKHA_FOLLOWUP_BASELINE']='65de5c8c8b91a62083cc7244145db255b575ae88';php='C:/xampp/php/php.exe'
++guard=json.loads(subprocess.check_output([php],input='<?php echo json_encode(["url"=>ini_get("allow_url_fopen"),"disabled"=>ini_get("disable_functions")]);',text=True,env=env))
++assert guard['url'] in ['','0'] and all(n in guard['disabled'].split(',') for n in ['curl_exec','stream_socket_client','fsockopen','mail']), 'Disable server transports before testing.'
++production=['assets/js/accounting_workspace.js','assets/js/payment_presentation.js']
++run=private/('u2-followup-final-'+secrets.token_hex(5));run.mkdir();pins={n:hashlib.sha256((root/n).read_bytes()).hexdigest() for n in production};(run/'source-pins.json').write_text(json.dumps(pins,indent=2))
++(private/'u2-followup-final-current.json').write_text(json.dumps({'run':str(run)}))
++suites={
++ 'followup':('test_usability_u2_followup_browser.py','stage3-checkpoint5-fixture.json','u4fu'),
++ 'u2a':('test_usability_u2_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'u2b':('test_usability_u2_b_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'u4c':('test_usability_u4_browser.py','stage3-checkpoint5-fixture.json','u4fu'),
++ 'u4d':('test_usability_u4_browser.py','stage3-checkpoint5-fixture.json','u4fu'),
++ 'stage2':('test_stage2_browser.py','stage2-fixture.json','u4reg'),
++ 'cp4':('test_stage3_checkpoint4_browser.py','stage3-checkpoint4-fixture.json','u4reg'),
++ 'cp5':('test_stage3_checkpoint5_browser.py','stage3-checkpoint5-fixture.json','u4reg'),
++ 'receipt':('test_receipt_browser.py','stage3-checkpoint5-fixture.json','u4receipt')}
++
++chosen=list(suites) if a.only=='all' else a.only.split(',');assert all(n in suites for n in chosen)
++def command(cmd,folder,label,timeout=900):
++    with (folder/(label+'.stdout.log')).open('w',encoding='utf-8') as out,(folder/(label+'.stderr.log')).open('w',encoding='utf-8') as err:
++        r=subprocess.run(cmd,env=env,cwd=root,stdout=out,stderr=err,timeout=timeout)
++    return {'command':cmd,'exit':r.returncode}
++offline=run/'offline';offline.mkdir();offline_results=[]
++for n in production:
++    if n.endswith('.php'):offline_results.append(command([php,'-l',str(root/n)],offline,n.replace('/','_')))
++    if n.endswith('.js'):offline_results.append(command(['node','--check',str(root/n)],offline,n.replace('/','_')))
++for n in ['test_usability_u2_followup_adapter.js','test_usability_u4_adapter.js','test_usability_u2_adapter.js','test_usability_u3_advance_adapter.js']:
++    offline_results.append(command(['node',str(root/'scripts'/n)],offline,n))
++for n in ['test_usability_u2_followup_browser.py','test_usability_u2_followup_regressions.py','test_usability_u4_browser.py','test_receipt_browser.py','test_stage3_checkpoint2_browser.py','test_stage3_checkpoint3_browser.py','test_stage3_checkpoint4_browser.py','test_usability_u2_browser.py','test_usability_u2_b_browser.py']:
++    ast.parse((root/'scripts'/n).read_text(encoding='utf-8'))
++assert all(r['exit']==0 for r in offline_results), 'Offline checks failed; inspect private logs.'
++(run/'offline-results.json').write_text(json.dumps(offline_results,indent=2))
++def execute(name):
++    script,fixture_name,prefix=suites[name];folder=run/name;folder.mkdir();db='atikha_test_stage1_'+prefix+secrets.token_hex(5)
++    clone=command([sys.executable,str(root/'scripts/test_stage3_fixture.py'),'--fixture='+str(source.with_name(fixture_name)),'--database='+db],folder,'clone',180)
++    if clone['exit']:return {'passed':False,'stage':'clone','command':clone}
++    fixture=re.search(r'Cloned fixture: (.+)',(folder/'clone.stdout.log').read_text()).group(1).strip();commands=[]
++    if name in ['u4c','u4d']:commands.append([php,str(root/'scripts/test_usability_u4_fixture.php'),'--fixture='+fixture])
++    if name=='bcd':commands.append([php,str(root/'scripts/test_usability_u3_bcd.php'),'--fixture='+fixture,'--gate=b'])
++    commands.append(([sys.executable] if script.endswith('.py') else [php])+[str(root/'scripts'/script),'--fixture='+fixture]+(['--gate='+name[-1]] if name in ['u4c','u4d'] else []))
++    if name=='u3a':commands.append([sys.executable,str(root/'scripts/test_usability_u3_a_readback.py'),'--fixture='+fixture])
++    evidence=[]
++    for i,cmd in enumerate(commands):
++        evidence.append(command(cmd,folder,str(i),1800))
++        if evidence[-1]['exit']:break
++    same=all(hashlib.sha256((root/n).read_bytes()).hexdigest()==h for n,h in pins.items())
++    result={'passed':evidence[-1]['exit']==0 and same,'source_pins_match':same,'fixture':fixture,'commands':evidence};(folder/'result.json').write_text(json.dumps(result,indent=2));return result
++results={}
++with ThreadPoolExecutor(max_workers=3) as pool:
++    jobs={pool.submit(execute,n):n for n in chosen}
++    for job in as_completed(jobs):
++        n=jobs[job]
++        try:results[n]=job.result()
++        except BaseException as e:results[n]={'passed':False,'exception':repr(e)}
++        (run/'results.json').write_text(json.dumps(results,indent=2));print('U2_FOLLOWUP_FINAL '+n+' '+('PASS' if results[n]['passed'] else 'FAIL')+' '+str(run/n),flush=True)
++print('U2_FOLLOWUP_FINAL_RUN: '+str(run),flush=True)
++sys.exit(0 if all(r['passed'] for r in results.values()) else 1)
+diff --git a/scripts/package_usability_u2_followup_review.py b/scripts/package_usability_u2_followup_review.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..9bf862cb98593d7e14d65e5c782f166a48aea14d
+--- /dev/null
++++ b/scripts/package_usability_u2_followup_review.py
+@@ -0,0 +1,89 @@
++"""Package exact U2 follow-up source only after every final suite and working-state comparison passed."""
++from pathlib import Path
++import argparse,datetime,difflib,hashlib,json,re,shutil,subprocess,zipfile
++root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();baseline='65de5c8c8b91a62083cc7244145db255b575ae88'
++ap=argparse.ArgumentParser();ap.add_argument('--verification-run',required=True);a=ap.parse_args();run=Path(a.verification_run).resolve();assert run.is_relative_to(private)
++results=json.loads((run/'results.json').read_text());expected={'followup','u2a','u2b','u4c','u4d','stage2','cp4','cp5','receipt'}
++assert set(results)==expected and all(r['passed'] for r in results.values()),'Every required final suite must pass.'
++production=json.loads((run/'source-pins.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
++assert all(sha(root/n)==h for n,h in production.items()),'Production source changed after final verification.'
++working=json.loads((run/'working-final.json').read_text());assert working['passed'],'Working-state comparison must pass.'
++visual=json.loads((run/'visual-review.json').read_text());assert visual['passed'],'Visual review must be recorded.'
++def git(*args):return subprocess.check_output(['git',*args],cwd=root)
++assert git('rev-parse','HEAD').decode().strip()==baseline,'Checkpoint baseline changed.'
++changed=git('diff','--name-only').decode().splitlines();tests=[n for n in changed if n.startswith('scripts/') and n.endswith(('.py','.php','.js'))]
++tests+=['scripts/test_usability_u2_followup_browser.py','scripts/test_usability_u2_followup_adapter.js','scripts/test_usability_u2_followup_regressions.py','scripts/package_usability_u2_followup_review.py']
++def patch(names):
++    existing=[];new=[]
++    for n in names:
++        check=subprocess.run(['git','cat-file','-e',baseline+':'+n],cwd=root,capture_output=True)
++        (existing if check.returncode==0 else new).append(n)
++    output=git('diff','--full-index','--no-ext-diff',baseline,'--',*existing).decode('utf-8') if existing else ''
++    for n in new:
++        text=(root/n).read_text(encoding='utf-8');blob=git('hash-object','--path='+n,n).decode().strip()
++        output+='diff --git a/'+n+' b/'+n+'\nnew file mode 100644\nindex '+'0'*40+'..'+blob+'\n'+''.join(difflib.unified_diff([],text.splitlines(keepends=True),fromfile='/dev/null',tofile='b/'+n))
++    return output
++docs=root/'docs';(docs/'usability-u2-followup-production.patch').write_text(patch(list(production)),encoding='utf-8',newline='\n');(docs/'usability-u2-followup-tests.patch').write_text(patch(tests),encoding='utf-8',newline='\n')
++# Prove both patches reconstruct the final normalized source from the declared baseline.
++check=run/('patch-check-'+datetime.datetime.now().strftime('%H%M%S%f'));check.mkdir()
++for n in list(production)+tests:
++    old=subprocess.run(['git','show',baseline+':'+n],cwd=root,capture_output=True)
++    if old.returncode==0:p=check/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(old.stdout)
++for name in ['usability-u2-followup-production.patch','usability-u2-followup-tests.patch']:
++    subprocess.run(['git','apply','--directory='+str(check.relative_to(root)).replace('\\','/'),str(docs/name)],cwd=root,check=True)
++for n in list(production)+tests:assert (check/n).read_bytes().replace(b'\r\n',b'\n')==(root/n).read_bytes().replace(b'\r\n',b'\n'),n
++summary={'baseline':baseline,'final_suite_results':{n:{'passed':r['passed'],'affected_rerun':r.get('affected_rerun',False),'commands':[{'runner':Path(c['command'][1]).name,'exit':c['exit']} for c in r['commands']]} for n,r in results.items()},'working_comparison':working,'visual_review':visual,'patch_reconstruction_passed':True}
++focused=Path(results['followup']['artifact_directory']);output=(focused/'0.stdout.log').read_text(encoding='utf-8');image_run=Path(re.search(r'U2_FOLLOWUP_RUN: (.+)',output).group(1).strip());assert image_run.resolve().is_relative_to(private)
++summary['focused_results']=json.loads((image_run/'results.json').read_text())
++(docs/'usability-u2-followup-verification-results.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
++log=[]
++for n in sorted(results):
++    log.append('SUITE '+n+' PASS\n')
++    for command in results[n]['commands']:
++        args=[]
++        for arg in command['command']:
++            if '.migration-private' in arg:
++                arg=(arg.split('=',1)[0]+'=<private synthetic fixture>') if arg.startswith('--') else '<private isolated artifact>'
++            else:
++                arg=arg.replace(str(root)+'\\','<repository>/').replace(str(root)+'/','<repository>/')
++            args.append(arg)
++        log.append('COMMAND '+json.dumps(args)+' EXIT '+str(command['exit'])+'\n')
++    for p in sorted(Path(results[n].get('artifact_directory',run/n)).glob('*.stdout.log')):
++        if p.name.startswith('clone'):continue
++        text=p.read_text(encoding='utf-8');text=re.sub(r'C:[^\r\n]*?\.migration-private[^\r\n]*','<private isolated artifacts>',text,flags=re.I);log.append(p.name+'\n'+text+'\n')
++for p in sorted((run/'offline').glob('*.stdout.log')):log.append('OFFLINE '+p.name+'\n'+p.read_text(encoding='utf-8')+'\n')
++(docs/'usability-u2-followup-verification-log.txt').write_text(''.join(log),encoding='utf-8')
++dependencies=['assets/js/payment_presentation.js','assets/js/advance_presentation.js','assets/js/correction_presentation.js','scripts/test_usability_u4_adapter.js','scripts/test_usability_u4_fixture.php','scripts/test_usability_u2_adapter.js','scripts/test_usability_u3_advance_adapter.js','scripts/cli_common.php','scripts/http_fixture.php','scripts/test_stage3_fixture.py']
++for r in results.values():
++    dependencies += ['scripts/'+Path(c['command'][1]).name for c in r['commands']]
++documents=['README.md','docs/project-status.md','docs/project-decisions.md','docs/usability-completion-plan.md','docs/usability-u2-followup-plan.md','docs/usability-u2-followup-delivery.md','docs/usability-u2-followup-actions.csv','docs/usability-u2-followup-evidence.json','docs/usability-u2-followup-production.patch','docs/usability-u2-followup-tests.patch','docs/usability-u2-followup-verification-results.json','docs/usability-u2-followup-verification-log.txt']
++
++files=sorted(set(list(production)+tests+dependencies+documents));images=sorted(image_run.glob('*.png'));assert images
++for p in images:assert visual['screenshots'].get(p.name)==sha(p),'Screenshot not covered by final visual-review record.'
++manifest={'baseline':baseline,'status':'ready for external exact-source review; not committed/pushed','production':{},'packaged_files':{n:sha(root/n) for n in files},'screenshots':{p.name:sha(p) for p in images},'dependencies':'Reconstruct runtime from the declared public baseline; pure adapter dependencies are included. Private DB/session/evidence fixtures are excluded.'}
++contracts=['includes/accounting_query.php','includes/accounting_workspace.php','includes/cash_advance.php','includes/cash_advance_lifecycle.php','includes/correction_drafts.php','includes/correction_posting.php','includes/receipt_ocr.php','accounting_actions.php','cash_advance_actions.php','journal_correction_actions.php','ocr_extract.php']
++manifest['unchanged_contracts']={}
++for n in contracts:
++    old=git('rev-parse',baseline+':'+n).decode().strip();current=git('hash-object','--path='+n,n).decode().strip();assert old==current,n
++    manifest['unchanged_contracts'][n]=current
++for n in production:
++    old=subprocess.run(['git','rev-parse',baseline+':'+n],cwd=root,capture_output=True)
++    manifest['production'][n]={'sha256':sha(root/n),'git_blob':git('hash-object','--path='+n,n).decode().strip(),'baseline_git_blob':old.stdout.decode().strip() if old.returncode==0 else None}
++mf=docs/'usability-u2-followup-source-manifest.json';mf.write_text(json.dumps(manifest,indent=2),encoding='utf-8');files.append(str(mf.relative_to(root)))
++historical={}
++for n in ['includes/nav.php','assets/js/accounting_workspace.js','assets/js/payment_presentation.js']:
++    historical['historical/u2-c/'+n]=git('show','ab653a1b59431d6c1ef0fad080f583da64961b8f:'+n)
++historical['historical/usability-u1-baseline.md']=(docs/'usability-u1-baseline.md').read_bytes()
++manifest['historical_files']={n:hashlib.sha256(b).hexdigest() for n,b in historical.items()}
++mf.write_text(json.dumps(manifest,indent=2),encoding='utf-8')
++archive=docs/'usability-u2-followup-review-package.zip'
++with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
++    for n in files:z.write(root/n,n)
++    for p in images:z.write(p,'screenshots/'+p.name)
++    for n,b in historical.items():z.writestr(n,b)
++with zipfile.ZipFile(archive) as z:
++    for n,h in manifest['historical_files'].items():assert hashlib.sha256(z.read(n)).hexdigest()==h,n
++    for n,h in manifest['packaged_files'].items():assert hashlib.sha256(z.read(n)).hexdigest()==h,n
++    for n,h in manifest['screenshots'].items():assert hashlib.sha256(z.read('screenshots/'+n)).hexdigest()==h,n
++(docs/'usability-u2-followup-review-package.sha256').write_text(sha(archive)+'  '+archive.name+'\n',encoding='utf-8')
++print('U2 follow-up review package verified:',archive,'files',len(files),'screenshots',len(images),'sha256',sha(archive))

@@ -1,0 +1,144 @@
+{
+  "passed": true,
+  "checks": 32,
+  "errors": [],
+  "action_traces": [
+    {
+      "task": "payment",
+      "classification": "newly reproduced",
+      "revision": "65de5c8c8b91a62083cc7244145db255b575ae88",
+      "source": "final production hashes recorded by orchestrator",
+      "navigation_controls": 1,
+      "page_changes": 1,
+      "fields": 5,
+      "progression": 2,
+      "required_evidence_actions": 0,
+      "optional_actions": 0,
+      "actions": [
+        [
+          "navigation",
+          "Dashboard sidebar direct task to cash_disbursement.php"
+        ],
+        [
+          "field",
+          "Select party"
+        ],
+        [
+          "field",
+          "Enter purpose"
+        ],
+        [
+          "field",
+          "Select cash or bank account"
+        ],
+        [
+          "field",
+          "Enter one common amount"
+        ],
+        [
+          "field",
+          "Select counterpart account"
+        ],
+        [
+          "progression",
+          "Review (includes saving)"
+        ],
+        [
+          "progression",
+          "Confirm and record"
+        ]
+      ]
+    },
+    {
+      "task": "receipt",
+      "classification": "newly reproduced",
+      "revision": "65de5c8c8b91a62083cc7244145db255b575ae88",
+      "source": "final production hashes recorded by orchestrator",
+      "navigation_controls": 1,
+      "page_changes": 1,
+      "fields": 5,
+      "progression": 2,
+      "required_evidence_actions": 0,
+      "optional_actions": 0,
+      "actions": [
+        [
+          "navigation",
+          "Dashboard sidebar direct task to cash_receipt.php"
+        ],
+        [
+          "field",
+          "Select party"
+        ],
+        [
+          "field",
+          "Enter purpose"
+        ],
+        [
+          "field",
+          "Select cash or bank account"
+        ],
+        [
+          "field",
+          "Enter one common amount"
+        ],
+        [
+          "field",
+          "Select counterpart account"
+        ],
+        [
+          "progression",
+          "Review (includes saving)"
+        ],
+        [
+          "progression",
+          "Confirm and record"
+        ]
+      ]
+    }
+  ],
+  "final_production_sha256": {
+    "assets/js/accounting_workspace.js": "e0a14cff6e0d634033c9bf636ae138c1ad20abcf1b02b0fd78b5cd9d53131d90",
+    "assets/js/payment_presentation.js": "cd2f47536c722af6db6cc06feba70f92792c575ff8bb8d9303364321c79c17c4"
+  },
+  "historical": {
+    "passed": true,
+    "historical_replay_performed": false,
+    "u1_payment": {
+      "navigation_controls": 2,
+      "page_changes": 2,
+      "fields": 6,
+      "progression": 2
+    },
+    "u1_receipt": {
+      "navigation_controls": null,
+      "page_changes": null,
+      "fields": 6,
+      "progression": 2
+    },
+    "u2c_each": {
+      "classification": "source-reconstructed/inferred",
+      "navigation_controls": 1,
+      "page_changes": 1,
+      "fields": 5,
+      "progression": 2
+    },
+    "optional_evidence_actions": 0,
+    "current_final_trace_pending": false
+  },
+  "frozen_u2c_source_identities": {
+    "includes/nav.php": {
+      "sha256": "91eb6ad2e9f6a31d5cdb971b5c32657daed95fc28bfce2d867fa5bc0a0f2ff53",
+      "blob": "2ca299bd820e9499cf6b9727159e475f988ef6e0"
+    },
+    "assets/js/accounting_workspace.js": {
+      "sha256": "8bb672100713c5ce2ece30695ce57fba2f016584888f04269674c4c43b94d252",
+      "blob": "ce52009dfaa7ae8b14b20c9ed7c7ed5e34fbc89c"
+    },
+    "assets/js/payment_presentation.js": {
+      "sha256": "4a17086aac66117d359e2413d85b9d5ff8868f88cebcbc21dd89846835b8254d",
+      "blob": "76df93fcf87c0fa448d1cdce527791f67dff18a8"
+    }
+  },
+  "counting_limits": "Logical committed actions; no client success/time/percentage claim. U1 receipt Dashboard navigation unavailable; simple tasks retain default date/Organization operations and no optional evidence.",
+  "current_source_identity": "U4 baseline revision plus the two final_production_sha256 values; traces were run on that modified source, not an unchanged U4 checkout."
+}

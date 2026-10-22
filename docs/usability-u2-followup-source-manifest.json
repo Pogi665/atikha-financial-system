@@ -1,0 +1,86 @@
+{
+  "baseline": "65de5c8c8b91a62083cc7244145db255b575ae88",
+  "status": "ready for external exact-source review; not committed/pushed",
+  "production": {
+    "assets/js/accounting_workspace.js": {
+      "sha256": "e0a14cff6e0d634033c9bf636ae138c1ad20abcf1b02b0fd78b5cd9d53131d90",
+      "git_blob": "95ab41b8557b5bbf865a9b681e9d357e72468441",
+      "baseline_git_blob": "17f7261caee099c658bd3c24ff441fcfde6323a6"
+    },
+    "assets/js/payment_presentation.js": {
+      "sha256": "cd2f47536c722af6db6cc06feba70f92792c575ff8bb8d9303364321c79c17c4",
+      "git_blob": "7f0b8196a5665b0a63593c8a9766a966e33be1f6",
+      "baseline_git_blob": "76df93fcf87c0fa448d1cdce527791f67dff18a8"
+    }
+  },
+  "packaged_files": {
+    "README.md": "bbcb5414bdf15fe563d49a026eee268980f8fffaa4ce4d84726dfc05773dff37",
+    "assets/js/accounting_workspace.js": "e0a14cff6e0d634033c9bf636ae138c1ad20abcf1b02b0fd78b5cd9d53131d90",
+    "assets/js/advance_presentation.js": "d56611f5f7508626ed36d15fca77d3bc4a00781eebb39059359ffe9dbdce5004",
+    "assets/js/correction_presentation.js": "35e240b342b8fc0e99fee56aadb96a91a83317d44c87ff25de6d1deaf3d7cb90",
+    "assets/js/payment_presentation.js": "cd2f47536c722af6db6cc06feba70f92792c575ff8bb8d9303364321c79c17c4",
+    "docs/project-decisions.md": "0447fd17ca4dc52a5aafad9eaccd640dc54ecbfce76c0fbca1a047d2d4bfd11b",
+    "docs/project-status.md": "8ac3a0349efafafbb74ec5bba9bb8f5ca3c369dc62081990f64d3d5629961039",
+    "docs/usability-completion-plan.md": "12d6658993b3e87ba6296654b53e84097faf136e7b1a401df8dafd2ff3ba6bba",
+    "docs/usability-u2-followup-actions.csv": "235d4b58537a46e5ba9cb7fea6797714b9fb81b7bcc88aa1dec853ddf7e1b7b6",
+    "docs/usability-u2-followup-delivery.md": "f06c5ec97a292490bc2939dc0c5c71b2bd57a6903a22d7d1ce2462c00b8abff4",
+    "docs/usability-u2-followup-evidence.json": "76819fd83c12f8663c5aa794411697cf688dc48792caea3a1ea0ef02cbab559f",
+    "docs/usability-u2-followup-plan.md": "4a76e773c631cbfbeaebd8cb9d67a8b56ddd296bb001c01acc5a17326b712b8a",
+    "docs/usability-u2-followup-production.patch": "c1ea4813fa8a188970f7421c477100213f4e13012c351714562d9307688bf60d",
+    "docs/usability-u2-followup-tests.patch": "ccf9449c06e934f7436167fefbbdd48c5a3a719f95334ad3df809616f5bf1649",
+    "docs/usability-u2-followup-verification-log.txt": "4c33cda1e36dd3377c3b714175e3bf92dbbb43f0eb8a359ca6567362399b8ddf",
+    "docs/usability-u2-followup-verification-results.json": "103b9812e32fee80e2faa3ef93597e1662bbfdfbb2d341bb5b6db4dba471f1be",
+    "scripts/cli_common.php": "de7cb81f69a9dee30f3e53fcc593e4a799627a6418c16c7040c26de69f62dfc0",
+    "scripts/http_fixture.php": "ae3f271747563e29b7e9bda2a4a5b2cab676eebb718fe2373f27a1b6eba13fb7",
+    "scripts/package_usability_u2_followup_review.py": "f5122f730eb886a78731b71caf7415d31b0abd8a59441fa13d01094787dea793",
+    "scripts/test_receipt_browser.py": "c6bf1a716a12cbb8244f344130c8732a9861c59e426d63d24cb7a4a1b5e7f96a",
+    "scripts/test_stage2_browser.py": "811654692cd6b3003e09bf0cf0f01f14c6c1b3200eb9ae2559499198ad371693",
+    "scripts/test_stage3_checkpoint4_browser.py": "d5b99dd46879861acf8d9a0b32bb8b3a688cdb29ca8005e2658f3da717f4cbaf",
+    "scripts/test_stage3_checkpoint5_browser.py": "b3c921be581839445854768e4ecdcc5646b2a02f3e7ca97d414f7f75cf0a1d4c",
+    "scripts/test_stage3_fixture.py": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+    "scripts/test_usability_u2_adapter.js": "93d3ba4ce62bcd66fb7a147827cb018144030b0a323c0278eab2bc0acbccd814",
+    "scripts/test_usability_u2_b_browser.py": "3c3bc3d7aa7ecf0f637ca4d64d7e06e476fb44b86a5f46229b781ed0e6a17861",
+    "scripts/test_usability_u2_browser.py": "0d4ecfd30ac36f36ada31a066181c5cb4e14be6a5b328f56e644feef15bb5062",
+    "scripts/test_usability_u2_followup_adapter.js": "49f4a173fa2fb065ce1ad94f26445140b633cb206a94ef1ebddcce5e180b5116",
+    "scripts/test_usability_u2_followup_browser.py": "c995981f8a4c2fe71bd38f67a1ea41707ef931e43ddf7fbf001ab15b9200c155",
+    "scripts/test_usability_u2_followup_regressions.py": "a85ec9d325b8593f153dbca1cb16888020a3b741d9a8ebc3f357bd68664aa580",
+    "scripts/test_usability_u3_advance_adapter.js": "a07895c28ae8a36ef0a93c089660e9370938a409b7e0760fe25ba19b60149414",
+    "scripts/test_usability_u4_adapter.js": "750ad7234cc6976f00fd9fa613fd2da0a923861c06a67ee350df46ee51b65211",
+    "scripts/test_usability_u4_browser.py": "6b31f9dff90352524d90cc585be53bc30c345faa6e2e940a99f45325ee6c2660",
+    "scripts/test_usability_u4_fixture.php": "7a340ff61ad96f9f4072e00ec6a571dbb2223ff95b7caea575a579295c88bb12"
+  },
+  "screenshots": {
+    "coverage-unavailable-1366.png": "7a8e194416746251c3c898e69f98ada974b4e951b2abe4b81f536673aafd6b30",
+    "coverage-unavailable-1920.png": "0e327ddc4442e76c7020743de1e9a6dc7a4a890fd523b853a3f2ae458ba4dac1",
+    "payment-coverage-1366.png": "7f8a10faf861a4f1ae264e8054ac1bcfcce9d34d3bf8fef0af7ebfc72f6b7db3",
+    "payment-coverage-1920.png": "6fd5dd190d690dcd6aaba779fe4da0e15a8b63619ffc4f498421ccc91d7b4ad6",
+    "payment-full-coverage-1366.png": "239574737add61935668cd485398262df6285e39b5b5bb208b259f8aafa93d71",
+    "payment-full-coverage-1920.png": "0f7659022eea4f56602bcff538809b3f9c809d812d15ee92e78de45784bb25c7",
+    "payment-partial-coverage-1366.png": "b936fd7fa0f2286b2be53ebfc4e2b823b77e3c352b65728f2aaf114a43f7ba21",
+    "payment-partial-coverage-1920.png": "0fa871d5f594da68f5efbe5244315110d014ab6ae8e489387670f63e04194320",
+    "receipt-coverage-1366.png": "ca1e108c7c2c75e17cc6c84084396255408d339dce1dcfe66d742e34d0cbef26",
+    "receipt-coverage-1920.png": "b6c35ccd40c1f556770c0b746b948d69234479b60665f20f484bc0c2b99725d1",
+    "transfer-not-applicable-1366.png": "2e26797d6a223a4f4ee40abb8d250995eb9a846696ad880a1593b7c3942f81ad",
+    "transfer-not-applicable-1920.png": "fa266e657765da598f406f296e583a17a9c29cfb0aa2b58bb923a257c0d7529b"
+  },
+  "dependencies": "Reconstruct runtime from the declared public baseline; pure adapter dependencies are included. Private DB/session/evidence fixtures are excluded.",
+  "unchanged_contracts": {
+    "includes/accounting_query.php": "894b0e9e4ecf1c81bed6f2d4583d34da11e96963",
+    "includes/accounting_workspace.php": "2d36ffe1fa08f2c5a9bb0af133155ae15a451a7c",
+    "includes/cash_advance.php": "2171b1e153e610f1f77d6baf7a640cb49dd37f74",
+    "includes/cash_advance_lifecycle.php": "388e261a262916047b74dd3267373fb17d9b7c24",
+    "includes/correction_drafts.php": "2e1ea170b489b7e7a2ce6023b532eb841069825a",
+    "includes/correction_posting.php": "22811d4fa5b3c91344648e8a3f379d0e2a6eec47",
+    "includes/receipt_ocr.php": "8cb1a9ddeba9104d448b9f1c89b13472f9e16a24",
+    "accounting_actions.php": "70fcb544d81b3aed06d8cfd3f2f1edfa5da669dc",
+    "cash_advance_actions.php": "a71b4feadb6713482dc381bc0b0e300fa8f624c0",
+    "journal_correction_actions.php": "54693bffddea810ee79d0341b85f7009a95359f1",
+    "ocr_extract.php": "bbe9fa9ff55624e7be141864fd9ada8165cbaef7"
+  },
+  "historical_files": {
+    "historical/u2-c/includes/nav.php": "91eb6ad2e9f6a31d5cdb971b5c32657daed95fc28bfce2d867fa5bc0a0f2ff53",
+    "historical/u2-c/assets/js/accounting_workspace.js": "8bb672100713c5ce2ece30695ce57fba2f016584888f04269674c4c43b94d252",
+    "historical/u2-c/assets/js/payment_presentation.js": "4a17086aac66117d359e2413d85b9d5ff8868f88cebcbc21dd89846835b8254d",
+    "historical/usability-u1-baseline.md": "b2508d11f1ae662328517b49939ef4e5dc8504c2210e4603687c7028dc11cade"
+  }
+}

@@ -1,0 +1,52 @@
+revision,task,classification,category,sequence,action,evidence
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,navigation,1,Dashboard to Disbursements CDB,docs/usability-u1-baseline.md: Ordinary payment and receipt
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,navigation,2,Book to New cash payment,docs/usability-u1-baseline.md: Ordinary payment and receipt
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,1,Select party,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,2,Enter purpose,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,3,Select cash or bank account,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,4,Enter cash amount,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,5,Select counterpart account,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,field,6,Enter counterpart amount,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,progression,1,Review (includes saving),docs/usability-u1-baseline.md: two progression actions
+73f7d5baa227b2a8ad133c63f6d881ec30986159,payment,historically observed,progression,2,Post,docs/usability-u1-baseline.md: two progression actions
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,navigation,1,Dashboard sidebar direct task to cash_disbursement.php,ab653a1b59431d6c1ef0fad080f583da64961b8f:includes/nav.php:47-48
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,field,1,Select party,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,field,2,Enter purpose,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,field,3,Select cash or bank account,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,field,4,Enter one common amount,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,field,5,Select counterpart account,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,progression,1,Review (includes saving),ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:206-215
+ab653a1b59431d6c1ef0fad080f583da64961b8f,payment,source-reconstructed/inferred,progression,2,Confirm and record,ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:206-215
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,unavailable,navigation,1,Dashboard-to-receipt navigation not observed in U1 capture,docs/usability-u1-baseline.md: receipt capture starts at book
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,1,Select party,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,2,Enter purpose,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,3,Select cash or bank account,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,4,Enter cash amount,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,5,Select counterpart account,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,field,6,Enter counterpart amount,docs/usability-u1-baseline.md: six committed field actions with defaults
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,progression,1,Review (includes saving),docs/usability-u1-baseline.md: two progression actions
+73f7d5baa227b2a8ad133c63f6d881ec30986159,receipt,historically observed,progression,2,Post,docs/usability-u1-baseline.md: two progression actions
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,navigation,1,Dashboard sidebar direct task to cash_receipt.php,ab653a1b59431d6c1ef0fad080f583da64961b8f:includes/nav.php:47-48
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,field,1,Select party,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,field,2,Enter purpose,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,field,3,Select cash or bank account,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,field,4,Enter one common amount,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,field,5,Select counterpart account,"ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:100-104,402; payment_presentation.js: mode"
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,progression,1,Review (includes saving),ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:206-215
+ab653a1b59431d6c1ef0fad080f583da64961b8f,receipt,source-reconstructed/inferred,progression,2,Confirm and record,ab653a1b59431d6c1ef0fad080f583da64961b8f:assets/js/accounting_workspace.js:206-215
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,navigation,1,Dashboard sidebar direct task to cash_disbursement.php,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,field,2,Select party,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,field,3,Enter purpose,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,field,4,Select cash or bank account,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,field,5,Enter one common amount,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,field,6,Select counterpart account,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,progression,7,Review (includes saving),Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,payment,newly reproduced,progression,8,Confirm and record,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,navigation,1,Dashboard sidebar direct task to cash_receipt.php,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,field,2,Select party,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,field,3,Enter purpose,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,field,4,Select cash or bank account,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,field,5,Enter one common amount,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,field,6,Select counterpart account,Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,progression,7,Review (includes saving),Final connected trace; source hashes in usability-u2-followup-source-manifest.json
+65de5c8c8b91a62083cc7244145db255b575ae88 + U2 follow-up final production hashes,receipt,newly reproduced,progression,8,Confirm and record,Final connected trace; source hashes in usability-u2-followup-source-manifest.json

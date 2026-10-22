@@ -1,0 +1,51 @@
+diff --git a/assets/js/accounting_workspace.js b/assets/js/accounting_workspace.js
+index 17f7261caee099c658bd3c24ff441fcfde6323a6..95ab41b8557b5bbf865a9b681e9d357e72468441 100644
+--- a/assets/js/accounting_workspace.js
++++ b/assets/js/accounting_workspace.js
+@@ -230,7 +230,7 @@
+         await save();if(viewFocused){entryErrorsShown=true;if(entryShowErrors()){entryFocus='aw-error';return;}}token='';const review=await api('review',identity());if(advanceFocused)AdvancePresentation.effect(review,advanceKind);token=review.token;const panel=$('aw-review-content');panel.replaceChildren();
+         if(correctionFocused)correctionReviewOriginal(review,panel);if(isCorrection){const heading=document.createElement('h3');heading.textContent='Reversal preview · General Journal · not recorded';panel.append(heading,table(review.reversal.lines));const note=document.createElement('p');note.textContent=review.notice;const effect=document.createElement('p');effect.textContent=review.net_explanation;panel.append(note,effect);if(review.advance_effect){const t=review.advance_effect,p=document.createElement('p');p.textContent='Advance #'+review.original_advance_id+' \u00b7 Before PHP '+t.before_display+' \u00b7 After PHP '+t.after_display+' \u00b7 Accounting date '+t.accounting_date+' \u00b7 Earliest affected date '+t.earliest_affected_date+(t.replacement_outstanding===null?'':' \u00b7 New replacement advance: PHP '+t.replacement_display+' outstanding; a new number is assigned at posting.');panel.append(p);}if(!reverseOnly){const h=document.createElement('h3');h.textContent='Replacement preview · '+book+' · not recorded';panel.append(h);}}
+         const summary=document.createElement('p');summary.textContent=review.input.entry_date+' · '+(review.party?.name||'No party')+' · '+review.input.description;panel.append(summary);
+-        const cover=document.createElement('div');cover.className='aw-coverage';cover.textContent=advanceFocused?review.coverage.status:review.coverage.status+' — '+(isLiquidation?['debit']:book==='GJ'?['debit','credit']:book==='CRB'?['credit']:['debit']).map(side=>side+': PHP '+review.coverage[side].covered+' supported of PHP '+review.coverage[side].eligible).join('; ');panel.append(cover);
++        const cover=document.createElement('div');cover.className='aw-coverage';cover.textContent=focused?PaymentPresentation.coverageText(review):advanceFocused?review.coverage.status:review.coverage.status+' — '+(isLiquidation?['debit']:book==='GJ'?['debit','credit']:book==='CRB'?['credit']:['debit']).map(side=>side+': PHP '+review.coverage[side].covered+' supported of PHP '+review.coverage[side].eligible).join('; ');panel.append(cover);
+         if(advanceFocused)advanceSummary(review,panel);else if(focused)entrySummary(review,panel);const wrap=document.createElement('div');wrap.className='aw-table-wrap';wrap.append(table(review.lines));if(focused){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Complete debit and credit journal';details.open=entryMode==='advanced'||review.lines.filter(l=>!Number(l.is_cash_account)).length>3||review.lines.some(l=>!Number(l.is_cash_account)&&cents(l[oppositeSide+'_amount'])>0n);details.append(summary,wrap);panel.append(details);entryView('review');entryFocus='aw-post';}else{if(!reverseOnly)panel.append(wrap);if(advanceFocused||correctionFocused){entryView('review');entryFocus='aw-post';}}$('aw-review-panel').hidden=false;$('aw-review-panel').scrollIntoView({block:'start'});if(isCorrection){$('aw-post').disabled=!review.posting_available;$('aw-post').textContent=review.posting_available?(reverseOnly?'Confirm and record reversal':'Confirm and record correction'):'Posting unavailable';if(review.posting_available)$('aw-post').focus();else $('aw-back').focus();}else $('aw-post').focus();
+     });});
+     $('aw-back').addEventListener('click',()=>{if(viewFocused)entryView('enter');token='';$('aw-review-panel').hidden=true;$(correctionFocused?'aw-correction-reason':'aw-purpose').focus();});
+diff --git a/assets/js/payment_presentation.js b/assets/js/payment_presentation.js
+index 76df93fcf87c0fa448d1cdce527791f67dff18a8..7f0b8196a5665b0a63593c8a9766a966e33be1f6 100644
+--- a/assets/js/payment_presentation.js
++++ b/assets/js/payment_presentation.js
+@@ -20,5 +20,32 @@
+         if (cash === null || amount === null || (p.cash_amount === '') !== (l[side] === '') || cash !== amount || p.cash_project_id !== l.fund_project_id) return 'split';
+         return 'quick';
+     }
+-    scope.PaymentPresentation = Object.freeze({cents, mode});
++    // Authoritative coverage uses ledger_decimal(), never the editable empty-as-zero convention.
++    // At most 100 DECIMAL(15,2) journal lines contribute to an aggregate coverage side.
++    function coverageCents(value) {
++        if (typeof value !== 'string' || !/^(0|[1-9]\d{0,14})\.\d{2}$/.test(value)) return null;
++        const amount = BigInt(value.replace('.', ''));
++        return amount <= 99999999999999900n ? amount : null;
++    }
++    function coverageMoney(value) {
++        const amount = coverageCents(value);
++        if (amount === null) return null;
++        return '\u20b1' + (amount / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
++            + '.' + (amount % 100n).toString().padStart(2, '0');
++    }
++    function coverageText(review) {
++        const c = review?.coverage, input = review?.input;
++        const status = ['Not applicable','Fully covered','Partially covered','No monetary support'].includes(c?.status)
++            ? c.status : 'Coverage status unavailable';
++        const zero = side => coverageCents(c?.[side]?.eligible) === 0n && coverageCents(c?.[side]?.covered) === 0n;
++        if (input?.source_book === 'GJ' && input.transaction_kind === 'transfer'
++            && status === 'Not applicable' && zero('debit') && zero('credit')) {
++            return 'Not applicable — monetary supporting-document coverage has no eligible noncash line in this internal cash transfer.';
++        }
++        const sides = input?.source_book === 'CDB' ? ['debit'] : input?.source_book === 'CRB' ? ['credit'] : ['debit','credit'];
++        return status + ' — ' + sides.map(side => side + ': '
++            + (coverageMoney(c?.[side]?.covered) ?? 'amount unavailable') + ' supported of '
++            + (coverageMoney(c?.[side]?.eligible) ?? 'amount unavailable')).join('; ');
++    }
++    scope.PaymentPresentation = Object.freeze({cents, mode, coverageMoney, coverageText});
+ })(typeof window === 'undefined' ? globalThis : window);
