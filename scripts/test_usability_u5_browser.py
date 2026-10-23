@@ -1,3 +1,4 @@
+from browser_workspace_helpers import navigate_sidebar
 """Connected U5 daily workflow, only on a fresh private full-schema synthetic clone.
 
 Automation is not an observed human walkthrough or working login/MFA acceptance.
@@ -200,7 +201,7 @@ try:
         check(sql('SELECT state,posted_journal_id FROM journal_drafts WHERE id=' + str(saved_id))[0] == {'state':'Draft','posted_journal_id':None}, 'Legacy normalization and Review remain unposted')
         for task, route, account, amount, book in [('payment', 'cash_disbursement.php', f['training'], '1000', 'CDB'), ('receipt', 'cash_receipt.php', f['income'], '5000', 'CRB')]:
             page.goto(base + '/dashboard.php', wait_until='networkidle')
-            page.locator('.app-sidebar a[href="' + route + '"]').click(); ready()
+            navigate_sidebar(page,route); ready()
             choose('#aw-party', f['party']); page.locator('#aw-purpose').fill('Synthetic U5 ' + task)
             choose('#aw-cash-account', f['bank']); page.locator('#aw-cash-amount').fill(amount)
             choose('[data-field="account_id"]', account)

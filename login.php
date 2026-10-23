@@ -25,46 +25,11 @@ $csrfToken = csrf_token();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/atikha_ui.css?v=<?= filemtime(__DIR__.'/assets/css/atikha_ui.css') ?>">
+<link rel="stylesheet" href="assets/css/atikha_workspaces.css?v=<?= filemtime(__DIR__.'/assets/css/atikha_workspaces.css') ?>">
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 text-slate-900 antialiased">
+<body class="atikha-ui ui-auth min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
-
-        <!-- Feature panel -->
-        <section
-    class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 bg-[size:200%_200%] animate-gradient-shift motion-reduce:animate-none px-12 py-14 xl:px-16"
->
-            <div class="max-w-md">
-                <h2 class="text-4xl font-bold leading-tight tracking-tight text-white text-balance">
-                    Securing the future of overseas Filipinos and their communities.
-                </h2>
-                <p class="mt-5 text-base leading-relaxed text-white/70 text-pretty">
-                    Track incoming grants, manage operational expenses, and maintain accountability with our international partners. A secure platform built to support our advocacy for overseas Filipino workers and their families.
-                </p>
-
-                <ul class="mt-10 space-y-4 text-sm text-white/80">
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        AI-powered OCR for instant receipt data extraction
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        Predictive analytics and real-time budget forecasting
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        Tamper-evident audit trails and automated reporting
-                    </li>
-                </ul>
-            </div>
-
-            <p class="text-xs text-white/50">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
-        </section>
 
         <!-- Form panel -->
         <main class="flex w-full flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 xl:w-2/5">
@@ -75,8 +40,8 @@ $csrfToken = csrf_token();
                     <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-slate-900 shadow-sm ring-1 ring-slate-900/5">
                         <img src="assets/img/atikha-logo.png" alt="Atikha organization logo" class="h-12 w-12 object-contain">
                     </div>
-                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-                    <p class="mt-2 text-sm text-slate-500">Sign in to the Atikha Financial System.</p>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Welcome Back</h1>
+                    <p class="mt-2 text-sm text-slate-500">Sign in to Atikha Finance.</p>
                 </div>
 
                 <div id="login-view" class="transition-opacity duration-300 ease-in-out" aria-hidden="false">

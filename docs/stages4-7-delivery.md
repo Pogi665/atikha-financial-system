@@ -1,3 +1,7 @@
+## Visual consultation addition - October 23, 2026
+
+At the user's request,83 synthetic page/state views are packaged as166 PNGs and a197-page indexed PDF, with both roles, main modules, desktop sizes and print styles. [Visual delivery, source pins, preservation and boundaries](system-visual-review-delivery.md). Application source and the frozen source consultation archive are unchanged. Actual G7 remains paused; no human completion or final G8/client acceptance is claimed.
+
 ## Current: G7 paused by user; independent consultation handoff, October 23, 2026
 
 The user explicitly paused actual human interaction to consult ChatGPT and authorized continuing other remaining work. The prepared synthetic scenario, sessions and owned loopback server remain retained/reachable; no human task was simulated, reseeded or marked complete. Original observations, assistance, misunderstanding and the observer's corrected video-reading error remain in the human record. G7 and final G8/source closure remain pending.

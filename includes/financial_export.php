@@ -16,7 +16,9 @@ function financial_export_value($v,string $kind):string
 /** fputcsv performs delimiter/quote/newline escaping. Add enclosures to simple fields too. */
 function financial_export_cell(string $s):string
 {
-    static $encoder=null;if($encoder===null){$encoder=tmpfile();if($encoder===false)throw new ReportingProblem('Export temporary storage is unavailable. Try again later.',503);}rewind($encoder);if(!ftruncate($encoder,0)||fputcsv($encoder,[$s],',','"','',"\r\n")===false)throw new ReportingProblem('The export could not be completed.',503);rewind($encoder);$encoded=stream_get_contents($encoder);if($encoded===false)throw new ReportingProblem('The export could not be completed.',503);$encoded=substr($encoded,0,-2);return str_starts_with($encoded,'"')?$encoded:'"'.$encoded.'"';
+    // Only the single-cell quoting buffer is in memory. The validated complete-file
+    // spool below remains disk-backed and must finish before a successful response.
+    static $encoder=null;if($encoder===null){$encoder=fopen('php://memory','w+b');if($encoder===false)throw new ReportingProblem('Export temporary storage is unavailable. Try again later.',503);}rewind($encoder);if(!ftruncate($encoder,0)||fputcsv($encoder,[$s],',','"','',"\r\n")===false)throw new ReportingProblem('The export could not be completed.',503);rewind($encoder);$encoded=stream_get_contents($encoder);if($encoded===false)throw new ReportingProblem('The export could not be completed.',503);$encoded=substr($encoded,0,-2);return str_starts_with($encoded,'"')?$encoded:'"'.$encoded.'"';
 }
 function financial_export_section(string $title,array $rows,array $columns,?array $totals=null):array{return compact('title','rows','columns','totals');}
 function financial_export_component(string $name,array $data):array

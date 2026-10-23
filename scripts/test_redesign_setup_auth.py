@@ -1,0 +1,25 @@
+"""R6 exact-source setup review and public auth presentation. No real login, MFA delivery or provider."""
+from pathlib import Path
+import json,sys,re
+ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'.migration-private/journal-test-deps'))
+from playwright.sync_api import sync_playwright
+from stages4_7_browser import IsolatedBrowserApp,ps
+p=json.loads((ROOT/'.migration-private/redesign-current.json').read_text());app=IsolatedBrowserApp(p,p['fixture'],'redesign-setup-auth');checks=[]
+def check(ok,label):
+ assert ok,label
+ checks.append(label);print('PASS '+label,flush=True)
+before=app.fingerprint()
+try:
+ with sync_playwright() as pw:
+  browser=pw.chromium.launch(channel='msedge',headless=True);ctx=app.context(browser,'g7.admin@example.invalid');page=ctx.new_page();page.goto(app.base+'/report_setup.php?new=1',wait_until='networkidle');page.get_by_role('tab',name='Accounts and Mappings').click();check(page.locator('#rs-mapping').is_visible(),'Setup shows one focused mapping step');page.get_by_role('button',name='Review setup',exact=True).click();page.locator('#rs-review').wait_for(state='visible');check(page.locator('#rs-fields').evaluate('(el)=>el.disabled'),'Setup Review locks editable fields');tab=page.get_by_role('tab',name='Reporting Period',exact=True);check(tab.is_enabled(),'Read-only setup review retains enabled navigation');tab.click();check(page.locator('#rs-period').is_visible(),'Review tabs can inspect captured values');page.get_by_role('tab',name='Accounts and Mappings').click();check(page.locator('#rs-mappings input').first.is_disabled(),'Review mappings remain read only')
+  for w,h in [(1366,768),(1920,1080)]:page.set_viewport_size({'width':w,'height':h});page.screenshot(path=str(app.run/('report-setup-review-'+str(w)+'.png')),full_page=True)
+  page.get_by_role('button',name='Back to editing',exact=True).click();page.get_by_role('button',name='Save and close',exact=True).click();page.wait_for_url('**report_setup.php?saved=1');check('Draft saved' in page.locator('body').inner_text(),'Setup Save and close follows acknowledged draft persistence')
+  page.goto(app.base+'/budgets.php?month=2026-09&new=1',wait_until='networkidle');page.locator('#bw-grid input').first.fill('0');page.get_by_role('button',name='Review budget',exact=True).click();page.locator('#bw-review').wait_for(state='visible');check(page.locator('#bw-review-grid input').count()==0 and 'No allocation' in page.locator('#bw-review-grid').inner_text(),'Budget review grid is read only and preserves blank allocation meaning');check('0.00' in page.locator('#bw-review-grid').inner_text(),'Explicit zero remains an actual reviewed allocation')
+  for w,h in [(1366,768),(1920,1080)]:page.set_viewport_size({'width':w,'height':h});page.screenshot(path=str(app.run/('budget-review-'+str(w)+'.png')),full_page=True)
+  anon=browser.new_context(viewport={'width':1366,'height':768});anon.route(re.compile(r'^https?://(?!127\.0\.0\.1:)'),lambda route:route.abort());ap=anon.new_page();ap.goto(app.base+'/login.php',wait_until='networkidle');ap.locator('#password').fill('Synthetic UI only');ap.locator('#toggle-password').click();check(ap.locator('#password').get_attribute('type')=='text' and ap.locator('#password').input_value()=='Synthetic UI only','Password visibility preserves entered value');ap.locator('#password').fill('');ap.screenshot(path=str(app.run/'login-1366.png'),full_page=True);ap.locator('#show-reset-form').click();ap.locator('#reset-email').wait_for(state='visible');check(ap.locator('#reset-form').is_visible(),'Password-reset request panel remains available');ap.screenshot(path=str(app.run/'password-reset-1366.png'),full_page=True)
+  pending=app.php_json('require '+ps(ROOT/'includes/mfa.php')+';session_save_path('+ps(app.sessions)+');session_id(bin2hex(random_bytes(16)));session_start();mfa_set_pending(7,"g***n@example.invalid");$id=session_id();session_write_close();echo json_encode(["id"=>$id]);');anon.add_cookies([{'name':'PHPSESSID','value':pending['id'],'url':app.base}]);ap.goto(app.base+'/mfa_verify.php?error=invalid',wait_until='networkidle');check(ap.locator('input[name=mfa_code]').count()==1 and 'Invalid verification code' in ap.locator('body').inner_text(),'Synthetic pending MFA view preserves code and error controls')
+  for w,h in [(1366,768),(1920,1080)]:ap.set_viewport_size({'width':w,'height':h});check(ap.evaluate('document.body.scrollWidth<=innerWidth'),'MFA view fits '+str(w));ap.screenshot(path=str(app.run/('mfa-error-'+str(w)+'.png')),full_page=True)
+  browser.close()
+ after=app.fingerprint();check(all(before[t]==after[t] for t in ['journal_entries','journal_entry_lines','cash_advances','posted_evidence_associations']),'Setup/budget drafts and auth presentation preserve posted financial/evidence tables')
+ (app.run/'result.json').write_text(json.dumps({'passed':True,'checks':checks,'real_login_mfa_or_provider_tested':False,'working_data_used':False},indent=2));p['setup_auth_run']=str(app.run);(ROOT/'.migration-private/redesign-current.json').write_text(json.dumps(p,indent=2));print('RESULT '+str(len(checks))+' '+str(app.run))
+finally:app.close()

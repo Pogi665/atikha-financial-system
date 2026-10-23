@@ -1,7 +1,8 @@
+from test_pointer import test_pointer
 """Fresh budget rehearsal with retained per-attempt logs, never working financial data."""
 from pathlib import Path
 import hashlib,json,os,subprocess,sys
-root=Path(__file__).resolve().parent.parent;pointer_path=root/'.migration-private/stages4-7-current.json'
+root=Path(__file__).resolve().parent.parent;pointer_path=test_pointer(root/'.migration-private/stages4-7-current.json')
 r=subprocess.run([sys.executable,str(root/'scripts/create_budget_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=300)
 if r.returncode:print(r.stdout+r.stderr);raise SystemExit(r.returncode)
 p=json.loads(pointer_path.read_text(encoding='utf-8'));f=Path(p['g3_fixture']);run=f.parent;env=os.environ.copy();env.update(p['environment']);(run/'partial-create.stdout.log').write_text(r.stdout,encoding='utf-8');(run/'partial-create.stderr.log').write_text(r.stderr,encoding='utf-8')

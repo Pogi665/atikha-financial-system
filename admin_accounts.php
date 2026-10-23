@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__.'/includes/presentation.php';
 require_once __DIR__ . '/includes/require_role.php';
 require_login();
 require_role(['Admin'], 'Chart of Accounts');
@@ -114,8 +115,9 @@ $filterSignature = sha1(http_build_query($filterArgs));
     <title>Chart of Accounts — Atikha Financial System</title>
     <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/assets/css/tailwind.css') ?>">
     <link rel="stylesheet" href="assets/css/admin_accounts.css?v=<?= filemtime(__DIR__ . '/assets/css/admin_accounts.css') ?>">
+<?= ui_assets() ?>
 </head>
-<body class="accounts-page min-h-screen bg-slate-100" data-filter-signature="<?= accounts_escape($filterSignature) ?>">
+<body class="atikha-ui accounts-page min-h-screen bg-slate-100" data-filter-signature="<?= accounts_escape($filterSignature) ?>">
     <?php include __DIR__ . '/includes/nav.php'; ?>
     <div class="accounts-content ml-64 min-w-0 flex flex-col min-h-screen">
         <?php include __DIR__ . '/includes/header_bar.php'; ?>
@@ -203,7 +205,7 @@ $filterSignature = sha1(http_build_query($filterArgs));
                                     <td class="account-cell"><p class="break-words font-semibold text-slate-900"><?= accounts_escape($account['Name']) ?></p><div class="account-accounting-tags"><span><?= accounts_escape($account['Account_Code'] ?? 'Code unassigned') ?></span><span><?= accounts_escape($account['Normal_Balance']) ?> normal</span><?php if ($account['Is_Cash_Account']): ?><span>Cash</span><?php endif; ?></div><?php if ($detail !== ''): ?><p class="mt-1 break-words text-xs text-slate-500"><?= accounts_escape($detail) ?></p><?php endif; ?></td>
                                     <td class="account-cell break-words whitespace-pre-wrap text-slate-600"><?= $description !== '' ? accounts_escape($description) : '<span class="text-slate-400">&mdash;</span>' ?></td>
                                     <td class="account-cell"><span class="status-pill <?= $account['Is_Active'] ? 'status-active' : 'status-disabled' ?>"><span class="status-dot" aria-hidden="true"></span><?= $account['Is_Active'] ? 'Active' : 'Disabled' ?></span></td>
-                                    <td class="account-cell"><div class="flex flex-wrap items-center gap-2"><a class="account-edit-button" href="<?= accounts_escape($listUrl . '&edit=' . (int) $account['CategoryID']) ?>" data-modal-opener="edit">Edit</a><div class="relative"><button type="button" class="account-action-menu-button" aria-haspopup="true" aria-expanded="false" aria-label="More actions for <?= accounts_escape($account['Name']) ?>">More <span aria-hidden="true">&#9662;</span></button><div class="account-action-menu hidden absolute right-0 z-20 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"><form method="POST" action="<?= accounts_escape($listUrl) ?>" data-status-form data-account-name="<?= accounts_escape($account['Name']) ?>" data-status-action="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><?= csrf_field() ?><input type="hidden" name="account_id" value="<?= (int) $account['CategoryID'] ?>"><input type="hidden" name="action" value="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"><?= $account['Is_Active'] ? 'Disable account' : 'Enable account' ?></button></form></div></div></div></td>
+                                    <td class="account-cell"><div class="flex flex-wrap items-center gap-2"><div class="relative"><button type="button" class="account-action-menu-button" aria-haspopup="true" aria-expanded="false" aria-label="Actions for <?= accounts_escape($account['Name']) ?>">Actions <span aria-hidden="true">&#9662;</span></button><div class="account-action-menu hidden absolute right-0 z-20 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"><a class="account-edit-button" href="<?= accounts_escape($listUrl . '&edit=' . (int) $account['CategoryID']) ?>" data-modal-opener="edit">Edit</a><form method="POST" action="<?= accounts_escape($listUrl) ?>" data-status-form data-account-name="<?= accounts_escape($account['Name']) ?>" data-status-action="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><?= csrf_field() ?><input type="hidden" name="account_id" value="<?= (int) $account['CategoryID'] ?>"><input type="hidden" name="action" value="<?= $account['Is_Active'] ? 'disable' : 'enable' ?>"><button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"><?= $account['Is_Active'] ? 'Disable account' : 'Enable account' ?></button></form></div></div></div></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
@@ -218,5 +220,6 @@ $filterSignature = sha1(http_build_query($filterArgs));
     <div id="status-modal" class="accounts-overlay" aria-hidden="true"><div class="accounts-dialog accounts-status-dialog" role="dialog" aria-modal="true" aria-labelledby="status-modal-title" aria-describedby="status-modal-description"><div class="accounts-dialog-header"><h2 id="status-modal-title" class="text-lg font-semibold text-slate-900">Confirm account change</h2><button type="button" class="accounts-dialog-close" data-close-status-modal aria-label="Close confirmation">&times;</button></div><div class="space-y-4 p-6"><p id="status-modal-description" class="text-sm leading-6 text-slate-600"></p><div class="accounts-dialog-footer"><button type="button" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2" data-close-status-modal>Cancel</button><button type="button" class="inline-flex items-center justify-center rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2" id="status-confirm">Confirm</button></div></div></div></div>
     <script src="assets/js/admin_accounts.js"></script>
     <script src="assets/js/notifications.js"></script>
+<script src="assets/js/atikha_ui.js" defer></script>
 </body>
 </html>

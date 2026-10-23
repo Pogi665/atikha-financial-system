@@ -10,6 +10,7 @@
  */
 
 require_once __DIR__ . '/user_roles.php';
+require_once __DIR__ . '/presentation.php';
 
 function layout_role_flags(): array
 {
@@ -55,7 +56,7 @@ function layout_begin(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?> — Atikha Financial System</title>
-    <link rel="stylesheet" href="assets/css/tailwind.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="assets/css/tailwind.css?v=<?= filemtime(__DIR__.'/../assets/css/tailwind.css') ?>">
     <?php if ($isExecutive): ?>
         <link rel="stylesheet" href="assets/css/executive.css">
     <?php endif; ?>
@@ -63,14 +64,16 @@ function layout_begin(
         <script src="<?= htmlspecialchars($scriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
     <?php endforeach; ?>
     <?= $extraHead ?>
+    <?= ui_assets() ?>
 </head>
-<body class="<?= htmlspecialchars($defaultBody, ENT_QUOTES, 'UTF-8') ?>">
+<body class="atikha-ui <?= htmlspecialchars($defaultBody, ENT_QUOTES, 'UTF-8') ?>">
+    <a class="ui-skip" href="#ui-main">Skip to main content</a>
     <?php include __DIR__ . '/nav.php'; ?>
 
-    <div class="ml-64 flex flex-col min-h-screen print:ml-0">
+    <div class="ui-shell flex flex-col min-h-screen print:ml-0">
         <?php include __DIR__ . '/header_bar.php'; ?>
 
-        <main class="flex-1 p-8 space-y-8 print:p-0">
+        <main id="ui-main" class="ui-main flex-1 print:p-0">
     <?php
 }
 
@@ -81,6 +84,7 @@ function layout_end(string $extraScripts = ''): void
         </main>
     </div>
     <script src="assets/js/notifications.js"></script>
+    <script src="assets/js/atikha_ui.js" defer></script>
     <?= $extraScripts ?>
 </body>
 </html>

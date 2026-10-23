@@ -30,8 +30,8 @@ $label=$account?$account['Name'].($account['Account_Code']?' · '.$account['Acco
 $printUrl=$account?ledger_url(array_replace($criteria,['search'=>'','page'=>'1'])).'&format=print':'#';
 layout_begin('General Ledger','general_ledger',[], '<link rel="stylesheet" href="assets/css/general_ledger.css?v='.filemtime(__DIR__.'/assets/css/general_ledger.css').'">');
 ?>
-<main class="general-ledger<?= $print?' gl-print-view':'' ?>" id="gl-root">
-<header class="gl-heading"><div><?php if($print): ?><p class="gl-eyebrow">ATIKHA FINANCE</p><?php endif; ?><p class="gl-eyebrow">BOOKS OF ACCOUNTS · READ ONLY</p><h1>General Ledger</h1><p>Review one account's opening balance, movements and ending balance.</p></div><a href="reports.php" class="gl-nav-button gl-no-print">Reports</a></header>
+<section class="general-ledger<?= $print?' gl-print-view':'' ?>" id="gl-root">
+<header class="gl-heading"><div><?php if($print): ?><p class="gl-eyebrow">ATIKHA FINANCE</p><?php endif; ?><p class="gl-eyebrow">BOOKS OF ACCOUNTS · READ ONLY</p><h1>General Ledger</h1><p>Review one account's opening balance, movements and ending balance.</p></div><a href="report_bundles.php?component=income_statement" class="gl-nav-button gl-no-print">Reports</a></header>
 <p id="gl-error" class="gl-error" role="alert"<?= $error===''?' hidden':'' ?>><?= $escape($error) ?></p>
 <?php if(!$print): ?>
 <form id="gl-controls" class="gl-controls" method="get" action="general_ledger.php">
@@ -56,6 +56,6 @@ layout_begin('General Ledger','general_ledger',[], '<link rel="stylesheet" href=
 <?php if(!$print): ?><nav class="gl-pagination gl-no-print" aria-label="Ledger pages"><a class="gl-page" id="gl-prev" href="<?= $escape(ledger_url(array_replace($criteria,['page'=>(string)max(1,(int)$criteria['page']-1)]))) ?>" aria-disabled="<?= (int)$criteria['page']<=1?'true':'false' ?>">Previous</a><span id="gl-page-label">Page <?= $escape($criteria['page']) ?> of <?= (int)($data['pages']??1) ?></span><a class="gl-page" id="gl-next" href="<?= $escape(ledger_url(array_replace($criteria,['page'=>(string)min((int)($data['pages']??1),(int)$criteria['page']+1)]))) ?>" aria-disabled="<?= (int)$criteria['page']>=(int)($data['pages']??1)?'true':'false' ?>">Next</a></nav><?php endif; ?>
 <p class="gl-generated" id="gl-generated">Generated <?= $escape($data['generated_at']??'') ?>. Live values may change when new transactions are recorded.</p>
 </section><p id="gl-prompt"<?= $account?' hidden':'' ?>><?= $error!==''?'Correct the filters above and apply again.':'Choose an account and period, then select Apply.' ?></p>
-</main>
+</section>
 <?php if(!$print): ?><script type="application/json" id="gl-initial"><?= json_encode($data,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script><?php endif; ?>
 <?php layout_end(!$print?'<script src="assets/js/general_ledger.js?v='.filemtime(__DIR__.'/assets/js/general_ledger.js').'"></script>':''); ?>

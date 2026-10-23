@@ -1,3 +1,4 @@
+from test_pointer import test_pointer
 """Guarded Stage4 browser/read checks. Synthetic sessions are not client acceptance."""
 from pathlib import Path
 import argparse
@@ -24,7 +25,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--fixture')
 ap.add_argument('--timing', type=int, choices=[500, 5000])
 args = ap.parse_args()
-pointer = json.loads((private / 'stages4-7-current.json').read_text(encoding='utf-8'))
+pointer = json.loads((test_pointer(private/'stages4-7-current.json')).read_text(encoding='utf-8'))
 fixture_arg = args.fixture or pointer['g1_perf_fixture_'+str(args.timing) if args.timing else 'g1_fixture']
 path = Path(fixture_arg).resolve()
 assert path.is_relative_to(private)
@@ -190,5 +191,5 @@ finally:
         (run/'timing-summary.json').write_text(json.dumps(timing_summary,indent=2),encoding='utf-8')
     result={'timing_workload':args.timing,'timing_summary':timing_summary,'passed':passed,'checks':len(checks),'labels':checks,'screenshots':screenshots,'source_sha256':pins,'errors':errors,'synthetic_only':True,'authoring_flags_off':True,'human_walkthrough':False,'physical_device_or_client_acceptance':False}
     (run/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
-    p=json.loads((private/'stages4-7-current.json').read_text());p['g1_timing_'+str(args.timing) if args.timing else 'g1_browser_run']=str(run);(private/'stages4-7-current.json').write_text(json.dumps(p,indent=2))
+    p=json.loads((test_pointer(private/'stages4-7-current.json')).read_text());p['g1_timing_'+str(args.timing) if args.timing else 'g1_browser_run']=str(run);(test_pointer(private/'stages4-7-current.json')).write_text(json.dumps(p,indent=2))
     print('Stage4 browser result: '+json.dumps({'passed':passed,'checks':len(checks),'run':str(run)}),flush=True)

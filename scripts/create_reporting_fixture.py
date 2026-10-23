@@ -1,3 +1,4 @@
+from test_pointer import test_pointer
 """Fresh schema-only copy of a proven synthetic source, then new fake identities.
 
 No working financial data, old migration replay, trigger removal or server config.
@@ -16,7 +17,7 @@ private=(root/'.migration-private').resolve()
 ap=argparse.ArgumentParser()
 ap.add_argument('--source-fixture')
 args=ap.parse_args()
-pointer_path=private/'stages4-7-current.json'
+pointer_path=test_pointer(private/'stages4-7-current.json')
 pointer=json.loads(pointer_path.read_text(encoding='utf-8'))
 source_path=Path(args.source_fixture or pointer['synthetic_source']).resolve()
 assert source_path.is_relative_to(private)

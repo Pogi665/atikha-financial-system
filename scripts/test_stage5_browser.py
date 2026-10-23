@@ -1,10 +1,11 @@
+from test_pointer import test_pointer
 """Guarded synthetic Edge report/setup checks; not production login or client acceptance."""
 from pathlib import Path
 import hashlib,json,os,re,secrets,shutil,socket,statistics,subprocess,sys,time
 root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve()
 sys.path.insert(0,str(private/'journal-test-deps'))
 from playwright.sync_api import sync_playwright
-pointer_path=private/'stages4-7-current.json';pointer=json.loads(pointer_path.read_text(encoding='utf-8'))
+pointer_path=test_pointer(private/'stages4-7-current.json');pointer=json.loads(pointer_path.read_text(encoding='utf-8'))
 fixture=Path(pointer['g2_ui_fixture']).resolve();assert fixture.is_relative_to(private)
 f=json.loads(fixture.read_text(encoding='utf-8'));db=f['database'];assert re.fullmatch(r'atikha_test_stage1_s5[a-z0-9]+',db)
 evidence=Path(f['receipt_root']).resolve();assert evidence.is_relative_to(private)

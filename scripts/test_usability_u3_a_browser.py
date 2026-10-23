@@ -1,3 +1,4 @@
+from browser_workspace_helpers import open_advance_filters
 """U3-A real PHP/Edge checks on a fresh guarded synthetic full-schema clone.
 Fixture preparation/extension writes are separate from fingerprinted read phases.
 No working config, sessions, evidence or provider requests are used.
@@ -67,7 +68,7 @@ try:
         check('PHP 12,500.00' in page.locator('#ca-totals').inner_text() and 'all 26 matching' in page.locator('#ca-totals-basis').inner_text(),'All-page totals retain exact server amounts with separators')
         check(cases['marker'] in page.locator('#ca-rows').inner_text() and '<training & community>' in page.locator('#ca-rows').inner_text(),'Purpose and long project labels render as safe literal text')
         check('No posted advances' not in page.locator('#ca-rows').inner_text(),'Populated results are distinct from empty state')
-        scope=page.locator('#ca-applied-filters').inner_text();health=page.locator('#ca-health-message').inner_text()
+        page.locator('.ca-scope-details>summary').click();scope=page.locator('#ca-applied-filters').inner_text();health=page.locator('#ca-health-message').inner_text()
         page.locator('[name="search"]').fill('unsaved filter');page.locator('#ca-next').click();loaded()
         check(page.locator('#ca-rows tr').count()==1 and 'rows 26-26 of 26' in page.locator('#ca-print-scope').inner_text(),'Real second page retains all-match count and page-only scope')
         check(page.locator('#ca-applied-filters').inner_text()==scope and 'Changes not applied' in page.locator('#ca-filter-status').inner_text(),'Pagination retains applied filters while labelling unapplied edits')
@@ -91,7 +92,7 @@ try:
         # Presentation double preserves all real amounts but injects a discrepancy outside a filtered account.
         warning=copy.deepcopy(actual);warning['reconciliation'][-1]['ok']=False;warning['reconciliation'][-1]['errors']=['Synthetic unlinked control line outside displayed filters'];warning['reconciliation'][-1]['difference']='1.00'
         def discrepancy(route):route.fulfill(status=200,content_type='application/json',body=json.dumps({'ok':True,'result':warning}))
-        page.route('**/cash_advance_actions.php?*',discrepancy);page.locator('[name="control_account_id"]').select_option(str(cases['controls'][0]));page.locator('[name="search"]').fill(cases['marker']);apply()
+        page.route('**/cash_advance_actions.php?*',discrepancy);open_advance_filters(page);page.locator('[name="control_account_id"]').select_option(str(cases['controls'][0]));page.locator('[name="search"]').fill(cases['marker']);apply()
         check(page.locator('#ca-health').evaluate("e=>e.classList.contains('ca-health-warning')") and 'Integrity discrepancy' in page.locator('#ca-health-message').inner_text(),'Unfiltered discrepancy remains prominent outside display filters')
         page.locator('#ca-health-link').click();check('outside displayed filters' in page.locator('#ca-reconciliation').inner_text(),'Full discrepancy details remain inspectable');capture('register-discrepancy-double');page.unroute('**/cash_advance_actions.php?*',discrepancy)
         page.goto(base+'/cash_advances.php');loaded();page.locator('[name="search"]').fill(cases['marker']);apply()

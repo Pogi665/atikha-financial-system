@@ -335,7 +335,7 @@
         root.querySelector('.aw-columns').hidden=step!=='enter';
         $('aw-review-panel').hidden=step!=='review';$('aw-posted').hidden=step!=='recorded';$('aw-unknown').hidden=step!=='unknown';
         const capital=entryNoun[0].toUpperCase()+entryNoun.slice(1);
-        root.querySelector('h1').textContent={enter:'Record a '+entryNoun,review:'Review '+entryNoun,recorded:capital+' recorded',unknown:'Check recording result'}[step];
+        root.querySelector('h1').textContent={enter:({CDB:'Record a Payment',CRB:'Record Money Received',GJ:'General Journal Entry'}[book]),review:'Review '+entryNoun,recorded:capital+' recorded',unknown:'Check recording result'}[step];
         root.querySelector('.aw-header > div > p:last-child').textContent={enter:'Enter the '+entryNoun+' details, review, then confirm to record.',review:book==='GJ'?'Check every account, project, debit and credit before recording.':book==='CRB'?'Check where the money is received and how this receipt will be recorded.':'Check where the money comes from and how this payment will be recorded.',recorded:'This '+entryNoun+' is recorded. Open its details or prepare another entry.',unknown:'The '+entryNoun+' may already be recorded. Check the same request before continuing.'}[step];
         $('aw-mode-notice').hidden=step!=='enter';
         Array.from($('aw-progress').children).forEach((el,i)=>{if(i==={enter:0,review:1,recorded:2,unknown:1}[step])el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
@@ -364,12 +364,12 @@
     }
     function correctionReviewOriginal(review,panel){
         if(review.mode!==config.mode||!Array.isArray(review.original)||!Array.isArray(review.reversal?.lines)||!review.original.length||!review.reversal.lines.length)throw new Error('Correction previews could not be verified. Review the same saved draft again.');
-        const h=document.createElement('h3'),a=document.createElement('a');a.href='journal_transaction.php?journal_id='+config.target_journal_id;a.textContent='Original journal #'+config.target_journal_id;h.append(a);
-        panel.append(h,table(review.original.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));
+        const h=document.createElement('h3'),a=document.createElement('a');a.href='journal_transaction.php?journal_id='+config.target_journal_id;a.textContent='Original Transaction #'+config.target_journal_id+' / Posted';h.append(a);
+        const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Original Accounting Details';details.append(summary,table(review.original.map(l=>({...l,project_name:l.project_name_snapshot||'Organization operations'}))));panel.append(h,details);
         const reason=document.createElement('p');reason.textContent='Correction reason: '+review.reason;panel.append(reason);
     }
     function correctionResultLinks(result){
-        CorrectionPresentation.result(result,config);$('aw-correction-eligibility').textContent='Correction recorded. The original remains posted and unchanged.';$('aw-correction-result-links').replaceChildren();
+        CorrectionPresentation.result(result,config);$('aw-correction-context').querySelector('h2').textContent='Original Transaction #'+config.target_journal_id+' / Corrected';$('aw-correction-eligibility').textContent='Correction recorded. The original remains posted and unchanged.';$('aw-correction-result-links').replaceChildren();
         const links=$('aw-correction-result-links');
         for(const [key,label] of [['target_journal_id','View original'],['reversal_journal_id','View reversal'],['replacement_journal_id','View replacement']]){
             if(result[key]===null)continue;const a=document.createElement('a');a.href='journal_transaction.php?journal_id='+result[key];a.textContent=label+' #'+result[key];a.dataset.correctionLink=key;links.append(a,' · ');
@@ -492,6 +492,7 @@
     }
     function entryLayout(){
         if(!cashFocused)return;const quick=entryMode==='quick';root.dataset.paymentMode=entryMode;
+        if(!quick&&$('aw-more-options'))$('aw-more-options').open=true;
         $('aw-purpose').rows=quick?1:2;
         $('aw-advanced').checked=entryMode==='advanced';$('aw-advanced').closest('label').hidden=true;
         root.querySelectorAll('[data-payment-mode]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.paymentMode===entryMode));});
@@ -560,6 +561,7 @@
         if(entries.length){const heading=document.createElement('strong');heading.textContent='Check these '+entryNoun+' details';summary.append(heading);const ul=document.createElement('ul');summary.append(ul);
             entries.forEach(([id,text])=>{const control=$(id);if(!control)return;const note=document.createElement('span');note.id=id+'-error';note.className='aw-field-error';note.textContent=text;
                 (control.closest('label')||control.parentElement).append(note);control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby',(control.getAttribute('aria-describedby')||'')+' '+note.id);
+                for(let parent=control.parentElement;parent&&parent!==root;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
                 const li=document.createElement('li'),a=document.createElement('a');a.href='#'+id;a.textContent=text;a.addEventListener('click',e=>{e.preventDefault();let el=control;while(el&&el!==root){if(el.tagName==='DETAILS')el.open=true;el=el.parentElement;}control.focus();});li.append(a);ul.append(li);
             });
         }return entries.length;
@@ -593,7 +595,7 @@
         catch(e){if(recovering||e.uncertain||!e.status){entryView('unknown');message('Recording result is unknown. Keep this draft and check the same request.');entryFocus='aw-check-result';}else{entryRequest=null;entryView('review');}throw e;}
     }
     if(focused){
-        const form=$('aw-entry'),optional=document.createElement('details'),heading=document.createElement('summary');heading.textContent='Optional reference and default project context';optional.append(heading);optional.id='aw-optional';
+        const form=$('aw-entry'),optional=document.createElement('details'),heading=document.createElement('summary');heading.textContent='Reference and Project Options';optional.append(heading);optional.id='aw-optional';
         const grid=document.createElement('div');grid.className='aw-grid';optional.append(grid);grid.append($('aw-reference').closest('label'),$('aw-default-project').closest('label'));form.append(optional);
         if(cashFocused){const home=document.createElement('span');home.id='aw-project-home';$('aw-cash-project').closest('label').before(home);}
         const help=document.createElement('p');help.id='aw-account-help';help.className='aw-help';help.textContent=book==='CRB'?'Choose the account for this receipt, such as income, a liability, equity or an asset recovery.':book==='GJ'?'Enter every debit and credit explicitly. Transfers use eligible cash accounts; server review checks the complete entry.':'Choose the account for this cost, asset purchase or liability settlement.';$('aw-lines').after(help);
@@ -632,6 +634,17 @@
         correctionView('enter');
     }
     if(advanceFocused)advanceLayout();
+    // Refined presentation only: keep all controls, serialization and save/post handlers.
+    if(viewFocused){
+        const form=$('aw-entry'),actions=form.querySelector('.aw-actions');
+        const modes=form.querySelector('.aw-payment-modes');
+        if(modes){const more=document.createElement('details'),title=document.createElement('summary');more.id='aw-more-options';title.textContent='More Options';more.append(title,modes);actions.before(more);}
+        for(const optional of [...form.children].filter(el=>el.tagName==='DETAILS'))actions.before(optional);
+        const docs=$('aw-document-group')||root.querySelector('.aw-columns > aside');
+        if(docs){docs.classList.add('ui-supporting-documents');actions.before(docs);}
+        root.querySelectorAll('#aw-progress li').forEach((el,i)=>{el.textContent=['1 Details','2 Review','3 Recorded'][i];});
+        root.querySelector('.aw-header').querySelectorAll('a').forEach(a=>a.classList.add('ui-button'));
+    }
     render();showAdvanceContext();run(async()=>{
         if(config.draft_id){const d=await api('draft',{draft_id:config.draft_id},'GET');if(d.source_book!==book)throw new Error('This draft belongs to a different entry page. Open it from My drafts.');adopt(d);render();if(d.state==='Posted'){if(correctionFocused){const result=CorrectionPresentation.resumed(d,config);posted(result.id,true,result.advance_id);correctionResultLinks(result);await showPostedCorrection(d);}else{posted(d.posted_journal_id,true,d.advance_id);if(isCorrection)await showPostedCorrection(d);}}if(d.state==='Discarded')throw new Error('This draft was discarded.');}
         await refreshDocuments();if(advanceFocused)employeeAdvances();

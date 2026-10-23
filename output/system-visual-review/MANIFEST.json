@@ -1,0 +1,702 @@
+{
+  "index.html": {
+    "sha256": "1c3a08bd4142cc321a0ecb3165e061b72f3849846070f342641d34bd3480d47d",
+    "bytes": 43300
+  },
+  "index.json": {
+    "sha256": "835d1a1949c42fd9b861525797f5966b1edc93091ce608f806c99706f6b97c64",
+    "bytes": 44462
+  },
+  "preservation-summary.json": {
+    "sha256": "2dbf70b803f5ce0f607b61c3743ea1d49e0d6064faa5b7d3fa0b38e6f336352e",
+    "bytes": 296
+  },
+  "README-START-HERE.md": {
+    "sha256": "effadd877d7319767cff64808b9def8c1b2da85fcc2283299a653239e369c41f",
+    "bytes": 4192
+  },
+  "REVIEW-PROMPT.txt": {
+    "sha256": "c3e276212943a7e676fde92e04359d96b6e20e846a524c235dc385d2cdd48536",
+    "bytes": 1771
+  },
+  "SCREEN-INDEX.md": {
+    "sha256": "6c8f212261ab5b80c160e0c3f439cd9bc60bef9c686f2d69c572da6f1f7252bb",
+    "bytes": 24633
+  },
+  "source-fingerprints.json": {
+    "sha256": "1aff506038e249495dda23867204fbeb89be819649ded1bcc8088939093408b4",
+    "bytes": 7535
+  },
+  "system-visual-review.pdf": {
+    "sha256": "8af7d8ed94e3d881cfe8573ab8ee82a1fea80e075340c1b27772a332ea6b3462",
+    "bytes": 10535578
+  },
+  "verification.json": {
+    "sha256": "f30e9ea5f4d6960d45d61933cd611b637dec32da49cf96590063ee6119948135",
+    "bytes": 853
+  },
+  "screenshots/01-public-sign-in-full.png": {
+    "sha256": "73766f69ea319700ca329291bb5e69d8ba0fe39a340d0c21abedc1ef08f64081",
+    "bytes": 237140
+  },
+  "screenshots/01-public-sign-in-viewport.png": {
+    "sha256": "73766f69ea319700ca329291bb5e69d8ba0fe39a340d0c21abedc1ef08f64081",
+    "bytes": 237140
+  },
+  "screenshots/02-public-password-reset-panel-full.png": {
+    "sha256": "d63f87d9fd859284c14441606aeb871ad33ee65a5f0f487c61839c71ba67621f",
+    "bytes": 243511
+  },
+  "screenshots/02-public-password-reset-panel-viewport.png": {
+    "sha256": "d63f87d9fd859284c14441606aeb871ad33ee65a5f0f487c61839c71ba67621f",
+    "bytes": 243511
+  },
+  "screenshots/03-admin-dashboard-full.png": {
+    "sha256": "48adb114747b870c689ba2571c7a06a03b16d5ba01a2be582bde93534bd90083",
+    "bytes": 118554
+  },
+  "screenshots/03-admin-dashboard-viewport.png": {
+    "sha256": "086fdffaa0d2b3bbcd8cf5eb43a10ee3b882364c00d5b78ef2b85765d56eb6a2",
+    "bytes": 79603
+  },
+  "screenshots/04-admin-cash-advances-register-full.png": {
+    "sha256": "4fdabd33b54b824332f2a166780ab6386b243c883649c635338db19a907689e1",
+    "bytes": 124625
+  },
+  "screenshots/04-admin-cash-advances-register-viewport.png": {
+    "sha256": "191a6d79eb9d3a58a227ca24f3baad0a0cc9bf5a7e0548fbf4a31942edba8744",
+    "bytes": 78931
+  },
+  "screenshots/05-admin-journal-history-full.png": {
+    "sha256": "3680a6ef1a0d23a83fe0f4d3ff7e4c1961f7f46f42e41766592763f96113ce59",
+    "bytes": 94212
+  },
+  "screenshots/05-admin-journal-history-viewport.png": {
+    "sha256": "1ac096d16ba80868e0d3db308d167c41c74ad032649f8a0536af8c2516f3355d",
+    "bytes": 78073
+  },
+  "screenshots/06-admin-cash-receipts-book-full.png": {
+    "sha256": "c0322c8aa15a67388e877a2583b8b3ab1eb6a045ba87a7b5789860cfcaba7bd6",
+    "bytes": 105334
+  },
+  "screenshots/06-admin-cash-receipts-book-viewport.png": {
+    "sha256": "6f893c7b2a5806a66c22e4f1d3c96bedd6792275db96b1f19c598a6545329107",
+    "bytes": 76314
+  },
+  "screenshots/07-admin-cash-disbursements-book-full.png": {
+    "sha256": "b005335501c684fc956e80a0bf156f602f07be515b09ac8e064cb73680288450",
+    "bytes": 105720
+  },
+  "screenshots/07-admin-cash-disbursements-book-viewport.png": {
+    "sha256": "5d40c290f5dfdd4b5a5b9ee010726cdb5c1bbcc02835c1811d6ed074b8071bba",
+    "bytes": 76830
+  },
+  "screenshots/08-admin-general-ledger-september-full.png": {
+    "sha256": "e97e1ec7972840275b7840e7d426397a95546bdaf685fc51459ceb445e539fd0",
+    "bytes": 150055
+  },
+  "screenshots/08-admin-general-ledger-september-viewport.png": {
+    "sha256": "2fdbf34906fdb2d11cee6e3ad976eceb809a73a7d1b4a1240ccf39464831f985",
+    "bytes": 76686
+  },
+  "screenshots/09-admin-monthly-budgets-full.png": {
+    "sha256": "26cbaad47c1ecc20f63d3f0eb9c56edd184c91f34ef15cef7d0ad858d3259545",
+    "bytes": 118090
+  },
+  "screenshots/09-admin-monthly-budgets-viewport.png": {
+    "sha256": "0cebff9f50d50cd7c70d4ffac69efac7861d539ac09c5dd6faf4f67bbc61a060",
+    "bytes": 87638
+  },
+  "screenshots/10-admin-frozen-monthly-report-full.png": {
+    "sha256": "9efb960ec7cc1145f8b8687df364dbb6eae2266d8ee22fdb5c443eb5fe5d1ab9",
+    "bytes": 189486
+  },
+  "screenshots/10-admin-frozen-monthly-report-viewport.png": {
+    "sha256": "105e8428881a44febbfc356d5b53b77157a3d7f26e917edec125eb9c8480dcd4",
+    "bytes": 81691
+  },
+  "screenshots/11-admin-report-submissions-and-period-controls-full.png": {
+    "sha256": "30712d9e33eda09d9b137b7b42f8ceb491d06a92319f45d5f4dc3e236ff70378",
+    "bytes": 200009
+  },
+  "screenshots/11-admin-report-submissions-and-period-controls-viewport.png": {
+    "sha256": "68724b70489d90c834a5cda7bd75a2b15eeb7a513452712787dccdc7a75e85c6",
+    "bytes": 77416
+  },
+  "screenshots/12-admin-reports-overview-full.png": {
+    "sha256": "dd252b503b89d30fe882251610feee4cb07d954293da006274dca4f8f077014f",
+    "bytes": 125645
+  },
+  "screenshots/12-admin-reports-overview-viewport.png": {
+    "sha256": "22ee9b1cd63be2411614649f421ff61892e153939020df5b07cb97b8489c4213",
+    "bytes": 82683
+  },
+  "screenshots/13-admin-external-email-sent-full.png": {
+    "sha256": "2110636eda2f91ff0166f8e35db4df4a187a43965f22d878ad97dcfe7357d765",
+    "bytes": 56392
+  },
+  "screenshots/13-admin-external-email-sent-viewport.png": {
+    "sha256": "2110636eda2f91ff0166f8e35db4df4a187a43965f22d878ad97dcfe7357d765",
+    "bytes": 56392
+  },
+  "screenshots/14-admin-external-email-compose-full.png": {
+    "sha256": "1e6ca43cd74d80a3be8fb8b5e3b531b431234a2a70a0171394718b1d64be4e12",
+    "bytes": 62922
+  },
+  "screenshots/14-admin-external-email-compose-viewport.png": {
+    "sha256": "1e6ca43cd74d80a3be8fb8b5e3b531b431234a2a70a0171394718b1d64be4e12",
+    "bytes": 62922
+  },
+  "screenshots/15-management-dashboard-full.png": {
+    "sha256": "abcade4db286621892a277c7c694f1ad739a489b2f5b9401338a7380dcbca822",
+    "bytes": 175136
+  },
+  "screenshots/15-management-dashboard-viewport.png": {
+    "sha256": "fe0ffffc97fdbaa761a1f7fce103ce65b04d22d2875184415604b0c4be2fbc57",
+    "bytes": 85352
+  },
+  "screenshots/16-management-cash-advances-register-full.png": {
+    "sha256": "718d1fbba4ba48e842af9dd2afda2330e8a4f5b31ef46472d0eaecb7bb9e1e69",
+    "bytes": 121857
+  },
+  "screenshots/16-management-cash-advances-register-viewport.png": {
+    "sha256": "f9eb82e073550538ede982a591d11bc3392bb19102ac219a3dcf4cd53bfb237a",
+    "bytes": 81987
+  },
+  "screenshots/17-management-journal-history-full.png": {
+    "sha256": "6738bd700338b23d05df4ad44bacb2223a8cbd99269646c0d7952b9d17128649",
+    "bytes": 95750
+  },
+  "screenshots/17-management-journal-history-viewport.png": {
+    "sha256": "97db7702394be12665c9d66af7a1425d58b067e08981e4ecc412b18ae7cb5705",
+    "bytes": 79473
+  },
+  "screenshots/18-management-cash-receipts-book-full.png": {
+    "sha256": "c0ea23a74223e6866907d6ef7cb391de888bba58f61cf2a9de83f56b144e46fa",
+    "bytes": 104622
+  },
+  "screenshots/18-management-cash-receipts-book-viewport.png": {
+    "sha256": "969aaea5c4a424eb20e3d38d5141ac64dec19bcb9677c63e1015abb49c2ea55e",
+    "bytes": 77596
+  },
+  "screenshots/19-management-cash-disbursements-book-full.png": {
+    "sha256": "45594cd89d600139651f757de2993ef0ab66eb2da15cb814d20e0710684f5cf2",
+    "bytes": 105299
+  },
+  "screenshots/19-management-cash-disbursements-book-viewport.png": {
+    "sha256": "46b333bbd2b860c95d5b1b5cbfc3c32933ae7cecc85de65499e4f9bc7bf13284",
+    "bytes": 78378
+  },
+  "screenshots/20-management-general-ledger-september-full.png": {
+    "sha256": "27b0aa5d308721114fbe0ad9c82a40b13839228191868f1978d4e231f3fac652",
+    "bytes": 151625
+  },
+  "screenshots/20-management-general-ledger-september-viewport.png": {
+    "sha256": "99682552ef82217958b30079468710e3b09c34129eaaf5193ace273fa548bf2a",
+    "bytes": 78154
+  },
+  "screenshots/21-management-monthly-budgets-full.png": {
+    "sha256": "fbd31d9c2953038704d3c30a9dc9b0756a9f37085b5a463906b2aaf46c133fbb",
+    "bytes": 111074
+  },
+  "screenshots/21-management-monthly-budgets-viewport.png": {
+    "sha256": "acc014c81fd558e914e3bed01ffba9d8c7786766c02b98063e9ed43bbf06df66",
+    "bytes": 86498
+  },
+  "screenshots/22-management-frozen-monthly-report-full.png": {
+    "sha256": "47306c970e486f460cd3a189dead68fb8b18d1c9f9b181e36e150a618ba964e0",
+    "bytes": 217583
+  },
+  "screenshots/22-management-frozen-monthly-report-viewport.png": {
+    "sha256": "fa24387dc8f78e9fefe51dd08a3e7905f8e37dd62dbde8f860c700021afbf8ed",
+    "bytes": 78456
+  },
+  "screenshots/23-management-report-submissions-and-period-controls-full.png": {
+    "sha256": "8eeef15fc3438136ec5ec80d1c32910f55a5c0d6ca75453124613309773289ec",
+    "bytes": 200262
+  },
+  "screenshots/23-management-report-submissions-and-period-controls-viewport.png": {
+    "sha256": "4463e928304920fb4e65c9829a97a0eed8ca37c0bd2c411ef91be14f7fddc570",
+    "bytes": 77152
+  },
+  "screenshots/24-management-reports-overview-full.png": {
+    "sha256": "e09e210583c26384d3fdefc2f652ce8eb19ba47780f9c1990b5852ae417405a9",
+    "bytes": 126330
+  },
+  "screenshots/24-management-reports-overview-viewport.png": {
+    "sha256": "957971ef5d6f818f21fbe3d6bf26c7144033a0fd3f0aa3190117600c3bef988a",
+    "bytes": 81916
+  },
+  "screenshots/25-management-external-email-sent-full.png": {
+    "sha256": "a13220434ee6e0394f06199f168204f6dcbedae328287c14112f1f74b9900941",
+    "bytes": 57309
+  },
+  "screenshots/25-management-external-email-sent-viewport.png": {
+    "sha256": "a13220434ee6e0394f06199f168204f6dcbedae328287c14112f1f74b9900941",
+    "bytes": 57309
+  },
+  "screenshots/26-management-external-email-compose-full.png": {
+    "sha256": "d2612cde2c1c39b473c3120867473ae6d88017f97dc21e1c6cfe7467c0d2b87b",
+    "bytes": 63866
+  },
+  "screenshots/26-management-external-email-compose-viewport.png": {
+    "sha256": "d2612cde2c1c39b473c3120867473ae6d88017f97dc21e1c6cfe7467c0d2b87b",
+    "bytes": 63866
+  },
+  "screenshots/27-admin-record-a-payment-full.png": {
+    "sha256": "1861a96a014b4c889534ba629c1ea1990ce8717de0920e3962d2088ecdec9735",
+    "bytes": 88418
+  },
+  "screenshots/27-admin-record-a-payment-viewport.png": {
+    "sha256": "9dea3102c447f23f00e4c751954a7f61e742cec47ddde3a8b6955d4fbd0a56a2",
+    "bytes": 78803
+  },
+  "screenshots/28-admin-saved-practice-payment-and-supporting-image-full.png": {
+    "sha256": "e23559d19ea012ce37db6d882386f114d399c270c3f76aa007228ca134523e1f",
+    "bytes": 94841
+  },
+  "screenshots/28-admin-saved-practice-payment-and-supporting-image-viewport.png": {
+    "sha256": "22d5d7587f33c282d84dbb3239d0cf75c194710f999a1d077f0b0776d9827d9e",
+    "bytes": 84597
+  },
+  "screenshots/29-admin-record-money-received-full.png": {
+    "sha256": "86a3a7c7a8e5343fb8af342c1370db6464fe0d5b60b3244e07478ad46162e97c",
+    "bytes": 89247
+  },
+  "screenshots/29-admin-record-money-received-viewport.png": {
+    "sha256": "e42e1caf17214e4be6a9f264902a026967c512cc4e2525f7378b651e4c108987",
+    "bytes": 79541
+  },
+  "screenshots/30-admin-other-journal-entry-full.png": {
+    "sha256": "756e041b7e35858e05e13f1b2515e18545f355f809ad5619fe96d48839b4d1a2",
+    "bytes": 107492
+  },
+  "screenshots/30-admin-other-journal-entry-viewport.png": {
+    "sha256": "9bc70ed7977cad4f1add964ec4c32571118b1eca48f371daac8ac38693e69516",
+    "bytes": 75628
+  },
+  "screenshots/31-admin-my-drafts-full.png": {
+    "sha256": "fc58e16e2187802fd3fe768fc4e6327518e95d0761aadf7390fa3cc2c0b09e84",
+    "bytes": 66540
+  },
+  "screenshots/31-admin-my-drafts-viewport.png": {
+    "sha256": "fc58e16e2187802fd3fe768fc4e6327518e95d0761aadf7390fa3cc2c0b09e84",
+    "bytes": 66540
+  },
+  "screenshots/32-admin-release-cash-advance-full.png": {
+    "sha256": "a226b99f3bc329416d1182b02aa587ffe1976469cff50d136817c41a4b0a4530",
+    "bytes": 103552
+  },
+  "screenshots/32-admin-release-cash-advance-viewport.png": {
+    "sha256": "62244c6e05a43f8bc53214084e6497423ad5e3f83c6c08b2f570df54923ea96c",
+    "bytes": 74807
+  },
+  "screenshots/33-admin-scan-receipt-upload-full.png": {
+    "sha256": "5f50ccde2a5a902fe05f6a8b3c3397780273cb35419e0db287b9abeb9d82f802",
+    "bytes": 78921
+  },
+  "screenshots/33-admin-scan-receipt-upload-viewport.png": {
+    "sha256": "5f50ccde2a5a902fe05f6a8b3c3397780273cb35419e0db287b9abeb9d82f802",
+    "bytes": 78921
+  },
+  "screenshots/34-admin-scan-receipt-manual-evidence-full.png": {
+    "sha256": "3738cda599cbd964115fe05aa9965096002a935a88d8e0c16755749d41c2dee0",
+    "bytes": 98340
+  },
+  "screenshots/34-admin-scan-receipt-manual-evidence-viewport.png": {
+    "sha256": "ad4526a1395e6e30a7627c3c263dd99c2ffaf09b388cb9c67a71e61ba22de0f0",
+    "bytes": 94135
+  },
+  "screenshots/35-admin-review-receipt-items-full.png": {
+    "sha256": "a50032a6e9a2c6b251016f87c25715bbde6a228b1c01e7dfdd84638e5bd34edc",
+    "bytes": 111202
+  },
+  "screenshots/35-admin-review-receipt-items-viewport.png": {
+    "sha256": "2e38463645467b7ac9ad512c1ff762a07a36439756a2b09c36213310bed6a137",
+    "bytes": 76221
+  },
+  "screenshots/36-admin-recorded-transaction-and-correction-links-full.png": {
+    "sha256": "db87fe3e4dbec6a908bc0c62f271338a6aa2cbb638bdb78f59db9f153e195f46",
+    "bytes": 92778
+  },
+  "screenshots/36-admin-recorded-transaction-and-correction-links-viewport.png": {
+    "sha256": "924c17aaad5eca16bdd51fa66ea19c9bc945481c6342bfdf82be387dd2231b9a",
+    "bytes": 81397
+  },
+  "screenshots/37-admin-correction-comparison-full.png": {
+    "sha256": "15d5290819536a73bc241fa67d55689be247570ad9c5a18833ba2ad14abe5b93",
+    "bytes": 130579
+  },
+  "screenshots/37-admin-correction-comparison-viewport.png": {
+    "sha256": "b155b484311c9dc99f4ce0883ba06964a0fced0acec1a3c15616f9038cac230b",
+    "bytes": 87412
+  },
+  "screenshots/38-admin-prepare-a-correction-full.png": {
+    "sha256": "c50bb957be1c69939f2f114acbbb1acea2e3e9211d019274df62cb2b4ad69d71",
+    "bytes": 188264
+  },
+  "screenshots/38-admin-prepare-a-correction-viewport.png": {
+    "sha256": "121ad197209470c6b1db4c7734d6ee59c6767c549361cd24365184b8f4f22297",
+    "bytes": 80775
+  },
+  "screenshots/39-admin-ledger-literal-search-full.png": {
+    "sha256": "695aae175da54a01b85a51c3dc4f8322bcf0833eab9150b1cb44ec5b45a9c777",
+    "bytes": 94607
+  },
+  "screenshots/39-admin-ledger-literal-search-viewport.png": {
+    "sha256": "5838d581a361c8d1e499d2a83590bebb9a5ff57567cba6b6428c970b4211cb4e",
+    "bytes": 75519
+  },
+  "screenshots/40-admin-ledger-without-period-movements-full.png": {
+    "sha256": "597bf0780f933df4cee0e739a8c63b8c64c1a3b997e4d2d3bf6913412a25752e",
+    "bytes": 90053
+  },
+  "screenshots/40-admin-ledger-without-period-movements-viewport.png": {
+    "sha256": "70e51079485f4e27d451dd095a6c80c7eaacdff81f317165953e2b54a74c444a",
+    "bytes": 76176
+  },
+  "screenshots/41-admin-monthly-accounting-worksheet-full.png": {
+    "sha256": "09dc97fccb19e525fc60aa4403b92b30d78b94fc0855c766ddbd55ca1c5e2bb1",
+    "bytes": 154421
+  },
+  "screenshots/41-admin-monthly-accounting-worksheet-viewport.png": {
+    "sha256": "0df8afc1e9aa0699823fac293be81d14a934d71c3052f4c5e3be31e9969a1348",
+    "bytes": 84325
+  },
+  "screenshots/42-admin-trial-balance-full.png": {
+    "sha256": "a9eea3247c25c6f8888a1f828e8087c5627d4d9080c39a7c15d09803ebc3be2e",
+    "bytes": 126519
+  },
+  "screenshots/42-admin-trial-balance-viewport.png": {
+    "sha256": "04316bc96b5ffb06fc8b9f2dbac7e36cc0926bfa424d2d27385a4663a8da3ab5",
+    "bytes": 79016
+  },
+  "screenshots/43-admin-income-statement-full.png": {
+    "sha256": "c4736743b655ffbb2da03f165e68bfa4116c13d3aab4b8e3bbabc100c904a6d8",
+    "bytes": 97266
+  },
+  "screenshots/43-admin-income-statement-viewport.png": {
+    "sha256": "91c5319f8f97890ab9eb240a1dc6144f680734f581464e543072a8978b46383c",
+    "bytes": 81191
+  },
+  "screenshots/44-admin-financial-position-full.png": {
+    "sha256": "9745e3b9607a3a618c034ab9bd6aedc16ace6d33debd90841c22a7de2fbd416e",
+    "bytes": 112546
+  },
+  "screenshots/44-admin-financial-position-viewport.png": {
+    "sha256": "ea574a620986eeeff48f5a5438347ccad3b264e0c56f82427362f5b4c989ada0",
+    "bytes": 82796
+  },
+  "screenshots/45-admin-cash-flows-full.png": {
+    "sha256": "dfbee8c420fb0e51236d638f078d58b30da3170b6409e9d7602baa5cca14c32b",
+    "bytes": 122004
+  },
+  "screenshots/45-admin-cash-flows-viewport.png": {
+    "sha256": "29d5c7cd37af417f4b2687fcb225fe0c5e1acfb9dfdfcc2d51d30286269ccaa1",
+    "bytes": 82539
+  },
+  "screenshots/46-admin-project-activity-full.png": {
+    "sha256": "f20c91dd5f49b2fba3bea3ebcaaf39066ce20982e0f403a0f50afb5f333fcb41",
+    "bytes": 107543
+  },
+  "screenshots/46-admin-project-activity-viewport.png": {
+    "sha256": "d6484bd3d504f3b38242d595286fd40c678a14161d93eb0d006325fb8c5e266e",
+    "bytes": 85256
+  },
+  "screenshots/47-admin-advance-aging-full.png": {
+    "sha256": "a6b74521cddb334f8bb0627e623374ded8d626b78d20990bd948ff164db826eb",
+    "bytes": 90783
+  },
+  "screenshots/47-admin-advance-aging-viewport.png": {
+    "sha256": "e1324e328fda6249d700c8423d93ad4ea354624f170886494e6f2fee2ea02737",
+    "bytes": 84416
+  },
+  "screenshots/48-admin-incomplete-report-setup-guidance-full.png": {
+    "sha256": "27cb67572c9a950d5f6d350ff2959f5038331d62722e4faa76bfafef5d40787e",
+    "bytes": 122111
+  },
+  "screenshots/48-admin-incomplete-report-setup-guidance-viewport.png": {
+    "sha256": "48426f36fba52789b37aa57fb96e00142e6f67be52e5435276e874f01d849923",
+    "bytes": 83623
+  },
+  "screenshots/49-management-monthly-accounting-worksheet-full.png": {
+    "sha256": "fe4dd62872033983f73575361dfcdcbd15f6eaaec8198fdd103caaf55e2e8850",
+    "bytes": 154260
+  },
+  "screenshots/49-management-monthly-accounting-worksheet-viewport.png": {
+    "sha256": "3c04f5d7a31f6b1367e652cbf3a84486fcfbba8d7328ebd29316cdf7d0a29c8e",
+    "bytes": 84192
+  },
+  "screenshots/50-admin-prepare-budget-draft-full.png": {
+    "sha256": "cc27892575657f4322cdb55260d0c79e21151501f8fa193a83e18cc4c7dc5864",
+    "bytes": 88063
+  },
+  "screenshots/50-admin-prepare-budget-draft-viewport.png": {
+    "sha256": "d55322b5533b8fff9bca3e1b1635393b620d2a4e06f2dc75a780a707e6d53ad5",
+    "bytes": 75681
+  },
+  "screenshots/51-admin-accounting-setup-full.png": {
+    "sha256": "784771fc94b1e0aed42f5cf64ad2549f600ac91abb34573ded7b78282b6724a1",
+    "bytes": 103145
+  },
+  "screenshots/51-admin-accounting-setup-viewport.png": {
+    "sha256": "04cc2657ec6bd68b574399c51ef1fc5381b70adc63076f7c5c4f20582099d3e4",
+    "bytes": 57405
+  },
+  "screenshots/52-admin-reporting-setup-full.png": {
+    "sha256": "268d9399134f8278cd31ad72281f9b3abb1248fc7ad6e24afc02bfbc8b6d59d1",
+    "bytes": 63504
+  },
+  "screenshots/52-admin-reporting-setup-viewport.png": {
+    "sha256": "268d9399134f8278cd31ad72281f9b3abb1248fc7ad6e24afc02bfbc8b6d59d1",
+    "bytes": 63504
+  },
+  "screenshots/53-admin-reporting-setup-new-draft-full.png": {
+    "sha256": "e7c9ad0ed258b70bc06c105185faacacb9c354fb7b4a9ba3872fc227dae7e74a",
+    "bytes": 158753
+  },
+  "screenshots/53-admin-reporting-setup-new-draft-viewport.png": {
+    "sha256": "0da3390ec63faaf75810a6351a888d2a09e543f7274d3ce6fdd41fe725f70462",
+    "bytes": 75067
+  },
+  "screenshots/54-admin-chart-of-accounts-full.png": {
+    "sha256": "1a1aab0d05e183a38cbfeb1e60095c5bf40cb1a9414af25b0d1031c9d41e5853",
+    "bytes": 131297
+  },
+  "screenshots/54-admin-chart-of-accounts-viewport.png": {
+    "sha256": "335c9bfd9960d963e4bbf01b93108f543bbff4c33a12e9560c8be907c90e3f77",
+    "bytes": 83182
+  },
+  "screenshots/55-admin-user-management-full.png": {
+    "sha256": "ff2d75226f77fe875472b83174ba7fb01b187654c4b74ed65bf4241805fa21a6",
+    "bytes": 112355
+  },
+  "screenshots/55-admin-user-management-viewport.png": {
+    "sha256": "a815980cbd5b6792e80e387863af36e5b71bc3c0ed107346e345b5491f105e31",
+    "bytes": 89795
+  },
+  "screenshots/56-admin-audit-trail-full.png": {
+    "sha256": "aa3f8950546c032ef95af8aa7262b06677f763d403783d14feab384160e1e18c",
+    "bytes": 747150
+  },
+  "screenshots/56-admin-audit-trail-viewport.png": {
+    "sha256": "8dbec2144946817961553cb5f410d211fe981f75b22f4685b46dcdf59793b223",
+    "bytes": 91311
+  },
+  "screenshots/57-admin-message-the-board-full.png": {
+    "sha256": "86868b3a0b979e576ca7e96c03a8cde64aa68144dc2619b79d301e29c614551a",
+    "bytes": 66030
+  },
+  "screenshots/57-admin-message-the-board-viewport.png": {
+    "sha256": "67b42b4c7516186d2b581f358266b6b1b6f2f1b0ce56c3352b8af8d4accd563f",
+    "bytes": 65771
+  },
+  "screenshots/58-management-review-queue-full.png": {
+    "sha256": "da8fd894c065a0f97efc0f7f81190c5b434d2cb1a9f16ed9552d10e45f06309f",
+    "bytes": 107113
+  },
+  "screenshots/58-management-review-queue-viewport.png": {
+    "sha256": "a80a00d620d5ca0f34cbd56d19883262960f121f4ad3081c655d7ce1fb630487",
+    "bytes": 76321
+  },
+  "screenshots/59-management-board-inbox-full.png": {
+    "sha256": "ef03d648dc9b03e355fa9a965992cdef965d79ad586e53ecf8142f232453ce0e",
+    "bytes": 50852
+  },
+  "screenshots/59-management-board-inbox-viewport.png": {
+    "sha256": "ef03d648dc9b03e355fa9a965992cdef965d79ad586e53ecf8142f232453ce0e",
+    "bytes": 50852
+  },
+  "screenshots/60-admin-cash-advance-detail-1-full.png": {
+    "sha256": "9f28fe31d850aa07bbbd99366813a1431b855e6bcced1ff9ca919e9293085b12",
+    "bytes": 145371
+  },
+  "screenshots/60-admin-cash-advance-detail-1-viewport.png": {
+    "sha256": "6377572324a85caaa4f3e6c2c7798b1babb497c10e506d9829c9a4c6e8eb19a0",
+    "bytes": 78414
+  },
+  "screenshots/61-management-cash-advance-detail-1-full.png": {
+    "sha256": "32aab5fab2d45c2f3bc1e970d18d0d06c98af426b547cfbdfd950169b7b38bc3",
+    "bytes": 137709
+  },
+  "screenshots/61-management-cash-advance-detail-1-viewport.png": {
+    "sha256": "3d82657c047b3d65ed5cd5b59f209564f8559cc3f6a50b6d8b780d3e609584f7",
+    "bytes": 78730
+  },
+  "screenshots/62-admin-record-liquidation-full.png": {
+    "sha256": "0fbc3381225e445a21facee805f9cda1d5e797009fbb0853d5bc934cfc0791de",
+    "bytes": 145971
+  },
+  "screenshots/62-admin-record-liquidation-viewport.png": {
+    "sha256": "206ddec1469fbd7d0bf3898002b411b225018b4c56b9b0fb206036fb0325e136",
+    "bytes": 76720
+  },
+  "screenshots/63-admin-return-unused-cash-full.png": {
+    "sha256": "c049365693e698aa38da26dbb3a19772f5ba4dd967eead401653cfed5a5502f9",
+    "bytes": 120488
+  },
+  "screenshots/63-admin-return-unused-cash-viewport.png": {
+    "sha256": "5955a33eab9a0b641366c1492825ae5f9bd180ef65c5681052d1554001633edc",
+    "bytes": 76372
+  },
+  "screenshots/64-admin-journal-history-populated-september-full.png": {
+    "sha256": "77f93007f913b86d3a73c47e31150a4a6d8ed6e5660ee37916ca04ed063e40f6",
+    "bytes": 162543
+  },
+  "screenshots/64-admin-journal-history-populated-september-viewport.png": {
+    "sha256": "e11e4d7c07372dc444e775d15fd83daaf1131603feb0dd3346a98983a3f9f24b",
+    "bytes": 80022
+  },
+  "screenshots/65-admin-cash-receipts-book-populated-september-full.png": {
+    "sha256": "7db20fad1349e71630613607a057f7768f77e4477c5b4062e654ddc18f440c96",
+    "bytes": 127809
+  },
+  "screenshots/65-admin-cash-receipts-book-populated-september-viewport.png": {
+    "sha256": "3689bdf3fdb44685a84181c9b2660ae12ab89eea92efac0f9ff23d1e60717cc7",
+    "bytes": 78026
+  },
+  "screenshots/66-admin-cash-disbursements-book-populated-september-full.png": {
+    "sha256": "14670f7bde6fee04a4db5aa0539d64829c4be0e349af16e12509cff01c06cfce",
+    "bytes": 139912
+  },
+  "screenshots/66-admin-cash-disbursements-book-populated-september-viewport.png": {
+    "sha256": "aed8c128c6a9cb9a8a366023c310299523660d52ea30108c56e46aadf9a7850e",
+    "bytes": 78614
+  },
+  "screenshots/67-management-journal-history-populated-september-full.png": {
+    "sha256": "1399f102a7dac806ed939659e1f663548f99dbce4a14fd4b7fb770402f047853",
+    "bytes": 164482
+  },
+  "screenshots/67-management-journal-history-populated-september-viewport.png": {
+    "sha256": "cf0facc14a34308d1d44b198972e30c1dbd2016fc8e289512b10a9e9c01e0296",
+    "bytes": 81420
+  },
+  "screenshots/68-management-cash-receipts-book-populated-september-full.png": {
+    "sha256": "9b98004c579489df702d0cdee9631b6ce06c2032f1290a9fb38fe3019bc53c49",
+    "bytes": 126953
+  },
+  "screenshots/68-management-cash-receipts-book-populated-september-viewport.png": {
+    "sha256": "210b5347497ade5bf41abbbc49ff4b13d8d09a9118ba18800acacdbca1e786eb",
+    "bytes": 79171
+  },
+  "screenshots/69-management-cash-disbursements-book-populated-september-full.png": {
+    "sha256": "83ce75adc48715e20aaf7cdd19de921cbad4990b8c9d94aa54456308583b7ccd",
+    "bytes": 139369
+  },
+  "screenshots/69-management-cash-disbursements-book-populated-september-viewport.png": {
+    "sha256": "983fe8b83ade04ac59d4c6f41b9915e37482b9e4869f4067f24ecfe83d557e3c",
+    "bytes": 80120
+  },
+  "screenshots/70-admin-dashboard-wide-desktop-full.png": {
+    "sha256": "3ca74112f6ded81f5e17d28d2fc3038354370876cd4910b9a80608618fcff999",
+    "bytes": 125689
+  },
+  "screenshots/70-admin-dashboard-wide-desktop-viewport.png": {
+    "sha256": "73317eea7ff5392b0d91a19b657f9aa498a06daf054fe520a0f97bcd0a548c6b",
+    "bytes": 107473
+  },
+  "screenshots/71-admin-general-ledger-wide-desktop-full.png": {
+    "sha256": "77ed3ba2a4441920b167bc81f994738f8d695ab8092043545e710a977fcc7546",
+    "bytes": 159540
+  },
+  "screenshots/71-admin-general-ledger-wide-desktop-viewport.png": {
+    "sha256": "4ebcc77aa1931347015f0a2d23f78d66eb66e50821ccb054846c3f3b132c9f33",
+    "bytes": 138515
+  },
+  "screenshots/72-admin-monthly-worksheet-wide-desktop-full.png": {
+    "sha256": "01a0f82d2c7b68dfd5ccfc49d2adc347983a93e991eab6cab07bbb5fcdd4b5f7",
+    "bytes": 176684
+  },
+  "screenshots/72-admin-monthly-worksheet-wide-desktop-viewport.png": {
+    "sha256": "35068628e25f6acc061935c05ed67cb0cf2097c4fd88cde05991fd2bc9401dcd",
+    "bytes": 123634
+  },
+  "screenshots/73-admin-monthly-budget-wide-desktop-full.png": {
+    "sha256": "b10ff48251a7a87e191bd3dc3815f0cf7e2b871557969e99e791b52d08ed077d",
+    "bytes": 130587
+  },
+  "screenshots/73-admin-monthly-budget-wide-desktop-viewport.png": {
+    "sha256": "16b7d79d65f715cfd9a8e9bf5622469789b06088c37eabf7aec5227db66c25a4",
+    "bytes": 119024
+  },
+  "screenshots/74-management-dashboard-wide-desktop-full.png": {
+    "sha256": "ba9f7b32a7d04e146900612d064e6392a0a6cb1bcf0841f7811ebbfd62db4a29",
+    "bytes": 185151
+  },
+  "screenshots/74-management-dashboard-wide-desktop-viewport.png": {
+    "sha256": "66ee6b7c501454ba42aa07d863e89c8dcdf55aff99cb26f1f6840abcb0342d44",
+    "bytes": 114470
+  },
+  "screenshots/75-management-general-ledger-wide-desktop-full.png": {
+    "sha256": "8dd1d1e7d1b6ce45dee3d4c84c2408be81e9c7e02f5217f316cd8b22aa6f6b5f",
+    "bytes": 150857
+  },
+  "screenshots/75-management-general-ledger-wide-desktop-viewport.png": {
+    "sha256": "3a11dcbddf8c8a3abfd636998fc2c7b0386f2463b65cad4dddaa3a07e2ffcf9e",
+    "bytes": 129824
+  },
+  "screenshots/76-management-monthly-worksheet-wide-desktop-full.png": {
+    "sha256": "e5c8c8bd60a34d41ab9dcdd69c76110e3a6d143b5f0eb4086919741a9218d807",
+    "bytes": 168663
+  },
+  "screenshots/76-management-monthly-worksheet-wide-desktop-viewport.png": {
+    "sha256": "3ff182fdab62c59a5476ad750092363233e41ac175177ad01e09d4ba0be9869e",
+    "bytes": 115752
+  },
+  "screenshots/77-management-monthly-budget-wide-desktop-full.png": {
+    "sha256": "03bb71bbe25908a0e7edcb457f43b78295bc42801693250a0bf1c7dd7f0c0806",
+    "bytes": 115352
+  },
+  "screenshots/77-management-monthly-budget-wide-desktop-viewport.png": {
+    "sha256": "6addfb96ce372b5d78ffd790146126158030ca17400e41ff76fc6916ec63d19f",
+    "bytes": 111361
+  },
+  "screenshots/78-management-budget-revision-approved-full.png": {
+    "sha256": "84aef9148a405e70ad00b8a42447cb1581166354b055a6bb8464457cbc3f945d",
+    "bytes": 115964
+  },
+  "screenshots/78-management-budget-revision-approved-viewport.png": {
+    "sha256": "0fa76fdef37a5f6cabb123a57b229d420038ff3c783115e52de4f60914f4c83d",
+    "bytes": 76261
+  },
+  "screenshots/79-management-budget-revision-returned-full.png": {
+    "sha256": "d770069afb20f8486f50ec41c07faec2371f20fadb6e59552fc35b1d5f8db851",
+    "bytes": 138535
+  },
+  "screenshots/79-management-budget-revision-returned-viewport.png": {
+    "sha256": "09caf61488b5d80c60512e918e691b37b21ea15bd02ef251774ad1a7494cec7a",
+    "bytes": 75533
+  },
+  "screenshots/80-admin-ledger-print-full.png": {
+    "sha256": "b176f649263651c26ac14cabe5c407b3e295c8c74095dda7bfccc8bf52cb4827",
+    "bytes": 65495
+  },
+  "screenshots/80-admin-ledger-print-viewport.png": {
+    "sha256": "b176f649263651c26ac14cabe5c407b3e295c8c74095dda7bfccc8bf52cb4827",
+    "bytes": 65495
+  },
+  "screenshots/81-admin-monthly-worksheet-print-full.png": {
+    "sha256": "5c48ce663e8a3b739fe91ad0b22e07f5d2ff68f117605f7491e9ec0f2dd0bab6",
+    "bytes": 110836
+  },
+  "screenshots/81-admin-monthly-worksheet-print-viewport.png": {
+    "sha256": "95c3ba6656b00b6bb935de19a633c88e6f2455172cf8fd5c90185863e901d14d",
+    "bytes": 67476
+  },
+  "screenshots/82-admin-frozen-report-print-full.png": {
+    "sha256": "93806cbbd1d4dbf145c9d0d060b0afa9da2dcbaf86927f8ddc7e9876642ab6c2",
+    "bytes": 113804
+  },
+  "screenshots/82-admin-frozen-report-print-viewport.png": {
+    "sha256": "2d8cbba77ae6087e0e27221918198ae7e37924d53654035ffca96454de45a255",
+    "bytes": 54431
+  },
+  "screenshots/83-public-verify-sign-in-code-full.png": {
+    "sha256": "02995b181c3b0330b2e3ec42e5b3e08cd1101e52a8eeec2dc25e625f9440de38",
+    "bytes": 214827
+  },
+  "screenshots/83-public-verify-sign-in-code-viewport.png": {
+    "sha256": "02995b181c3b0330b2e3ec42e5b3e08cd1101e52a8eeec2dc25e625f9440de38",
+    "bytes": 214827
+  }
+}

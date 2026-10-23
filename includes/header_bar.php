@@ -29,13 +29,14 @@ $headerIsExecutive = $flags['isExecutive'];
 $headerBellRingClass = $headerIsExecutive ? 'text-slate-600 hover:text-blue-900' : 'text-slate-600 hover:text-slate-900';
 
 ?>
-<header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between print:hidden">
-    <div>
-        <p class="text-sm text-slate-500">Signed in as</p>
-        <p class="text-slate-900 font-semibold">
+<header class="ui-header bg-white flex items-center justify-between print:hidden">
+    <button type="button" class="ui-nav-toggle" id="ui-nav-toggle" aria-controls="ui-sidebar" aria-expanded="false" aria-label="Open navigation"><?= ui_icon('menu') ?></button>
+    <div class="ui-identity">
+        <span class="ui-avatar" aria-hidden="true"><?= htmlspecialchars(mb_strtoupper(mb_substr($_SESSION['FullName']??'A',0,1)),ENT_QUOTES,'UTF-8') ?></span>
+        <p class="ui-person">
             <?= $flags['fullName'] ?>
             <span class="text-slate-400 font-normal">·</span>
-            <span class="text-slate-600 font-medium text-sm"><?= $flags['roleLabel'] ?></span>
+            <span class="ui-role"><?= $flags['roleLabel'] ?></span>
         </p>
     </div>
 

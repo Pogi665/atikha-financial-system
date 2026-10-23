@@ -1,7 +1,8 @@
+from test_pointer import test_pointer
 """Run complete-month evidence from a new disposable source-posted fixture."""
 from pathlib import Path
 import hashlib,json,os,subprocess,sys
-root=Path(__file__).resolve().parent.parent;pp=root/'.migration-private/stages4-7-current.json';r=subprocess.run([sys.executable,str(root/'scripts/create_period_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=360)
+root=Path(__file__).resolve().parent.parent;pp=test_pointer(root/'.migration-private/stages4-7-current.json');r=subprocess.run([sys.executable,str(root/'scripts/create_period_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=360)
 if r.returncode:print(r.stdout+r.stderr);raise SystemExit(r.returncode)
 p=json.loads(pp.read_text(encoding='utf-8'));f=Path(p['g4_fixture']);run=f.parent;env=os.environ.copy();env.update(p['environment']);(run/'period-create.stdout.log').write_text(r.stdout,encoding='utf-8');(run/'period-create.stderr.log').write_text(r.stderr,encoding='utf-8')
 for name,extra in [('test_stage5_period_edges.php',['--prepare']),('test_stage5_completion.php',[]),('test_stage5_flag_off.php',[]),('test_stage5_period_edges.php',[]),('test_stage5_period_races.php',[]),('test_stage5_completion_negatives.php',[])]:

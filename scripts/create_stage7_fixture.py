@@ -1,7 +1,8 @@
+from test_pointer import test_pointer
 """Fresh guarded synthetic Stage7 target; additive025 once. Never working financial data."""
 from pathlib import Path
 import hashlib,json,os,re,subprocess,sys
-root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pp=private/'stages4-7-current.json'
+root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pp=test_pointer(private/'stages4-7-current.json')
 r=subprocess.run([sys.executable,str(root/'scripts/create_period_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=300)
 assert r.returncode==0,'Fresh period base failed; preserve failed target, no recovery or blind migration replay'
 p=json.loads(pp.read_text(encoding='utf-8'));fixture=Path(p['g4_fixture']).resolve();assert fixture.is_relative_to(private);f=json.loads(fixture.read_text(encoding='utf-8'));run=fixture.parent;db=f['database'];assert re.fullmatch(r'atikha_test_stage1_s5[a-z0-9]+',db);env=os.environ.copy();env.update(p['environment']);(run/'stage7-base.stdout.log').write_text(r.stdout,encoding='utf-8');(run/'stage7-base.stderr.log').write_text(r.stderr,encoding='utf-8')

@@ -1,3 +1,4 @@
+from browser_workspace_helpers import select_entry_mode,navigate_sidebar
 """Stage 1 HTTP and real browser checks, on a new DB and private copied app.
 Production config, sessions and uploads are never copied. All external requests blocked.
 """
@@ -75,7 +76,7 @@ try:
         party=str(sql('SELECT id FROM parties LIMIT 1')[0]['id']);project=str(sql('SELECT id FROM projects LIMIT 1')[0]['id'])
         original_party=sql('SELECT name FROM parties WHERE id='+party)[0]['name'];original_project=sql('SELECT name FROM projects WHERE id='+project)[0]['name']
         browser_marker='Browser NGO workshop '+secrets.token_hex(6)
-        page.locator('[data-payment-mode=split]').click();page.locator('#aw-optional summary').click();choose_record(page.locator('#aw-party'),party);choose_record(page.locator('#aw-default-project'),project);page.locator('#aw-purpose').fill(browser_marker+' <script>window.bad=1</script>')
+        select_entry_mode(page,'split');page.locator('#aw-optional summary').click();choose_record(page.locator('#aw-party'),party);choose_record(page.locator('#aw-default-project'),project);page.locator('#aw-purpose').fill(browser_marker+' <script>window.bad=1</script>')
         choose_record(page.locator('#aw-cash-account'),bank);page.locator('#aw-cash-amount').fill('8000.00')
         lines=page.locator('[data-line]');choose_record(lines.nth(0).locator('[data-field="account_id"]'),training);lines.nth(0).locator('[data-field="debit_amount"]').fill('5000.00');page.locator('#aw-add-line').click()
         choose_record(lines.nth(1).locator('[data-field="account_id"]'),transport);lines.nth(1).locator('[data-field="debit_amount"]').fill('3000.00');page.locator('#aw-apply-project').click()

@@ -64,7 +64,7 @@ try:
             d=ordinary('save',{'draft_id':'','source_book':'CDB','submission_key':secrets.token_hex(32),'payload':entry});ident={'draft_id':str(d['id']),'revision':str(d['revision']),'submission_key':d['submission_key']};v=ordinary('review',ident);fixture['payment_target']=ordinary('post',{**ident,'payload':d['payload'],'review_token':v['token']})['id']
         before=int(sql('SELECT COUNT(*) n FROM journal_entries')[0]['n'])
         page.goto(base+'/journal_correction.php?journal_id='+str(fixture['payment_target']));ready()
-        check('1000.00' in page.locator('#aw-original').inner_text(),'Original 1000 payment is read-only')
+        page.locator('#aw-original').locator('..').locator('summary').click();check('1000.00' in page.locator('#aw-original').inner_text(),'Original 1000 payment is read-only')
         browser_tag='Synthetic browser amount correction '+secrets.token_hex(4)
         page.locator('#aw-correction-reason').fill(browser_tag+' <script>window.bad=1</script>')
         page.locator('#aw-cash-amount').fill('900.00');page.locator('#aw-lines [data-field="debit_amount"]').fill('900.00');save()

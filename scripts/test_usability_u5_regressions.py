@@ -28,7 +28,7 @@ production = ['includes/journal_corrections.php', 'includes/stage2_common.php', 
 pins = {n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in production}
 run = private / ('u5-final-' + secrets.token_hex(5)); run.mkdir()
 (run / 'source-pins.json').write_text(json.dumps(pins, indent=2))
-(private / 'u5-final-current.json').write_text(json.dumps({'run': str(run)}))
+(run / 'current.json' if os.getenv('ATIKHA_TEST_POINTER') else private / 'u5-final-current.json').write_text(json.dumps({'run': str(run)}))
 for n in production:
     (run / ('baseline-' + n.replace('/', '_'))).write_bytes(subprocess.check_output(['git', 'show', 'f50d79e3d2bf38072946fbfdf543b6699118ad84:' + n], cwd=root))
 

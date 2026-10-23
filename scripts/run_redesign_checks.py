@@ -1,0 +1,6 @@
+"""Fresh guarded synthetic clone per mutation suite; keeps original G7 and working data untouched."""
+from pathlib import Path
+import json,os,re,secrets,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent;p=json.loads((ROOT/'.migration-private/redesign-current.json').read_text());env=os.environ.copy();env.update(p['environment']);env['PYTHONIOENCODING']='utf-8'
+r=subprocess.run([sys.executable,'scripts/test_stage3_fixture.py','--fixture',json.loads((ROOT/'.migration-private/stages4-7-current.json').read_text())['g7_fixture'],'--database','atikha_test_stage1_s5rdq'+secrets.token_hex(5)],cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf-8',timeout=180);assert r.returncode==0,'Guarded clone failed; no recovery attempted';fixture=re.search(r'Cloned fixture: (.+)',r.stdout).group(1).strip();run=Path(fixture).parent
+r=subprocess.run(['C:/xampp/php/php.exe','scripts/test_redesign_queries.php','--fixture',fixture],cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf-8',timeout=180);(run/'redesign-queries.stdout.log').write_text(r.stdout);(run/'redesign-queries.stderr.log').write_text(r.stderr);print(r.stdout);assert r.returncode==0,'Read-side test failed; retained private diagnostics';p['queries_run']=str(run);(ROOT/'.migration-private/redesign-current.json').write_text(json.dumps(p,indent=2))

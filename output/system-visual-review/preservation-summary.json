@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "read_only": true,
+  "compared": true,
+  "application_tables": 34,
+  "triggers": 24,
+  "audit_rows": 62,
+  "upload_files": 53,
+  "configuration_and_permissions_pinned": true,
+  "snapshot_sha256": "552354448852feebff3e56db9a05c56be32b5ba62e3b1c1934e5b17866f02fbc"
+}

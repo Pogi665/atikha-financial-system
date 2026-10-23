@@ -57,7 +57,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if(isset($_GET['discarded'])):?><p role="status">Receipt discarded.</p><?php endif;?>
 <section id="ocr-mutation-feedback" class="ocr-warning" hidden aria-labelledby="ocr-mutation-heading"><h2 id="ocr-mutation-heading">Receipt action not verified</h2><p id="ocr-mutation-status" role="status" aria-live="polite"></p><button type="button" id="ocr-check-state">Check saved receipt state</button> <button type="button" id="ocr-replay-retry" hidden>Check original extraction result</button> <a id="ocr-open-state" hidden>Open saved receipt</a></section>
 <?php if($available):?>
-<ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload image</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Check details</li><li><span>3</span>Review journal</li></ol>
+<ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Review Details</li><li><span>3</span>Continue</li></ol>
 <div class="ocr-grid">
 <section class="ocr-card"><div class="ocr-card-heading"><h2><?= $receipt?'Original image':'Upload a receipt' ?></h2><span class="ocr-tag">Private image</span></div>
 <?php if(!$receipt):?>
@@ -94,7 +94,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if($data['missing']??[]):?><p class="ocr-warning">Needs review: <?= $escape(implode(', ',$data['missing'])) ?></p><?php endif;?>
 <?php endif;?>
 <?php if(!$data&&$state!=='Pending'):?><div class="ocr-manual"><h3>Continue with the original image</h3><p>You can enter the date, amount and accounts manually in General Journal. The image stays attached for review.</p></div><?php endif;?>
-<?php if($ready):?><?php if(item_review_schema($pdo)==='complete'):?><p><a class="ocr-primary" href="evidence_item_review.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review item details</a></p><p class="ocr-help">Optional manual item review. Check the original image; incomplete itemization does not supply extra monetary coverage.</p><?php endif;?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review in General Journal</a>
+<?php if($ready):?><?php if(item_review_schema($pdo)==='complete'):?><p><a class="ocr-primary" href="evidence_item_review.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review item details</a></p><p class="ocr-help">Optional manual item review. Check the original image; incomplete itemization does not supply extra monetary coverage.</p><?php endif;?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Continue to General Journal</a>
 <p class="ocr-help">Confirm the date and amount, choose the actual credit account and enter the business purpose there. Nothing is posted automatically.</p><?php endif;?>
 <?php if($receipt['JournalEntryID']===null):?>
 <div class="ocr-actions">

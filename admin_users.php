@@ -8,6 +8,7 @@
  */
 
 session_start();
+require_once __DIR__.'/includes/presentation.php';
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/csrf.php';
@@ -30,8 +31,9 @@ if (($_SESSION['Role'] ?? '') !== 'Admin') {
         <meta charset="UTF-8">
         <title>Access Denied — Atikha Financial System</title>
         <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="min-h-screen bg-slate-100 flex items-center justify-center p-8">
+    <?= ui_assets() ?>
+</head>
+    <body class="atikha-ui min-h-screen bg-slate-100 flex items-center justify-center p-8">
         <div class="max-w-md bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
             <h1 class="text-xl font-bold text-slate-900">Access Denied</h1>
             <p class="text-slate-600 mt-3 text-sm">
@@ -45,7 +47,8 @@ if (($_SESSION['Role'] ?? '') !== 'Admin') {
                 Back to Dashboard
             </a>
         </div>
-    </body>
+    <script src="assets/js/atikha_ui.js" defer></script>
+</body>
     </html>
     <?php
     exit;
@@ -159,8 +162,9 @@ $activePage = 'admin_users';
             .users-content > header { padding: 1rem; flex-wrap: wrap; gap: 1rem; }
         }
     </style>
+<?= ui_assets() ?>
 </head>
-<body class="users-page min-h-screen bg-slate-100" data-csrf="<?= users_escape($csrfToken) ?>" data-password-min="<?= (int) USER_PASSWORD_MIN_LENGTH ?>" data-role-descriptions="<?= users_escape(json_encode($roleDescriptions, JSON_UNESCAPED_SLASHES)) ?>">
+<body class="atikha-ui users-page min-h-screen bg-slate-100" data-csrf="<?= users_escape($csrfToken) ?>" data-password-min="<?= (int) USER_PASSWORD_MIN_LENGTH ?>" data-role-descriptions="<?= users_escape(json_encode($roleDescriptions, JSON_UNESCAPED_SLASHES)) ?>">
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
     <div class="users-content ml-64 min-w-0 flex flex-col min-h-screen">
@@ -504,5 +508,6 @@ $activePage = 'admin_users';
     </script>
     <script src="assets/js/admin_users.js"></script>
     <script src="assets/js/notifications.js"></script>
+<script src="assets/js/atikha_ui.js" defer></script>
 </body>
 </html>

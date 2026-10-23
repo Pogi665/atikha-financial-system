@@ -13,7 +13,8 @@
       try { response = await fetch('report_bundle_actions.php', {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, csrf_token: data.csrf, request_key: key(action + (fields.decision || '')), ...fields})}); result = await response.json(); }
       catch { throw new Error('The result could not be confirmed. Check the saved revision or month history before trying again. This page will not automatically replay the action.'); }
       if (!response.ok || !result.ok) throw new Error(result.error || 'Check the saved revision or month state before trying again.');
-      const next = result.data.id ? `report_bundles.php?bundle_id=${encodeURIComponent(result.data.id)}` : `report_bundles.php?month=${encodeURIComponent(data.month)}`;
+      const destination = result.data.id ? `report_bundles.php?bundle_id=${encodeURIComponent(result.data.id)}` : `report_bundles.php?month=${encodeURIComponent(data.month)}`;
+      const next=destination+'&component='+encodeURIComponent(data.component||'worksheet');
       if (result.data.warning) { notice.textContent = result.data.warning; notice.hidden = false; const a = document.createElement('a'); a.href = next; a.textContent = 'Open the saved result'; notice.append(document.createTextNode(' '), a); }
       else location.assign(next);
     } catch (e) { fail(e.message); } finally { buttons.forEach((b, i) => b.disabled = disabled[i]); busy = false; }

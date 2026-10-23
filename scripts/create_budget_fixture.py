@@ -1,7 +1,8 @@
+from test_pointer import test_pointer
 """Fresh connected synthetic reporting case, then additive023 once; no working rollout."""
 from pathlib import Path
 import hashlib,json,os,re,subprocess,sys
-root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pointer_path=private/'stages4-7-current.json'
+root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pointer_path=test_pointer(private/'stages4-7-current.json')
 created=subprocess.run([sys.executable,str(root/'scripts/run_stage5_checks.py'),'--base-only'],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=240)
 assert created.returncode==0,'Fresh synthetic base rehearsal failed; preserve source evidence, no repair'
 pointer=json.loads(pointer_path.read_text(encoding='utf-8'));fixture=Path(pointer['g2_ui_fixture']).resolve();assert fixture.is_relative_to(private)

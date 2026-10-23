@@ -19,7 +19,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 ?>
 <div class="accounting-workspace advance-register" id="advance-register">
 <header class="aw-header">
-    <div><p class="aw-eyebrow">CASH ADVANCES</p><h1><?= $detail?$esc($detail['number']):'Cash advance register' ?></h1><p>Track released funds, supported liquidations and returned cash.</p>
+    <div><p class="aw-eyebrow">CASH ADVANCES</p><h1><?= $detail?$esc($detail['number']):'Cash Advances' ?></h1><p>Track released funds, supported liquidations and returned cash.</p>
         <?php if($role==='Admin'&&!$detail): ?><div class="ca-next-actions aw-no-print"><a href="cash_advance_entry.php?workflow_kind=advance_release" class="ca-primary-link">Release cash advance</a></div><?php endif; ?>
     </div>
     <div class="ca-toolbar aw-no-print">
@@ -30,7 +30,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 </header>
 <p id="ca-error" role="alert" tabindex="-1"></p><p id="ca-status" role="status"></p>
 <section id="ca-health" class="ca-health ca-health-loading" data-state="loading" aria-labelledby="ca-health-title" aria-live="polite">
-    <h2 id="ca-health-title">Control-account reconciliation</h2>
+    <h2 id="ca-health-title">Accounting Check</h2>
     <p id="ca-health-message">Loading the independent control-account check…</p>
     <a href="#ca-reconciliation-details" id="ca-health-link" hidden>View full reconciliation</a>
 </section>
@@ -50,7 +50,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
         <div><dt>Advance control account (current name)</dt><dd><?= $esc($controlNames[$detail['control_account_id']]??'Account #'.$detail['control_account_id']) ?></dd></div>
         <div><dt>Reference</dt><dd><?= $esc($detail['reference']?:'Not provided') ?></dd></div>
     </dl>
-    <div class="aw-totals ca-balance-cards"><?php foreach(['outstanding','released','liquidated','returned'] as $k): ?><span<?= $k==='outstanding'?' class="ca-outstanding"':'' ?>><?= ucfirst($k) ?><strong><?= $esc($money($detail[$k])) ?></strong></span><?php endforeach; ?></div>
+    <div class="aw-totals ca-balance-cards"><?php foreach(['released','liquidated','returned','outstanding'] as $k): ?><span<?= $k==='outstanding'?' class="ca-outstanding"':'' ?>><?= ucfirst($k) ?><strong><?= $esc($money($detail[$k])) ?></strong></span><?php endforeach; ?></div>
     <div class="ca-status-line"><span>Due <?= $esc($detail['due_date']) ?></span><span><?= $detail['overdue_days']>0?$detail['overdue_days'].' days overdue · '.$esc($detail['aging_bucket']):'Not overdue at this date' ?></span></div>
     <p class="aw-help">Original released amount: <?= $esc($money($detail['original_released'])) ?>. Balances are effective amounts through the selected date; General Journal reversals provide correction offsets.</p>
     <?php if($detail['lifecycle_date']): ?><p><?= $esc(ucfirst($detail['status'])) ?> from <?= $esc($detail['lifecycle_date']) ?>. <a href="journal_corrections.php?journal_id=<?= (int)$detail['operations'][0]['journal_id'] ?>">View posted correction</a></p><?php endif; ?>
@@ -77,7 +77,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
         </li>
     <?php endforeach; ?></ol>
 </section>
-<details class="aw-card ca-secondary" data-ca-print><summary>Deadline history</summary>
+<details class="aw-card ca-secondary" data-ca-print><summary>Accounting Details and Deadline History</summary>
     <p>Initial deadline: <?= $esc($detail['initial_due_date']) ?></p>
     <?php if(!$detail['due_changes']): ?><p>No deadline extensions recorded through the selected date.</p><?php endif; ?>
     <?php foreach($detail['due_changes'] as $change): ?><p><?= $esc($change['effective_date']) ?>: <?= $esc($change['old_due_date']) ?> → <?= $esc($change['new_due_date']) ?> · <?= $esc($change['reason']) ?></p><?php endforeach; ?>
@@ -90,7 +90,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 <?php endif; ?>
 <?php if($role==='Admin'&&$detail['external_approval']): ?><details class="aw-card ca-secondary" data-ca-print><summary>External approval recorded by accounting staff</summary><p><?= $esc($detail['external_approval']['name']) ?> · <?= $esc($detail['external_approval']['date']) ?> · <?= $esc($detail['external_approval']['reference']) ?></p><p>This records staff-supplied external approval information; it is not system approval.</p></details><?php endif; ?>
 <?php else: ?>
-<section class="aw-card ca-register-summary"><h2 id="ca-basis">Posted advances</h2><p id="ca-notice"></p><p id="ca-applied-filters" class="ca-register-scope"></p><p id="ca-print-scope" class="ca-register-scope"></p><h3 id="ca-totals-basis">Matching advance totals</h3><div class="aw-totals ca-balance-cards" id="ca-totals"></div></section>
+<section class="aw-card ca-register-summary"><h2 id="ca-basis">Posted advances</h2><details class="ca-scope-details" data-ca-print><summary>Applied Scope and Print Details</summary><p id="ca-notice"></p><p id="ca-applied-filters" class="ca-register-scope"></p><p id="ca-print-scope" class="ca-register-scope"></p></details><h3 id="ca-totals-basis">Matching advance totals</h3><div class="aw-totals ca-balance-cards" id="ca-totals"></div></section>
 <form id="ca-filters" class="aw-card aw-no-print"><h2>Filter advances</h2><div class="aw-grid">
     <label>As of<input name="as_of" type="date" value="<?= $esc($asof) ?>" max="<?= journal_today() ?>" min="1000-01-01" required></label>
     <?php foreach(['party_id'=>'Employee','project_id'=>'Originating project','control_account_id'=>'Control account'] as $field=>$label): ?>
@@ -101,7 +101,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
     <label class="ca-search">Search number, employee, purpose or reference<input name="search" maxlength="200" type="search"></label>
 </div><div class="aw-actions"><span id="ca-filter-status" role="status"></span><button class="aw-primary">Apply filters</button></div></form>
 <section class="aw-card"><h2>Advances</h2>
-    <div class="aw-table-wrap"><table class="aw-table ca-register-table"><thead><tr><th scope="col">Advance / employee</th><th scope="col">Purpose / originating project</th><th scope="col">Outstanding (PHP)</th><th scope="col">Deadline / status</th><th scope="col">Amount details</th></tr></thead><tbody id="ca-rows"></tbody></table></div>
+    <div class="aw-table-wrap"><table class="aw-table ca-register-table"><thead><tr><th scope="col">Employee / Advance</th><th scope="col">Purpose</th><th scope="col">Project</th><th scope="col">Released</th><th scope="col">Liquidated</th><th scope="col">Returned</th><th scope="col">Outstanding</th><th scope="col">Due Date</th><th scope="col">Status</th></tr></thead><tbody id="ca-rows"></tbody></table></div>
     <div class="aw-actions aw-no-print"><button type="button" id="ca-prev">Previous</button><span id="ca-page"></span><button type="button" id="ca-next">Next</button></div>
 </section>
 <?php endif; ?>

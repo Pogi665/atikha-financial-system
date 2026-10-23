@@ -1,0 +1,24 @@
+{
+  "screens": 83,
+  "png_images": 166,
+  "pdf_pages": 197,
+  "all_images_decode": true,
+  "capture_http_errors": 0,
+  "initial_63_screen_page_errors": 0,
+  "production_pins_verified": 69,
+  "source_application_changed": false,
+  "working_preservation": {
+    "passed": true,
+    "read_only": true,
+    "compared": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "upload_files": 53,
+    "configuration_and_permissions_pinned": true,
+    "snapshot_sha256": "552354448852feebff3e56db9a05c56be32b5ba62e3b1c1934e5b17866f02fbc"
+  },
+  "earlier_consultation_archive_unchanged": true,
+  "human_walkthrough_paused": true,
+  "visual_qa": "All viewport contact sheets inspected; representative full pages and final PDF renders inspected separately. This is capture QA, not a new product usability audit."
+}

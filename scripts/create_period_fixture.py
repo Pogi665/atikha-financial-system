@@ -1,7 +1,8 @@
+from test_pointer import test_pointer
 """Fresh source-posted synthetic budgets then additive024 once, never working data."""
 from pathlib import Path
 import hashlib,json,os,re,subprocess,sys
-root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pp=private/'stages4-7-current.json'
+root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();pp=test_pointer(private/'stages4-7-current.json')
 r=subprocess.run([sys.executable,str(root/'scripts/create_budget_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=300)
 assert r.returncode==0,'Fresh budget source rehearsal failed; no recovery or migration retry'
 p=json.loads(pp.read_text(encoding='utf-8'));fixture=Path(p['g3_fixture']).resolve();assert fixture.is_relative_to(private);f=json.loads(fixture.read_text(encoding='utf-8'));run=fixture.parent;db=f['database'];assert re.fullmatch(r'atikha_test_stage1_s5[a-z0-9]+',db);env=os.environ.copy();env.update(p['environment']);(run/'period-base-create.stdout.log').write_text(r.stdout,encoding='utf-8');(run/'period-base-create.stderr.log').write_text(r.stderr,encoding='utf-8')

@@ -27,3 +27,32 @@ def save_and_resume(page):
     assert parse_qs(urlparse(page.url).query)['draft_id'][0] == identity, 'Resumed a different draft'
     assert page.locator('#aw-purpose').input_value() == purpose, 'Saved purpose changed on resume'
     return identity
+
+
+def select_entry_mode(page,mode):
+    button=page.locator('[data-payment-mode="'+mode+'"]')
+    if not button.is_visible():page.locator('#aw-more-options>summary').click()
+    button.click()
+
+def navigate_sidebar(page,href):
+    link=page.locator('.app-sidebar a[href="'+href+'"]')
+    if not link.is_visible():
+        group=link.locator('xpath=ancestor::*[contains(@class,"ui-nav-group")][1]')
+        group.locator('[data-ui-nav-group]').first.click()
+    link.click()
+
+
+def open_advance_filters(page):
+    panel=page.locator('#ca-more-filters')
+    if panel.count() and panel.get_attribute('open') is None:panel.locator('summary').click()
+
+
+def open_period_controls(page):
+    panel=page.locator('[aria-label="Month posting controls"]')
+    panel.wait_for()
+    if panel.get_attribute('open') is None:panel.locator('summary').click()
+
+
+def open_advance_scope(page):
+    panel=page.locator('.ca-scope-details')
+    if panel.count() and panel.get_attribute('open') is None:panel.locator('summary').click()

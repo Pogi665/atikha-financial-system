@@ -1,9 +1,10 @@
+from test_pointer import test_pointer
 """Fresh isolated reporting rehearsal; keep each attempt and exact outputs private."""
 from pathlib import Path
 import argparse,hashlib,json,os,subprocess,sys
 parser=argparse.ArgumentParser();parser.add_argument('--base-only',action='store_true');args=parser.parse_args()
 root=Path(__file__).resolve().parent.parent
-pointer_path=root/'.migration-private/stages4-7-current.json'
+pointer_path=test_pointer(root/'.migration-private/stages4-7-current.json')
 r=subprocess.run([sys.executable,str(root/'scripts/create_reporting_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root)
 if r.returncode:print(r.stdout+r.stderr);raise SystemExit(r.returncode)
 pointer=json.loads(pointer_path.read_text(encoding='utf-8'));fixture=Path(pointer['g2_fixture']);run=fixture.parent

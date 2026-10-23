@@ -201,7 +201,7 @@ try:
             if page.locator('#ocr-progress a').count():page.locator('#ocr-progress a').click()
             page.wait_for_selector('#receipt-retry')
             rid=page.locator('#receipt-retry input[name=receipt_id]').input_value();key=page.locator('#receipt-retry input[name=request_key]').input_value()
-            check(page.get_by_role('link',name='Review in General Journal').get_attribute('href')=='general_journal.php?receipt_id='+rid,'OCR failure retains exact General Journal-only manual handoff')
+            check(page.get_by_role('link',name='Continue to General Journal').get_attribute('href')=='general_journal.php?receipt_id='+rid,'OCR failure retains exact General Journal-only manual handoff')
             config(s1=False);manual=admin.request.get(base+'/general_journal.php?receipt_id='+rid);check(manual.ok and 'General Journal' in manual.text(),'Scalar manual handoff remains available with Stage 1 off');config()
             check(manager.request.get(base+'/ocr_expense.php?receipt='+rid).status==403 and manager.request.get(base+'/receipt_attachment.php?receipt_id='+rid).status in [403,404],'Management cannot read OCR workspace or private image')
             requests=[];lost=[False]

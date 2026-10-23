@@ -36,7 +36,8 @@ for name in ['includes', 'assets']:
     shutil.copytree(root / name, app / name)
 (app / 'vendor').mkdir()
 (app / 'vendor/autoload.php').write_text('<?php require ' + repr(str(root / 'vendor/autoload.php').replace('\\', '/')) + ';', encoding='utf8')
-shutil.copytree(root / 'uploads/external', app / 'uploads/external')
+(app / 'uploads/external').mkdir(parents=True)
+(app / 'uploads/external/.htaccess').write_text('Require all denied\n')
 # Local SMTP configuration is never copied.
 capture = run / 'message.eml'
 configuration = "<?php\ndefine('SMTP_HOST','fixture.example.invalid');\ndefine('SMTP_PORT',587);\ndefine('SMTP_USERNAME','system@example.invalid');\ndefine('SMTP_PASSWORD','fixture-only');\ndefine('SMTP_ENCRYPTION','tls');\ndefine('SMTP_FROM_NAME','Fixture system');\n"
@@ -46,7 +47,8 @@ shutil.copy2(root / 'scripts/external_mail_fixture.php', app / 'includes/fixture
 helper = app / 'includes/external_mail.php'
 source = helper.read_text(encoding='utf8').replace("($sender ?? 'send_external_email')", "($sender ?? 'fixture_external_send')")
 helper.write_text(source + "\nrequire_once __DIR__ . '/fixture_transport.php';\n", encoding='utf8')
-db = "<?php $pdo=new PDO('mysql:host=127.0.0.1;dbname=" + args.database + ";charset=utf8mb4','root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);"
+def php_quote(v):return "'"+v.replace('\\','\\\\').replace("'","\\'")+"'"
+db = '<?php $pdo=new PDO('+','.join(php_quote(v) for v in ['mysql:host='+os.getenv('ATIKHA_DB_HOST','127.0.0.1')+';dbname='+args.database+';charset=utf8mb4',os.getenv('ATIKHA_DB_USER','root'),os.getenv('ATIKHA_DB_PASSWORD','')])+',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);'
 (app / 'db_connect.php').write_text(db, encoding='utf8')
 login = """<?php
 session_start(); require __DIR__.'/db_connect.php';
@@ -199,7 +201,7 @@ try:
     check(b'application attachment limit is 8 MB' in request(admin, 'external_email.php?view=compose', compose(admin), ('app-limit.pdf', b'%PDF-1.4\n' + b'a' * (9 * 1024 * 1024)))[1], 'Application attachment limit enforced independently of PHP')
     check(b'uploaded file is empty' in request(admin, 'external_email.php?view=compose', compose(admin), ('empty.pdf', b''))[1], 'Empty upload rejected')
     runtime = {'database': args.database, 'app': str(app), 'base': base, 'pid': server.pid, 'capture': str(capture), 'port': port}
-    (root / '.migration-private/external-email-http-run.json').write_text(json.dumps(runtime, indent=2), encoding='utf8')
+    (run / 'runtime.private.json').write_text(json.dumps(runtime, indent=2), encoding='utf8')
     print(f'PASS: {checks} external email HTTP checks; no external mail sent.', flush=True)
     print('Browser fixture: ' + base + '/__fixture_login.php?role=Admin', flush=True)
     if args.keep_running:

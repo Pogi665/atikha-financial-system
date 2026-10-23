@@ -79,15 +79,13 @@
         if(!Number.isSafeInteger(r.id)||r.id<=0||typeof r.status!=='string')throw new Error('The advance row response could not be verified.');
         const tr=document.createElement('tr'),first=document.createElement('td'),a=node('a',r.number);
         tr.dataset.advanceId=String(r.id);a.href='cash_advances.php?'+new URLSearchParams({advance_id:String(r.id),as_of:asof});
-        first.append(a,node('p',r.employee));tr.append(first);
-        const purpose=document.createElement('td');purpose.append(node('p',r.purpose),node('p',r.project),node('small','Released '+r.release_date));tr.append(purpose);
-        const amount=document.createElement('td');amount.className='ca-row-outstanding';amount.append(node('strong',money(r.outstanding)));tr.append(amount);
-        const status=document.createElement('td'),badge=node('span',r.status.replaceAll('_',' '));badge.className='ca-badge';
-        status.append(node('p','Due '+r.due_date),badge,node('p',r.overdue_days>0?r.overdue_days+' days overdue ('+r.aging_bucket+')':'Not overdue at this date'));tr.append(status);
-        const breakdown=document.createElement('td'),details=document.createElement('details');details.dataset.caPrint='';
-        details.append(node('summary','Released / settled'));
-        ['released','liquidated','returned'].forEach(key=>details.append(node('p',key[0].toUpperCase()+key.slice(1)+': '+money(r[key]))));
-        breakdown.append(details);tr.append(breakdown);return tr;
+        first.append(node('strong',r.employee),node('p',''));first.lastChild.append(a);tr.append(first);
+        tr.append(node('td',r.purpose),node('td',r.project));
+        ['released','liquidated','returned','outstanding'].forEach(key=>{const cell=node('td',money(r[key]));cell.className='ca-money';if(key==='outstanding')cell.classList.add('ca-row-outstanding');tr.append(cell);});
+        tr.append(node('td',r.due_date));
+        const status=document.createElement('td'),label=r.status==='partially_settled'?'Partial':r.status.replaceAll('_',' '),badge=node('span',label.charAt(0).toUpperCase()+label.slice(1));badge.className='ca-badge ui-badge';status.append(badge);
+        if(r.overdue_days>0){const late=node('span','Overdue');late.className='ui-badge ui-badge-error';status.append(late,node('small',r.overdue_days+' days ('+r.aging_bucket+')'));}
+        tr.append(status);return tr;
     }
     function registerView(d){
         if(!d||!Array.isArray(d.rows)||!Number.isSafeInteger(d.count)||d.count<0||!Number.isSafeInteger(d.page)||d.page<1||!Number.isSafeInteger(d.pages)||d.pages<d.page||typeof d.as_of!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d.as_of))throw new Error('The advance register response could not be verified.');
@@ -95,10 +93,10 @@
         d.rows.forEach(r=>rows.append(renderRow(r,d.as_of)));
         if(!d.rows.length){
             const tr=document.createElement('tr'),td=node('td',config.has_posted_advances?'No posted advances match these filters.':'No posted advances yet.');
-            td.colSpan=5;td.append(node('p',config.has_posted_advances?'Try another date or adjust the applied filters.':config.role==='Admin'?'Use Release an advance to record a release after reviewing it.':'Posted advances will appear here when recorded.'));
+            td.colSpan=9;td.append(node('p',config.has_posted_advances?'Try another date or adjust the applied filters.':config.role==='Admin'?'Use Release an advance to record a release after reviewing it.':'Posted advances will appear here when recorded.'));
             tr.append(td);rows.append(tr);
         }
-        ['outstanding','released','liquidated','returned'].forEach(key=>{
+        ['released','liquidated','returned','outstanding'].forEach(key=>{
             const span=node('span',key[0].toUpperCase()+key.slice(1)+' ');if(key==='outstanding')span.className='ca-outstanding';
             span.append(node('strong',money(d.totals[key])));totals.append(span);
         });
@@ -132,6 +130,8 @@
         }finally{if(request===sequence)$('ca-rows').setAttribute('aria-busy','false');}
     }
     if(form){
+        const extra=document.createElement('details'),summary=node('summary','More Filters'),grid=document.createElement('div');extra.id='ca-more-filters';grid.className='aw-grid';extra.append(summary,grid);
+        ['project_id','control_account_id','overdue'].forEach(name=>grid.append(form.elements.namedItem(name).closest('label')));form.querySelector('.aw-actions').before(extra);
         form.addEventListener('input',mark);form.addEventListener('change',mark);form.addEventListener('submit',e=>{e.preventDefault();load();});
         $('ca-prev').addEventListener('click',()=>load(current-1,true));$('ca-next').addEventListener('click',()=>load(current+1,true));load();
     }else{

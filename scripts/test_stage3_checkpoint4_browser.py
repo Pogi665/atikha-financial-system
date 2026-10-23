@@ -121,7 +121,7 @@ try:
         page.goto(base+'/cash_advances.php');page.wait_for_function("document.getElementById('ca-status').textContent.includes('loaded')")
         for status in ['replaced','cancelled']:
             page.locator('[name="status"]').select_option(status);page.locator('#ca-filters button').click();page.wait_for_function("document.getElementById('ca-applied-filters').textContent.includes('Settlement status: '+document.querySelector('[name=status] option:checked').textContent)")
-            check(page.locator('#ca-rows').inner_text().find(status)>=0 and 'Reconciled' in page.locator('#ca-reconciliation').text_content() and 'reconciled' in page.locator('#ca-health-message').inner_text(),'Register '+status+' filter retains full reconciliation')
+            check(page.locator('#ca-rows').inner_text().lower().find(status)>=0 and 'Reconciled' in page.locator('#ca-reconciliation').text_content() and 'reconciled' in page.locator('#ca-health-message').inner_text(),'Register '+status+' filter retains full reconciliation')
         capture('retired-register');applied=page.locator('#ca-applied-filters').inner_text();rows=page.locator('#ca-rows').inner_text()
         page.locator('[name="status"]').select_option('replaced');check(page.locator('#ca-applied-filters').inner_text()==applied,'Unapplied filter edits retain displayed print scope')
         def fail_register(route):route.fulfill(status=503,content_type='application/json',body='{"ok":false,"error":"Synthetic refresh failure"}')

@@ -1,0 +1,9 @@
+Please review the visual design and usability of this Atikha financial management system using the attached screenshot catalogue.
+
+Start with the catalogue PDF and use the screen IDs, index and full-resolution PNGs to inspect details. The images show the current implemented source with synthetic data, including separate Admin and Management interfaces. This is a visual consultation while the actual human walkthrough is paused, not final acceptance or deployment evidence.
+
+Assess consistency of spacing, typography, colors, navigation, buttons versus links, table readability, primary actions, form clarity, saved/review/read-only states, empty/error states and excessive scrolling. Compare Admin and Management and the normal/wide desktop views. Point out concrete problems and cite screen IDs and the affected region. Prioritize changes as must-fix, useful improvement and optional polish. Separate screenshot-supported findings from questions or things that require interaction testing. Do not assume hidden controls or workflows are absent solely because one image does not show them.
+
+Preserve guided transaction forms, familiar financial tables, immutable posted records, role boundaries and financial meanings. Do not propose free editing of posted ledger cells. AI forecasting is intentionally under reconsideration; do not center the review on redesigning it or activating providers. Empty communication histories and provider-disabled notices reflect this isolated capture environment. The screenshot package does not prove every lifecycle permutation, mobile/cross-browser behavior, accounting correctness or client acceptance.
+
+Give an overall visual assessment, then a prioritized, specific improvement list. No implementation is requested yet.

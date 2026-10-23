@@ -1,0 +1,614 @@
+/* Scoped task and worksheet adapters. */
+/* Focused task forms: business fields first;
+complex accounting remains available. */
+.atikha-ui .accounting-workspace {
+  max-width:1040px;
+  margin:0 auto
+}
+.atikha-ui .aw-columns {
+  display:block
+}
+.atikha-ui #aw-entry {
+  max-width:960px
+}
+.atikha-ui #aw-entry>label {
+  display:block;
+  margin:20px 0
+}
+.atikha-ui #aw-entry>.aw-grid,.atikha-ui #aw-entry>.aw-cash,.atikha-ui #aw-lines {
+  margin:20px 0
+}
+.atikha-ui .aw-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.atikha-ui .ui-supporting-documents {
+  margin:20px 0;
+  padding:16px;
+  border:1px solid var(--ui-border);
+  border-radius:6px;
+  background:#fafcf9
+}
+.atikha-ui #aw-entry .ui-supporting-documents h2 {
+  display:none
+}
+.atikha-ui #aw-entry details {
+  border-top:1px solid var(--ui-border);
+  padding:4px 0
+}
+.atikha-ui #aw-entry .ui-supporting-documents {
+  padding:12px 16px
+}
+.atikha-ui #aw-entry details>div,.atikha-ui #aw-entry details>label {
+  margin:12px 0
+}
+.atikha-ui .aw-actions {
+  margin-top:24px;
+  padding-top:20px;
+  border-top:1px solid var(--ui-border);
+  gap:12px
+}
+.atikha-ui .aw-actions button {
+  min-height:44px;
+  padding:10px 16px;
+  border-radius:6px
+}
+.atikha-ui #aw-progress {
+  display:flex;
+  gap:24px;
+  padding:0;
+  list-style:none;
+  font-size:14px;
+  margin:24px 0
+}
+.atikha-ui #aw-progress li {
+  padding:8px 16px;
+  background:#edf4ee;
+  border-radius:24px;
+  color:var(--ui-muted)
+}
+.atikha-ui #aw-progress li[aria-current=step] {
+  background:var(--ui-brand);
+  color:white
+}
+.atikha-ui #aw-mode-notice {
+  font-size:14px;
+  color:var(--ui-muted)
+}
+.atikha-ui #aw-error:empty,.atikha-ui #aw-status:empty {
+  display:none
+}
+.atikha-ui .aw-card {
+  margin:20px 0
+}
+.atikha-ui .aw-document-box {
+  margin:16px 0
+}
+.atikha-ui .ocr-workspace {
+  max-width:1120px;
+  margin:auto
+}
+.atikha-ui .ocr-primary {
+  background:var(--ui-brand);
+  color:white;
+  min-height:44px
+}
+.atikha-ui .ocr-card {
+  border-color:var(--ui-border);
+  box-shadow:none;
+  border-radius:8px
+}
+.atikha-ui .ocr-eyebrow {
+  display:none
+}
+.atikha-ui .ocr-header h1 {
+  font-size:28px
+}
+.atikha-ui .ocr-help,.atikha-ui .ocr-steps {
+  font-size:14px
+}
+.atikha-ui .ocr-columns {
+  grid-template-columns:minmax(260px,1fr) minmax(320px,1.5fr)
+}
+@media(max-width:820px) {
+  .atikha-ui .aw-grid,.atikha-ui .ocr-columns {
+    grid-template-columns:1fr
+  }
+  .atikha-ui #aw-progress {
+    gap:8px;
+    flex-wrap:wrap
+  }
+  .atikha-ui .aw-card {
+    padding:16px
+  }
+}
+/* Read-only accounting workspaces retain their full financial scope. */
+.atikha-ui .advance-register {
+  max-width:1600px;
+  margin:0
+}
+.atikha-ui .ca-register-table {
+  min-width:1280px
+}
+.atikha-ui .ca-register-table td {
+  min-width:120px
+}
+.atikha-ui .ca-register-table td:nth-child(2) {
+  min-width:210px
+}
+.atikha-ui .ca-money {
+  white-space:nowrap;
+  text-align:right
+}
+.atikha-ui .ca-register-table .ui-badge {
+  display:inline-flex;
+  margin:0 4px 6px 0
+}
+.atikha-ui .ca-register-table small {
+  display:block
+}
+.atikha-ui .ca-register-summary .ca-register-scope {
+  font-size:14px
+}
+.atikha-ui .ca-health {
+  padding:12px 16px;
+  border-radius:6px
+}
+.atikha-ui .ca-health h2 {
+  font-size:14px
+}
+.atikha-ui .ca-health p {
+  font-size:14px
+}
+.atikha-ui .ca-health[data-state=healthy] {
+  background:#f0f6f0;
+  border-color:var(--ui-border)
+}
+.atikha-ui .ca-health[data-state=healthy] h2 {
+  display:none
+}
+.atikha-ui .ca-health[data-state=healthy] p {
+  display:inline;
+  margin-right:12px
+}
+.atikha-ui .ca-health a {
+  font-size:14px
+}
+.atikha-ui .ca-balance-cards {
+  grid-template-columns:repeat(4,minmax(0,1fr))
+}
+.atikha-ui .ca-balance-cards>span {
+  background:#f7faf6;
+  border-color:var(--ui-border);
+  font-size:14px
+}
+.atikha-ui .ca-balance-cards strong {
+  font-size:24px
+}
+.atikha-ui .ca-context {
+  font-size:14px
+}
+.atikha-ui .ca-next-actions a,.atikha-ui .ca-primary-link {
+  background:var(--ui-brand);
+  color:white;
+  border-color:var(--ui-brand);
+  min-height:44px
+}
+.atikha-ui .ca-toolbar a,.atikha-ui .ca-toolbar button,.atikha-ui .ca-operation a,.atikha-ui .general-ledger a.gl-page,.atikha-ui .general-ledger td a,.atikha-ui .general-ledger .gl-header>a {
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  padding:10px 14px;
+  border:1px solid var(--ui-input);
+  border-radius:6px;
+  text-decoration:none;
+  background:white;
+  font-size:14px
+}
+.atikha-ui .general-ledger {
+  max-width:1600px;
+  padding:0
+}
+.atikha-ui .general-ledger .gl-header h1 {
+  font-size:28px
+}
+.atikha-ui .general-ledger .gl-eyebrow {
+  display:none
+}
+.atikha-ui .general-ledger .gl-summary {
+  background:white;
+  border-color:var(--ui-border);
+  box-shadow:none
+}
+.atikha-ui .general-ledger .gl-balance-grid strong {
+  font-size:24px
+}
+.atikha-ui .general-ledger table {
+  font-size:14px;
+  min-width:1180px
+}
+.atikha-ui .general-ledger td,.atikha-ui .general-ledger th {
+  padding:12px 14px
+}
+.atikha-ui .general-ledger p {
+  font-size:14px
+}
+.atikha-ui .general-ledger .gl-filter-grid {
+  gap:16px
+}
+.atikha-ui .general-ledger button,.atikha-ui .general-ledger .gl-action,.atikha-ui .general-ledger .gl-primary {
+  background:var(--ui-brand);
+  color:white;
+  min-height:44px
+}
+.atikha-ui .financial-records {
+  max-width:1600px
+}
+.atikha-ui .journal-transaction .aw-header a {
+  min-height:44px
+}
+.atikha-ui .correction-navigation {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px
+}
+.atikha-ui .correction-navigation a {
+  padding:10px 14px;
+  border:1px solid var(--ui-input);
+  border-radius:6px;
+  text-decoration:none
+}
+@media(max-width:820px) {
+  .atikha-ui .ca-balance-cards {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+}
+/* Reports use one task workspace with a secondary accounting shelf. */
+.ui-report-tabs {
+  display:flex;
+  gap:24px;
+  border-bottom:1px solid var(--ui-border);
+  margin:24px 0
+}
+.ui-report-tabs a {
+  font-size:16px;
+  font-weight:600;
+  padding:12px 4px;
+  text-decoration:none;
+  border-bottom:3px solid transparent
+}
+.ui-report-tabs a[aria-current=page] {
+  border-bottom-color:var(--ui-brand)
+}
+.ui-accounting-details {
+  margin:12px 0 24px
+}
+.ui-accounting-details nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  padding:12px 0
+}
+.atikha-ui .finance-reports {
+  max-width:1560px
+}
+.atikha-ui .finance-reports .fr-sheet {
+  margin:24px 0
+}
+.atikha-ui .finance-reports .rpt-caption {
+  font-size:14px
+}
+.atikha-ui .fr-tabs a {
+  min-height:44px
+}
+.atikha-ui .fr-checklist {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  padding:0;
+  list-style:none
+}
+.atikha-ui .fr-checklist li {
+  padding:20px;
+  border:1px solid var(--ui-border);
+  border-radius:8px;
+  background:white
+}
+.atikha-ui .budget-grid input {
+  background:#fffef1;
+  min-width:130px;
+  font-size:16px
+}
+.atikha-ui .budget-grid td {
+  padding:6px
+}
+.atikha-ui .budget-grid-wrap {
+  overflow:auto
+}
+.atikha-ui .budget-review-wrap {
+  overflow:auto
+}
+.atikha-ui .fr-controls,.atikha-ui .budget-controls {
+  flex-wrap:wrap
+}
+@media(max-width:820px) {
+  .ui-report-tabs {
+    gap:12px;
+    overflow:auto
+  }
+  .ui-report-tabs a {
+    white-space:nowrap;
+    font-size:14px
+  }
+  .atikha-ui .fr-checklist {
+    grid-template-columns:1fr
+  }
+}
+/* Focused setup and administrative editors reuse the same visual system. */
+.ui-report-tabs button {
+  background:transparent;
+  border:0;
+  border-bottom:3px solid transparent;
+  padding:12px 4px;
+  font-size:16px;
+  min-height:44px;
+  color:var(--ui-muted)
+}
+.ui-report-tabs button[aria-selected=true] {
+  border-bottom-color:var(--ui-brand);
+  color:var(--ui-brand);
+  font-weight:600
+}
+.atikha-ui .ui-setup-tabs .aw-master-list {
+  display:block
+}
+.atikha-ui .ui-master-editor {
+  margin:16px 0
+}
+.atikha-ui .ui-master-editor form {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  padding:16px;
+  background:#f7faf6;
+  border:1px solid var(--ui-border);
+  border-radius:6px
+}
+.atikha-ui .ui-master-editor .aw-actions {
+  grid-column:1/-1
+}
+.atikha-ui .account-action-menu a {
+  display:block;
+  padding:10px 12px;
+  text-decoration:none;
+  border-radius:4px
+}
+.atikha-ui .account-action-menu a:hover {
+  background:#edf4ee
+}
+.atikha-ui .accounts-dialog,.atikha-ui .users-dialog {
+  border:1px solid var(--ui-border);
+  border-radius:8px;
+  box-shadow:0 16px 48px #172f2725
+}
+.atikha-ui .accounts-page-header,.atikha-ui .users-page-header {
+  box-shadow:none
+}
+.atikha-ui.accounts-page a.bg-slate-800,.atikha-ui.users-page a.bg-slate-800,.atikha-ui.accounts-page button.bg-slate-800,.atikha-ui.users-page button.bg-slate-800 {
+  background:var(--ui-brand);
+  color:white
+}
+.atikha-ui .accounts-group-row th {
+  background:#edf4ee
+}
+.atikha-ui .users-tab {
+  font-size:14px
+}
+.atikha-ui #resets-tab {
+  font-weight:400
+}
+.atikha-ui #resets-tab[aria-selected=true] {
+  font-weight:600
+}
+.atikha-ui.ui-audit-page .grid-cols-6 {
+  grid-template-columns:repeat(3,minmax(0,1fr))
+}
+.atikha-ui.ui-audit-page .overflow-x-auto {
+  max-width:100%;
+  overflow:auto
+}
+.atikha-ui.ui-auth {
+  background:var(--ui-canvas)
+}
+.atikha-ui.ui-auth>div {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:32px 16px
+}
+.atikha-ui.ui-auth main {
+  flex:none;
+  width:100%;
+  max-width:480px;
+  background:white;
+  border:1px solid var(--ui-border);
+  border-radius:8px;
+  padding:32px
+}
+.atikha-ui.ui-auth main>div {
+  width:100%;
+  max-width:none;
+  animation:none
+}
+.atikha-ui.ui-auth h1 {
+  font-size:28px
+}
+.atikha-ui.ui-auth main .bg-slate-900 {
+  background:var(--ui-brand)
+}
+.atikha-ui.ui-auth main button[type=submit] {
+  background:var(--ui-brand);
+  color:white;
+  min-height:44px;
+  transform:none;
+  box-shadow:none
+}
+.atikha-ui.ui-auth #toggle-password {
+  min-width:44px
+}
+.atikha-ui.ui-auth main p {
+  font-size:14px
+}
+.atikha-ui.ui-auth main .text-xs {
+  font-size:14px
+}
+.atikha-ui.ui-auth main .lg\:items-start {
+  align-items:center;
+  text-align:center
+}
+@media(max-width:820px) {
+  .atikha-ui .ui-master-editor form,.atikha-ui.ui-audit-page .grid-cols-6 {
+    grid-template-columns:1fr
+  }
+  .atikha-ui .ui-master-editor .aw-actions {
+    grid-column:auto
+  }
+}
+.atikha-ui .advance-register .ca-register-table {
+  table-layout:auto;
+  min-width:1440px
+}
+.atikha-ui .advance-register .ca-register-table th {
+  width:auto;
+  white-space:nowrap
+}
+.atikha-ui .advance-register .ca-register-table td {
+  overflow-wrap:normal
+}
+.atikha-ui .advance-register .ca-register-table td:first-child {
+  min-width:200px
+}
+.atikha-ui .advance-register .ca-register-table td:nth-child(2) {
+  min-width:220px
+}
+.atikha-ui .ui-report-tabs a {
+  text-decoration:none
+}
+.atikha-ui .general-ledger .gl-nav-button {
+  display:inline-flex;
+  align-items:center;
+  padding:10px 16px;
+  min-height:44px;
+  border:1px solid var(--ui-input);
+  border-radius:6px;
+  text-decoration:none;
+  font-size:14px;
+  background:white
+}
+.atikha-ui .general-ledger .gl-heading {
+  margin-bottom:24px
+}
+.atikha-ui .general-ledger .gl-heading h1 {
+  font-size:28px
+}
+.atikha-ui .general-ledger .gl-balances dd {
+  font-size:24px
+}
+.atikha-ui #aw-entry>.aw-actions {
+  position:sticky;
+  bottom:0;
+  background:white;
+  z-index:12;
+  padding:16px 0;
+  margin-bottom:0;
+  box-shadow:0 -8px 12px #ffffffed
+}
+.atikha-ui #aw-entry {
+  position:relative
+}
+.atikha-ui .exact-transaction {
+  max-width:1200px
+}
+.atikha-ui .exact-transaction .aw-header>a,.atikha-ui .exact-transaction .transaction-actions a {
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  padding:10px 14px;
+  border:1px solid var(--ui-input);
+  border-radius:6px;
+  text-decoration:none;
+  background:white;
+  color:var(--ui-brand);
+  font-size:14px
+}
+/* These legacy page selectors otherwise override only half of the shared button palette. */
+.atikha-ui.financial-records-page .records-page button.records-view,
+.atikha-ui.financial-records-page .records-page a.records-view {
+  background:var(--ui-brand);
+  border-color:var(--ui-brand);
+  color:white;
+  text-decoration:none
+}
+.atikha-ui.financial-records-page #records-filters button[type=submit] {
+  background:var(--ui-brand);
+  border-color:var(--ui-brand)
+}
+.atikha-ui .exact-transaction .transaction-actions {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap
+}
+.atikha-ui .exact-transaction .aw-header>a:hover,
+.atikha-ui .exact-transaction .transaction-actions a:hover {
+  background:#edf4ee;
+  color:var(--ui-brand)
+}
+.atikha-ui .exact-transaction .aw-correction-entry {
+  margin-top:24px
+}
+@media print {
+  .atikha-ui .correction-navigation,.atikha-ui .transaction-actions,.atikha-ui .ui-report-tabs,.atikha-ui .ui-accounting-details,.atikha-ui .gl-pagination,.atikha-ui .aw-header>a,.atikha-ui .aw-header>div:last-child>a,.atikha-ui .ui-setup-tabs [role=tablist] {
+    display:none!important
+  }
+  .atikha-ui .aw-table-wrap,.atikha-ui .gl-table-wrap,.atikha-ui .fr-table-wrap {
+    overflow:visible!important
+  }
+  .atikha-ui .advance-register .ca-register-table,.atikha-ui .general-ledger table {
+    min-width:0;
+    table-layout:auto;
+    font-size:9pt
+  }
+  .atikha-ui .advance-register .ca-register-table th,.atikha-ui .advance-register .ca-register-table td {
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    padding:5px
+  }
+  .atikha-ui #aw-entry>.aw-actions {
+    position:static;
+    display:none!important
+  }
+  .atikha-ui .aw-card,.atikha-ui .fr-sheet {
+    padding:8px;
+    border:0
+  }
+  .atikha-ui .ui-help {
+    display:none
+  }
+  .atikha-ui .general-ledger thead th {
+    position:static
+  }
+}
+.atikha-ui #aw-review-panel>.aw-actions {
+  position:sticky;
+  bottom:0;
+  z-index:12;
+  background:white;
+  padding:16px 0;
+  box-shadow:0 -8px 12px #ffffffed
+}
+@media print {
+  .atikha-ui #aw-review-panel>.aw-actions {
+    display:none!important
+  }
+}

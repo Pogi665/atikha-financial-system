@@ -56,6 +56,7 @@ $entityType = is_string($_POST['entity_type'] ?? null) ? $_POST['entity_type'] :
 if (in_array($entityType, ['fund', 'expense'], true)) {
     review_respond(false, null, 'Legacy transaction reviews have been retired. Use General Journal.', 410);
 }
+if ($entityType === 'board') { review_respond(false, null, 'Internal Board messaging is retired. Historical messages are read only; use Email for correspondence.', 410); }
 if ($entityType === 'report') {
     review_respond(false, null, 'Legacy summary reports are read-only. Submit a frozen Trial Balance revision.', 410);
 }
@@ -89,52 +90,4 @@ if ($entityType === 'trial_balance') {
     catch (InvalidArgumentException $e) { review_respond(false, null, $e->getMessage(), 400); }
     catch (Throwable $e) { error_log('Trial Balance review failed: '.$e->getMessage()); review_respond(false, null, 'Unable to save the Trial Balance review. No partial changes were saved.', 503); }
 }
-if ($action !== 'mark_reviewed' || $entityType !== 'board') {
-    review_respond(false, null, 'Unknown review action or entity.', 400);
-}
-if (!in_array($role, REVIEW_MANAGEMENT_ROLES, true)) {
-    review_respond(false, null, 'Marking items as reviewed is restricted to Management.', 403);
-}
-if (!is_string($_POST['entity_id'] ?? null) || !ctype_digit($_POST['entity_id']) || (int)$_POST['entity_id'] < 1
-    || (isset($_POST['review_notes']) && !is_string($_POST['review_notes']))) {
-    review_respond(false, null, 'Invalid review record or notes.', 400);
-}
-$entityId=(int)$_POST['entity_id'];
-$reviewNotes=trim($_POST['review_notes']??'');
-$notesValue=$reviewNotes!==''?$reviewNotes:null;
-        $stmt = $pdo->prepare(
-            'SELECT CommunicationID, Subject, Sender_UserID, Review_Status
-             FROM Board_Communications WHERE CommunicationID = :id'
-        );
-        $stmt->execute(['id' => $entityId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            review_respond(false, null, 'That message could not be found.', 404);
-        }
-
-        $update = $pdo->prepare(
-            'UPDATE Board_Communications
-             SET Review_Status = :status
-             WHERE CommunicationID = :id'
-        );
-        $update->execute(['status' => 'Reviewed', 'id' => $entityId]);
-
-        notification_create(
-            $pdo,
-            (int) $row['Sender_UserID'],
-            null,
-            'Your board message "' . $row['Subject'] . '" has been reviewed by Management.',
-            'board_messages.php'
-        );
-
-        log_system_action(
-            $pdo,
-            $userId,
-            AUDIT_ACTION_REVIEW_COMPLETE,
-            'Board_Communications',
-            $entityId,
-            ['review_status' => $row['Review_Status']],
-            ['review_status' => 'Reviewed', 'review_notes' => $notesValue]
-        );
-
-        review_respond(true, ['entity_type' => 'board', 'entity_id' => $entityId, 'review_status' => 'Reviewed'], '');
+review_respond(false, null, 'Unknown review action or entity.', 400);

@@ -7,11 +7,11 @@ require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/user_identities.php';
 require_once __DIR__ . '/includes/external_mail.php';
 require_login();
-require_role(['Admin', 'Management'], 'External Email');
+require_role(['Admin', 'Management'], 'Email');
 if (is_file(__DIR__ . '/.migration-private/external-email-maintenance.flag')) {
     http_response_code(503);
     header('Retry-After: 60');
-    exit('External Email is temporarily unavailable during maintenance.');
+    exit('Email is temporarily unavailable during maintenance.');
 }
 
 $activePage = 'external_email';
@@ -58,12 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $emails = [];
 $detail = null;
 $total = 0;
+$issueCount = null;
 $loadError = '';
 $replyTo = '';
 try {
     $stmt = $pdo->prepare('SELECT Email FROM Users WHERE UserID = ?');
     $stmt->execute([$userId]);
     $replyTo = (string) $stmt->fetchColumn();
+    $issueCount=(int)$pdo->query("SELECT COUNT(*) FROM External_Communications WHERE Send_Status IN ('Sending','Failed','Unknown')")->fetchColumn();
     $where = $folder === 'sent' ? "e.Send_Status = 'Sent'" : "e.Send_Status IN ('Sending','Failed','Unknown')";
     $total = (int) $pdo->query('SELECT COUNT(*) FROM External_Communications e WHERE ' . $where)->fetchColumn();
     $page = min($page, max(1, (int) ceil($total / 50)));
@@ -91,7 +93,7 @@ function external_escape($value): string { return htmlspecialchars((string) $val
 function external_date(?string $value): string { return $value ? date('M j, Y g:i A', strtotime($value)) : ''; }
 $fieldClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100';
 $extraHead = '<style>.external-email-page main{padding:1.5rem}.external-email-page .email-preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>';
-layout_begin('External Email', $activePage, [], $extraHead, $bodyClass);
+layout_begin('Email', $activePage, [], $extraHead, $bodyClass);
 ?>
 <div class="flex h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" data-external-mail>
     <aside class="w-1/3 min-w-0 min-h-0 border-r border-slate-200 flex flex-col bg-slate-50" aria-label="External email folders">
@@ -100,26 +102,27 @@ layout_begin('External Email', $activePage, [], $extraHead, $bodyClass);
                 <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
                 </span>
-                <div><h1 class="text-lg font-bold text-slate-900">External Email</h1><p class="text-xs text-slate-500">Outgoing correspondence</p></div>
+                <div><h1 class="text-lg font-bold text-slate-900">Email</h1><p class="text-xs text-slate-500">Outgoing correspondence</p></div>
             </div>
             <a href="external_email.php?view=compose&amp;folder=<?= $folder ?>" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><span aria-hidden="true">+</span> New Email</a>
             <div class="flex gap-2 mt-4" aria-label="Folders">
                 <a href="external_email.php?folder=sent" class="flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium <?= $folder === 'sent' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:bg-slate-100' ?>" <?= $folder === 'sent' ? 'aria-current="page"' : '' ?>>Sent</a>
-                <a href="external_email.php?folder=issues" class="flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium <?= $folder === 'issues' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:bg-slate-100' ?>" <?= $folder === 'issues' ? 'aria-current="page"' : '' ?>>Send issues</a>
+                <?php if($issueCount!==0||$folder==='issues'): ?><a href="external_email.php?folder=issues" class="flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium <?= $folder === 'issues' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:bg-slate-100' ?>" <?= $folder === 'issues' ? 'aria-current="page"' : '' ?>>Delivery Issues<?= $issueCount===null?'':' ('.$issueCount.')' ?></a><?php endif; ?>
             </div>
         </div>
-        <div class="flex-1 min-h-0 overflow-y-auto" aria-label="<?= $folder === 'sent' ? 'Sent emails' : 'Send issues' ?>">
+        <p class="ui-legacy-link"><a href="<?= $flags['isExecutive']?'board_inbox.php':'board_messages.php' ?>">Legacy Communications Archive</a></p>
+        <div class="flex-1 min-h-0 overflow-y-auto" aria-label="<?= $folder === 'sent' ? 'Sent emails' : 'Delivery Issues' ?>">
             <?php if ($loadError !== ''): ?>
                 <p class="p-5 text-sm text-red-700" role="alert"><?= external_escape($loadError) ?></p>
             <?php elseif ($emails === []): ?>
-                <div class="p-6 text-center"><p class="text-sm font-medium text-slate-700"><?= $folder === 'sent' ? 'No sent emails yet' : 'No send issues' ?></p><p class="mt-2 text-xs text-slate-500"><?= $folder === 'sent' ? 'Compose an email to start your correspondence.' : 'Unconfirmed or unsuccessful attempts appear here.' ?></p></div>
+                <div class="p-6 text-center"><p class="text-sm font-medium text-slate-700"><?= $folder === 'sent' ? 'No sent emails yet' : 'No Delivery Issues' ?></p><p class="mt-2 text-xs text-slate-500"><?= $folder === 'sent' ? 'Compose an email to start your correspondence.' : 'Unconfirmed or unsuccessful attempts appear here.' ?></p></div>
             <?php else: ?>
                 <?php foreach ($emails as $email): $isSelected = !$compose && $selectedId === (int) $email['CommunicationID']; ?>
                     <a href="external_email.php?folder=<?= $folder ?>&amp;page=<?= $page ?>&amp;id=<?= (int) $email['CommunicationID'] ?>" class="block hover:bg-slate-100 p-4 border-b border-slate-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 <?= $isSelected ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : '' ?>" <?= $isSelected ? 'aria-current="true"' : '' ?>>
                         <div class="flex items-center justify-between gap-2"><p class="min-w-0 truncate text-sm font-semibold text-slate-900"><?= external_escape($email['To_Email']) ?></p><?php if ($email['File_Path']): ?><span class="shrink-0 text-xs text-slate-400" aria-label="Has attachment">&#128206;</span><?php endif; ?></div>
                         <p class="mt-1 truncate text-sm font-bold text-slate-800"><?= external_escape($email['Subject']) ?></p>
                         <p class="email-preview mt-1 text-xs text-slate-500"><?= external_escape($email['Preview']) ?></p>
-                        <div class="mt-3 flex items-center justify-between gap-2 text-xs text-slate-400"><span><?= external_escape(external_date($email['Sent_At'] ?? $email['Created_At'])) ?></span><?php if ($folder === 'issues'): ?><span class="text-amber-700"><?= $email['Send_Status'] === 'Failed' ? 'Failed' : 'Unconfirmed' ?></span><?php endif; ?></div>
+                        <div class="mt-3 flex items-center justify-between gap-2 text-xs text-slate-400"><span><?= external_escape(external_date($email['Sent_At'] ?? $email['Created_At'])) ?></span><?php if ($folder === 'issues'): ?><span class="text-amber-700"><?= $email['Send_Status'] === 'Failed' ? 'Failed' : ($email['Send_Status'] === 'Sending' ? 'Sending' : 'Delivery Unconfirmed') ?></span><?php endif; ?></div>
                     </a>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -155,7 +158,7 @@ layout_begin('External Email', $activePage, [], $extraHead, $bodyClass);
             </form>
         <?php elseif ($detail): ?>
             <div class="flex-1 min-h-0 overflow-y-auto p-6" data-sent-detail>
-                <div class="flex items-start justify-between gap-4"><h2 class="min-w-0 break-words text-2xl font-semibold text-slate-900"><?= external_escape($detail['Subject']) ?></h2><span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium <?= $detail['Send_Status'] === 'Sent' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' ?>"><?= $detail['Send_Status'] === 'Sent' ? 'Sent' : ($detail['Send_Status'] === 'Failed' ? 'Failed' : 'Unconfirmed') ?></span></div>
+                <div class="flex items-start justify-between gap-4"><h2 class="min-w-0 break-words text-2xl font-semibold text-slate-900"><?= external_escape($detail['Subject']) ?></h2><span class="shrink-0 rounded-full px-3 py-1 text-xs font-medium <?= $detail['Send_Status'] === 'Sent' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' ?>"><?= $detail['Send_Status'] === 'Sent' ? 'Sent' : ($detail['Send_Status'] === 'Failed' ? 'Failed' : ($detail['Send_Status'] === 'Sending' ? 'Sending' : 'Delivery Unconfirmed')) ?></span></div>
                 <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm space-y-2">
                     <p class="break-words"><span class="text-slate-500">From:</span> <?= external_escape($detail['From_Email']) ?></p>
                     <p class="break-words"><span class="text-slate-500">To:</span> <?= external_escape($detail['To_Email']) ?></p>
@@ -163,7 +166,7 @@ layout_begin('External Email', $activePage, [], $extraHead, $bodyClass);
                     <p><span class="text-slate-500">Sent by:</span> <?= external_escape($detail['SenderName'] ?? 'Historical sender') ?></p>
                     <p><span class="text-slate-500"><?= $detail['Send_Status'] === 'Sent' ? 'Accepted:' : 'Attempted:' ?></span> <?= external_escape(external_date($detail['Sent_At'] ?? $detail['Created_At'])) ?></p>
                 </div>
-                <p class="mt-4 text-xs text-slate-500"><?= external_escape($detail['Send_Status'] === 'Sent' ? 'Email Sent' : external_status_message($detail['Send_Status'])) ?></p>
+                <p class="mt-4 text-xs text-slate-500"><?= external_escape($detail['Send_Status'] === 'Sent' ? 'Email Sent' : external_status_message($detail['Send_Status'])) ?><?php if($detail['Send_Status']==='Sent')ui_help('Email acceptance','SMTP server accepted this email. Recipient delivery is not confirmed.'); ?></p>
                 <div class="mt-6 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700"><?= external_escape($detail['Message_Body']) ?></div>
                 <?php if ($detail['File_Path']): ?><div class="mt-8 border-t border-slate-200 pt-4"><a href="external_attachment.php?id=<?= (int) $detail['CommunicationID'] ?>" class="inline-flex max-w-full items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-indigo-700 hover:bg-indigo-50"><span aria-hidden="true">&#128206;</span><span class="truncate"><?= external_escape($detail['Attachment_Name']) ?></span><span class="shrink-0 text-xs text-slate-400"><?= number_format($detail['Attachment_Size'] / 1024, 1) ?> KB</span></a></div><?php endif; ?>
             </div>
