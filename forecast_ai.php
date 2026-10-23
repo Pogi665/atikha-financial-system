@@ -13,7 +13,7 @@ function forecast_respond(bool $ok,?array $data,string $error,int $status=200): 
 { http_response_code($status);echo json_encode(['ok'=>$ok,'data'=>$data,'error'=>$error],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);exit; }
 function forecast_payload(array $history,?array $forecast,string $state,?string $generatedAt=null,string $note=''): array
 {
-    return ['version'=>2,'basis'=>FORECAST_BASIS,'state'=>$state,'as_of'=>$history['as_of'],'generated_at'=>$generatedAt,'note'=>$note,
+    return ['version'=>FORECAST_VERSION,'basis'=>FORECAST_BASIS,'state'=>$state,'as_of'=>$history['as_of'],'generated_at'=>$generatedAt,'note'=>$note,
         'history'=>$history['series'],'projection'=>$forecast['chart_data']??forecast_baseline_projection($history),
         'advisory'=>['reallocation_suggestion'=>$forecast['reallocation_suggestion']??'','funding_risk'=>$forecast['funding_risk']??'','risk_level'=>'UNKNOWN'],
         'metrics'=>$history['metrics'],'categories'=>$history['categories'],'current_month'=>$history['current_month'],'budgets'=>$history['budgets']];
@@ -25,7 +25,9 @@ if(!in_array($_SESSION['Role']??'',['Admin','Management'],true)){forecast_respon
 if(!csrf_verify(is_string($_POST['csrf_token']??null)?$_POST['csrf_token']:null)){forecast_respond(false,null,'Reload the page and try again.',400);}
 $action=$_POST['action']??'load';if(!is_string($action)||!in_array($action,['load','refresh'],true)){forecast_respond(false,null,'Invalid forecast action.',400);}
 $userId=(int)$_SESSION['UserID'];
-try{$history=forecast_fetch_history($pdo);}catch(Throwable $e){error_log('Forecast history unavailable: '.$e->getMessage());forecast_respond(false,null,'Unable to read journal history.',503);}
+// The authenticated identity remains in memory; do not lock other tabs during advisory work.
+if(session_status()===PHP_SESSION_ACTIVE){session_write_close();}
+try{$history=forecast_fetch_history($pdo);}catch(ReportingProblem $e){forecast_respond(false,null,$e->getMessage(),$e->status);}catch(Throwable $e){error_log('Forecast history unavailable: '.$e->getMessage());forecast_respond(false,null,'Unable to read journal history.',503);}
 if(!forecast_history_is_sufficient($history)){forecast_respond(true,forecast_payload($history,null,'insufficient'),'');}
 if($action==='load'){
     try{$cache=forecast_cache_load($pdo,$history);if($cache){forecast_respond(true,forecast_payload($history,$cache['forecast'],'cached',$cache['created_at']),'');}}

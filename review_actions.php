@@ -11,6 +11,8 @@ require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/notifications.php';
 require_once __DIR__ . '/includes/report_snapshots.php';
+require_once __DIR__ . '/includes/budget_revisions.php';
+require_once __DIR__ . '/includes/report_bundles.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -56,6 +58,20 @@ if (in_array($entityType, ['fund', 'expense'], true)) {
 }
 if ($entityType === 'report') {
     review_respond(false, null, 'Legacy summary reports are read-only. Submit a frozen Trial Balance revision.', 410);
+}
+if ($entityType === 'budget_revision') {
+    try{
+        if(!in_array($action,['approve_budget','return_budget'],true))review_respond(false,null,'Choose Approve budget or Return budget.',400);
+        $request=$_POST;$request['decision']=$action==='approve_budget'?'Approved':'Returned';$result=budget_review($pdo,$userId,$request);
+        review_respond(true,['entity_type'=>'budget_revision','entity_id'=>$result['id'],'review_status'=>$request['decision'],'duplicate'=>$result['duplicate'],'warning'=>$result['warning'],'budget_url'=>'budgets.php?revision_id='.$result['id']],'');
+    }catch(ReportingProblem $e){review_respond(false,null,$e->getMessage(),$e->status);}catch(Throwable $e){error_log('Budget review unavailable.');review_respond(false,null,'The budget decision could not be confirmed. Open the revision before trying again.',503);}
+}
+if ($entityType === 'complete_report') {
+    try{
+        if(!in_array($action,['review_complete_reports','return_complete_reports'],true))review_respond(false,null,'Choose Mark reviewed or Return complete reports.',400);
+        $request=$_POST;$request['bundle_id']=$request['entity_id']??'';$request['decision']=$action==='review_complete_reports'?'Reviewed':'Returned';$result=report_bundle_review($pdo,$userId,$request);
+        review_respond(true,['entity_type'=>'complete_report','entity_id'=>$result['id'],'review_status'=>$request['decision'],'duplicate'=>$result['duplicate'],'warning'=>$result['warning'],'bundle_url'=>'report_bundles.php?bundle_id='.$result['id']],'');
+    }catch(ReportingProblem $e){review_respond(false,null,$e->getMessage(),$e->status);}catch(Throwable $e){error_log('Complete report review unavailable.');review_respond(false,null,'The review could not be confirmed. Open the frozen revision before trying again.',503);}
 }
 if ($entityType === 'trial_balance') {
     try {

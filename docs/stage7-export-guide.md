@@ -1,0 +1,15 @@
+# Reviewing document items and exporting financial results
+
+In an open transaction, choose **Review item details** beside its attached image. Compare the original with the merchant, date, currency, document total and printed rows. Quantity is a note; enter each printed row amount. Mark itemization complete only when all rows add exactly to the document total. Otherwise explain missing rows, discounts, tax or differences. Confirming these details saves an evidence review, not a financial transaction. Review the transaction again before recording it.
+
+The transaction's declared, accepted and excluded amounts determine monetary support. Item rows do not add extra coverage or create journal allocations. Automatic reading provides suggestions; manual entry works without it. A correction reusing an image requires a new confirmation for that correction. Admin can open **View recorded item details** from the recorded transaction to inspect its preserved review; it is read-only. Management cannot open these private item details.
+
+**General Ledger:** apply the account, dates and search, then choose **Export matching rows**. The CSV includes every matching row across pages. Its running balances still include movements hidden by search. **Print full period** includes all account movements for the selected dates.
+
+**Cash books and Journal History:** choose **Export all matching results** or **Print all matching results**. Cash books retain every line of matching originating entries and show gross activity, including corrected originals. History retains its line filters. Full-entry cash-book export requires saved-workspace mode; when that mode is unavailable, use History for validated posted lines rather than interpreting a legacy cash-line view as complete entries.
+
+**Monthly reports:** choose **Export all report rows**. In a submitted report, **Export all rows of this frozen revision** uses its stored labels and figures. Later postings do not recalculate that frozen file. Live exports identify themselves as live. Print uses landscape pages with repeated financial headings, scope/revision and page numbers.
+
+CSV money is an exact decimal string without currency symbols or thousands separators. Text cells have a protective leading apostrophe and every cell is quoted. The tested consumer is Excel16.0/build20326 using first UTF8 comma/doublequote import; twelve adversarial text values remained literal, with no formulas or external workbook links. This is not verification of every Excel version or subsequent re-save/import. Excel's numeric precision can round large values: the exact CSV probe `90071992547409.91` was represented as `90071992547409.906`. Retain the original CSV when exact amounts matter. No external accounting application's import compatibility is confirmed.
+
+Exports complete and validate before sending a successful file. The initial limits are100,000 source lines and32MiB; an exceeded limit gives an error without a partial-success file. These are implementation resource limits, not Atikha accounting policy.

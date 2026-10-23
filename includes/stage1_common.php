@@ -26,6 +26,17 @@ function stage1_write_changed(PDO $pdo): void
 {
     if (stage1_schema($pdo)) { $pdo->exec('UPDATE accounting_write_state SET change_version=change_version+1 WHERE id=1'); }
 }
+/** Installed period enforcement is independent of entry/UI flags. Recover retries first. */
+function stage1_period_guard(PDO $pdo,string $date,?string $through=null):void
+{
+    if(!is_file(__DIR__.'/accounting_periods.php'))return;
+    require_once __DIR__.'/accounting_periods.php';
+    try{periods_basis_guard($pdo,$date,$through);}catch(ReportingProblem $e){throw new JournalProblem($e->getMessage(),$e->status);}catch(InvalidArgumentException $e){throw new JournalProblem('Choose a valid accounting date.');}
+}
+function stage1_correction_period_guard(PDO $pdo,string $date,int $target):void
+{
+    if(!is_file(__DIR__.'/accounting_periods.php'))return;require_once __DIR__.'/accounting_periods.php';try{periods_basis_guard($pdo,periods_correction_from($pdo,$date,$target));}catch(ReportingProblem $e){throw new JournalProblem($e->getMessage(),$e->status);}catch(InvalidArgumentException $e){throw new JournalProblem('Choose a valid correction accounting date.');}
+}
 function stage1_reserved_guard(PDO $pdo, int $receiptId): void
 {
     $state=stage3_schema_state($pdo);

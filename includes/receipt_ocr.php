@@ -7,6 +7,7 @@ require_once __DIR__ . '/receipts.php';
 require_once __DIR__ . '/gemini_client.php';
 
 const RECEIPT_SCHEMA_VERSION = 'journal_receipt_v1';
+require_once __DIR__.'/evidence_item_reviews.php';
 
 function receipt_schema_available(PDO $pdo): bool
 {
@@ -159,15 +160,20 @@ function receipt_extract(PDO $pdo, int $userId, int $id, array $post): array
         $catalog = hash('sha256', json_encode($accounts, JSON_THROW_ON_ERROR));
         $model = defined('GEMINI_MODEL') ? (string) GEMINI_MODEL : 'gemini-2.0-flash';
         $s = $pdo->prepare('INSERT INTO receipt_ocr_attempts (receipt_id,requested_by_user_id,request_key,started_at,source_hash,catalog_fingerprint,model,schema_version) VALUES (?,?,?,UTC_TIMESTAMP(),?,?,?,?)');
-        $s->execute([$id,$userId,$key,$r['File_SHA256'],$catalog,$model,RECEIPT_SCHEMA_VERSION]); $attemptId = (int) $pdo->lastInsertId();
+        $s->execute([$id,$userId,$key,$r['File_SHA256'],$catalog,$model,GEMINI_RECEIPT_VERSION]); $attemptId = (int) $pdo->lastInsertId();
         $pdo->prepare("UPDATE Receipts SET OCR_Status='Pending' WHERE ReceiptID=?")->execute([$id]);
         receipt_audit($pdo, $userId, AUDIT_ACTION_CREATE, $id, ['attempt_id'=>$attemptId,'state'=>'Pending','schema_version'=>RECEIPT_SCHEMA_VERSION,'catalog_fingerprint'=>$catalog,'model'=>$model]);
-        $pdo->commit();
+        $manualEpoch=item_review_epoch($pdo,$id);$pdo->commit();
     } catch (Throwable $e) { if ($pdo->inTransaction()) { $pdo->rollBack(); } throw $e; }
     // Never hold database/session locks during a network request.
     if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
     try { $ocr = gemini_extract_receipt($path, $r['Mime_Type'], $accounts); }
     catch (Throwable $e) { error_log('OCR extraction failed: ' . $e->getMessage()); $ocr = ['ok'=>false,'data'=>null,'raw'=>'','error'=>'Extraction failed. Enter the details manually.']; }
+    return receipt_complete_extraction($pdo,$userId,$id,$attemptId,$manualEpoch,$ocr);
+}
+/** Provider result may commit only against its original image, lease and manual-review epoch. */
+function receipt_complete_extraction(PDO $pdo,int $userId,int $id,int $attemptId,int $manualEpoch,array $ocr):array
+{
     $error = $ocr['ok'] ? null : $ocr['error'];
     $pdo->beginTransaction();
     try {
@@ -175,7 +181,8 @@ function receipt_extract(PDO $pdo, int $userId, int $id, array $post): array
         if ($current['JournalEntryID'] !== null) { throw new JournalProblem('Receipt is already posted.', 409); }
         receipt_file_verify($current);
         $latest = receipt_latest_attempt($pdo, $id);
-        if (!$latest || (int) $latest['id'] !== $attemptId || $latest['state'] !== 'Pending') {
+        if (!$latest || (int) $latest['id'] !== $attemptId || $latest['state'] !== 'Pending'
+            || !hash_equals($current['File_SHA256'],$latest['source_hash']) || item_review_epoch($pdo,$id)!==$manualEpoch) {
             throw new JournalProblem('A newer extraction replaced this request. Reload the receipt.', 409);
         }
         $state = $ocr['ok'] ? 'Processed' : 'Failed';
@@ -190,6 +197,7 @@ function receipt_extract(PDO $pdo, int $userId, int $id, array $post): array
 function receipt_intake_signature(array $r, array $a): string
 {
     $payload = [(int) $r['ReceiptID'],(int) $r['UploadedBy_UserID'],(int) $a['id'],$r['File_SHA256'],$a['schema_version'],hash('sha256', $a['normalized_json'] ?? '')];
+    if(isset($a['manual_review_hash']))$payload[]=$a['manual_review_hash'];
     return hash_hmac('sha256', json_encode($payload, JSON_THROW_ON_ERROR), receipt_secret());
 }
 function receipt_review(PDO $pdo, int $id, int $userId): array
@@ -199,6 +207,8 @@ function receipt_review(PDO $pdo, int $id, int $userId): array
     if ($r['JournalEntryID'] !== null) { throw new JournalProblem('Receipt already belongs to journal #' . (int) $r['JournalEntryID'] . '.', 409); }
     receipt_file_verify($r); $a = receipt_latest_attempt($pdo, $id);
     if (!$a || $a['state'] === 'Pending') { throw new JournalProblem('Extraction is not complete. Return to Scan Receipt to retry.', 409); }
+    $manual=item_review_require($pdo,true)?item_review_current($pdo,$id,'intake'):null;
+    if($manual)$a['manual_review_hash']=hash('sha256',json_encode([(int)$manual['id'],$manual['payload_hash']],JSON_THROW_ON_ERROR));
     return ['receipt'=>$r,'attempt'=>$a,'data'=>$a['normalized_json'] === null ? [] : json_decode($a['normalized_json'],true,512,JSON_THROW_ON_ERROR),
         'intake_signature'=>receipt_intake_signature($r,$a)];
 }
@@ -226,6 +236,7 @@ function receipt_lock_for_post(PDO $pdo, int $userId, array $context, string $si
     stage1_reserved_guard($pdo, (int)$r['ReceiptID']);
     if ($r['JournalEntryID'] !== null) { throw new JournalProblem('This receipt has already been posted.',409); }
     receipt_file_verify($r); $a = receipt_latest_attempt($pdo,(int)$r['ReceiptID']);
+    $manual=item_review_require($pdo,true)?item_review_current($pdo,(int)$r['ReceiptID'],'intake'):null;if($manual&&$a)$a['manual_review_hash']=hash('sha256',json_encode([(int)$manual['id'],$manual['payload_hash']],JSON_THROW_ON_ERROR));
     if (!$a || (int)$a['id'] !== $context['attempt_id'] || $a['state'] === 'Pending'
         || !hash_equals($r['File_SHA256'],$context['file_hash'])
         || !hash_equals($a['source_hash'],$r['File_SHA256'])
@@ -233,7 +244,7 @@ function receipt_lock_for_post(PDO $pdo, int $userId, array $context, string $si
         throw new JournalProblem('Receipt proposal changed or expired. Reload and review it again.',409);
     }
     if ($duplicate=receipt_duplicate($pdo,$r['File_SHA256'])) { throw new JournalProblem('Identical evidence is already attached to journal #'.$duplicate.'.',409); }
-    return ['receipt'=>$r,'attempt'=>$a,'data'=>$a['normalized_json']===null?[]:json_decode($a['normalized_json'],true,512,JSON_THROW_ON_ERROR)];
+    return ['receipt'=>$r,'attempt'=>$a,'manual_review'=>$manual,'data'=>$a['normalized_json']===null?[]:json_decode($a['normalized_json'],true,512,JSON_THROW_ON_ERROR)];
 }
 function receipt_link_post(PDO $pdo, int $id, array $review, array $input): array
 {
@@ -242,7 +253,9 @@ function receipt_link_post(PDO $pdo, int $id, array $review, array $input): arra
     $s->execute([$id,$r['ReceiptID']]);
     if ($s->rowCount()!==1) { throw new JournalProblem('Receipt could not be linked.',409); }
     if(stage1_schema($pdo)){
-        $pdo->prepare("INSERT INTO posted_evidence_associations(journal_id,receipt_id,purpose) VALUES(?,?,'legacy')")->execute([$id,$r['ReceiptID']]);
+        $m=$review['manual_review']??null;$stamp=$m?['id'=>(int)$m['id'],'payload_hash'=>$m['payload_hash'],'revision'=>(int)$m['revision_number']]:null;
+        $pdo->prepare("INSERT INTO posted_evidence_associations(journal_id,receipt_id,purpose,review_snapshot) VALUES(?,?,'legacy',?)")->execute([$id,$r['ReceiptID'],json_encode(['item_review'=>$stamp],JSON_THROW_ON_ERROR)]);
+        item_review_link($pdo,(int)$pdo->lastInsertId(),$review['manual_review']??null);
     }
     $debits=0; foreach($input['lines'] as $line){$debits+=journal_amount($line['debit_amount']);}
     $d=$review['data']; $original=['entry_date'=>$d['transaction_date']??null,'reference'=>$d['reference']??null,'total_amount'=>$d['total_amount']??null,'debit_account_id'=>$d['suggested_debit_account_id']??null,'currency'=>$d['currency']??null];
@@ -328,5 +341,6 @@ function receipt_journal_metadata(PDO $pdo,array $ids,?string $role=null): array
         foreach(stage2_sensitive_journals($pdo,$ids) as $id=>$_)unset($out[$id]);
         foreach($out as $id=>$documents){$out[$id]=array_values(array_filter($documents,fn($d)=>!stage3_receipt_sensitive($pdo,$d['id'])));}
     }
+    $urls=item_review_urls($pdo,array_keys($out));foreach($out as $journal=>&$documents)foreach($documents as &$document)if(isset($urls[$journal][$document['id']]))$document['item_review_url']=$urls[$journal][$document['id']];unset($document,$documents);
     return $out;
 }

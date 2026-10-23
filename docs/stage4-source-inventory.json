@@ -1,0 +1,286 @@
+{
+  "status": "planning/source inspection only; no implementation, SQL or runtime verification",
+  "baseline": {
+    "branch": "main",
+    "head": "60206a7047d99975a29245e236ae786d16e31bc7",
+    "origin_main_tracking": "60206a7047d99975a29245e236ae786d16e31bc7",
+    "live_remote_checked": false
+  },
+  "pre_existing_changes_preserved": [
+    "docs/client-context.md",
+    "docs/project-status.md",
+    "docs/manuscript/compact-flowchart/overall-system-flowchart-compact.png",
+    "docs/manuscript/compact-flowchart/overall-system-flowchart-compact.svg",
+    "docs/manuscript/compact-flowchart/placement-and-explanation.md"
+  ],
+  "proposed_production_additions": [
+    "general_ledger.php",
+    "includes/general_ledger_query.php",
+    "assets/js/general_ledger.js",
+    "assets/css/general_ledger.css"
+  ],
+  "proposed_existing_production_changes": [
+    "includes/nav.php",
+    "reports.php",
+    "journal_transaction.php"
+  ],
+  "original_external_roadmap": {
+    "file": "plan_complete.md in user Downloads",
+    "sha256": "1bd40b6119d63f87e7f4fad06fee6537faae5addc5089f7b019a1d435cac6b48",
+    "inspected_section": "Stage 4 Cash books and General Ledger"
+  },
+  "inspection": {
+    "includes/accounting_query.php": {
+      "classification": "reference",
+      "purpose": "Exact posted financial read basis, account choices, consistent snapshots, full journals and Trial Balance",
+      "sha256_at_inspection": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa",
+      "git_blob_at_baseline": "894b0e9e4ecf1c81bed6f2d4583d34da11e96963",
+      "symbols": {
+        "accounting_read": 58,
+        "accounting_accounts": 71,
+        "accounting_trial_balance": 88,
+        "accounting_records_request": 204,
+        "accounting_complete_journals": 285,
+        "accounting_posted_journal": 335,
+        "accounting_records": 351
+      }
+    },
+    "financial_records.php": {
+      "classification": "preserve",
+      "purpose": "Current line History and complete originating cash books",
+      "sha256_at_inspection": "b86cadb1a0f8ff147b644b1031e8a2abc44f9b9dd18eef96932767a113a24851",
+      "git_blob_at_baseline": "7cc701632b51a80320e35dc6e1cf4f8caf35678e",
+      "symbols": {}
+    },
+    "assets/js/financial_records.js": {
+      "classification": "preserve",
+      "purpose": "Applied/draft filters, request failure handling, History/book searching and exact journal presentation",
+      "sha256_at_inspection": "ab3d77a3775839af2005f7993a63227899d9c626de9738d835be70a0eee685e8",
+      "git_blob_at_baseline": "24f466c9790dc1bc6de7a12c52b8584618b53276",
+      "symbols": {}
+    },
+    "assets/css/financial_records.css": {
+      "classification": "preserve",
+      "purpose": "Existing History/book styles",
+      "sha256_at_inspection": "c0603b2273ffba29d63fd5e3072a7245ee2db7d63542b55eac380f263288d31d",
+      "git_blob_at_baseline": "597fb80e3fc3535cf0d7dc696ed63628fa550ef6",
+      "symbols": {}
+    },
+    "includes/nav.php": {
+      "classification": "expected change",
+      "purpose": "Add one General Ledger destination for the two existing roles",
+      "sha256_at_inspection": "892d35c4d0ea9cfa75918af169e485947a608a7c4b03d39a6d8a97f3e2dd78cf",
+      "git_blob_at_baseline": "2ca299bd820e9499cf6b9727159e475f988ef6e0",
+      "symbols": {
+        "nav_link_class": 34
+      }
+    },
+    "reports.php": {
+      "classification": "expected change",
+      "purpose": "Add ledger destination and live-only Trial Balance account links; frozen reports untouched",
+      "sha256_at_inspection": "abd8898980df212471b2c8b44ad83f058bd5445250c6c5d2aa2db2881614c844",
+      "git_blob_at_baseline": "7fffbd3755e5abb5c7fa28e64a048e3dc987e832",
+      "symbols": {}
+    },
+    "journal_transaction.php": {
+      "classification": "expected change",
+      "purpose": "Retain exact journal/evidence reader; add validated fixed ledger return context",
+      "sha256_at_inspection": "9d8fc9cac4649d91f0d76378b0937579f4695b55db7111b3046de7a9cdd496ec",
+      "git_blob_at_baseline": "685cb6180cfc2d12cad3eaa350fecedb0415e1ec",
+      "symbols": {}
+    },
+    "includes/require_role.php": {
+      "classification": "reference",
+      "purpose": "Existing authenticated page gates",
+      "sha256_at_inspection": "4f47a8fe65354f26e50b6a64e70cefb1e089c1690223c187c2b54f2e2898669b",
+      "git_blob_at_baseline": "87761e12647c713916d493ad4f67560d7f08b4d3",
+      "symbols": {
+        "require_login": 12,
+        "require_role": 41
+      }
+    },
+    "includes/user_session.php": {
+      "classification": "reference",
+      "purpose": "Current database-backed active-role session validation",
+      "sha256_at_inspection": "bb840de5e1cbe90a2de3bfa5e7e93239af5281ebd2636ef3ad1bc5151d18f210",
+      "git_blob_at_baseline": "f85bb5ff36a474e79c2f64e762c170638114df0f",
+      "symbols": {
+        "user_session_validate": 5
+      }
+    },
+    "includes/user_roles.php": {
+      "classification": "preserve",
+      "purpose": "Existing Admin/Management vocabulary",
+      "sha256_at_inspection": "b2ea52211e5dfd738a666319c80543f0ce1869d26d83607854454be5f1936229",
+      "git_blob_at_baseline": "1d903ee3f5982509898b8368a0b9bd97353c6feb",
+      "symbols": {}
+    },
+    "includes/layout.php": {
+      "classification": "preserve",
+      "purpose": "Shared role shell",
+      "sha256_at_inspection": "2f7aa1c97baf1091bccd0a63cc5233d4acf3bc12eb6638c99442b816e20b2884",
+      "git_blob_at_baseline": "ffdcd08c5834fabda60a6c3993c3850cab411040",
+      "symbols": {}
+    },
+    "includes/journal.php": {
+      "classification": "preserve",
+      "purpose": "Existing exact writer and utility imports; no Stage4 writer changes",
+      "sha256_at_inspection": "2cd02bd330186249c12b715d6e8904d81e955e4c31badef0ee97964dd1972b9b",
+      "git_blob_at_baseline": "05da0ff05050b9e6d3d70be3030feb693263b286",
+      "symbols": {}
+    },
+    "includes/journal_corrections.php": {
+      "classification": "preserve",
+      "purpose": "Approved correction consistency/performance and immutable chain workflow",
+      "sha256_at_inspection": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+      "git_blob_at_baseline": "3f991fea0af6803aa0ac3fd94590b90d9f32c4d6",
+      "symbols": {}
+    },
+    "includes/stage2_common.php": {
+      "classification": "preserve",
+      "purpose": "Approved advance validation and metadata-query optimization",
+      "sha256_at_inspection": "8544b392c2b74099f91d7362cdb27d7f2c32156b1fe56d67328a3656e9593781",
+      "git_blob_at_baseline": "4428d3acc41780d0cc724901e229b4c1b9140a8c",
+      "symbols": {}
+    },
+    "includes/stage3_common.php": {
+      "classification": "preserve",
+      "purpose": "Approved correction/schema validation and metadata-query optimization",
+      "sha256_at_inspection": "1f870d2388adccb963340c7438d35dea5c9f5cf2d590ecf47436ae3582fe7a64",
+      "git_blob_at_baseline": "066f0ef9cc71e36d779c92dc2966d83f6960bbca",
+      "symbols": {}
+    },
+    "includes/ledger_query.php": {
+      "classification": "preserve",
+      "purpose": "Legacy readers are not the new ledger basis; shared utility imports still used",
+      "sha256_at_inspection": "6dbb0e5a518b4f2866aa39aef188587e76246b870e9cbe0474e0e412200234bf",
+      "git_blob_at_baseline": "44fd24eb0dfd184a22783f19272e26bc5d4fdf6e",
+      "symbols": {}
+    },
+    "includes/report_snapshots.php": {
+      "classification": "preserve",
+      "purpose": "Frozen Trial Balance identity and review contracts",
+      "sha256_at_inspection": "44b3d263e8ad48664cdeeca52f0b00bdeadaa5ba3b4fc3466a9bfa243ea5920b",
+      "git_blob_at_baseline": "bf231a56f348252b4daf95ab9e5e25ad8fb7ab6c",
+      "symbols": {}
+    },
+    "includes/accounts.php": {
+      "classification": "reference",
+      "purpose": "Account identity/type/normal-side and inactive-history behavior",
+      "sha256_at_inspection": "95b65aa896e85ce420be95bce314d3c51f6a934dd2f32ec8126cf8942155a379",
+      "git_blob_at_baseline": "77d08a36ee3c575f8e4f1ebe79bfd7efaad912db",
+      "symbols": {}
+    },
+    "migrations/015_double_entry_core.sql": {
+      "classification": "reference only never rerun",
+      "purpose": "Existing journal DDL, status/date and account/journal indexes",
+      "sha256_at_inspection": "e17aeb4acbf71cbf97a621129fd4ed2a7e5325db3b5b68d6f47b9606b62e6e29",
+      "git_blob_at_baseline": "cfdddd0f4513496d2b7a44a9d43a42ac4e655d28",
+      "symbols": {}
+    },
+    "migrations/019_stage1_foundation.sql": {
+      "classification": "reference only never rerun",
+      "purpose": "Stored source books, posted party/project snapshots and hardcoded database risk",
+      "sha256_at_inspection": "460b8d060026925e9cb72c736f6ad1306c54b8e1f68e0f484325b9ec9bb1a8c6",
+      "git_blob_at_baseline": "a0a86950d38f1b6df1c10484202f45b687a309b3",
+      "symbols": {}
+    },
+    "migrations/020_stage2_advances.sql": {
+      "classification": "reference only never rerun",
+      "purpose": "Existing linked advance schema",
+      "sha256_at_inspection": "6df0aa92f6056aaeada095f179fd093a9e50e9f037a9c106d9123439eee9cfbe",
+      "git_blob_at_baseline": "808a1319bbac16ae511f506eb78500a2e75fc10a",
+      "symbols": {}
+    },
+    "migrations/021_journal_corrections.sql": {
+      "classification": "reference only never rerun",
+      "purpose": "Existing immutable linked correction schema",
+      "sha256_at_inspection": "9fb3801f2a691b389788ddc7c2ac2ea8f5766cc541c9e829f05e55c7f7182536",
+      "git_blob_at_baseline": "59d6bfa796cda2a9b8403f4d23495fa29a7dd4d0",
+      "symbols": {}
+    },
+    "scripts/test_stage3_fixture.py": {
+      "classification": "reference",
+      "purpose": "Guarded fresh integrated synthetic clone helper",
+      "sha256_at_inspection": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+      "git_blob_at_baseline": "55a485cdeeae026035c3a9b237fa1c3612d172da",
+      "symbols": {}
+    },
+    "scripts/test_accounting.php": {
+      "classification": "reference evaluate fixture compatibility",
+      "purpose": "Trial Balance/report assertions; older raw posting fixtures need compatibility review",
+      "sha256_at_inspection": "db832205164b20c04bf5c3398e43397690e01fc6d7634beea48c0146be72c126",
+      "git_blob_at_baseline": "5d6dba82550d20453d48910be117d922733c8c45",
+      "symbols": {}
+    },
+    "scripts/test_accounting_browser.py": {
+      "classification": "reference evaluate fixture compatibility",
+      "purpose": "Existing report/browser and frozen revision assertions",
+      "sha256_at_inspection": "e38b64906d5414c1128e898a9f2a363724ce0ab10c56c8ff0e1f121e2dcb3ce7",
+      "git_blob_at_baseline": "be4cf8a2994e77e8033e5a573df61ef0913be160",
+      "symbols": {}
+    },
+    "scripts/test_usability_u2_c_browser.py": {
+      "classification": "reference affected regression",
+      "purpose": "Navigation, full-entry books and History",
+      "sha256_at_inspection": "8d4fffdf24284215e0bda1a8185315aff9fcbfe028bdc10d3acd16f652b2ddb6",
+      "git_blob_at_baseline": "e26229704fd3b80b03eba6d61f7fce22ab95932d",
+      "symbols": {}
+    },
+    "scripts/test_usability_u4_browser.py": {
+      "classification": "reference affected regression",
+      "purpose": "Exact journal and correction inspection",
+      "sha256_at_inspection": "22aadc0e66f400f3b55a2ce3fbe4cc2e8a915d2072711114441bbf4cadf9b7d3",
+      "git_blob_at_baseline": "6ae7830a9a0cd24b9ee9df975e7193bd427b7905",
+      "symbols": {}
+    },
+    "scripts/test_usability_u3_a_readback.py": {
+      "classification": "reference affected regression",
+      "purpose": "Management posted reads and evidence privacy",
+      "sha256_at_inspection": "1da48f2230c36e73ed2fdfea0231da878a023e507bf4c37ebe94b7afd910e043",
+      "git_blob_at_baseline": "d8e94da02ffccd914131aa295b02cf2c1d063718",
+      "symbols": {}
+    },
+    "scripts/test_usability_u5_browser.py": {
+      "classification": "reference affected regression",
+      "purpose": "Final integrated payment/receipt/advance/correction workflow",
+      "sha256_at_inspection": "78cd3598aebc7b06e6b5f9c5c4d12069dc8a10ebad484a67916c6681c60c488e",
+      "git_blob_at_baseline": "7e65172025a28a0e896047835ea7a9838ee59957",
+      "symbols": {}
+    },
+    "docs/usability-completion-plan.md": {
+      "classification": "planning handoff update",
+      "purpose": "Retained original Stage4 identity and later-stage dependency order",
+      "sha256_at_inspection": "34b2e1f76e035d91c51ff919fe13b3eeaa9c03bfa4de51b5902f8bed3f2311bc",
+      "git_blob_at_baseline": "2697566e139c131f9a7653518b2b8b5271ff5080",
+      "symbols": {}
+    },
+    "docs/usability-u-perf-01-u5-approval.md": {
+      "classification": "preserve",
+      "purpose": "User-supplied final external approval and frozen package boundary",
+      "sha256_at_inspection": "6f21e7af056f02406cd6a147ffa233dddd6dff4123afff878c9b2e13f5a60f37",
+      "git_blob_at_baseline": "6297df29f938b6dd08479558f4174f200160123f",
+      "symbols": {}
+    },
+    "docs/usability-u-perf-01-u5-delivery.md": {
+      "classification": "preserve",
+      "purpose": "Dated source, financial/privacy verification, performance and working preservation evidence",
+      "sha256_at_inspection": "40bcbae4eda43c08ca73a07db09f8c6c434a9eeb2b03fd78aa910cc80e7256a4",
+      "git_blob_at_baseline": "396b022c7390593bf7984b0e79cca3b86a72760d",
+      "symbols": {}
+    },
+    "docs/usability-u5-task-guide.md": {
+      "classification": "reference",
+      "purpose": "Delivered user-facing save/review/record and inspection conventions",
+      "sha256_at_inspection": "b0329b1f37473dc0d4bf0ba2392d141e2452e6b44f7edece98c46035b8d94bb8",
+      "git_blob_at_baseline": "399ad017ae7dd469b8b5a0c702b3e7393da8816b",
+      "symbols": {}
+    }
+  },
+  "verification_limits": [
+    "Migration source was read only; current deployed schema/indexes and SQL plans were not inspected.",
+    "No database connection, startup, fixture preparation, test, browser walkthrough, migration or financial write.",
+    "No application/test/configuration changes; only planning/current handoff documents are changed.",
+    "No commit/push or live GitHub verification."
+  ]
+}

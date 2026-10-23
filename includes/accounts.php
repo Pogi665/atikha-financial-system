@@ -61,6 +61,7 @@ function account_save(PDO $pdo, int $userId, string $action, array $input): int
             throw new InvalidArgumentException('Account management is restricted to active System Administrators.');
         }
         stage1_write_lock($pdo);
+        if($action==='update'){$peek=account_load($pdo,account_id($input));if($peek&&account_text($input,'account_code')!==(string)($peek['Account_Code']??'')){$q=$pdo->prepare("SELECT MIN(j.entry_date) FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id WHERE l.account_id=? AND j.status='posted'");$q->execute([$peek['CategoryID']]);if($date=$q->fetchColumn())stage1_period_guard($pdo,$date);}}
         $before = null;
         if ($action === 'create') {
             $name = account_text($input, 'name');

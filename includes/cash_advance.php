@@ -137,13 +137,13 @@ function advance_prepare(PDO $pdo,int $uid,array $d,array $input,string $version
     $timeline=advance_lifecycle_candidate($pdo,$correctionDraft??$d,$input,$correctionDraft===null?null:correction_target($pdo,(int)$correctionDraft['correction_target_journal_id']));
     $remaining=$timeline['remaining'];
     $coverage=['status'=>$kind==='advance_liquidation'?'Fully covered':($kind==='advance_return'?'Return proof confirmed':($input['documents']?'Supporting proof reviewed':'Optional proof not supplied')),'debit'=>['eligible'=>ledger_decimal($eligible),'covered'=>ledger_decimal($covered)],'credit'=>['eligible'=>'0.00','covered'=>'0.00']];
-    $evidence=array_map(fn($r)=>[$r['ReceiptID'],$r['File_SHA256'],$r['attempt_version']],$receipts);
+    $evidence=array_map(fn($r)=>[$r['ReceiptID'],$r['File_SHA256'],$r['attempt_version'],$r['item_review']??null],$receipts);
     return $resources+['input'=>$input,'coverage'=>$coverage,'remaining'=>$remaining,'timeline'=>$timeline,'fingerprint'=>hash('sha256',workspace_json([$version,$d['revision'],$input,$party,$projects,$accounts,$evidence,$original['revision']??null,$remaining,$timeline]))];
 }
 function advance_review(PDO $pdo,int $uid,array $r): array
 {
     advance_guard($pdo,$uid,$r,true);$id=journal_id(journal_string($r,'draft_id'));
-    return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$r,$id){$d=workspace_draft($pdo,$uid,$id,true);advance_draft($d);workspace_revision($d,$r);$original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id'],true);$input=advance_canonical($pdo,$d,$d['payload'],$original);$prepared=advance_prepare($pdo,$uid,$d,$input,$version,$original);$lines=[];
+    return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$r,$id){$d=workspace_draft($pdo,$uid,$id);advance_draft($d);stage1_period_guard($pdo,$d['payload']['entry_date']);$d=workspace_draft($pdo,$uid,$id,true);workspace_revision($d,$r);$original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id'],true);$input=advance_canonical($pdo,$d,$d['payload'],$original);$prepared=advance_prepare($pdo,$uid,$d,$input,$version,$original);$lines=[];
         foreach($input['lines'] as $l)$lines[]=$l+['account_name'=>$prepared['accounts'][$l['account_id']]['Name'],'project_name'=>$l['fund_project_id']===null?'Organization operations':$prepared['projects'][$l['fund_project_id']]['name']];
         // Public display projection only: keep canonical input/fingerprint/token untouched.
         $effect=['accounting_date'=>$prepared['timeline']['accounting_date'],'balance_as_of'=>journal_today(),'before_outstanding'=>$prepared['timeline']['before_display'],'after_outstanding'=>$prepared['timeline']['after_display'],'new_advance_outstanding'=>$prepared['timeline']['replacement_display']];
@@ -152,10 +152,10 @@ function advance_review(PDO $pdo,int $uid,array $r): array
 function advance_post(PDO $pdo,int $uid,array $r): array
 {
     advance_guard($pdo,$uid,$r,true);$id=journal_id(journal_string($r,'draft_id'));$key=journal_string($r,'submission_key');
-    return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$r,$id,$key){$d=workspace_draft($pdo,$uid,$id,true);advance_draft($d);if(!hash_equals($d['submission_key'],$key))throw new JournalProblem('Draft submission key does not match.',409);
-        $original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id'],true);$input=advance_canonical($pdo,$d,$r['payload']??[],$original);$hash=hash('sha256',workspace_json($input));
+    return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$r,$id,$key){$d=workspace_draft($pdo,$uid,$id);advance_draft($d);if(!hash_equals($d['submission_key'],$key))throw new JournalProblem('Draft submission key does not match.',409);
+        $original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id']);$input=advance_canonical($pdo,$d,$r['payload']??[],$original);$hash=hash('sha256',workspace_json($input));
         if($d['state']==='Posted'){$result=journal_existing($pdo,$key,$uid,$hash);if(!$result||(int)$result['id']!==(int)$d['posted_journal_id'])throw new JournalProblem('Posted advance draft is inconsistent.',409);return $result+['advance_id'=>(int)$d['advance_id']];}
-        workspace_revision($d,$r);if(workspace_json($input)!==workspace_json(advance_canonical($pdo,$d,$d['payload'],$original)))throw new JournalProblem('Save and review the latest changes before posting.',409);
+        stage1_period_guard($pdo,$input['entry_date']);$d=workspace_draft($pdo,$uid,$id,true);$original=$d['workflow_kind']==='advance_release'?null:advance_load($pdo,(int)$d['advance_id'],true);workspace_revision($d,$r);if(workspace_json($input)!==workspace_json(advance_canonical($pdo,$d,$d['payload'],$original)))throw new JournalProblem('Save and review the latest changes before posting.',409);
         $prepared=advance_prepare($pdo,$uid,$d,$input,$version,$original);$token=journal_string($r,'review_token');
         if(!preg_match('/\A([0-9]{10})\.([a-f0-9]{64})\z/',$token,$m)||!isset($_SESSION['workspace_review_secret'])||time()>(int)$m[1]||!hash_equals(workspace_token($d,$prepared['fingerprint'],(int)$m[1]),$token))throw new JournalProblem('Review expired or accounting data changed. Review again.',409);
         $written=workspace_write_post($pdo,$uid,$d,$input,$prepared);$advanceId=advance_write_operation($pdo,$uid,$d,$input,$prepared,$written,$original===null?null:(int)$original['id']);
@@ -184,7 +184,7 @@ function advance_write_operation(PDO $pdo,int $uid,array $d,array $input,array $
 function advance_extend_due(PDO $pdo,int $uid,array $r): array
 {
     advance_guard($pdo,$uid,$r,true);$id=journal_id(journal_string($r,'advance_id'));$new=advance_date(journal_string($r,'due_date'),true);$reason=journal_string($r,'reason');if($reason===''||mb_strlen($reason)>2000)throw new JournalProblem('Enter an extension reason of at most 2,000 characters.');
-    return workspace_tx($pdo,$uid,function()use($pdo,$uid,$r,$id,$new,$reason){$a=advance_load($pdo,$id,true);if((string)$a['revision']!==journal_string($r,'revision'))throw new JournalProblem('Advance changed. Refresh before extending.',409);$state=advance_state($pdo,journal_today());advance_reconciled($state,(int)$a['control_account_id']);$current=$state['advances'][$id];
+    return workspace_tx($pdo,$uid,function()use($pdo,$uid,$r,$id,$new,$reason){stage1_period_guard($pdo,journal_today());$a=advance_load($pdo,$id,true);if((string)$a['revision']!==journal_string($r,'revision'))throw new JournalProblem('Advance changed. Refresh before extending.',409);$state=advance_state($pdo,journal_today());advance_reconciled($state,(int)$a['control_account_id']);$current=$state['advances'][$id];
         if($current['outstanding_cents']<=0||$new<journal_today()||$new<=$current['due_date'])throw new JournalProblem('Extend an outstanding advance to a later deadline, on or after today.');
         $pdo->prepare('INSERT INTO cash_advance_due_changes(advance_id,old_due_date,new_due_date,effective_date,reason,created_by,created_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP())')->execute([$id,$current['due_date'],$new,journal_today(),$reason,$uid]);$pdo->prepare('UPDATE cash_advances SET revision=revision+1 WHERE id=?')->execute([$id]);
         workspace_audit($pdo,$uid,AUDIT_ACTION_EDIT,'Cash Advance Deadline',$id,['due_date'=>$current['due_date']],['due_date'=>$new,'effective_date'=>journal_today(),'reason'=>$reason]);stage1_write_changed($pdo);return ['saved'=>true];});

@@ -1,0 +1,63 @@
+{
+  "gate": "G2",
+  "passed": true,
+  "evidence": "Actual agent inspection of Admin/Management 1366/1920 captures and both rendered A4 landscape PDF pages, plus 65 connected browser checks and financial/negative tests. Full-page fixed-sidebar capture artifacts checked against actual viewport captures; no navigation source change was needed.",
+  "human_walkthrough_complete": false,
+  "client_acceptance": false,
+  "source_sha256": {
+    "includes/reporting_common.php": "e98ef41e2620774e476435f1093e448ba409c47f664414e76fcc7057ea184677",
+    "includes/report_configuration.php": "52e629f4b8a0624ae7cae5abfe901d2baa02d5345ea82efb15af1f794de3fb5d",
+    "includes/report_snapshots.php": "44b3d263e8ad48664cdeeca52f0b00bdeadaa5ba3b4fc3466a9bfa243ea5920b",
+    "includes/financial_report_query.php": "b146632c8e429b433f168fefb16499acc7f67f2f7846a5a79d249fbe1676cd32",
+    "financial_statements.php": "07cb841fafa84e3a0af090cc11c01a93c988511a903fbcb43f09aa00038e09ef",
+    "report_setup.php": "091852cf148937f03f33fc448570166a2443455c4fde0e3a2f7c6022ee30d363",
+    "report_setup_actions.php": "0f2938e0d67f780b2c4a0828438125371b5be8dff7d7f3819f28c223f94c5184",
+    "assets/js/report_setup.js": "7fe1ff1a4cebac45e8d5dd63df168ae648100310754c98cff836dad518458bb0",
+    "assets/css/financial_reports.css": "ac7e8aec29357f13671dca0ddb1f483fafa2ff70b9f69af25167456c500cd076",
+    "includes/nav.php": "c767ef77ad4e8f7eed02455c7c403df6c35d7dc78ae0dbb5b866794f5a1fde53",
+    "reports.php": "c9d123ab4f7fd4ad3ed7f4456a16e9b673325f9e3005bde4688fb23519f9de18",
+    "migrations/022_report_configuration.sql": "c5532ac4b87329417537c02a9c9f9169009ef72caa2d66397dac7e2907aa38ee"
+  },
+  "checks": [
+    {
+      "criterion": "primary_task",
+      "result": "pass",
+      "observation": "Monthly reports navigation, month control and tabs; separate Admin Reporting setup with prominent preparation action."
+    },
+    {
+      "criterion": "plain_language",
+      "result": "pass",
+      "observation": "Financial columns and state labels; hashes and internal calculation versions are not shown in normal report use."
+    },
+    {
+      "criterion": "progressive_detail",
+      "result": "pass",
+      "observation": "Configuration summary, reporting-purpose exceptions and allocation schedules are disclosed on demand."
+    },
+    {
+      "criterion": "familiar_columns",
+      "result": "pass",
+      "observation": "Opening/book debit-credit/ending/monthly income and cutoff position columns; account ledger links; separate familiar statements."
+    },
+    {
+      "criterion": "editable_vs_readonly",
+      "result": "pass",
+      "observation": "Posted reports have no editable amounts; setup draft inputs are disabled during Review and after Submit."
+    },
+    {
+      "criterion": "visible_actions",
+      "result": "pass",
+      "observation": "Save and close, Review setup and Submit setup are full buttons; one save action; saved drafts list provides Resume."
+    },
+    {
+      "criterion": "lifecycle",
+      "result": "pass",
+      "observation": "New/unsaved/saved Draft, Review, Submitted read-only and live/incomplete-not-frozen report states are explicit."
+    },
+    {
+      "criterion": "actionable_errors",
+      "result": "pass",
+      "observation": "Backend missing mappings, exact allocations, corrected trace, cash-set reasons and schema problems block completeness with next actions; browser CSRF/role/scalar failures reject."
+    }
+  ]
+}

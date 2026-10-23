@@ -7,7 +7,7 @@ $budgetRows = $budgetDataAvailable ? $budgetUtil['by_category'] : [];
 foreach ($budgetRows as &$row) {
     $allocation = (float) $row['budgeted'];
     $spent = (float) $row['spent'];
-    $row['remaining'] = accounting_decimal(accounting_add(accounting_cents($row['budgeted']),-accounting_cents($row['spent'])));
+    $row['remaining'] = ($row['has_allocation']??false)?accounting_decimal(accounting_add(accounting_cents($row['budgeted']),-accounting_cents($row['spent']))):null;
     $row['utilization'] = $allocation > 0 ? $spent / $allocation * 100 : null;
     $row['priority'] = 5;
     $row['tone'] = 'neutral';
@@ -48,6 +48,7 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
         <h1>Executive Dashboard</h1>
         <p class="md-muted">Recorded finances, budget monitoring, and forecast findings.</p>
     </div>
+    <?php dashboard_render_reporting($reportingStatus,$budgetDataAvailable?$budgetUtil:null,$today); ?>
 
     <div class="md-kpis">
         <?php foreach ([['Total Income', $totalFunds, 'income'], ['Total Expenses', $totalExpenses, 'expense'], ['Total Assets', $netBalance, 'position']] as [$label, $value, $tone]): ?>
@@ -60,8 +61,8 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
         <section class="md-card md-kpi">
             <h2>Budget Utilization</h2>
             <p class="md-value <?= $displayUtil === null ? '' : ($displayUtil > 100 ? 'md-expense' : ($displayUtil >= 80 ? 'md-warning' : 'md-income')) ?>"><?= !$budgetDataAvailable ? 'Unavailable' : ($displayUtil === null ? 'N/A' : $escape(number_format($displayUtil, 1)) . '%') ?></p>
-            <p class="md-caption"><?= $escape($periodLabel) ?> · Recorded budget</p>
-            <?php if ($budgetDataAvailable): ?><p class="md-caption"><?= $money($budgetUtil['spent']) ?> spent / <?= $money($budgetUtil['budgeted']) ?> recorded budget</p><?php endif; ?>
+            <p class="md-caption"><?= $escape($periodLabel) ?> · Effective approved budget</p>
+            <?php if ($budgetDataAvailable): ?><p class="md-caption"><?= $money($budgetUtil['spent']) ?> recognized actual / <?= $budgetUtil['budgeted']===null?'No approved budget':$money($budgetUtil['budgeted']).' approved' ?></p><?php endif; ?>
         </section>
     </div>
 
@@ -113,19 +114,19 @@ $cashPeriod = $cashFlowAvailable && $cashFlowSeries
     </div>
 
     <section class="md-card" aria-labelledby="md-budget-title">
-        <div class="md-heading"><h2 id="md-budget-title" tabindex="-1">Budget monitoring</h2><span class="md-caption"><?= $escape($periodLabel) ?> · Recorded budget</span></div>
-        <p class="md-caption">Current-month net expenses through today against recorded category budgets.</p>
+        <div class="md-heading"><h2 id="md-budget-title" tabindex="-1">Budget monitoring</h2><span class="md-caption"><?= $escape($periodLabel) ?> · Effective approved budget</span></div>
+        <p class="md-caption">Current-month recognized net expenses through today against approved account allocations. Project details remain separate in <a href="budgets.php">Budgets and actuals</a>.</p>
         <?php if (!$budgetDataAvailable): ?><p role="status">Budget data is currently unavailable.</p>
-        <?php elseif (!$budgetRows): ?><p>No recorded budgets or expenses for this month.</p>
+        <?php elseif (!$budgetRows): ?><p>No approved allocations or recognized expenses for this month.</p>
         <?php else: ?>
         <div class="md-table-scroll" role="region" aria-label="Category budget monitoring" tabindex="0">
             <table id="md-budget-table">
-                <caption class="md-sr-only">Recorded budget · <?= $escape($periodLabel) ?></caption>
+                <caption class="md-sr-only">Approved budget · <?= $escape($periodLabel) ?></caption>
                 <thead><tr><?php foreach (['Category', 'Allocated', 'Spent', 'Remaining', 'Utilization', 'Status'] as $label): ?><th scope="col"><?= $label ?></th><?php endforeach; ?></tr></thead>
                 <tbody><?php foreach ($budgetRows as $index => $row): ?>
                     <tr<?= $index >= 6 ? ' data-md-extra-row' : '' ?>>
-                        <th scope="row"><?= $escape($row['category']) ?></th><td><?= $money($row['budgeted']) ?></td><td><?= $money($row['spent']) ?></td>
-                        <td class="<?= $row['remaining'] < 0 ? 'md-expense' : '' ?>"><?= $money($row['remaining']) ?></td>
+                        <th scope="row"><?= $escape($row['category']) ?></th><td><?= ($row['has_allocation']??false)?$money($row['budgeted']):'No allocation' ?></td><td><?= $money($row['spent']) ?></td>
+                        <td class="<?= $row['remaining']!==null&&accounting_cents($row['remaining'])<0 ? 'md-expense' : '' ?>"><?= $row['remaining']===null?'Unavailable':$money($row['remaining']) ?></td>
                         <td><?php if ($row['utilization'] === null): ?>N/A<?php else: ?>
                             <span><?= $escape(number_format($row['utilization'], 2)) ?>%</span>
                             <span class="md-bar md-<?= $escape($row['tone']) ?>" aria-hidden="true"><span style="width:<?= number_format(max(0, min(100, $row['utilization'])), 2, '.', '') ?>%"></span></span>

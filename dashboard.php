@@ -10,6 +10,7 @@ require_once __DIR__ . '/includes/gemini_client.php';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/forecast_query.php';
 require_once __DIR__ . '/includes/budget_query.php';
+require_once __DIR__ . '/includes/dashboard_reporting.php';
 
 if (is_file(__DIR__ . '/config.php')) {
     require_once __DIR__ . '/config.php';
@@ -28,6 +29,7 @@ $budgetUtil = ['spent' => 0.0, 'budgeted' => 0.0, 'pct' => 0.0, 'by_category' =>
 $budgetOverruns = [];
 $budgetAllocations = [];
 $budgetDataAvailable = false;
+$reportingStatus = null;
 $totalsAvailable = false;
 $cashFlowAvailable = false;
 $breakdownAvailable = false;
@@ -45,12 +47,14 @@ require_once __DIR__.'/includes/dashboard_query.php';
 try {
     accounting_read($pdo,function()use($pdo,$isExecutive,$today,$currentYear,$currentMonth,$kpiMonths,$historyMonths,
         &$totalFunds,&$totalExpenses,&$netBalance,&$totalsAvailable,&$budgetUtil,&$budgetDataAvailable,&$budgetUpcoming,&$budgetUpcomingAvailable,
-        &$cashFlowSeries,&$cashFlowAvailable,&$breakdownRows,&$expenseBreakdown,&$breakdownAvailable,&$kpiSeries,&$kpiTrendsAvailable){
+        &$cashFlowSeries,&$cashFlowAvailable,&$breakdownRows,&$expenseBreakdown,&$breakdownAvailable,&$kpiSeries,&$kpiTrendsAvailable,&$reportingStatus){
         try{$k=accounting_kpis($pdo,$today);$totalFunds=$k['income'];$totalExpenses=$k['expenses'];$netBalance=$k['assets'];$totalsAvailable=true;}
         catch(Throwable $e){error_log('Dashboard KPIs: '.$e->getMessage());}
+        try{$budgetUtil=budget_utilization($pdo,$currentYear,$currentMonth);$budgetDataAvailable=true;}
+        catch(Throwable $e){error_log('Dashboard budget: '.$e->getMessage());}
+        try{$reportingStatus=dashboard_reporting_status($pdo,(int)$_SESSION['UserID'],$today);}
+        catch(Throwable $e){error_log('Dashboard reporting status unavailable.');}
         if($isExecutive){
-            try{$budgetUtil=budget_utilization($pdo,$currentYear,$currentMonth);$budgetDataAvailable=true;}
-            catch(Throwable $e){error_log('Dashboard budget: '.$e->getMessage());}
             try{$budgetUpcoming=budget_upcoming_totals($pdo,3);$budgetUpcomingAvailable=true;}
             catch(Throwable $e){error_log('Dashboard upcoming budget: '.$e->getMessage());}
             try{$cashFlowSeries=accounting_monthly($pdo,$historyMonths);$cashFlowAvailable=true;}
@@ -82,7 +86,7 @@ if ($utilPct !== null) {
 }
 
 layout_begin('Dashboard', $activePage, ['https://cdn.jsdelivr.net/npm/chart.js'],
-    $isExecutive ? '<link rel="stylesheet" href="assets/css/management-dashboard.css?v=' . filemtime(__DIR__ . '/assets/css/management-dashboard.css') . '">' : '');
+    ($isExecutive ? '<link rel="stylesheet" href="assets/css/management-dashboard.css?v=' . filemtime(__DIR__ . '/assets/css/management-dashboard.css') . '">' : '').'<link rel="stylesheet" href="assets/css/budget_workspace.css?v='.filemtime(__DIR__.'/assets/css/budget_workspace.css').'">');
 
 if ($isExecutive):
     include __DIR__ . '/includes/management_dashboard.php';
@@ -94,6 +98,7 @@ else:
 <div>
     <h1 class="text-2xl font-bold text-slate-900">Financial Overview</h1>
 </div>
+<?php dashboard_render_reporting($reportingStatus,$budgetDataAvailable?$budgetUtil:null,$today); ?>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
@@ -420,7 +425,7 @@ if ($isExecutive) {
             show(body, false); show(empty, true); return;
         }
         const data = payload.data;
-        if(data.version!==2||data.basis!=='net_expenses_v1'||!Array.isArray(data.projection)||data.projection.some(p=>!Number.isFinite(p.projected_expenses))) { showNote('The forecast response is invalid.');return; }
+        if(data.version!==3||data.basis!=='recognized_expenses_v2'||!Array.isArray(data.projection)||data.projection.some(p=>!Number.isFinite(p.projected_expenses))) { showNote('The forecast response is invalid.');return; }
         show(offlineBadge, data.state === 'degraded');
         if (data.state === 'insufficient') {
             emptyDetail.textContent = 'Record positive net expenses in at least two completed months and the projection will appear here.';

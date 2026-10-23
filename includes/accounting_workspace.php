@@ -271,7 +271,8 @@ function workspace_resources(PDO $pdo,int $uid,array $d,array $input,?array $ori
         if((int)$s->fetchColumn()!==(int)$d['id']||$r['JournalEntryID']!==null){throw new JournalProblem('Evidence is no longer reserved to this draft.',409);}
         if($r['OCR_Status']==='Pending'){throw new JournalProblem('Wait for document processing to finish.',409);}
         receipt_file_verify($r);if(isset($hashes[$r['File_SHA256']])||receipt_duplicate($pdo,$r['File_SHA256'])){throw new JournalProblem('Identical document evidence cannot be claimed twice.',409);}
-        $hashes[$r['File_SHA256']]=true;$a=receipt_latest_attempt($pdo,$id);$r['attempt_version']=$a['id']??null;$receipts[$id]=$r;
+        $hashes[$r['File_SHA256']]=true;$a=receipt_latest_attempt($pdo,$id);$r['attempt_version']=$a['id']??null;
+        foreach($input['documents'] as $doc)if((int)$doc['receipt_id']===$id)$r['item_review']=item_review_resource($pdo,$r,$d,$doc);$receipts[$id]=$r;
     }
     $ids=array_values(array_unique(array_column($input['lines'],'account_id')));sort($ids,SORT_NUMERIC);
     foreach($ids as $id){$a=account_load($pdo,$id,true);if(!$a||(int)$a['Is_Active']!==1||!in_array($a['Account_Type'],JOURNAL_ACCOUNT_TYPES,true)||!in_array($a['Normal_Balance'],['Debit','Credit'],true)||!in_array((int)$a['Is_Cash_Account'],[0,1],true)||((int)$a['Is_Cash_Account']===1&&$a['Account_Type']!=='Asset')){throw new JournalProblem('An account is unavailable or inactive.');}$accounts[$id]=$a;}
@@ -307,7 +308,7 @@ function workspace_prepare(PDO $pdo,int $uid,array $d,array $input,string $versi
     $status=$denom===0?'Not applicable':($support===$denom?'Fully covered':($support>0?'Partially covered':'No monetary support'));
     $coverage=['status'=>$status,'debit'=>['eligible'=>ledger_decimal($eligible['debit']),'covered'=>ledger_decimal($covered['debit'])],
         'credit'=>['eligible'=>ledger_decimal($eligible['credit']),'covered'=>ledger_decimal($covered['credit'])]];
-    $evidenceVersions=array_map(fn($r)=>[$r['ReceiptID'],$r['File_SHA256'],$r['attempt_version']],$receipts);
+    $evidenceVersions=array_map(fn($r)=>[$r['ReceiptID'],$r['File_SHA256'],$r['attempt_version'],$r['item_review']??null],$receipts);
     return ['input'=>$input,'party'=>$party,'projects'=>$projects,'receipts'=>$receipts,'accounts'=>$accounts,'coverage'=>$coverage,
         'fingerprint'=>hash('sha256',workspace_json([$version,$d['revision'],$input,$party,$projects,$evidenceVersions,$accounts]))];
 }
@@ -320,7 +321,7 @@ function workspace_review(PDO $pdo,int $uid,array $r): array
 {
     workspace_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));
     return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$id,$r){
-        $d=workspace_draft($pdo,$uid,$id,true);workspace_ordinary($d);workspace_revision($d,$r);$input=workspace_canonical($d,$d['payload']);
+        $d=workspace_draft($pdo,$uid,$id);workspace_ordinary($d);$input=workspace_canonical($d,$d['payload']);stage1_period_guard($pdo,$input['entry_date']);$d=workspace_draft($pdo,$uid,$id,true);workspace_revision($d,$r);
         $prepared=workspace_prepare($pdo,$uid,$d,$input,$version);
         $lines=[];foreach($input['lines'] as $l){$lines[]=$l+['account_name'=>$prepared['accounts'][$l['account_id']]['Name'],
             'account_type'=>$prepared['accounts'][$l['account_id']]['Account_Type'],
@@ -334,7 +335,7 @@ function workspace_post(PDO $pdo,int $uid,array $r): array
 {
     workspace_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));$key=journal_string($r,'submission_key');
     return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$id,$key,$r){
-        $d=workspace_draft($pdo,$uid,$id,true);workspace_ordinary($d);
+        $d=workspace_draft($pdo,$uid,$id);workspace_ordinary($d);
         if(!hash_equals($d['submission_key'],$key)){throw new JournalProblem('Draft submission key does not match.',409);}
         $input=workspace_canonical($d,$r['payload']??[]);$hash=hash('sha256',workspace_json($input));
         // A successful retry is durable: authenticate/own/compare before token expiry or new master eligibility.
@@ -342,7 +343,7 @@ function workspace_post(PDO $pdo,int $uid,array $r): array
             $existing=journal_existing($pdo,$key,$uid,$hash);
             if(!$existing||(int)$existing['id']!==(int)$d['posted_journal_id']){throw new JournalProblem('Posted draft is inconsistent.',409);}return $existing;
         }
-        workspace_revision($d,$r);
+        stage1_period_guard($pdo,$input['entry_date']);$d=workspace_draft($pdo,$uid,$id,true);workspace_revision($d,$r);
         if(workspace_json($input)!==workspace_json(workspace_canonical($d,$d['payload']))){throw new JournalProblem('Save and review your latest changes before posting.',409);}
         $prepared=workspace_prepare($pdo,$uid,$d,$input,$version);$token=journal_string($r,'review_token');
         if(!preg_match('/\A([0-9]{10})\.([a-f0-9]{64})\z/',$token,$m)||!isset($_SESSION['workspace_review_secret'])||time()>(int)$m[1]
@@ -369,8 +370,8 @@ function workspace_write_post(PDO $pdo,int $uid,array $d,array $input,array $pre
             $amount=$doc['purpose']==='amount';
             $s=$pdo->prepare('INSERT INTO posted_evidence_associations(journal_id,receipt_id,purpose,support_side,declared_amount,accepted_amount,exclusion_reason,reviewed_by,reviewed_at,review_snapshot) VALUES(?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),?)');
             $s->execute([$journal,$doc['receipt_id'],$doc['purpose'],$amount?$doc['support_side']:null,$amount?$doc['declared_amount']:null,$amount?$doc['accepted_amount']:null,$doc['exclusion_reason'],$uid,
-                workspace_json($doc+['sha256'=>$receipt['File_SHA256'],'attempt_version'=>$receipt['attempt_version'],'coverage'=>$prepared['coverage']])]);
-            $association=(int)$pdo->lastInsertId();$s=$pdo->prepare('INSERT INTO evidence_allocations(association_id,line_id,amount) VALUES(?,?,?)');
+                workspace_json($doc+['sha256'=>$receipt['File_SHA256'],'attempt_version'=>$receipt['attempt_version'],'item_review'=>$receipt['item_review']??null,'coverage'=>$prepared['coverage']])]);
+            $association=(int)$pdo->lastInsertId();item_review_link($pdo,$association,$receipt['item_review']??null);$s=$pdo->prepare('INSERT INTO evidence_allocations(association_id,line_id,amount) VALUES(?,?,?)');
             foreach($doc['allocations'] as $a){$s->execute([$association,$lineIds[$a['client_id']],$a['amount']]);}
         }
         $pdo->prepare('DELETE FROM draft_evidence_reservations WHERE draft_id=?')->execute([$id]);

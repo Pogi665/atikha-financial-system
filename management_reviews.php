@@ -9,6 +9,8 @@ require_once __DIR__ . '/includes/notifications.php';
 require_once __DIR__ . '/includes/require_role.php';
 require_once __DIR__ . '/includes/review_ui.php';
 require_once __DIR__ . '/includes/report_snapshots.php';
+require_once __DIR__ . '/includes/budget_revisions.php';
+require_once __DIR__ . '/includes/report_bundles.php';
 
 require_login();
 require_role(['Management'], 'Review Queue');
@@ -30,6 +32,9 @@ $pendingExpenses = [];
 $pendingFunds = [];
 $pendingReports = [];
 $pendingBoard = [];
+$pendingBudgets = [];
+$budgetQueueAvailable = true;
+$pendingCompleteReports=[];$completeQueueAvailable=true;
 
 try {
     if (report_snapshot_available($pdo)) {
@@ -56,16 +61,20 @@ try {
 } catch (PDOException $e) {
     error_log('Review queue query failed: ' . $e->getMessage());
 }
+try{$pendingBudgets=budget_review_queue($pdo,(int)$_SESSION['UserID'],$filter);}catch(Throwable $e){$budgetQueueAvailable=false;error_log('Budget review queue unavailable.');}
+try{$pendingCompleteReports=report_bundle_queue($pdo,(int)$_SESSION['UserID'],$filter);}catch(Throwable $e){$completeQueueAvailable=false;error_log('Complete report review queue unavailable.');}
 
 $pendingCount = count(array_filter($pendingExpenses, static fn ($r) => $r['Review_Status'] === 'Requested'))
     + count(array_filter($pendingFunds, static fn ($r) => $r['Review_Status'] === 'Requested'))
     + count(array_filter($pendingReports, static fn ($r) => $r['Review_Status'] === 'Requested'))
-    + count(array_filter($pendingBoard, static fn ($r) => $r['Review_Status'] === 'Requested'));
+    + count(array_filter($pendingBoard, static fn ($r) => $r['Review_Status'] === 'Requested'))
+    + count(array_filter($pendingBudgets, static fn ($r) => $r['state'] === 'Submitted'))
+    + count(array_filter($pendingCompleteReports, static fn ($r) => $r['state'] === 'Requested'));
 
 $cardClass = $isExecutive ? 'exec-card' : 'bg-white rounded-xl border border-slate-200 shadow-sm p-6';
 $btnPrimary = $isExecutive ? 'exec-btn-primary' : 'rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 px-4 text-sm transition';
 
-layout_begin('Review Queue', $activePage);
+layout_begin('Review Queue', $activePage, [], '<link rel="stylesheet" href="assets/css/budget_workspace.css?v='.filemtime(__DIR__.'/assets/css/budget_workspace.css').'">');
 ?>
 
 <div class="js-review-root" data-csrf="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
@@ -93,6 +102,10 @@ layout_begin('Review Queue', $activePage);
             </a>
         </div>
     </div>
+
+    <section class="<?= $cardClass ?> mt-6"><h2 class="text-lg font-semibold">Monthly budgets</h2><p>Open the exact submitted revision to approve it or return it with a reason.</p><?php if(!$budgetQueueAvailable): ?><p role="alert">Budget review information is unavailable. Please try again.</p><?php elseif(!$pendingBudgets): ?><p>No monthly budgets match this view.</p><?php else: ?><div class="budget-review-wrap"><table class="budget-review-table"><thead><tr><th>Month</th><th>Revision</th><th>State</th><th>Action</th></tr></thead><tbody><?php foreach($pendingBudgets as $budget): ?><tr><td><?= htmlspecialchars(substr($budget['budget_month'],0,7),ENT_QUOTES,'UTF-8') ?></td><td><?= (int)$budget['revision_number'] ?></td><td><?= htmlspecialchars($budget['state'],ENT_QUOTES,'UTF-8') ?></td><td><a class="<?= $btnPrimary ?>" href="budgets.php?revision_id=<?= (int)$budget['id'] ?>"><?= $budget['state']==='Submitted'?'Review budget':'View budget decision' ?></a></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?></section>
+
+    <section class="<?= $cardClass ?> mt-6"><h2 class="text-lg font-semibold">Complete monthly reports</h2><p>Review all eight frozen reports together. A saved Trial Balance by itself does not qualify for month closing.</p><?php if(!$completeQueueAvailable): ?><p role="alert">Complete report review is unavailable. Please try again.</p><?php elseif(!$pendingCompleteReports): ?><p>No complete monthly reports match this view.</p><?php else: ?><div class="budget-review-wrap"><table class="budget-review-table"><thead><tr><th>Month</th><th>Revision</th><th>State</th><th>Action</th></tr></thead><tbody><?php foreach($pendingCompleteReports as $bundle): ?><tr><td><?= htmlspecialchars(substr($bundle['report_month'],0,7),ENT_QUOTES,'UTF-8') ?></td><td><?= (int)$bundle['revision_number'] ?></td><td><?= htmlspecialchars($bundle['state'],ENT_QUOTES,'UTF-8') ?></td><td><a class="<?= $btnPrimary ?>" href="report_bundles.php?bundle_id=<?= (int)$bundle['id'] ?>">Open complete reports</a></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?></section>
 
     <section class="<?= $cardClass ?> mt-6">
         <label for="review-notes" class="block text-sm font-medium text-slate-700 mb-1">Review notes (optional, applied to the next item you mark reviewed)</label>

@@ -1,0 +1,130 @@
+{
+  "classification": "synthetic actual-human walkthrough paused at user request; partial assisted ledger observations retained",
+  "paused_at_user_request": true,
+  "pause_date": "2026-10-23",
+  "pause_reason": "User wants to consult ChatGPT about the system first and authorizes continuing independent non-human work",
+  "resume_requires_actual_user_participation": true,
+  "human_walkthrough_complete": false,
+  "client_acceptance": false,
+  "production_login_or_mfa": false,
+  "tasks": [
+    {
+      "task": "G7-1 September bank General Ledger",
+      "complete": false,
+      "attempts": [
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "i think i found it? Is it correct?",
+          "evidence": "User-supplied screenshot; no local image artifact supplied",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "Correct General Ledger and Synthetic S5 bank / S5BANK account located. Applied From and To are both 2026-09-26, rather than the requested full September period. Opening and ending are PHP 6250.00 Debit; period debits, credits and movements are zero. The page explains that the opening balance carries forward.",
+          "outcome": "Partial task; full-month selection and balance identification pending",
+          "assistance": "Observer confirmed the correct page/account and directed the user to set From 2026-09-01 and To 2026-09-30, then Apply. Do not classify the full task as unassisted success.",
+          "navigation_click_count": null,
+          "elapsed_seconds": null,
+          "reason_for_single_day_selection": "Unknown; not inferred from screenshot",
+          "product_change": "None"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "nothing changed?",
+          "evidence": "Second user-supplied screenshot; no local image artifact supplied",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "The URL and applied-period heading now both show 2026-10-01 through 2026-10-30. The displayed opening and ending remain PHP 6250.00 Debit, with zero period debits, credits and movements.",
+          "outcome": "September task still incomplete after date guidance; date-selection difficulty retained",
+          "assistance": "Observer explained that the applied period is October and supplied a direct September 1-30 ledger URL. This is assisted navigation, not evidence of successful independent date selection.",
+          "navigation_click_count": null,
+          "elapsed_seconds": null,
+          "cause": "Unknown; cannot determine whether input interaction or another cause selected October from this screenshot",
+          "product_change": "None; evaluate date-selection usability without inferring an accounting defect"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "i changed it and got this",
+          "evidence": "User-supplied 2026-10-23 19-38-51.mkv, 10.602 seconds, 1920x1080; locally decoded sampled frames retained privately in g7-user-video-193851",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "Recording shows the correct S5BANK account, From 09/01/2026 and To 09/30/2026. The URL and applied ledger heading also show 2026-09-01 through 2026-09-30. Corrected sequential playback confirms the user scrolls through transaction rows, reaches the ending totals, horizontally scrolls to View transaction, then returns upward. Ending PHP 6250.00 Debit, period debits PHP 8150.00 and credits PHP 11900.00 are visible.",
+          "outcome": "Correct September period and ending totals confirmed; transaction drilldown and search task remain pending",
+          "observer_correction": "The original seek-based frame sampler returned repeated top frames. The observer incorrectly told the user that amounts and rows were not shown. User correction prompted sequential playback, which confirms scrolling and totals. Earlier frame-* images are unreliable temporal samples; playback-* images supersede them. This was an observer/tool error, not a user failure.",
+          "assistance": "Prior date guidance and direct link retained. Observer confirms the correct period and asks the user to scroll down and report opening/ending balances.",
+          "navigation_method": "Unknown; the recording begins with the correct range already displayed and does not establish whether dates were edited or the supplied link was used",
+          "navigation_click_count": null,
+          "task_elapsed_seconds": null,
+          "recording_duration_is_not_task_elapsed_time": true,
+          "product_change": "None"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "in the recording, i scrolled down, i did not just stay at the top. but, here is a screenshot of the opening balance and ending balance",
+          "evidence": "User-supplied screenshot of September ledger rows and ending totals; corrected sequential playback of prior recording",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "September rows and View transaction actions are visible. Totals show PHP 8150.00 debit, PHP 11900.00 credit and PHP 6250.00 Debit ending balance. Opening amount is not visible in this screenshot; PHP 10000.00 Debit is derived as 6250.00 - 8150.00 + 11900.00, not claimed as user-read opening-label evidence.",
+          "outcome": "Ending balance/totals and scrolling confirmed; complete-transaction reader and search understanding remain pending",
+          "assistance": "Observer acknowledged the video-reading mistake and directs the user to open one visible View transaction action.",
+          "navigation_click_count": null,
+          "task_elapsed_seconds": null,
+          "product_change": "None"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "i click on view transaction on the first one at the top and got this. the green words should be buttons, not just this",
+          "evidence": "Two supplied screenshots of exact transaction #187 reached from the September S5BANK ledger",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "User successfully opens the first transaction. Complete original CDB #187 shows bank credit and expense debit PHP 1000.00, balanced totals, read-only status and correction #55 linking original #187, reversal #192 and replacement #193. Contextual return retains ledger criteria. User explicitly requests button presentation for green navigation links.",
+          "outcome": "Transaction drilldown observed; original link discoverability feedback retained. Search/balance understanding remains pending.",
+          "navigation_click_count": null,
+          "reported_action": "User reports clicking View transaction on first row; no complete click count inferred",
+          "task_elapsed_seconds": null,
+          "product_change": "Exact-reader links styled as button-shaped navigation anchors, with grouped correction actions and visible focus; same destinations, role conditions and financial contents. Owned G7 source copy updated with recorded hashes.",
+          "affected_automation": "52 final browser checks across Admin/Management, corrected/eligible originals and 1366/1920 widths; final two landscape print pages rendered/inspected. Prior 48-check run and original failed CSS-display assertion retained as dated development evidence.",
+          "human_refinement_retest": "Pending: refresh, identify button presentation and return to the same ledger; then search REV-187 and assess ending balance"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "it is still the same",
+          "evidence": "Two supplied screenshots of General Ledger filters and results",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "Account S5BANK and literal search REV-187 are applied. Both URL and form/heading show October 1-23, not September. Opening and ending are PHP 6250.00 Debit, period debit/credit zero, with zero matching and zero period movements. The screenshots do not show the refreshed transaction-page buttons or how the ledger was reached.",
+          "outcome": "Unchanged balance reported, but September matching-row/search-understanding task and transaction button human retest remain pending",
+          "navigation_method_and_reason_for_period_change": "Unknown; do not infer user error, a return-button defect or successful preservation from these screenshots",
+          "diagnostic": "Read-only automation separately follows first September transaction, contextual Back to General Ledger and REV-187 Apply for both roles: 12 checks pass; URL, form dates and heading stay September, one matching reversal out of seven period movements, ending PHP 6250.00 Debit. An initial Management assertion ran before page render; an explicit visibility wait corrected that test timing issue. No production change or human success inferred.",
+          "assistance": "Observer explains the October period and supplies an exact September REV-187 search link to continue the human task",
+          "navigation_click_count": null,
+          "task_elapsed_seconds": null,
+          "product_change": "None"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "yes one row appears",
+          "evidence": "Two supplied screenshots showing September filters and filtered ledger",
+          "environment_observed": "VS Code embedded browser",
+          "observed_result": "URL, controls and heading show September 1-30 with search REV-187. The result says one of one matching movements, seven period movements. Visible row is GJ journal #192, September 7, reference REV-187, reversal of journal #187, debit PHP 1000.00 and running balance PHP 7000.00 Debit. Opening label is now directly visible at PHP 10000.00 Debit; full-period debit PHP 8150.00, credit PHP 11900.00 and ending PHP 6250.00 Debit remain unchanged.",
+          "outcome": "Assisted September matching-row search and displayed opening/ending balances confirmed. User's own explanation of search versus balance and changed transaction button human retest remain pending.",
+          "assistance": "Prior direct filtered URL and explanation are retained; observer asks a short understanding question before the next report task",
+          "navigation_click_count": null,
+          "task_elapsed_seconds": null,
+          "product_change": "None"
+        },
+        {
+          "observed_date": "2026-10-23",
+          "user_report": "it changed bank balance, i mean when i changed the dates to september credits and debits appeared right? Or am i wrong in my understanding? Also, before we move to reports, can you make the reports in general ledger, also the next and previous into buttons?",
+          "evidence": "User explanation and explicit presentation request",
+          "observed_result": "User associates the earlier date-range change with the appearance of September debits/credits and asks whether that means search changed the bank balance. This is not an independent correct explanation of same-period search behavior. User explicitly requests Reports/Previous/Next button presentation on the ledger.",
+          "assistance": "Observer distinguishes changing the selected period from searching within it: period controls select the opening/movements/ending displayed; search only filters rows for that unchanged period, retaining full-period totals and ending. Neither action edits financial records. September has PHP 8150.00 debits and PHP 11900.00 credits; October has no movements in this fixture.",
+          "outcome": "Original misunderstanding retained; further explanation supplied. Changed navigation human retest and remaining G7 tasks pending.",
+          "product_change": "Reports and existing Previous/Next anchors now use scoped button styling with visibly disabled unavailable pagination. Same hrefs, calculations and existing JavaScript guards. Two owned-copy source files updated with before/after hashes.",
+          "affected_automation": "28 focused both-role ledger presentation/navigation checks and 35 existing Stage4 browser regression checks pass; actual enabled pagination, disabled keyboard activation, financial/read-only/invalid-request/privacy/print guards and unchanged synthetic tables verified. Desktop 1366/1920 captures inspected. Initial Reports locator matched both sidebar and header; test selector scoped to ledger control and rerun without production correction.",
+          "human_refinement_retest": "Pending: refresh and identify Reports/Previous/Next buttons; one-page result keeps Previous and Next unavailable",
+          "navigation_click_count": null,
+          "task_elapsed_seconds": null
+        }
+      ]
+    }
+  ],
+  "assistance_and_original_failures_will_be_retained": true,
+  "unobserved_counts_and_timings": null,
+  "G8_pending_actual_human_and_affected_retests": true,
+  "prepared": true,
+  "prepared_month": "2026-09",
+  "preparation_tests_are_not_human_observations": true
+}

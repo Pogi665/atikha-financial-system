@@ -90,6 +90,15 @@
 .correction-details .correction-journal{margin-top:1.5rem;border-top:1px solid #e2e8f0;padding-top:1rem}
 .correction-details .correction-navigation{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
 .correction-details p,.correction-details td{overflow-wrap:anywhere}
+/* G7: visible navigation controls on the exact transaction reader only. */
+.exact-transaction .transaction-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.accounting-workspace.exact-transaction a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;max-width:100%;padding:9px 14px;border:1px solid #047857;border-radius:7px;background:#fff;color:#047857;font-weight:600;line-height:1.4;text-decoration:none;overflow-wrap:anywhere}
+.accounting-workspace.exact-transaction a:hover{background:#ecfdf5;border-color:#065f46;color:#065f46}
+.accounting-workspace.exact-transaction a:focus-visible{outline:3px solid #047857;outline-offset:3px}
+.accounting-workspace.exact-transaction .aw-header>a{align-self:flex-start;flex-shrink:0;background:#047857;color:#fff}
+.accounting-workspace.exact-transaction .aw-header>a:hover{background:#065f46}
+@media(max-width:700px){.exact-transaction .aw-header{flex-wrap:wrap}}
+@media print{.accounting-workspace.exact-transaction .aw-header>a{display:none!important}.accounting-workspace.exact-transaction a{display:inline;padding:0;min-height:0;border:0;background:transparent;color:#000;font-weight:400}}
 @media print{.correction-details .correction-navigation{display:none}.correction-details .aw-card{box-shadow:none;border:0;margin:1rem 0;padding:0;break-inside:auto}.correction-details .aw-table-wrap{overflow:visible}.correction-details h2,.correction-details h3{break-after:avoid}.correction-details tr{break-inside:avoid}.correction-details thead{display:table-header-group}}
 /* U3-A: advance register/detail only. Ordinary and correction workspaces retain their layouts. */
 .advance-register .ca-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;max-width:460px}

@@ -1,0 +1,1216 @@
+{
+  "passed": true,
+  "baseline": "60206a7047d99975a29245e236ae786d16e31bc7",
+  "retained_regression_families": 17,
+  "receipt_browser_checks": 68,
+  "navigation_checks": 386,
+  "ledger_backend_checks": 78,
+  "ledger_normal_browser_checks": 34,
+  "ledger_queries": 8,
+  "ledger_actual_window_plans": 2,
+  "current_component_result_lines": [
+    "RESULT: 12 lossless storage checks passed",
+    "test_stage5_cashflows.php: RESULT: 23 independent cash-flow examples passed",
+    "test_stage5_reports.php: RESULT: 31 checks passed",
+    "test_stage5_report_edges.php: RESULT: 11 edge checks passed",
+    "test_stage5_configuration.php: RESULT: 21 configuration integrity checks passed",
+    "test_stage5_cashflows.php: RESULT: 23 independent cash-flow examples passed",
+    "test_stage5_reports.php: RESULT: 31 checks passed",
+    "RESULT: 5 schema-negative checks passed",
+    "RESULT: 42 budget checks passed",
+    "RESULT: 17 read-model checks passed",
+    "RESULT: 8 integrity checks passed",
+    "RESULT: Explicit opening, outstanding advance and cross-month investment prepared",
+    "RESULT: 41 complete-bundle/period checks passed",
+    "RESULT: 3 flag-off checks passed",
+    "RESULT: 21 period edge checks passed",
+    "RESULT: 9 deterministic period race checks passed",
+    "RESULT: 10 warning/dependency checks passed",
+    "RESULT: 30 evidence checks passed",
+    "RESULT: 44 export checks passed",
+    "RESULT: 13 negative/correction checks passed"
+  ],
+  "current_browser_checks": {
+    "reports": 65,
+    "budgets": 57,
+    "periods": 52,
+    "evidence_exports": 69
+  },
+  "final_export_readback_checks": 24,
+  "final_flag_off_checks": 6,
+  "lossless_storage_checks": 12,
+  "measurements": {
+    "500": {
+      "checks": [
+        "Admin ledger-first repeat HTTP/visible targets",
+        "Admin ledger-search-page2 repeat HTTP/visible targets",
+        "Admin reports repeat HTTP/visible targets",
+        "Admin reports document fits 1366",
+        "Admin reports document fits 1920",
+        "Admin budget repeat HTTP/visible targets",
+        "Admin budget document fits 1366",
+        "Admin budget document fits 1920",
+        "Admin bundle-live repeat HTTP/visible targets",
+        "Admin bundle-frozen repeat HTTP/visible targets",
+        "Admin bundle-frozen document fits 1366",
+        "Admin bundle-frozen document fits 1920",
+        "Admin dashboard repeat HTTP/visible targets",
+        "Admin six separate advisory response samples",
+        "Management ledger-first repeat HTTP/visible targets",
+        "Management ledger-search-page2 repeat HTTP/visible targets",
+        "Management reports repeat HTTP/visible targets",
+        "Management reports document fits 1366",
+        "Management reports document fits 1920",
+        "Management budget repeat HTTP/visible targets",
+        "Management budget document fits 1366",
+        "Management budget document fits 1920",
+        "Management bundle-live repeat HTTP/visible targets",
+        "Management bundle-frozen repeat HTTP/visible targets",
+        "Management bundle-frozen document fits 1366",
+        "Management bundle-frozen document fits 1920",
+        "Management dashboard repeat HTTP/visible targets",
+        "Management queue repeat HTTP/visible targets",
+        "Management six separate advisory response samples",
+        "No mixed-workload JavaScript errors",
+        "Navigation preserves every financial, evidence, master, audit and approval table",
+        "Final production pins unchanged during serial measurements"
+      ],
+      "timings": [
+        {
+          "path": "ledger-first",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            268.3590999804437,
+            76.52329991105944,
+            84.04350001364946,
+            96.42139996867627,
+            99.78930000215769,
+            125.70259999483824
+          ],
+          "visible_samples_ms": [
+            550.4162999568507,
+            226.81789996568114,
+            222.6403000531718,
+            237.63540002983063,
+            225.20079999230802,
+            233.87460003141314
+          ],
+          "http_median_ms": 96.42139996867627,
+          "http_slowest_ms": 268.3590999804437,
+          "visible_median_ms": 226.81789996568114,
+          "visible_slowest_ms": 550.4162999568507
+        },
+        {
+          "path": "ledger-search-page2",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            110.33439997117966,
+            79.96460003778338,
+            102.63280000071973,
+            79.54950002022088,
+            98.4322999138385,
+            75.8788000093773
+          ],
+          "visible_samples_ms": [
+            268.7235999619588,
+            192.9791000438854,
+            217.6754999672994,
+            264.03119997121394,
+            248.21919994428754,
+            234.37920003198087
+          ],
+          "http_median_ms": 79.96460003778338,
+          "http_slowest_ms": 110.33439997117966,
+          "visible_median_ms": 234.37920003198087,
+          "visible_slowest_ms": 268.7235999619588
+        },
+        {
+          "path": "reports",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            562.8045999910682,
+            274.04210006352514,
+            271.1771000176668,
+            278.43389997724444,
+            262.8719999920577,
+            265.263200039044
+          ],
+          "visible_samples_ms": [
+            447.5973000517115,
+            365.8407999901101,
+            362.9270000383258,
+            369.0745000494644,
+            373.1538000283763,
+            418.5463000321761
+          ],
+          "http_median_ms": 271.1771000176668,
+          "http_slowest_ms": 562.8045999910682,
+          "visible_median_ms": 369.0745000494644,
+          "visible_slowest_ms": 447.5973000517115
+        },
+        {
+          "path": "budget",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            523.7776000285521,
+            455.01919998787344,
+            459.40100005827844,
+            451.1988000012934,
+            466.9855999527499,
+            458.45210005063564
+          ],
+          "visible_samples_ms": [
+            594.4100000197068,
+            544.0416999626905,
+            623.6842999933288,
+            607.0267999311909,
+            568.1937000481412,
+            542.9238999495283
+          ],
+          "http_median_ms": 458.45210005063564,
+          "http_slowest_ms": 523.7776000285521,
+          "visible_median_ms": 568.1937000481412,
+          "visible_slowest_ms": 623.6842999933288
+        },
+        {
+          "path": "bundle-live",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            1018.0384999839589,
+            892.3968001035973,
+            892.4510999349877,
+            883.1772999837995,
+            912.5085000414401,
+            877.9911999590695
+          ],
+          "visible_samples_ms": [
+            1059.7221000352874,
+            1009.8558999598026,
+            1094.8833000147715,
+            1024.231499992311,
+            1000.8943000575528,
+            986.7621000157669
+          ],
+          "http_median_ms": 892.3968001035973,
+          "http_slowest_ms": 1018.0384999839589,
+          "visible_median_ms": 1009.8558999598026,
+          "visible_slowest_ms": 1094.8833000147715
+        },
+        {
+          "path": "bundle-frozen",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            1165.6770000699908,
+            1074.4088999927044,
+            1032.3140999535099,
+            1109.34460000135,
+            1079.5071000466123,
+            1047.4444000283256
+          ],
+          "visible_samples_ms": [
+            1393.7443998875096,
+            1237.6658000284806,
+            1275.442700018175,
+            1231.6152000566944,
+            1241.3844999391586,
+            1214.0061999671161
+          ],
+          "http_median_ms": 1074.4088999927044,
+          "http_slowest_ms": 1165.6770000699908,
+          "visible_median_ms": 1237.6658000284806,
+          "visible_slowest_ms": 1393.7443998875096
+        },
+        {
+          "path": "dashboard",
+          "role": "Admin",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            823.6363000469282,
+            639.9429000448436,
+            618.7869999557734,
+            616.5478000184521,
+            595.9619999630377,
+            640.5651000095531
+          ],
+          "visible_samples_ms": [
+            741.9030000455678,
+            711.7541999323294,
+            679.419600055553,
+            726.4585000229999,
+            661.4890999626368,
+            655.1574999466538
+          ],
+          "http_median_ms": 618.7869999557734,
+          "http_slowest_ms": 823.6363000469282,
+          "visible_median_ms": 679.419600055553,
+          "visible_slowest_ms": 741.9030000455678
+        },
+        {
+          "path": "ledger-first",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            74.67350002843887,
+            107.99970000516623,
+            55.818599998019636,
+            97.7835999801755,
+            99.57939991727471,
+            71.7917000874877
+          ],
+          "visible_samples_ms": [
+            223.28729997389019,
+            162.3275000602007,
+            166.0295999608934,
+            168.48370002117008,
+            170.16720003448427,
+            227.94630005955696
+          ],
+          "http_median_ms": 97.7835999801755,
+          "http_slowest_ms": 107.99970000516623,
+          "visible_median_ms": 168.48370002117008,
+          "visible_slowest_ms": 227.94630005955696
+        },
+        {
+          "path": "ledger-search-page2",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            83.890900015831,
+            100.78430001158267,
+            99.94440001901239,
+            82.6357000041753,
+            98.20889995899051,
+            103.53989992290735
+          ],
+          "visible_samples_ms": [
+            190.05360000301152,
+            148.46619998570532,
+            152.2969000507146,
+            186.30859989207238,
+            173.9403000101447,
+            173.9654999691993
+          ],
+          "http_median_ms": 99.94440001901239,
+          "http_slowest_ms": 103.53989992290735,
+          "visible_median_ms": 173.9403000101447,
+          "visible_slowest_ms": 190.05360000301152
+        },
+        {
+          "path": "reports",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            280.61709995381534,
+            281.3839999726042,
+            292.43679996579885,
+            289.0614999923855,
+            266.7523000854999,
+            281.2061000149697
+          ],
+          "visible_samples_ms": [
+            397.0450999913737,
+            379.10300004296005,
+            351.2551999883726,
+            385.5129999574274,
+            406.62550006527454,
+            386.2954000942409
+          ],
+          "http_median_ms": 281.3839999726042,
+          "http_slowest_ms": 292.43679996579885,
+          "visible_median_ms": 385.5129999574274,
+          "visible_slowest_ms": 406.62550006527454
+        },
+        {
+          "path": "budget",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            453.4304999979213,
+            436.2908999901265,
+            441.0841000499204,
+            444.3592999596149,
+            439.56620001699775,
+            473.3496999833733
+          ],
+          "visible_samples_ms": [
+            575.7034999551252,
+            535.8242000220343,
+            555.7069999631494,
+            521.9675999833271,
+            524.7096000239253,
+            584.1927999863401
+          ],
+          "http_median_ms": 441.0841000499204,
+          "http_slowest_ms": 473.3496999833733,
+          "visible_median_ms": 535.8242000220343,
+          "visible_slowest_ms": 584.1927999863401
+        },
+        {
+          "path": "bundle-live",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            891.1025999113917,
+            1040.3792000142857,
+            888.6035000905395,
+            873.111900058575,
+            856.4860000042245,
+            984.814399969764
+          ],
+          "visible_samples_ms": [
+            977.8912999900058,
+            1057.3359999107197,
+            949.2582000093535,
+            1089.9035999318585,
+            1012.7500999951735,
+            1051.213200087659
+          ],
+          "http_median_ms": 888.6035000905395,
+          "http_slowest_ms": 1040.3792000142857,
+          "visible_median_ms": 1051.213200087659,
+          "visible_slowest_ms": 1089.9035999318585
+        },
+        {
+          "path": "bundle-frozen",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            1031.7813999718055,
+            1052.5292000966147,
+            1032.2440000018105,
+            1052.6535001117736,
+            1007.1711000055075,
+            1089.8841000162065
+          ],
+          "visible_samples_ms": [
+            1214.3197000259534,
+            1210.4515000246465,
+            1188.7501999735832,
+            1259.3313000397757,
+            1210.290600080043,
+            1437.5506000360474
+          ],
+          "http_median_ms": 1052.5292000966147,
+          "http_slowest_ms": 1089.8841000162065,
+          "visible_median_ms": 1210.4515000246465,
+          "visible_slowest_ms": 1437.5506000360474
+        },
+        {
+          "path": "dashboard",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            739.0200999798253,
+            712.4455000739545,
+            688.348300056532,
+            724.2673999862745,
+            764.9606000632048,
+            696.2321000173688
+          ],
+          "visible_samples_ms": [
+            790.429100045003,
+            767.59150007274,
+            780.1320001017302,
+            778.6283999448642,
+            820.8380000432953,
+            809.1762999538332
+          ],
+          "http_median_ms": 712.4455000739545,
+          "http_slowest_ms": 764.9606000632048,
+          "visible_median_ms": 780.1320001017302,
+          "visible_slowest_ms": 820.8380000432953
+        },
+        {
+          "path": "queue",
+          "role": "Management",
+          "selected_account_lines": 500,
+          "http_samples_ms": [
+            322.6932999677956,
+            171.1779999313876,
+            178.50760009605438,
+            176.4033999061212,
+            140.40929998736829,
+            154.98780005145818
+          ],
+          "visible_samples_ms": [
+            229.23609998542815,
+            239.93309994693846,
+            266.08229998964816,
+            219.91350001189858,
+            241.85239989310503,
+            225.36220005713403
+          ],
+          "http_median_ms": 171.1779999313876,
+          "http_slowest_ms": 322.6932999677956,
+          "visible_median_ms": 239.93309994693846,
+          "visible_slowest_ms": 266.08229998964816
+        }
+      ],
+      "advisory_timings": [
+        {
+          "role": "Admin",
+          "samples_ms": [
+            2483.8359999703243,
+            2449.678600067273,
+            2466.2176000420004,
+            2468.0670000379905,
+            2455.4876000620425,
+            2458.313600043766
+          ],
+          "repeat_median_ms": 2458.313600043766,
+          "slowest_ms": 2483.8359999703243,
+          "scope": "Asynchronous forecast completion; separate from financial-panel visibility and ordinary HTML targets"
+        },
+        {
+          "role": "Management",
+          "samples_ms": [
+            2516.073999926448,
+            2579.198500025086,
+            2449.1970000090078,
+            2496.7384999617934,
+            2520.256199990399,
+            2704.770200070925
+          ],
+          "repeat_median_ms": 2520.256199990399,
+          "slowest_ms": 2704.770200070925,
+          "scope": "Asynchronous forecast completion; separate from financial-panel visibility and ordinary HTML targets"
+        }
+      ],
+      "operations": [],
+      "actual_counts_before": {
+        "journal_entries": 61,
+        "journal_entry_lines": 563,
+        "journal_drafts": 57,
+        "cash_advances": 1,
+        "budget_revisions": 6,
+        "complete_report_bundles": 1
+      },
+      "oracles": {
+        "expense": "9564.34",
+        "cash": "5535.66",
+        "approved_budget": "24000.00"
+      },
+      "server_mode": "single PHP built-in; normal MariaDB3306; headless Edge; serial samples drain asynchronous work outside timing intervals; first+5 repeats",
+      "provider_called": false,
+      "working_data_used": false,
+      "human_acceptance": false
+    },
+    "5000": {
+      "checks": [
+        "Admin ledger-first repeat HTTP/visible targets",
+        "Admin ledger-search-page2 repeat HTTP/visible targets",
+        "Admin reports repeat HTTP/visible targets",
+        "Admin reports document fits 1366",
+        "Admin reports document fits 1920",
+        "Admin budget repeat HTTP/visible targets",
+        "Admin budget document fits 1366",
+        "Admin budget document fits 1920",
+        "Admin bundle-live repeat HTTP/visible targets",
+        "Admin bundle-frozen repeat HTTP/visible targets",
+        "Admin bundle-frozen document fits 1366",
+        "Admin bundle-frozen document fits 1920",
+        "Admin dashboard repeat HTTP/visible targets",
+        "Admin six separate advisory response samples",
+        "Management ledger-first repeat HTTP/visible targets",
+        "Management ledger-search-page2 repeat HTTP/visible targets",
+        "Management reports repeat HTTP/visible targets",
+        "Management reports document fits 1366",
+        "Management reports document fits 1920",
+        "Management budget repeat HTTP/visible targets",
+        "Management budget document fits 1366",
+        "Management budget document fits 1920",
+        "Management bundle-live repeat HTTP/visible targets",
+        "Management bundle-frozen repeat HTTP/visible targets",
+        "Management bundle-frozen document fits 1366",
+        "Management bundle-frozen document fits 1920",
+        "Management dashboard repeat HTTP/visible targets",
+        "Management queue repeat HTTP/visible targets",
+        "Management six separate advisory response samples",
+        "No mixed-workload JavaScript errors",
+        "Navigation preserves every financial, evidence, master, audit and approval table",
+        "Large mixed month submitted as frozen Requested revision",
+        "Large immutable envelope retains complete manifest within existing packet limit",
+        "Management loads every exact frozen source line and current source comparison",
+        "Large complete reviewed month closes through actual UI",
+        "Admin full-result CSV includes all5000 account movements",
+        "Management full-result CSV includes all5000 account movements",
+        "Final production pins unchanged during serial measurements"
+      ],
+      "timings": [
+        {
+          "path": "ledger-first",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            582.7501999447122,
+            285.088500007987,
+            285.42580001521856,
+            301.9689000211656,
+            268.34100007545203,
+            289.64700002688915
+          ],
+          "visible_samples_ms": [
+            804.1784000815824,
+            424.41849992610514,
+            439.28849999792874,
+            421.6590999858454,
+            444.268099963665,
+            428.4757000859827
+          ],
+          "http_median_ms": 285.42580001521856,
+          "http_slowest_ms": 582.7501999447122,
+          "visible_median_ms": 428.4757000859827,
+          "visible_slowest_ms": 804.1784000815824
+        },
+        {
+          "path": "ledger-search-page2",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            304.3419000459835,
+            269.2633999977261,
+            302.09749995265156,
+            306.91429995931685,
+            295.6502999877557,
+            288.9338999520987
+          ],
+          "visible_samples_ms": [
+            413.4088000282645,
+            427.572000073269,
+            428.99140005465597,
+            449.5473999995738,
+            421.30020004697144,
+            405.27600003406405
+          ],
+          "http_median_ms": 295.6502999877557,
+          "http_slowest_ms": 306.91429995931685,
+          "visible_median_ms": 427.572000073269,
+          "visible_slowest_ms": 449.5473999995738
+        },
+        {
+          "path": "reports",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            697.0389999914914,
+            394.64650000445545,
+            342.4108999315649,
+            371.69359996914864,
+            381.06319995131344,
+            381.4082999015227
+          ],
+          "visible_samples_ms": [
+            597.3311000270769,
+            460.2294999640435,
+            477.7536999899894,
+            517.1180999604985,
+            463.5079000145197,
+            471.38049989007413
+          ],
+          "http_median_ms": 381.06319995131344,
+          "http_slowest_ms": 697.0389999914914,
+          "visible_median_ms": 471.38049989007413,
+          "visible_slowest_ms": 597.3311000270769
+        },
+        {
+          "path": "budget",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            654.9936999799684,
+            565.8462999854237,
+            567.8589000599459,
+            561.1079999944195,
+            542.6398999989033,
+            570.2181999804452
+          ],
+          "visible_samples_ms": [
+            729.7745000105351,
+            654.8679999541491,
+            681.0837999219075,
+            671.4531999314204,
+            718.931799987331,
+            655.9596000006422
+          ],
+          "http_median_ms": 565.8462999854237,
+          "http_slowest_ms": 654.9936999799684,
+          "visible_median_ms": 671.4531999314204,
+          "visible_slowest_ms": 729.7745000105351
+        },
+        {
+          "path": "bundle-live",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            1347.1789000323042,
+            1110.505499993451,
+            1171.2814000202343,
+            1172.398000024259,
+            1292.0458000153303,
+            1195.1444000005722
+          ],
+          "visible_samples_ms": [
+            1379.332200041972,
+            1334.4426000257954,
+            1341.4036999456584,
+            1275.549600017257,
+            1466.353700030595,
+            1373.890700051561
+          ],
+          "http_median_ms": 1172.398000024259,
+          "http_slowest_ms": 1347.1789000323042,
+          "visible_median_ms": 1341.4036999456584,
+          "visible_slowest_ms": 1466.353700030595
+        },
+        {
+          "path": "bundle-frozen",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            1351.109099923633,
+            1390.5522000277415,
+            1341.193199972622,
+            1308.6480000056326,
+            1339.0966999577358,
+            1340.8996000653133
+          ],
+          "visible_samples_ms": [
+            1473.9972000243142,
+            1471.1463999701664,
+            1432.9418000997975,
+            1483.7125999620184,
+            1452.3824999341741,
+            1451.6998999752104
+          ],
+          "http_median_ms": 1340.8996000653133,
+          "http_slowest_ms": 1390.5522000277415,
+          "visible_median_ms": 1452.3824999341741,
+          "visible_slowest_ms": 1483.7125999620184
+        },
+        {
+          "path": "dashboard",
+          "role": "Admin",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            827.6820000028238,
+            755.2486999193206,
+            799.6815000660717,
+            745.5638999817893,
+            749.0086000179872,
+            728.8287999108434
+          ],
+          "visible_samples_ms": [
+            896.2437000591308,
+            831.3350999960676,
+            798.8597000949085,
+            848.4309000195935,
+            868.2218999601901,
+            882.2696000570431
+          ],
+          "http_median_ms": 749.0086000179872,
+          "http_slowest_ms": 827.6820000028238,
+          "visible_median_ms": 848.4309000195935,
+          "visible_slowest_ms": 896.2437000591308
+        },
+        {
+          "path": "ledger-first",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            319.3184999981895,
+            306.3722000224516,
+            321.92170002963394,
+            300.3662000410259,
+            305.48790004104376,
+            271.68860007077456
+          ],
+          "visible_samples_ms": [
+            417.65420010779053,
+            370.4530999530107,
+            383.88240011408925,
+            347.71860006731004,
+            380.04029996227473,
+            362.4949000077322
+          ],
+          "http_median_ms": 305.48790004104376,
+          "http_slowest_ms": 321.92170002963394,
+          "visible_median_ms": 370.4530999530107,
+          "visible_slowest_ms": 417.65420010779053
+        },
+        {
+          "path": "ledger-search-page2",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            292.44960006326437,
+            303.75849991105497,
+            318.639799952507,
+            298.7162999343127,
+            309.6474000485614,
+            295.6702000228688
+          ],
+          "visible_samples_ms": [
+            393.47560005262494,
+            380.78750006388873,
+            365.8681999659166,
+            382.72130000405014,
+            416.07199993450195,
+            372.3386999918148
+          ],
+          "http_median_ms": 303.75849991105497,
+          "http_slowest_ms": 318.639799952507,
+          "visible_median_ms": 380.78750006388873,
+          "visible_slowest_ms": 416.07199993450195
+        },
+        {
+          "path": "reports",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            398.2453999342397,
+            381.43469998613,
+            423.31510002259165,
+            380.53770002443343,
+            381.7684999667108,
+            410.9334999229759
+          ],
+          "visible_samples_ms": [
+            498.3305000932887,
+            466.7363000335172,
+            503.3125999616459,
+            486.84979998506606,
+            457.8978999052197,
+            484.2697000131011
+          ],
+          "http_median_ms": 381.7684999667108,
+          "http_slowest_ms": 423.31510002259165,
+          "visible_median_ms": 484.2697000131011,
+          "visible_slowest_ms": 503.3125999616459
+        },
+        {
+          "path": "budget",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            527.348899981007,
+            528.7272999994457,
+            544.1324999555945,
+            554.8797999508679,
+            541.0533000249416,
+            581.2424999894574
+          ],
+          "visible_samples_ms": [
+            678.2679000170901,
+            730.6409999728203,
+            637.0529000414535,
+            673.6243999330327,
+            695.8081999327987,
+            704.661599942483
+          ],
+          "http_median_ms": 544.1324999555945,
+          "http_slowest_ms": 581.2424999894574,
+          "visible_median_ms": 695.8081999327987,
+          "visible_slowest_ms": 730.6409999728203
+        },
+        {
+          "path": "bundle-live",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            1192.8525000112131,
+            1164.9899000767618,
+            1143.7831000657752,
+            1158.3565999753773,
+            1220.7869000267237,
+            1266.850300016813
+          ],
+          "visible_samples_ms": [
+            1318.0712999310344,
+            1583.3555000135675,
+            1319.5350000169128,
+            1253.6421000258997,
+            1354.6604999573901,
+            1305.547000025399
+          ],
+          "http_median_ms": 1164.9899000767618,
+          "http_slowest_ms": 1266.850300016813,
+          "visible_median_ms": 1319.5350000169128,
+          "visible_slowest_ms": 1583.3555000135675
+        },
+        {
+          "path": "bundle-frozen",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            1333.7144000688568,
+            1345.5403000116348,
+            1317.7779000252485,
+            1333.1277000252157,
+            1322.1995000494644,
+            1366.9836000772193
+          ],
+          "visible_samples_ms": [
+            1456.9144999841228,
+            1508.9308000169694,
+            1431.8356999428943,
+            1453.847200027667,
+            1508.2486000610515,
+            1437.958399998024
+          ],
+          "http_median_ms": 1333.1277000252157,
+          "http_slowest_ms": 1366.9836000772193,
+          "visible_median_ms": 1453.847200027667,
+          "visible_slowest_ms": 1508.9308000169694
+        },
+        {
+          "path": "dashboard",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            884.6906999824569,
+            867.0076999114826,
+            922.6633000653237,
+            890.8438000362366,
+            866.0289999097586,
+            838.3887000381947
+          ],
+          "visible_samples_ms": [
+            951.9661000231281,
+            928.0910000670701,
+            952.4606000632048,
+            944.2777000367641,
+            928.5691999830306,
+            950.7335000671446
+          ],
+          "http_median_ms": 867.0076999114826,
+          "http_slowest_ms": 922.6633000653237,
+          "visible_median_ms": 944.2777000367641,
+          "visible_slowest_ms": 952.4606000632048
+        },
+        {
+          "path": "queue",
+          "role": "Management",
+          "selected_account_lines": 5000,
+          "http_samples_ms": [
+            283.2605999428779,
+            186.39310006983578,
+            172.53189999610186,
+            169.82440010178834,
+            186.27740000374615,
+            184.78210002649575
+          ],
+          "visible_samples_ms": [
+            253.64300003275275,
+            248.35940008051693,
+            254.03630000073463,
+            214.34080007020384,
+            217.68920007161796,
+            220.7477999618277
+          ],
+          "http_median_ms": 184.78210002649575,
+          "http_slowest_ms": 283.2605999428779,
+          "visible_median_ms": 220.7477999618277,
+          "visible_slowest_ms": 254.03630000073463
+        }
+      ],
+      "advisory_timings": [
+        {
+          "role": "Admin",
+          "samples_ms": [
+            2707.346500013955,
+            2668.4053000062704,
+            2644.510700018145,
+            2668.210700037889,
+            2644.208800047636,
+            2784.675700007938
+          ],
+          "repeat_median_ms": 2668.210700037889,
+          "slowest_ms": 2784.675700007938,
+          "scope": "Asynchronous forecast completion; separate from financial-panel visibility and ordinary HTML targets"
+        },
+        {
+          "role": "Management",
+          "samples_ms": [
+            2696.26569992397,
+            2676.53389996849,
+            2753.0257999897003,
+            2638.5449999943376,
+            2733.6356999585405,
+            2667.7266999613494
+          ],
+          "repeat_median_ms": 2676.53389996849,
+          "slowest_ms": 2753.0257999897003,
+          "scope": "Asynchronous forecast completion; separate from financial-panel visibility and ordinary HTML targets"
+        }
+      ],
+      "operations": [
+        {
+          "operation": "complete_submit",
+          "elapsed_ms": 3008.5725999670103
+        },
+        {
+          "operation": "management_review",
+          "elapsed_ms": 3440.2302000671625
+        },
+        {
+          "operation": "month_close",
+          "elapsed_ms": 3239.6027999930084
+        },
+        {
+          "operation": "ledger_full_export",
+          "role": "Admin",
+          "elapsed_ms": 3047.82510001678,
+          "bytes": 893418,
+          "csv_rows": 5019,
+          "data_rows": 5000,
+          "sha256": "a563ec0d9ac2c6f8b5f1ea4c97c989d27ba811c9fcd69a2da99d7a3bc8ef2f7e"
+        },
+        {
+          "operation": "frozen_full_export",
+          "role": "Admin",
+          "elapsed_ms": 345.4109999584034,
+          "bytes": 2555,
+          "csv_rows": 27,
+          "data_rows": null,
+          "sha256": "de11d56100aea3d786a155214e6ca8f16b4da3c3f871a04065caec740a3b6199"
+        },
+        {
+          "operation": "ledger_full_export",
+          "role": "Management",
+          "elapsed_ms": 2907.5639999937266,
+          "bytes": 893418,
+          "csv_rows": 5019,
+          "data_rows": 5000,
+          "sha256": "b6bd5ac4a33d4b6a3b240449890047501373d201453a1d86044e2b9409d4933b"
+        },
+        {
+          "operation": "frozen_full_export",
+          "role": "Management",
+          "elapsed_ms": 355.4522000486031,
+          "bytes": 2555,
+          "csv_rows": 27,
+          "data_rows": null,
+          "sha256": "5d5b57b37ec8e6c60a6fb51aa9b426d19cc8546be098d5074cc67e73e484b133"
+        }
+      ],
+      "actual_counts_before": {
+        "journal_entries": 106,
+        "journal_entry_lines": 5063,
+        "journal_drafts": 102,
+        "cash_advances": 1,
+        "budget_revisions": 6,
+        "complete_report_bundles": 1
+      },
+      "oracles": {
+        "expense": "9564.34",
+        "cash": "5535.66",
+        "approved_budget": "24000.00"
+      },
+      "server_mode": "single PHP built-in; normal MariaDB3306; headless Edge; serial samples drain asynchronous work outside timing intervals; first+5 repeats",
+      "provider_called": false,
+      "working_data_used": false,
+      "human_acceptance": false
+    }
+  },
+  "working_preservation": {
+    "passed": true,
+    "read_only": true,
+    "compared": true,
+    "application_tables": 34,
+    "triggers": 24,
+    "audit_rows": 62,
+    "upload_files": 53,
+    "configuration_and_permissions_pinned": true,
+    "snapshot_sha256": "552354448852feebff3e56db9a05c56be32b5ba62e3b1c1934e5b17866f02fbc"
+  },
+  "production_sha256": {
+    "assets/css/budget_workspace.css": "0d073f23a4ae9a743adb8a367da3cbae00415ea24ab05f1e406e5bd33f8415a1",
+    "assets/css/evidence_item_review.css": "ac816495b137908f65131ae7a43307d7e5d78ad2b90ad8875dac0d57ff5d5641",
+    "assets/css/financial_export.css": "0766a72c7d9a0e4d72abf5878c63569d9985975f1697f80771073829b781c510",
+    "assets/css/financial_records.css": "37fad5bedb1ce7ea79d60f88b1a96bbc7887c53bd8955cd7855adec283a85ba2",
+    "assets/css/financial_reports.css": "ac7e8aec29357f13671dca0ddb1f483fafa2ff70b9f69af25167456c500cd076",
+    "assets/css/general_ledger.css": "51be351303f34a48c37b6109d6678579b80670905b00f01b9269d04811dc2327",
+    "assets/css/report_bundles.css": "a3263c5bab5c17efa16ba22fce4727a1997f939b35c2d6ad20c9040509812709",
+    "assets/js/accounting_workspace.js": "e396ce4d6d78b27e3669bf8c83ecf5df89cf1627b7bae0b2bb8fa0641b27e4e3",
+    "assets/js/budget_workspace.js": "26e7ef2cfbc877031c3890da23a73b154e9325df728d9443d19d8deef267e143",
+    "assets/js/evidence_item_review.js": "675ae6859602d5c5d76ca463cc03d7e1ce70936ed2f7ef31c25e98cd71b6c8d3",
+    "assets/js/financial_records.js": "14078e1412ee260d03ffd64c9e74523e871b15e4aedf106cb6cd8bf1f76a1e74",
+    "assets/js/general_ledger.js": "930af951536e1d1ec7fdfb345caff66cb04d39e04b9c77ee944da4abb07ac500",
+    "assets/js/management-dashboard.js": "556e2ca6cbe0aef15023f200acabf3d0a73e0afde846a7a79b2be1e0025f96a3",
+    "assets/js/report_bundles.js": "5413bb85a873bb6603aaf4add23582ba35dd57bef17d75fb8e51b45fce2ceba9",
+    "assets/js/report_setup.js": "7fe1ff1a4cebac45e8d5dd63df168ae648100310754c98cff836dad518458bb0",
+    "assets/vendor/unicode-search.json": "5dbae8c3c28c60db2f59fb175afbae74f2e22d4ba53d090715a2ec4fc13ece58",
+    "budget_actions.php": "614370f04eab583be0de2713e388ab344df6e0a9734e1f3c840f2f86353e2a87",
+    "budgets.php": "5959b63518a08aa76ac8ffff23268aba5060538f71c6205339c471ec24d1ceab",
+    "dashboard.php": "2f77d761ba6905c2030c968aee99a8353080601b34ff80c05f63e951cc6198c0",
+    "evidence_item_review.php": "bdb3915d731000e8dca572eee4c1326040265c8876bc04fd812990fac8ee0f45",
+    "financial_export.php": "a7b2f0dd7365f7ba2fd5de252fd7ebcf16fcfbcb53842027c602f79aa8b3f46f",
+    "financial_records.php": "3b9e53f16dc7bf15c9d203dd54da6304cf992fc922e1c7d1f327239859c87bf1",
+    "financial_statements.php": "d3994eb4879a01e0d7f34b53f6c53c14939b397c28b4ca343737f1b34cfd0d59",
+    "forecast_ai.php": "0872ead29b5906294763ea26f797f24299a7380be26ef49e048f01e6343a8e25",
+    "general_ledger.php": "0aa0b7de3d93b74dcb1e9433b738e9aa2a3df7564f96ba5e1b3752f6a0dffa68",
+    "includes/accounting_entry_page.php": "d0b3f3a25caade431825ff8397a6377acb7881eb314807b37cafdc4b12e53a2e",
+    "includes/accounting_periods.php": "7b00e6c5eb387f7087501a88e96c20e2ae6e37da228397433b18ab48f87e7214",
+    "includes/accounting_workspace.php": "624f623a9145003ac57d56ae41c60a806445e98f8d3b2eebea2284caeae5127b",
+    "includes/accounts.php": "14fe120f2c7c63ca82de92e99258b24132bf87f97b679998792ec51aff1473d5",
+    "includes/budget_actuals.php": "50b2f2fe3b12162fa3439558009a082490d4ab98c047f801c6edfe5ca743ef5a",
+    "includes/budget_query.php": "a1270ce4c91d15c246f541d39e91b294136235525da924e8b830891281d4c8ce",
+    "includes/budget_revisions.php": "4f378e5a2f1bb45691bc475bd3a9a6f0db358cf9499e1d4ee39e4b2f22b8452e",
+    "includes/cash_advance.php": "957f6b127ac65705a298a8e5dd49c0225710417c18a1e04642f913f86a009497",
+    "includes/correction_drafts.php": "62dd683cda1f07330ce574682b3ff09d27cc6e4d6b2335e971322a8504ad68c7",
+    "includes/correction_posting.php": "3eee3450539d992aee112fe618350838853068e99f0893af71c48d20734dca4b",
+    "includes/dashboard_reporting.php": "b4e69cb3a71ad09b9994d4f5180590db92e46b7e4a253d19316a46b7b385c710",
+    "includes/evidence_item_reviews.php": "c64c998835e879f9bc91c3fb4c1e8a637a83971ca02d66f21a621c70c98c9f66",
+    "includes/financial_export.php": "d68a6bb31f8de70e26e147717656aab17ef8b68c5f5a751d81745ee907565f69",
+    "includes/financial_report_query.php": "43313179f8c05feac22ce7ce326b4c8b5eea0141a88b7ccaf82de40326e05bc7",
+    "includes/financial_search.php": "d109fcabf874633d9b1cf72b27cd7cd96eeb1416a7352841f5c6f8bbbc3659a9",
+    "includes/forecast_query.php": "a29ed21be79a13127da540e2f3d64368529e355782a32fd52869b2f93f8f107a",
+    "includes/gemini_client.php": "c16bcff66db8140575fa7ce2826b4fb883e6cf2fe3c2d9c9bb3e122ec05a422c",
+    "includes/gemini_receipt.php": "0d9ca9f62c5d4fc01768d231e4091857340394f6d09672dc79973359b78610e6",
+    "includes/general_ledger_query.php": "0b9f2e6b1f912b0e2cb6dadbfaf38c499b1daa4eacbeef73d642aba4369d4d9a",
+    "includes/journal.php": "5f63ea162732b3f86e0f43f95559abbd2f5560505a8c60af57dccd0d220bc5ef",
+    "includes/management_dashboard.php": "c754cc50396e48e8bcae9e5eb4892f3345eb06479740aa449e6a4ccba56758e7",
+    "includes/nav.php": "09c2964a8cebd1d0c3e92fc624be2df48622dac9e3a5c3c74ae24745270d29f1",
+    "includes/receipt_ocr.php": "fa1242f325afab5064253a883eae822707104c4a07b834783a614211787fb689",
+    "includes/report_bundle_storage.php": "d4ba59dd0f00859e0107879d50b5b3b45b4755cfbc3795c8f3e5b67e349ea39f",
+    "includes/report_bundles.php": "00a300a5e7a0c652e68e3b7f9af59b71dc78f92ecf9007fb529584285cddfd50",
+    "includes/report_component_view.php": "9abc167733ba2596c6c2d6c4b304bac00f923036c15afcb42bcb00ae490d8da1",
+    "includes/report_configuration.php": "52e629f4b8a0624ae7cae5abfe901d2baa02d5345ea82efb15af1f794de3fb5d",
+    "includes/reporting_common.php": "e98ef41e2620774e476435f1093e448ba409c47f664414e76fcc7057ea184677",
+    "includes/stage1_common.php": "41e83a9fb02c59c8add3328617d402a7bc86e92d9403d5c6db30e680cbd359da",
+    "includes/stage3_common.php": "28a78029a7cc55e4d0375ea7a8be41626a3811ebef5cc6111f4fc0398905e9c7",
+    "journal_transaction.php": "2ce9713f01c38d86194d1cd83ee3cc4b5e4510b1530ddb0c0c1dd3a972adc6d8",
+    "management_reviews.php": "952b1ce438753c37b0836b84942bde5c90383641da2b7782f14fedffd3753505",
+    "migrations/022_report_configuration.sql": "c5532ac4b87329417537c02a9c9f9169009ef72caa2d66397dac7e2907aa38ee",
+    "migrations/023_monthly_budget_revisions.sql": "ad2e3bebb50b20f3ad26b5d6a0a0f22840344d636391bf3e2f4baef1549590b6",
+    "migrations/024_report_bundles_periods.sql": "95c44418708da9c87860531b9103ae60e0d343feaea36c11c38a2d0108154bf9",
+    "migrations/025_evidence_item_reviews.sql": "3ed6b0fcc14a53ba886aa979c24558e00553660cd5b96eabf08dfee746a79db3",
+    "ocr_expense.php": "7fe9a016fde29849ffc402cf2b0453cf14a474781c695a74228f684d53228333",
+    "report_bundle_actions.php": "e45c2265a1fefb21760bcb429d657f70498ad60bb937af7255abdff8ffd0fa54",
+    "report_bundles.php": "3cee1d77639a9f59dae8d9bf8a555c52f9a8b971f7a3706202c75df1e9909387",
+    "report_setup.php": "091852cf148937f03f33fc448570166a2443455c4fde0e3a2f7c6022ee30d363",
+    "report_setup_actions.php": "0f2938e0d67f780b2c4a0828438125371b5be8dff7d7f3819f28c223f94c5184",
+    "reports.php": "0a1a491167b3844c79fdf4a6e1763e1ff4175e7297f5141a01c41ce67df29293",
+    "review_actions.php": "0f90b3a6e283a99ba47ee4cff1a0743d2c973099e867d240eb76c518b55593ba"
+  },
+  "test_sha256": {
+    "scripts/__pycache__/browser_workspace_helpers.cpython-313.pyc": "8d194813e70de7ae9a8d687b2146b5a6ad042c2265b91439e8364749d092cc01",
+    "scripts/__pycache__/stages4_7_browser.cpython-313.pyc": "8481d0ebfd69098e9211dfa6fa6d35ad64b4f2d5427bbd82be28f4428c40e565",
+    "scripts/close_stages4_7_g6.py": "d27bc924c8f2cba270e9a437b63fe55c306905ac4c377d20ee0f651ad5311d80",
+    "scripts/create_budget_fixture.py": "7b25252f8fb0cdedd99b1de1df83eddfc43dcecc2985e99533740b7ccdbc300d",
+    "scripts/create_period_fixture.py": "7bfd5ab271f33f077a54518e34a3f8f7b92559e55ea5ce0c78ac210bd1fef5af",
+    "scripts/create_reporting_fixture.py": "b0751041ed446839b1a513b2e0dff98c5d2b682e19d0e5acec8a6d63bab97244",
+    "scripts/create_stage7_fixture.py": "39b7f24f9d60e79c7dae19bdaea1becfd2d7b2c49026098d28b92b63f4f1022c",
+    "scripts/create_stages4_7_mixed_fixture.py": "78ce6dcd368e7df937f10672a27193c4de49acdf548f3890cacb460b113222ce",
+    "scripts/diagnose_stages4_7_submit.py": "fd7fe05ca78640f98deee19a02d21b6646f15c7a5e584d02907cebca1e709277",
+    "scripts/generate_search_normalization.py": "207555dd4690dd62c46e363d9332ef47a4967961000ddd30a3565202e79c9b73",
+    "scripts/inspect_stages4_7_payload.py": "17a8afb49823de3661bd5c3d6972c46c40030a9f5eb1d56e2e7de78b121e2e94",
+    "scripts/prepare_stages4_7_walkthrough.py": "7cf272799c272824549f2a41cfb2d5999ae5541cd1c4b472cb840fbd0776fecf",
+    "scripts/render_stages_print.py": "1ea488169ad6a1002fd3c67b2ae21bda8215dc672aa3e9634e5c75833d29b6be",
+    "scripts/run_stage5_checks.py": "50b7ab499b4ccb3c6654f51f9176f90300b6479995752dcfccfc958a2be2d166",
+    "scripts/run_stage5_completion_checks.py": "6fb0fd4fb5c5b557037c4db11f5c001e866f5957c0625c9445989229d46b7809",
+    "scripts/run_stage5_period_schema_checks.py": "c4f18bd0f37cfe26ad5fe287d6ff18e2fa17c1747dfa82b0e7aa60c5642c1aca",
+    "scripts/run_stage6_checks.py": "15f8252ce270ead4e3c29ef453c80d3730105ea22a89aee137eb727e5c614b61",
+    "scripts/run_stage7_checks.py": "052261dcad15368fd5b328d44d2b370516eb81d427d1103f0da87a1403c8f443",
+    "scripts/run_stage7_schema_checks.py": "bf09213b3002808cc8dcd84622b66c541b841ec93f7871820cbae733f97139b3",
+    "scripts/run_stages4_7_g6.py": "2ee902e0631be8a7048c46bb1c0ca830abe271e26cea2dbe81b74fe236e63b1b",
+    "scripts/run_stages4_7_workload.py": "bafabc828e2a2e904ea3ae91f8528e4969db4d9ded3557608312723790ddde91",
+    "scripts/stages4_7_browser.py": "a2fe18dcb2cafc493fbb72e818cfec69616a5e21f3e9a026594973c6248daa3c",
+    "scripts/stages4_7_fixture_helpers.php": "983bbe3e574a6b7548d13e53a71bb001b0dfcf74bcc366cb17923ed6c977320f",
+    "scripts/stages4_7_preservation.py": "a88feb2660ef86500462d767f9b625cb9d41b0981b7702971d55fe1eecb13d90",
+    "scripts/test_receipt_browser.py": "779455459e70a55d2182085fd653606e3a044e3962fb8f3be71dccb7c636ef5b",
+    "scripts/test_report_bundle_storage.php": "da4b8b01ac55752ac76b6d7b6d069a0bf72bbdb62c6596c15d40a92fea3cadb6",
+    "scripts/test_stage4_browser.py": "ea00ca92443543ee108ea3662c66538720aaed2eac6a1c4874e8b032f6769dab",
+    "scripts/test_stage4_ledger.php": "4116f760d6f03398bc5f9ffc0987700b00f6b9c86d61be30e19993b74c663e28",
+    "scripts/test_stage4_queries.php": "111623b3216ce56a6412be69d8a6fb31ab7c680746871c53115953994914adc3",
+    "scripts/test_stage4_workload.php": "3ff8ace511f87ae7ee3f4d70452272699320dcfd68299827a4f63e70a53ec703",
+    "scripts/test_stage5_browser.py": "d0230d155a657adad04905a30732a10a7ea3fe88e66a8a4ace4030adc7df0415",
+    "scripts/test_stage5_cashflows.php": "06e83c2e1477a8f538835660a75873b0d3f694cee2d1421b81917c86cadff3f9",
+    "scripts/test_stage5_completion.php": "35ff512d6dc8adfced8ab09b91458abdc04fd7a1eab1bd0c48a8585c8eea3da8",
+    "scripts/test_stage5_completion_browser.py": "0388daa916aa2e2ae2e626d5333a7cdbd8330361e3ed47b70d766271cd2593ee",
+    "scripts/test_stage5_completion_negatives.php": "b8615f5f2a31e919606bb85ab8a8dfa5ad2cd9ea48ac145be210475699003147",
+    "scripts/test_stage5_configuration.php": "bfb221d0cc155bc1c417528af4b1a1e281b6ea7111fe305e98aa8b60e043e5a6",
+    "scripts/test_stage5_dashboard_queue.php": "f2d474fb10524c876513e49b127035617bcbc9f025490ab594aa00043cbfcbcb",
+    "scripts/test_stage5_flag_off.php": "f0f27bba6dce5ae1af5ac15828d61fd78ffde9f3179a39099a664f6fd5f0790d",
+    "scripts/test_stage5_period_edges.php": "d0c481842ae560d1baedd3f2eb89efdbfebf7cab9be94c6a5801bcd0bd7750e4",
+    "scripts/test_stage5_period_races.php": "fa8e1a4718af04af717a4a12aff0102f355e4114d72a4122319f648738ab7184",
+    "scripts/test_stage5_period_schema.php": "1d25ade7228a4f57176f2af348fcab70f1e7b6d72a9142823f4eac8f2c3d5984",
+    "scripts/test_stage5_report_edges.php": "f388430c59d64e011fde51dbad6a4b0fe0f26b0237f1b4d223904ccacfcefb07",
+    "scripts/test_stage5_reports.php": "ce36b5290d7807f9e41c5daeea477a29acfb6de23ae3dc0287a8d3c73ba573b4",
+    "scripts/test_stage5_schema.php": "b4a4fc18f9e9c33bc400d10373b4c400b8e83515bac8aedee0ec51acd0f91b92",
+    "scripts/test_stage6_browser.py": "743f16897b05d6c79902e75bba21913f427af56d078b209b4d193fd579f0af3b",
+    "scripts/test_stage6_budgets.php": "381a878a1e7ed96184a0fa1d4db9d81be38d3d54fe23a6752245509d42a7fae2",
+    "scripts/test_stage6_integrity.php": "4bca8c9f238bd8069bc98254b339e08bce11529e1ab69940821cd9134d161a58",
+    "scripts/test_stage6_read_models.php": "f4b8600010dc86ded0c0c8c255a88c3efad3885e3679151d58488a43f65ead48",
+    "scripts/test_stage6_schema.php": "bf7f6be16f81d84bd3691d943f0709bf9c5bb4134f2a64741eb0af8f7a5769e6",
+    "scripts/test_stage7_browser.py": "1d182cf1de890c687f46a3cbab9af6902704cfe41fc9bba91a6a1a37719de9b2",
+    "scripts/test_stage7_evidence.php": "fa575a602120d5a88ac0824461c42976accc4a4aa55fe82f27b913e611fc8c45",
+    "scripts/test_stage7_excel.ps1": "92ad8621dd4d8b33be634b4eb0d54067928a5a12b6e328db8e54179aea3a4877",
+    "scripts/test_stage7_export_readback.php": "b19b62869a5ad5f83f43940e57eceb1d156f63973ea7323f93211bde7284ccd5",
+    "scripts/test_stage7_exports.php": "8551fc0340a6a85c52d32bccb598a23b0d0a79b753e58c49366426f11ade7057",
+    "scripts/test_stage7_flag_off.php": "fe6989cd3bc3ccf8013208001941d1be6d050816cf5aac44b71dfc4f6ad8dabc",
+    "scripts/test_stage7_negatives.php": "1f9b0ddff38b421106db4c0b7cea1a923369b730ec39cb49d3894a1c9e514f47",
+    "scripts/test_stage7_schema.php": "2a149250f046f1b875f8203b7c0e5dd4ce76c34310fc296168cda32c129d5213",
+    "scripts/test_stages4_7_forecast_session.py": "5db04c2471d8c96ae803b821d5dd51a88fbb1712b2a67f8f6018f875a6a22300",
+    "scripts/test_stages4_7_g6_readback.py": "5cdab4038c7e906787ad34c88b34b01c9cd79c112fb10f640fea14b7a0057f7d",
+    "scripts/test_stages4_7_performance.py": "c2d5a3db84b274e8a8b4af4010725ddb9a3660ef31b40673300cec0153b314ad",
+    "scripts/test_stages4_7_workload.php": "af1267e9d13c70a1a5ac498f2d7964781803d50055500219a4e25926eed1da8c",
+    "scripts/test_usability_u2_c_browser.py": "95256b7557d7c352a269642ad6f691b461726a47dacebfd654c208e2eef552c4",
+    "scripts/verify_stages4_7_current.py": "4120b1ed2b3760a9f69929b38ac1b928c3c01f89655c47106e0f94b9801e0b96"
+  },
+  "syntax_checks": 116,
+  "git_diff_check": true,
+  "evidence_boundary": "Retained regression/receipt/ledger runs precede the final bounded report/storage/session fixes. Their original pins remain dated evidence. Affected report/budget/forecast/period/evidence/export components and both mixed workloads are rerun on final production bytes. The later forecast endpoint session release is covered by its own final forecast/browser and deterministic shared-session rerun; prior component pins remain honest dated evidence for that one endpoint. Failed driver artifact attachment is retained and superseded only by the successful separate readback phase. Excel evidence is the original named first import with byte-identical typed-encoder readback, not a newly claimed Excel run.",
+  "development_findings": [
+    "Full frozen source envelope exceeded existing1MB connection packet; fixed with bounded lossless hashed storage without schema/config changes.",
+    "Empty historical worksheet after omission of unused accounts lacked initialized totals; all15 totals now exact zero while missing setup remains incomplete.",
+    "Old receipt search check raced redraw; navigation expectations predated new task links; affected tests updated without relaxing privacy or accounting.",
+    "Queued dashboard HTTP samples overlapped asynchronous forecasts; final samples drain background work outside timing intervals and report advisory completion separately. Authenticated forecast releases its PHP session before long work, proven with deterministic two-server shared-session checks.",
+    "G6 readback helper initially omitted the retained Excel-test CSV; retained artifact explicitly copied and final24+6 checks passed."
+  ],
+  "forecast_shared_session_checks": 9,
+  "forecast_shared_session_measurements": [
+    {
+      "role": "admin",
+      "parallel_financial_ms": 514.918600092642,
+      "forecast_held_until_financial_completed": true
+    },
+    {
+      "role": "management",
+      "parallel_financial_ms": 483.90349990222603,
+      "forecast_held_until_financial_completed": true
+    }
+  ],
+  "large_decoded_envelope_limit_bytes": 16777216,
+  "forecast_redesign_deferred_by_user": true,
+  "external_calls": false,
+  "working_rollout": false,
+  "commit_or_push": false,
+  "G7_actual_human_pending": true,
+  "G8_pending": true,
+  "print_evidence": {
+    "sha256": "b1c63961e9ec7e01120a5929478ea97a9474d2981e85f40f7f4413d4c9d2a409",
+    "landscape_pages": 3,
+    "all_pages_rendered_and_inspected": true,
+    "every_page_identity_and_page_number_verified": true
+  },
+  "final_desktop_review": {
+    "sizes": [
+      "1366x768",
+      "1920x1080"
+    ],
+    "inspected": [
+      "Admin live monthly worksheet",
+      "Management budget and actuals",
+      "frozen worksheet print and configuration summary"
+    ],
+    "read_only_cells_and_internal_table_scrolling": true
+  },
+  "test_pin_boundary": "Current test pins include the separately prepared/smoked G7 helper. Its duplicate-include setup failure was corrected on a new disposable target; it is not a human observation. G8 must regenerate final pins after actual human refinements."
+}

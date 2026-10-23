@@ -1,0 +1,177 @@
+{
+  "classification": "G7 observed presentation refinement; human retest pending",
+  "refinement": "Exact transaction navigation links as buttons",
+  "source_sha256": {
+    "journal_transaction.php": "c0e5efe37c4d3997a0bb15820c3d36856b937015dbb3c8158ca2c28c7794f7e2",
+    "assets/css/accounting_workspace.css": "f44e8b9f0ecbc961f8d85133d6ce5f2697b739512156da60dba9bc61dc4e5924"
+  },
+  "test_sha256": {
+    "scripts/test_stages4_7_transaction_buttons.py": "1bd99eabbe6f0a8dc41729e25f4c59f88897f37ef1ca074c767a4aa4cef9560b"
+  },
+  "browser_checks": 52,
+  "passed": true,
+  "checks": [
+    "admin ledger has transaction destinations",
+    "management ledger has transaction destinations",
+    "admin0 exact link targets, tables and coverage unchanged",
+    "admin0 scoped navigation controls present",
+    "admin0 links have button shape and readable targets",
+    "admin0 real navigation semantics retained",
+    "admin0 no page overflow at 1366",
+    "admin0 no page overflow at 1920",
+    "admin0 keyboard focus visible",
+    "admin0 contextual return control hidden in print",
+    "admin0 print toolbar hidden",
+    "admin0 print financial table remains visible",
+    "admin correction identities retained in print",
+    "admin0 return preserves complete ledger criteria",
+    "admin1 exact link targets, tables and coverage unchanged",
+    "admin1 scoped navigation controls present",
+    "admin1 links have button shape and readable targets",
+    "admin1 real navigation semantics retained",
+    "admin1 no page overflow at 1366",
+    "admin1 no page overflow at 1920",
+    "admin1 keyboard focus visible",
+    "admin1 contextual return control hidden in print",
+    "admin1 print toolbar hidden",
+    "admin1 print financial table remains visible",
+    "admin1 return preserves complete ledger criteria",
+    "management0 exact link targets, tables and coverage unchanged",
+    "management0 scoped navigation controls present",
+    "management0 links have button shape and readable targets",
+    "management0 real navigation semantics retained",
+    "Management0 financial authoring and private item/file controls absent",
+    "management0 no page overflow at 1366",
+    "management0 no page overflow at 1920",
+    "management0 keyboard focus visible",
+    "management0 contextual return control hidden in print",
+    "management0 print toolbar hidden",
+    "management0 print financial table remains visible",
+    "management correction identities retained in print",
+    "management0 return preserves complete ledger criteria",
+    "management1 exact link targets, tables and coverage unchanged",
+    "management1 scoped navigation controls present",
+    "management1 links have button shape and readable targets",
+    "management1 real navigation semantics retained",
+    "Management1 financial authoring and private item/file controls absent",
+    "management1 no page overflow at 1366",
+    "management1 no page overflow at 1920",
+    "management1 keyboard focus visible",
+    "management1 contextual return control hidden in print",
+    "management1 print toolbar hidden",
+    "management1 print financial table remains visible",
+    "management1 return preserves complete ledger criteria",
+    "No browser script errors",
+    "All synthetic application tables unchanged"
+  ],
+  "desktop_sizes": [
+    [
+      1366,
+      768
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "representative_desktop_captures_inspected": true,
+  "both_roles_final_print_rendered_and_inspected": true,
+  "print_sha256": {
+    "admin": "2a8876a6f4a648ca67b0bc95cbb630c89d797301374a8a56a9c0cde9bfcd19d8",
+    "management": "3412479704e1942ef6fcc59af1d83eb2b813194ec5f4cfa1b6c0f79445655664"
+  },
+  "all_synthetic_application_tables_unchanged": true,
+  "working_database_used": false,
+  "provider_called": false,
+  "owned_walkthrough_source_updated": true,
+  "human_retest_pending": true,
+  "G6_evidence_boundary": "Earlier G6 source hashes and broad results are dated before this markup/scoped CSS refinement; final affected checks are recorded here",
+  "development_evidence": "Initial computed-display assertion failed because flex items blockify inline-flex; corrected test then48 pass. Print specificity overlap corrected; final52 pass. Original logs retained privately.",
+  "return_search_diagnostic": {
+    "checks": 12,
+    "passed": true,
+    "observed": {
+      "admin": {
+        "period": "2026-09-01 to 2026-09-30 \u00b7 Live posted account movements",
+        "ending": "\u20b16,250.00 Debit",
+        "counts": "Showing 1 of 1 matching movements; 7 period movements. Balances include movements hidden by search."
+      },
+      "management": {
+        "period": "2026-09-01 to 2026-09-30 \u00b7 Live posted account movements",
+        "ending": "\u20b16,250.00 Debit",
+        "counts": "Showing 1 of 1 matching movements; 7 period movements. Balances include movements hidden by search."
+      }
+    },
+    "human_completion": false,
+    "application_changes": false,
+    "test_timing_correction": "Explicit transaction visibility wait added after an initial Management DOM count preceded rendering"
+  },
+  "ledger_navigation": {
+    "source_sha256": {
+      "general_ledger.php": "d6d00953f54c0316d7b946fb1896033d745f9cfb51d9f80ee67c89a764eb366c",
+      "assets/css/general_ledger.css": "c4456313d3eaa12e564c257fe751b331405e7d226c88440105db911315bf9410"
+    },
+    "focused_checks": 28,
+    "focused_passed": true,
+    "checks": [
+      "admin complete ledger model unchanged",
+      "admin Reports destination unchanged",
+      "admin three requested navigation buttons",
+      "admin button shape and target height",
+      "admin gl-prev disabled on one page",
+      "admin gl-prev disabled keyboard activation does not navigate",
+      "admin gl-next disabled on one page",
+      "admin gl-next disabled keyboard activation does not navigate",
+      "admin visible keyboard focus",
+      "admin no document overflow 1366",
+      "admin no document overflow 1920",
+      "admin navigation hidden in print",
+      "admin balance retained in print",
+      "admin Reports navigation opens authorized hub",
+      "management complete ledger model unchanged",
+      "management Reports destination unchanged",
+      "management three requested navigation buttons",
+      "management button shape and target height",
+      "management gl-prev disabled on one page",
+      "management gl-prev disabled keyboard activation does not navigate",
+      "management gl-next disabled on one page",
+      "management gl-next disabled keyboard activation does not navigate",
+      "management visible keyboard focus",
+      "management no document overflow 1366",
+      "management no document overflow 1920",
+      "management navigation hidden in print",
+      "management balance retained in print",
+      "management Reports navigation opens authorized hub"
+    ],
+    "existing_browser_regression_checks": 35,
+    "existing_browser_regression_passed": true,
+    "regression_source_sha256": {
+      "general_ledger.php": "d6d00953f54c0316d7b946fb1896033d745f9cfb51d9f80ee67c89a764eb366c",
+      "includes/general_ledger_query.php": "0b9f2e6b1f912b0e2cb6dadbfaf38c499b1daa4eacbeef73d642aba4369d4d9a",
+      "assets/js/general_ledger.js": "930af951536e1d1ec7fdfb345caff66cb04d39e04b9c77ee944da4abb07ac500",
+      "assets/css/general_ledger.css": "c4456313d3eaa12e564c257fe751b331405e7d226c88440105db911315bf9410",
+      "includes/nav.php": "09c2964a8cebd1d0c3e92fc624be2df48622dac9e3a5c3c74ae24745270d29f1",
+      "reports.php": "0a1a491167b3844c79fdf4a6e1763e1ff4175e7297f5141a01c41ce67df29293",
+      "journal_transaction.php": "c0e5efe37c4d3997a0bb15820c3d36856b937015dbb3c8158ca2c28c7794f7e2"
+    },
+    "both_desktop_sizes_inspected": true,
+    "human_retest_pending": true,
+    "working_database_used": false,
+    "development_evidence": "Initial focused Reports locator matched sidebar and ledger header; scope corrected to ledger class, then28 checks passed. Original failed attempt retained.",
+    "test_sha256": {
+      "scripts/test_stages4_7_ledger_buttons.py": "95916ac8d654ea3545e54373e3da760341c8819729ceac2e54b469ad90c7c983",
+      "scripts/test_stages4_7_return_search.py": "1bded670f9d2d23bec621841613a26de1c8b6c4d49aacc6a5dd6c9b55b2a66d8"
+    },
+    "test_source_boundary": "Promoted exact bytes of the already-run guarded private helpers; same source, not a newly claimed rerun"
+  },
+  "paused_nonhuman_transaction_rerun": {
+    "passed": true,
+    "checks": 52,
+    "source_sha256": {
+      "journal_transaction.php": "c0e5efe37c4d3997a0bb15820c3d36856b937015dbb3c8158ca2c28c7794f7e2",
+      "assets/css/accounting_workspace.css": "f44e8b9f0ecbc961f8d85133d6ce5f2697b739512156da60dba9bc61dc4e5924"
+    },
+    "human_retest_pending": true,
+    "classification": "automated isolated read-only checks; no human completion"
+  }
+}

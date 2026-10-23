@@ -178,7 +178,7 @@
             const payload = await response.json();
             if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || 'Unable to load forecast.');
             const result = payload.data;
-            if(result.version!==2||result.basis!=='net_expenses_v1')throw new Error('Unsupported forecast accounting basis.');
+            if(result.version!==3||result.basis!=='recognized_expenses_v2')throw new Error('Unsupported forecast accounting basis.');
             if (result.state !== 'insufficient' && (!Array.isArray(result.projection) || !result.projection.every(point =>
                 /^\d{4}-(0[1-9]|1[0-2])$/.test(point.month) && Number.isFinite(point.projected_expenses)))) throw new Error('The forecast response could not be displayed.');
             render(result);

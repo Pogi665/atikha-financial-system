@@ -181,6 +181,7 @@ function journal_post(PDO $pdo, int $userId, array $post): array
         stage1_write_lock($pdo);
         $existing = journal_existing($pdo, $key, $userId, $hash);
         if ($existing) { $pdo->commit(); return $existing; }
+        stage1_period_guard($pdo,$input['entry_date']);
         if ($receiptContext !== null) {
             $receiptReview = receipt_lock_for_post($pdo, $userId, $receiptContext, journal_string($post, 'intake_signature'));
         }

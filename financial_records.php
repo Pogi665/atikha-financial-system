@@ -61,6 +61,7 @@ layout_begin($title,$activePage,[], '<link rel="stylesheet" href="https://cdnjs.
             Read-only posted journal lines, newest first. Dates use Asia/Manila.
         </p>
     </header>
+<p class="records-export-actions"><a id="records-export" class="records-view" href="<?= $escape('financial_export.php?'.http_build_query($filters+['kind'=>$mainView?'history':$context])) ?>">Export all matching results</a> <a id="records-print" class="records-view" href="<?= $escape('financial_export.php?'.http_build_query($filters+['kind'=>$mainView?'history':$context,'format'=>'print'])) ?>" target="_blank" rel="noopener">Print all matching results</a></p>
 <?php if(!$mainView&&$flags['isAdmin']&&stage1_enabled($pdo)): ?>
 <p class="my-4"><a class="records-view" href="<?= $context==='crb'?'cash_receipt.php':'cash_disbursement.php' ?>">+ New <?= $context==='crb'?'cash receipt':'cash payment' ?></a> · <a href="accounting_drafts.php">My drafts</a></p>
 <?php endif; ?>

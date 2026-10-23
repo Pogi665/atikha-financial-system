@@ -1,0 +1,57 @@
+{
+  "scope": "Controlled small synthetic export; not a production SLA or unbounded export target",
+  "posted_journals": 50,
+  "posted_lines": 100,
+  "matching_history_lines": 68,
+  "matching_ledger_rows": 34,
+  "timings": [
+    {
+      "role": "Admin",
+      "operation": "completed full-match CSV",
+      "samples_ms": [
+        528.3882999792695,
+        541.6490000206977,
+        502.22530006431043,
+        509.165299939923,
+        563.7441999278963,
+        488.5148999746889
+      ],
+      "median_ms": 509.165299939923,
+      "slowest_ms": 563.7441999278963,
+      "bytes": [
+        9054,
+        9054,
+        9054,
+        9054,
+        9054,
+        9054
+      ],
+      "source_journal_count": 50,
+      "matching_lines": 68
+    },
+    {
+      "role": "Management",
+      "operation": "completed full-match CSV",
+      "samples_ms": [
+        576.374200056307,
+        589.4372999900952,
+        548.3304000226781,
+        566.6610000189394,
+        530.4981999797747,
+        582.781899953261
+      ],
+      "median_ms": 566.6610000189394,
+      "slowest_ms": 589.4372999900952,
+      "bytes": [
+        9054,
+        9054,
+        9054,
+        9054,
+        9054,
+        9054
+      ],
+      "source_journal_count": 50,
+      "matching_lines": 68
+    }
+  ]
+}

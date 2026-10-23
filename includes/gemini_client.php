@@ -631,8 +631,8 @@ revenue, not necessarily money received. Current month-to-date is incomplete and
 NOT a guaranteed floor: later credits can reduce it. Follow the exact supplied month
 keys in order. Ground projections in the supplied trends and baseline; never invent
 seasonality, donors, bank balances, restrictions, grants, obligations or dates.
-Use recorded_budgets for budget advice, distinguishing recorded allocations from
-approvals. When budgets are absent, say so rather than infer under/overspending from
+Use approved_budgets and budget_approval_states for budget advice. Only entries explicitly
+marked Approved are approved allocations. When approval is absent, say so rather than infer under/overspending from
 category shares. Discuss only recorded income/expense coverage in funding_risk.
 Cash runway, donor concentration and solvency ratings are unavailable; risk_level
 must be UNKNOWN. Figures cited in advice must be supplied facts, not new calculations.
@@ -649,7 +649,7 @@ PROMPT;
     $checked=forecast_validate_projection($result['data'],$months,$peak,(float)$history['metrics']['recent_avg_expenses']);
     if(!$checked['valid']){return ['ok'=>false,'data'=>null,'error'=>'AI projection failed validation.'];}
     $clip=static fn($v)=>is_string($v)?mb_substr(trim($v),0,FORECAST_AI_MAX_ADVICE_CHARS):'';
-    return ['ok'=>true,'data'=>['basis'=>FORECAST_BASIS,'version'=>2,'chart_data'=>$checked['projection'],
+    return ['ok'=>true,'data'=>['basis'=>FORECAST_BASIS,'version'=>FORECAST_VERSION,'chart_data'=>$checked['projection'],
         'reallocation_suggestion'=>$clip($result['data']['reallocation_suggestion']??''),
         'funding_risk'=>$clip($result['data']['funding_risk']??''),'risk_level'=>'UNKNOWN'],'error'=>''];
 }

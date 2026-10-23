@@ -1,0 +1,199 @@
+{
+  "kind": "controlled synthetic engineering measurements; not an SLA",
+  "samples": 96,
+  "first_plus_repeats": "first sample and five repeats per workload/role/variant/mode",
+  "baseline_comparison": "new General Ledger, no prior comparable implemented workflow",
+  "source_sha256": {
+    "general_ledger.php": "0d586ac64169d32ca7bbdb12b39374fbdf490fe07c227f0b0acabcc029818274",
+    "includes/general_ledger_query.php": "a62732e7f4c981ab454b930bfd44f74204c36d5730aaba73f091df16991a11c2",
+    "assets/js/general_ledger.js": "1be40c54210aff6993cbe25c3872743b70604dacb0c2da2d0d54fc2429847a4e",
+    "assets/css/general_ledger.css": "51be351303f34a48c37b6109d6678579b80670905b00f01b9269d04811dc2327",
+    "includes/nav.php": "85881dd0bcb0becb34438927143dedf8acd94cf5606718d37ed542ce93bd5966",
+    "reports.php": "a8f040fce0c96c21c8d6d5290b0bd56e32341c25a4e9ccdc7f6ec7affe29081d",
+    "journal_transaction.php": "c68b9bf5e80096ea345bd57fbc9486101901d31705268a1d9809e5d7ad89eeda"
+  },
+  "workloads": [
+    {
+      "identity": "stage4-500",
+      "selected_period_lines": 500,
+      "total_counts": {
+        "journal_entries": 180,
+        "journal_entry_lines": 928,
+        "journal_drafts": 194,
+        "cash_advances": 30
+      }
+    },
+    {
+      "identity": "stage4-5000",
+      "selected_period_lines": 5000,
+      "total_counts": {
+        "journal_entries": 225,
+        "journal_entry_lines": 5428,
+        "journal_drafts": 239,
+        "cash_advances": 30
+      }
+    }
+  ],
+  "groups": [
+    {
+      "workload_lines": 500,
+      "role": "Admin",
+      "variant": "first-page",
+      "mode": "http-json",
+      "first_ms": 275.2520999638364,
+      "repeat_median_ms": 77.46460009366274,
+      "slowest_ms": 275.2520999638364,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Admin",
+      "variant": "first-page",
+      "mode": "visible-navigation",
+      "first_ms": 530.80259996932,
+      "repeat_median_ms": 204.5965000288561,
+      "slowest_ms": 530.80259996932,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Admin",
+      "variant": "literal-search-page2",
+      "mode": "http-json",
+      "first_ms": 102.1768000209704,
+      "repeat_median_ms": 77.22050009761006,
+      "slowest_ms": 102.1768000209704,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Admin",
+      "variant": "literal-search-page2",
+      "mode": "visible-navigation",
+      "first_ms": 191.5337999816984,
+      "repeat_median_ms": 220.4829000402242,
+      "slowest_ms": 223.64989994093776,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Management",
+      "variant": "first-page",
+      "mode": "http-json",
+      "first_ms": 74.89389996044338,
+      "repeat_median_ms": 84.36640002764761,
+      "slowest_ms": 109.60870003327727,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Management",
+      "variant": "first-page",
+      "mode": "visible-navigation",
+      "first_ms": 239.60660002194345,
+      "repeat_median_ms": 198.11110000591725,
+      "slowest_ms": 239.60660002194345,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Management",
+      "variant": "literal-search-page2",
+      "mode": "http-json",
+      "first_ms": 87.45890005957335,
+      "repeat_median_ms": 78.12530000228435,
+      "slowest_ms": 88.96189997904003,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 500,
+      "role": "Management",
+      "variant": "literal-search-page2",
+      "mode": "visible-navigation",
+      "first_ms": 175.1935000065714,
+      "repeat_median_ms": 239.00760000105947,
+      "slowest_ms": 380.019300035201,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Admin",
+      "variant": "first-page",
+      "mode": "http-json",
+      "first_ms": 529.510899912566,
+      "repeat_median_ms": 295.7829999504611,
+      "slowest_ms": 529.510899912566,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Admin",
+      "variant": "first-page",
+      "mode": "visible-navigation",
+      "first_ms": 954.0021000429988,
+      "repeat_median_ms": 504.91610006429255,
+      "slowest_ms": 954.0021000429988,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Admin",
+      "variant": "literal-search-page2",
+      "mode": "http-json",
+      "first_ms": 286.43930004909635,
+      "repeat_median_ms": 299.3348999880254,
+      "slowest_ms": 325.77440002933145,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Admin",
+      "variant": "literal-search-page2",
+      "mode": "visible-navigation",
+      "first_ms": 471.8353000935167,
+      "repeat_median_ms": 455.69189998786896,
+      "slowest_ms": 492.1601000241935,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Management",
+      "variant": "first-page",
+      "mode": "http-json",
+      "first_ms": 289.2236999468878,
+      "repeat_median_ms": 295.57580000255257,
+      "slowest_ms": 343.41019997373223,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Management",
+      "variant": "first-page",
+      "mode": "visible-navigation",
+      "first_ms": 484.54199999105185,
+      "repeat_median_ms": 439.28609997965395,
+      "slowest_ms": 484.54199999105185,
+      "target_ms": 3000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Management",
+      "variant": "literal-search-page2",
+      "mode": "http-json",
+      "first_ms": 311.8537999689579,
+      "repeat_median_ms": 299.5584999443963,
+      "slowest_ms": 330.6564000668004,
+      "target_ms": 2000
+    },
+    {
+      "workload_lines": 5000,
+      "role": "Management",
+      "variant": "literal-search-page2",
+      "mode": "visible-navigation",
+      "first_ms": 452.8322999831289,
+      "repeat_median_ms": 446.7128999531269,
+      "slowest_ms": 480.7534000137821,
+      "target_ms": 3000
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "gate": "G4",
+  "workload_observed_after_browser_before_dashboard_queue_test": {
+    "posted_journals": 18,
+    "posted_lines": 36,
+    "complete_bundle_revisions": 9,
+    "period_events": 10
+  },
+  "role_measurements": [
+    {
+      "role": "Admin",
+      "http_samples_ms": [
+        742.703500087373,
+        747.9610000737011,
+        743.1055000051856,
+        737.3357000760734,
+        791.1548999836668,
+        751.2564000207931
+      ],
+      "visible_samples_ms": [
+        1002.8632000321522,
+        916.0864000441507,
+        919.4423999870196,
+        861.8727000430226,
+        888.9302000170574,
+        904.4344999128953
+      ],
+      "http_median_ms": 747.9610000737011,
+      "visible_median_ms": 904.4344999128953,
+      "http_slowest_ms": 791.1548999836668,
+      "visible_slowest_ms": 1002.8632000321522,
+      "server_mode": "single PHP built-in / normal MariaDB3306 / headless Edge / source-posted small month"
+    },
+    {
+      "role": "Management",
+      "http_samples_ms": [
+        740.8495000563562,
+        757.6308000134304,
+        739.915799931623,
+        790.1504000183195,
+        749.8596999794245,
+        747.1292000263929
+      ],
+      "visible_samples_ms": [
+        904.4846999458969,
+        903.5629000281915,
+        874.0714000305161,
+        856.0155000304803,
+        880.4636999266222,
+        883.1724000629038
+      ],
+      "http_median_ms": 749.8596999794245,
+      "visible_median_ms": 880.4636999266222,
+      "http_slowest_ms": 790.1504000183195,
+      "visible_slowest_ms": 904.4846999458969,
+      "server_mode": "single PHP built-in / normal MariaDB3306 / headless Edge / source-posted small month"
+    }
+  ],
+  "operation_measurements": [
+    {
+      "operation": "submit_lost_response_and_explicit_retry",
+      "elapsed_ms": 2948.6807000357658
+    },
+    {
+      "operation": "close_lost_response_and_explicit_retry",
+      "elapsed_ms": 2680.948399938643
+    },
+    {
+      "operation": "reopen_two_month_set",
+      "elapsed_ms": 1064.6737000206485
+    }
+  ],
+  "operation_measurement_note": "Submit/close measurements include deliberately lost response plus explicit identical retry and visible recovery; reopen is confirmed two-month action. These are observed completion times, not unbounded operation targets.",
+  "targets": {
+    "repeat_HTTP_median_ms": 2000,
+    "repeat_visible_median_ms": 3000
+  },
+  "production_SLA": false
+}

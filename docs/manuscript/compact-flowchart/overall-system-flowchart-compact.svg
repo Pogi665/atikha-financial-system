@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="5.5in" height="7.5625in" viewBox="0 0 600 825" role="img" aria-labelledby="title desc">
+<title id="title">Flowchart of the Overall System</title>
+<desc id="desc">Authenticate and open the role-based dashboard, select financial recording, information viewing or other permitted work, display the result, then select another task or log out. Double-sided rectangles summarize detailed workflows.</desc>
+<rect width="600" height="825" fill="white"/>
+<path d="M300,38 L300,62" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,62.000 296.768,55.791 303.232,55.791" fill="black"/>
+<path d="M300,124 L300,141" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,141.000 296.768,134.791 303.232,134.791" fill="black"/>
+<path d="M300,183 L300,197" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,197.000 296.768,190.791 303.232,190.791" fill="black"/>
+<path d="M205,235 L112,235 L112,326" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="112.000,326.000 108.768,319.791 115.232,319.791" fill="black"/>
+<path d="M300,273 L300,326" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,326.000 296.768,319.791 303.232,319.791" fill="black"/>
+<path d="M395,235 L488,235 L488,326" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="488.000,326.000 484.768,319.791 491.232,319.791" fill="black"/>
+<path d="M112,448 L112,480" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="112.000,480.000 108.768,473.791 115.232,473.791" fill="black"/>
+<path d="M300,448 L300,480" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,480.000 296.768,473.791 303.232,473.791" fill="black"/>
+<path d="M488,448 L488,480" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="488.000,480.000 484.768,473.791 491.232,473.791" fill="black"/>
+<path d="M112,580 L112,600 L300,600" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M488,580 L488,600 L300,600" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M300,580 L300,610" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,610.000 296.768,603.791 303.232,603.791" fill="black"/>
+<path d="M300,660 L300,675" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,675.000 296.768,668.791 303.232,668.791" fill="black"/>
+<path d="M210,710 L10,710 L10,162 L170,162" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="170.000,162.000 163.791,165.232 163.791,158.768" fill="black"/>
+<path d="M300,745 L300,768" fill="none" stroke="black" stroke-width="1.2"/>
+<polygon points="300.000,768.000 296.768,761.791 303.232,761.791" fill="black"/>
+<rect x="255" y="6" width="90" height="32" rx="16.0" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="22.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Start</text>
+<rect x="170" y="62" width="260" height="62" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M178,62 L178,124" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M422,62 L422,124" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="82.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Authenticate account and role</text>
+<text x="300.0" y="103.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Complete MFA</text>
+<rect x="170" y="141" width="260" height="42" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="162.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Open role-based dashboard</text>
+<polygon points="300.0,197 395,235.0 300.0,273 205,235.0" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="235.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Select task</text>
+<rect x="48.5" y="296.25" width="127.0" height="19.5" fill="white"/>
+<text x="112" y="306.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Record or correct</text>
+<rect x="246.66927083333334" y="296.25" width="106.66145833333333" height="19.5" fill="white"/>
+<text x="300" y="306.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">View or export</text>
+<rect x="421.8333333333333" y="296.25" width="132.33333333333331" height="19.5" fill="white"/>
+<text x="488" y="306.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Plan or administer</text>
+<rect x="25" y="326" width="174" height="122" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M33,326 L33,448" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M191,326 L191,448" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="112" y="345.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="700" fill="black">Transactions</text>
+<text x="112" y="364.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Receipts / payments</text>
+<text x="112" y="382.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">General Journal</text>
+<text x="112" y="400.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Cash advances</text>
+<text x="112" y="418.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Corrections</text>
+<text x="112" y="436.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Scan / manual entry</text>
+<rect x="213" y="326" width="174" height="122" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M221,326 L221,448" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M379,326 L379,448" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="300" y="345.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="700" fill="black">Information</text>
+<text x="300" y="373.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Cash books / ledger</text>
+<text x="300" y="391.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Reports / dashboard</text>
+<text x="300" y="409.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Advisory forecasts</text>
+<text x="300" y="427.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Print or export</text>
+<rect x="401" y="326" width="174" height="122" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M409,326 L409,448" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M567,326 L567,448" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="488" y="345.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="700" fill="black">Other workflows</text>
+<text x="488" y="373.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Budgets and review</text>
+<text x="488" y="391.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Period controls</text>
+<text x="488" y="409.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Setup / audit</text>
+<text x="488" y="427.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Communications</text>
+<rect x="25" y="480" width="174" height="100" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M33,480 L33,580" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M191,480 L191,580" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="112.0" y="498.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Details and evidence</text>
+<text x="112.0" y="519.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Save draft OR</text>
+<text x="112.0" y="540.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">review and confirm</text>
+<text x="112.0" y="561.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">recording</text>
+<rect x="213" y="480" width="174" height="100" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M221,480 L221,580" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M379,480 L379,580" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="509.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Retrieve permitted</text>
+<text x="300.0" y="530.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">records and outputs</text>
+<text x="300.0" y="551.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">No financial posting</text>
+<rect x="401" y="480" width="174" height="100" fill="white" stroke="black" stroke-width="1.2"/>
+<path d="M409,480 L409,580" fill="none" stroke="black" stroke-width="1.2"/>
+<path d="M567,480 L567,580" fill="none" stroke="black" stroke-width="1.2"/>
+<text x="488.0" y="509.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Validate and apply</text>
+<text x="488.0" y="530.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">permitted workflow</text>
+<text x="488.0" y="551.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Preserve its history</text>
+<rect x="155" y="610" width="290" height="50" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="624.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Display permitted result</text>
+<text x="300.0" y="645.5" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">and applicable notifications</text>
+<polygon points="300.0,675 390,710.0 300.0,745 210,710.0" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="710.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="16.5" font-weight="400" fill="black">Another task?</text>
+<text x="190" y="697.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Yes</text>
+<text x="323" y="757.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">No</text>
+<rect x="190" y="768" width="220" height="38" rx="19.0" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="300.0" y="787.0" dy="0.35em" text-anchor="middle" font-family="Arial, sans-serif" font-size="15.5" font-weight="400" fill="black">Log out and end session</text>
+</svg>

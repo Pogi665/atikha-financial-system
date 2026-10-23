@@ -101,6 +101,7 @@ function stage3_evidence_association_valid(PDO $pdo,array $association): bool
     while(true){$id=(int)$a['id'];if(isset($seen[$id])||(int)$a['receipt_id']!==$receipt)return false;$seen[$id]=true;
         $s=$pdo->prepare("SELECT r.JournalEntryID,r.ExpenseID,r.File_SHA256,r.Posted_File_SHA256,r.OCR_Status,j.status FROM Receipts r JOIN journal_entries j ON j.id=? WHERE r.ReceiptID=?");$s->execute([$a['journal_id'],$receipt]);$r=$s->fetch();
         if(!$r||$r['ExpenseID']!==null||$r['status']!=='posted'||$r['OCR_Status']==='Discarded'||!$r['File_SHA256']||$r['File_SHA256']!==$r['Posted_File_SHA256'])return false;
+        require_once __DIR__.'/evidence_item_reviews.php';if(!item_review_association_valid($pdo,$a,$r))return false;
         if(($a['correction_id']??null)===null)return ($a['source_association_id']??null)===null&&(int)$r['JournalEntryID']===(int)$a['journal_id'];
         $s=$pdo->prepare('SELECT * FROM journal_corrections WHERE id=?');$s->execute([$a['correction_id']]);$c=$s->fetch();
         if(!$c||(int)$c['replacement_journal_id']!==(int)$a['journal_id']||!stage3_correction_valid($pdo,$c))return false;

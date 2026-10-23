@@ -1,0 +1,58 @@
+{
+  "gate": "G1",
+  "passed": true,
+  "evidence": "Agent-inspected Admin/Management captures at1366/1920 plus final print captures and connected browser checks. Internal presentation check only.",
+  "human_walkthrough_complete": false,
+  "client_acceptance": false,
+  "source_sha256": {
+    "general_ledger.php": "0d586ac64169d32ca7bbdb12b39374fbdf490fe07c227f0b0acabcc029818274",
+    "includes/general_ledger_query.php": "a62732e7f4c981ab454b930bfd44f74204c36d5730aaba73f091df16991a11c2",
+    "assets/js/general_ledger.js": "1be40c54210aff6993cbe25c3872743b70604dacb0c2da2d0d54fc2429847a4e",
+    "assets/css/general_ledger.css": "51be351303f34a48c37b6109d6678579b80670905b00f01b9269d04811dc2327",
+    "includes/nav.php": "85881dd0bcb0becb34438927143dedf8acd94cf5606718d37ed542ce93bd5966",
+    "reports.php": "a8f040fce0c96c21c8d6d5290b0bd56e32341c25a4e9ccdc7f6ec7affe29081d",
+    "journal_transaction.php": "c68b9bf5e80096ea345bd57fbc9486101901d31705268a1d9809e5d7ad89eeda"
+  },
+  "checks": [
+    {
+      "criterion": "primary_task",
+      "result": "pass",
+      "observation": "General Ledger navigation/title plus Account/From/To and Apply; neutral start."
+    },
+    {
+      "criterion": "plain_language",
+      "result": "pass",
+      "observation": "Opening/ending, Debit/Credit and live labels; no hashes or engine terms in normal use."
+    },
+    {
+      "criterion": "progressive_detail",
+      "result": "pass",
+      "observation": "Counterpart/evidence/correction detail stays in the existing complete transaction view; no engine detail needed."
+    },
+    {
+      "criterion": "familiar_columns",
+      "result": "pass",
+      "observation": "Chronological date/journal, reference/description, party/project, Debit/Credit and running balance."
+    },
+    {
+      "criterion": "editable_vs_readonly",
+      "result": "pass",
+      "observation": "Only filter inputs are editable; sheet contains no financial input controls; non-GET rejected."
+    },
+    {
+      "criterion": "prominent_actions",
+      "result": "pass",
+      "observation": "Apply and Print full period are primary visible controls; View transaction is in each row."
+    },
+    {
+      "criterion": "lifecycle_scope",
+      "result": "pass",
+      "observation": "Live labels, generated time, applied/unapplied/loading state and full-period print scope; saved/submitted/frozen/closed editing is not a ledger task."
+    },
+    {
+      "criterion": "fixable_errors",
+      "result": "pass",
+      "observation": "Invalid date relationship gives a plain correction message and preserves old rows and entered controls."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "gate": "G3",
+  "method": "Agent visual inspection plus real isolated Edge automation, not human/client acceptance",
+  "viewports": [
+    [
+      1366,
+      768
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "checks": [
+    {
+      "check": "primary_task_obvious",
+      "passed": true,
+      "observed": "Monthly budgets navigation and prominent Prepare budget; Management Review Queue links directly to submitted revision."
+    },
+    {
+      "check": "plain_language",
+      "passed": true,
+      "observed": "Draft, Submitted, Approved, Returned and Effective approved version; no engine hashes in ordinary flow."
+    },
+    {
+      "check": "advanced_details_disclosed",
+      "passed": true,
+      "observed": "Legacy approval-unverified reference is collapsed separately; entry guidance and project columns appear in preparation only."
+    },
+    {
+      "check": "familiar_columns",
+      "passed": true,
+      "observed": "Expense account / project or operations editable grid; Approved / Actual / Remaining / Utilization financial table."
+    },
+    {
+      "check": "editable_vs_read_only",
+      "passed": true,
+      "observed": "Editable inputs in Draft; Review disables grid; Submitted and actuals use text cells; Management cannot open owner draft."
+    },
+    {
+      "check": "important_actions_prominent",
+      "passed": true,
+      "observed": "Save and close / Review budget / Submit budget; Approve / Return controls; fixed queue padding prevents overlapping review links."
+    },
+    {
+      "check": "lifecycle_clear",
+      "passed": true,
+      "observed": "Pending and Returned revisions leave effective approval unchanged; approval switches version; approved zero and absence remain distinct."
+    },
+    {
+      "check": "errors_actionable",
+      "passed": true,
+      "observed": "Invalid cell value retained and focused with recognizable account/project; editing clears obsolete message; uncertain save stays put and explicit retry recovers."
+    }
+  ],
+  "human_acceptance": false,
+  "captures_inspected": [
+    "budget-editable-grid-1366.png",
+    "budget-management-approval-1920.png",
+    "budget-management-approved-1920.png",
+    "budget-review-queue-1366.png",
+    "budget-dashboard-management-1366.png",
+    "budget-print-page-1.png"
+  ],
+  "print_pdf_sha256": "3565cb870eed443006cbbe0477916c068ec1f4b8986a28d7036476a389f23b3f",
+  "print_pages": 1
+}

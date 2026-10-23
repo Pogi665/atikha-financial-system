@@ -4,7 +4,7 @@
     let data=JSON.parse(payload.textContent);
     const correctionsEnabled=Boolean(data.correctionsEnabled);
     const main=document.querySelector('.records-page').dataset.context==='records';
-    let controller=null;
+    let controller=null,bookSearch='';
     const money=value=>{const c=BigInt(value),a=c<0n?-c:c;return(c<0n?'-':'')+'₱'+(a/100n).toLocaleString('en-PH')+'.'+String(a%100n).padStart(2,'0');};
     const text=DataTable.render.text();
     const label=value=>String(value??'').trim()||'Not recorded';
@@ -21,8 +21,8 @@
         search:{regex:false,smart:true,search:main?data.state.search:''},order:main&&data.state.order.length?data.state.order:[[0,'desc']],orderFixed:{post:[[7,'desc'],[8,'asc']]},
         layout:{topStart:null,topEnd:'search',bottomStart:'info',bottomEnd:{paging:{numbers:false,firstLast:false}}},
         language:{search:'Search records:',info:'Showing _START_–_END_ of _TOTAL_ lines.',infoEmpty:'Showing 0–0 of 0 lines.',infoFiltered:'',emptyTable:'No posted lines match these filters.',zeroRecords:'No lines match your search.',paginate:{previous:'Previous',next:'Next'}},
-        columns:[{data:'entry_date',render},{data:'reference',render},{data:'description',render:description},
-            {data:null,render:(_,type,r)=>render(account(r),type)},
+        columns:[{data:'entry_date',type:'string',render},{data:'reference',type:'string',render},{data:'description',type:'string',render:description},
+            {data:null,type:'string',render:(_,type,r)=>render(account(r),type)},
             ...['debit_cents','credit_cents'].map(key=>({data:key,type:'num',className:'records-amount',render:(v,type)=>type==='display'||type==='filter'?money(v):Number(v)})),
             {data:null,orderable:false,searchable:false,render:()=>'<button type="button" class="records-view">View</button>'},
             {data:'journal_id',visible:false,searchable:false,type:'num'},{data:'line_id',visible:false,searchable:false,type:'num'}]
@@ -33,6 +33,8 @@
         document.getElementById('records-empty-help').hidden=p.recordsDisplay!==0;
         document.querySelectorAll('.records-page .dt-paging button').forEach(b=>{b.removeAttribute('role');b.disabled=b.getAttribute('aria-disabled')==='true';});
         controller?.draw();
+        const criteria=main?data.filters:Object.fromEntries(new URLSearchParams(location.search));const params=new URLSearchParams({...criteria,kind:main?'history':document.querySelector('.records-page').dataset.context,search:main?table.search():bookSearch,sort:table.order().map(([col,dir])=>col+':'+dir).join(',')});
+        document.getElementById('records-export').href='financial_export.php?'+params;params.set('format','print');document.getElementById('records-print').href='financial_export.php?'+params;
     }
     table.on('draw',totals);totals();
     if(!main&&data.completeBook){
@@ -40,7 +42,7 @@
         const original=document.querySelector('.dt-search input'),search=original.cloneNode(true);
         original.replaceWith(search);search.setAttribute('aria-label','Search complete cash-book entries');
         search.addEventListener('input',()=>{
-            const terms=search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean),ids=new Set();
+            bookSearch=search.value;const terms=search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean),ids=new Set();
             Object.entries(data.journals).forEach(([id,j])=>{
                 const h=j.header,party=h.party_snapshot?JSON.parse(h.party_snapshot):null;
                 const hay=[...j.corrections.flatMap(c=>['Correction #'+c.id,c.role,c.accounting_date,c.reason]),h.entry_date,h.reference,h.description,party?.name,j.evidence_coverage?.status,...j.lines.flatMap(l=>[account(l),l.project_code_snapshot,l.project_name_snapshot,money(l.debit_amount.replace('.','')),money(l.credit_amount.replace('.',''))])].join(' ').toLocaleLowerCase();

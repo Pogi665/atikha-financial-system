@@ -35,7 +35,7 @@ function gemini_request(array $payload,?int $timeout=null,?int $connect=null):ar
  if(in_array($mode,['busy','limit','badkey'],true)){$code=['busy'=>503,'limit'=>429,'badkey'=>403][$mode];return ['ok'=>false,'raw'=>json_encode(['error'=>['code'=>$code,'message'=>'PRIVATE_PROVIDER_DETAIL']]),'text'=>'','error'=>'Provider rejected request'];}
  if($mode==='badjson'){return ['ok'=>true,'raw'=>'fixture_badjson','text'=>'invalid JSON','error'=>''];}
  global $pdo;$id=(int)$pdo->query("SELECT CategoryID FROM Categories WHERE Account_Type='Expense' AND Is_Active=1 LIMIT 1")->fetchColumn();
- $d=['schema_version'=>'journal_receipt_v1','merchant'=>'Vendor <script>window.ocrBad=1</script>','document_type'=>'receipt','reference'=>'OCR-REF',
+ $d=['schema_version'=>GEMINI_RECEIPT_VERSION,'merchant'=>'Vendor <script>window.ocrBad=1</script>','document_type'=>'receipt','reference'=>'OCR-REF',
  'date_text'=>'October 1, 2026','transaction_date'=>'2026-10-01','currency'=>$mode==='foreign'?'USD':'PHP','total_amount'=>'123.45',
  'payment_text'=>null,'suggested_debit_account_id'=>$id,'classification_reason'=>'Fixture explanation','confidence'=>.95,'missing'=>[],'warnings'=>[]];
  if($mode==='partial'){$d['transaction_date']=null;$d['suggested_debit_account_id']=4294967295;$d['total_amount']='1e3';$d['confidence']=.1;}
@@ -129,7 +129,10 @@ try:
         check(manager.request.get(base+'/receipt_attachment.php?receipt_id='+str(rid)+'&journal_id=4294967295').status==404,'Mismatched journal association denied')
         check(guest.request.get(url).status in [401,403] or '/login.php' in guest.request.get(url).url,'Anonymous evidence access denied')
         duplicate=payload(owner,data=stored.read_bytes());check(owner.request.post(base+'/ocr_extract.php',multipart=duplicate).status==409,'Posted identical image rejected before Gemini extraction')
-        page.goto(base+'/financial_records.php?from=&to=');page.wait_for_selector('.records-view');page.locator('.dt-search input').fill('Reviewed office purchase');page.locator('.records-view').first.click()
+        page.goto(base+'/financial_records.php?from=&to=');page.wait_for_selector('.records-view');page.locator('.dt-search input').fill('Reviewed office purchase')
+        # Search redraw is asynchronous. Open the exact posted journal, not a stale row.
+        row=page.locator('#records-table tbody tr',has_text='Reviewed office purchase').filter(has_text='Journal #'+str(jid)).first
+        row.locator('.records-view').click();page.locator('.journal-receipt a',has_text='View receipt').wait_for(state='visible')
         check(page.locator('.journal-receipt a',has_text='View receipt').count()==1,'Journal dialog exposes evidence without duplicating line rows')
         page.locator('#transaction-close').click()
         for mode in ['failure','badjson','partial','foreign']:

@@ -72,3 +72,7 @@
 .records-filter-redesign #records-filters p:empty, .records-filter-redesign #records-load-error:empty, .records-filter-redesign #records-period-notice:empty { display: none; }
 @media (max-width: 1250px) { .records-filter-redesign .records-filter-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .records-filter-redesign .records-filter-fields { grid-template-columns: minmax(0, 1fr); } }
+.financial-records-page .records-export-actions{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.financial-records-page .records-export-actions a{display:inline-block;border:1px solid #047857;border-radius:6px;padding:.65rem 1rem;font-size:.9rem;font-weight:600;text-decoration:none;color:#047857;background:#fff}
+.financial-records-page .records-export-actions a:first-child{color:#fff;background:#047857}
+.financial-records-page .records-export-actions a:focus-visible{outline:3px solid #2684b4;outline-offset:3px}

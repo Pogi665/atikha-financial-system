@@ -94,7 +94,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if($data['missing']??[]):?><p class="ocr-warning">Needs review: <?= $escape(implode(', ',$data['missing'])) ?></p><?php endif;?>
 <?php endif;?>
 <?php if(!$data&&$state!=='Pending'):?><div class="ocr-manual"><h3>Continue with the original image</h3><p>You can enter the date, amount and accounts manually in General Journal. The image stays attached for review.</p></div><?php endif;?>
-<?php if($ready):?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review in General Journal</a>
+<?php if($ready):?><?php if(item_review_schema($pdo)==='complete'):?><p><a class="ocr-primary" href="evidence_item_review.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review item details</a></p><p class="ocr-help">Optional manual item review. Check the original image; incomplete itemization does not supply extra monetary coverage.</p><?php endif;?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review in General Journal</a>
 <p class="ocr-help">Confirm the date and amount, choose the actual credit account and enter the business purpose there. Nothing is posted automatically.</p><?php endif;?>
 <?php if($receipt['JournalEntryID']===null):?>
 <div class="ocr-actions">

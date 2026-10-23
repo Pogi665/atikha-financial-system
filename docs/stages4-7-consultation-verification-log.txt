@@ -1,0 +1,48 @@
+INTERIM CONSULTATION PREPARATION — October 23, 2026
+Actual G7 is paused at the user's request. Final G8 is incomplete.
+Commands below omit private paths/configuration and do not grant working rollout.
+
+git rev-parse HEAD origin/main
+PASS: both local/cached references equal 60206a7047d99975a29245e236ae786d16e31bc7.
+No new live-remote refresh was claimed in this preparation.
+
+python scripts/verify_stages4_7_current.py
+PASS: 122 PHP/JavaScript/Python syntax checks; git diff --check.
+Current inventory: 69 production files and 67 test/tool files, excluding bytecode.
+G6 production drift is exactly the four recorded G7 presentation changes.
+
+python scripts/stages4_7_preservation.py --run <private preservation reference> --label g7-paused-consultation --compare working-g0.json
+PASS: read-only equality for 34 application tables, 24 triggers, 62 audit rows,
+53 protected uploads and configuration/permissions/binary pins.
+SHA256: 552354448852feebff3e56db9a05c56be32b5ba62e3b1c1934e5b17866f02fbc
+
+C:/Python313/python.exe scripts/test_stages4_7_transaction_buttons.py
+PASS: 52 current-source isolated browser checks; no synthetic table/audit mutation.
+This is automated evidence, not human completion. The paused scenario is retained.
+
+Retained affected G7 evidence on identical production bytes:
+  focused ledger navigation: 28 checks
+  scripts/test_stage4_browser.py: 35 checks, including enabled pagination and unchanged synthetic tables
+  return/search diagnostic: 12 checks
+The guarded helper source is preserved byte-for-byte in scripts/test_stages4_7_ledger_buttons.py
+and scripts/test_stages4_7_return_search.py; promotion is not claimed as a new test run.
+
+python scripts/package_stages4_7_consultation.py
+PASS: initial valid candidate with manifest and forward/reverse baseline reconstruction.
+Final archive is regenerated/reverified after handoff updates. Its external SHA256
+sidecar avoids embedding a self-referential archive hash in its own documentation.
+Temporary Git command-local LF options preserve exact reverse baseline bytes;
+no global/repository EOL configuration was changed.
+
+python scripts/test_stages4_7_package.py <interim consultation archive>
+PASS: valid manifest/patches; packaged standalone verifier outside repository;
+rejection of altered source, altered patch plus updated manifest, altered baseline
+blob plus updated manifest, and an unsafe member path. These are offline checks.
+The packaged verifier has no application, database, migration or provider access.
+
+Original G6 component/race/performance and G7 development attempts retain their
+own source pins and classifications. See delivery, verification and G7 refinement
+records for limits; no pre-fix run is relabelled final-byte G8 evidence.
+
+NO working migration/configuration, client-data seeding, real provider call,
+server recovery/restart/global setting change, commit or push was performed.

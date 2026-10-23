@@ -1,8 +1,9 @@
 <?php
-/** Version 2: recognized income and signed net expenses; not cash flow. */
+/** Version 3: explicitly classified recognized history and approved budgets; advisory only. */
 require_once __DIR__.'/accounting_query.php';
 require_once __DIR__.'/budget_query.php';
-const FORECAST_BASIS='net_expenses_v1';
+const FORECAST_BASIS='recognized_expenses_v2';
+const FORECAST_VERSION=3;
 const FORECAST_HISTORY_MONTHS=12;
 const FORECAST_HORIZON_MONTHS=6;
 const FORECAST_TTL_HOURS=24;
@@ -15,32 +16,23 @@ function forecast_projection_months(string $fromMonth,int $count): array
 }
 function forecast_fetch_history(PDO $pdo,?string $today=null): array
 {
-    $today=accounting_date($today??accounting_today());
-    return accounting_read($pdo,function()use($pdo,$today){
-        $months=accounting_months(12,$today);$series=accounting_monthly($pdo,$months);$start=$months[0].'-01';$end=substr($today,0,7).'-01';
-        $projection=forecast_projection_months(substr($today,0,7),6);$categories=accounting_expenses($pdo,$start,$end);
-        $s=$pdo->prepare("SELECT DATE_FORMAT(j.entry_date,'%Y-%m') AS month,c.CategoryID,SUM(l.debit_amount-l.credit_amount) AS total
-            FROM journal_entries j JOIN journal_entry_lines l ON l.journal_entry_id=j.id JOIN Categories c ON c.CategoryID=l.account_id
-            WHERE j.status='posted' AND c.Account_Type='Expense' AND j.entry_date>=:start AND j.entry_date<:end GROUP BY month,c.CategoryID");
-        $s->execute(['start'=>$start,'end'=>$end]);$catMonthly=[];
-        foreach($s->fetchAll(PDO::FETCH_ASSOC) as $r){$catMonthly[$r['CategoryID']][$r['month']]=accounting_cents($r['total']);}
-        $recent=0;$totalExpenses=$totalIncome=0;$positive=0;
-        foreach($series as $p){$totalExpenses=accounting_add($totalExpenses,accounting_cents($p['expenses_decimal']));$totalIncome=accounting_add($totalIncome,accounting_cents($p['income_decimal']));if($p['expenses']>0){$positive++;}}
-        foreach(array_slice($series,-3) as $p){$recent=accounting_add($recent,accounting_cents($p['expenses_decimal']));}
-        $validShares=$totalExpenses>0&&!array_filter($categories,static fn($r)=>accounting_cents($r['total'])<0);
-        foreach($categories as &$c){$r=0;foreach(array_slice($months,-3) as $m){$r=accounting_add($r,$catMonthly[$c['CategoryID']][$m]??0);}
-            $c['total_decimal']=$c['total'];$c['total']=(float)$c['total'];$c['monthly_avg']=round($c['total']/12,2);$c['recent_avg']=round($r/300,2);
-            $c['trend']=forecast_trend($c['recent_avg'],$c['monthly_avg']);$c['share_pct']=$validShares?round(accounting_cents($c['total_decimal'])/$totalExpenses*100,2):null;
-        }unset($c);
-        $current=['month'=>substr($today,0,7),'income'=>0.0,'expenses'=>0.0,'income_decimal'=>'0.00','expenses_decimal'=>'0.00'];
-        $s=$pdo->prepare("SELECT c.Account_Type,SUM(l.debit_amount-l.credit_amount) AS net FROM journal_entries j JOIN journal_entry_lines l ON l.journal_entry_id=j.id JOIN Categories c ON c.CategoryID=l.account_id
-            WHERE j.status='posted' AND j.entry_date>=:start AND j.entry_date<:end AND c.Account_Type IN ('Income','Expense') GROUP BY c.Account_Type");
-        $s->execute(['start'=>$end,'end'=>accounting_next_day($today)]);
-        foreach($s->fetchAll(PDO::FETCH_ASSOC) as $r){$k=$r['Account_Type']==='Income'?'income':'expenses';$v=accounting_cents($r['net']);if($k==='income'){$v=-$v;}$current[$k.'_decimal']=accounting_decimal($v);$current[$k]=(float)$current[$k.'_decimal'];}
-        $budgets=[];foreach($projection as $month){$budgets[$month]=budget_fetch_month($pdo,(int)substr($month,0,4),(int)substr($month,5,2));}
-        return ['version'=>2,'basis'=>FORECAST_BASIS,'as_of'=>$today,'months'=>$months,'projection_months'=>$projection,'series'=>$series,'current_month'=>$current,'categories'=>$categories,'budgets'=>$budgets,
-            'metrics'=>['total_expenses'=>(float)accounting_decimal($totalExpenses),'total_income'=>(float)accounting_decimal($totalIncome),
-            'recent_avg_expenses'=>round($recent/300,2),'positive_expense_months'=>$positive,'runway_months'=>null,'donor_concentration'=>null,'solvency_rating'=>null]];
+    $today=accounting_date($today??accounting_today());$uid=(int)($_SESSION['UserID']??0);
+    return accounting_read($pdo,function()use($pdo,$today,$uid){
+        reporting_actor($pdo,$uid);$months=accounting_months(12,$today);$projection=forecast_projection_months(substr($today,0,7),6);$series=[];$categoryTotals=[];$categoryMonthly=[];$sources=[];$current=null;
+        foreach(array_merge($months,[substr($today,0,7)]) as $month){
+            $model=financial_report_model($pdo,$uid,$month,$month===substr($today,0,7)?$today:null);if(!$model['source_valid'])throw new ReportingProblem('Recorded history needs an integrity review before forecasting.',503);
+            $hasExpenseActivity=false;foreach($model['worksheet'] as $row)if($row['account_type']==='Expense'&&(accounting_cents($row['period_debit'])!==0||accounting_cents($row['period_credit'])!==0))$hasExpenseActivity=true;
+            if($hasExpenseActivity&&$model['configuration']===null)throw new ReportingProblem('Complete reporting setup for expense history in '.$month.' before forecasting.',422);
+            $sources[$month]=$model['fingerprint'];$point=['month'=>$month,'income'=>(float)$model['income_statement']['income'],'expenses'=>(float)$model['income_statement']['expenses'],'income_decimal'=>$model['income_statement']['income'],'expenses_decimal'=>$model['income_statement']['expenses']];
+            if($month===substr($today,0,7)){$current=$point;continue;}$series[]=$point;
+            foreach($model['income_statement']['rows'] as $row)if($row['account_type']==='Expense'){$id=$row['account_id'];$categoryTotals[$id]??=['category'=>$row['account_name'],'cents'=>0];$cents=accounting_cents($row['amount']);$categoryTotals[$id]['cents']=accounting_add($categoryTotals[$id]['cents'],$cents);$categoryMonthly[$id][$month]=$cents;}
+        }
+        $recent=$totalExpenses=$totalIncome=0;$positive=0;foreach($series as $p){$totalExpenses=accounting_add($totalExpenses,accounting_cents($p['expenses_decimal']));$totalIncome=accounting_add($totalIncome,accounting_cents($p['income_decimal']));if($p['expenses']>0)$positive++;}foreach(array_slice($series,-3) as $p)$recent=accounting_add($recent,accounting_cents($p['expenses_decimal']));
+        $validShares=$totalExpenses>0&&!array_filter($categoryTotals,static fn($c)=>$c['cents']<0);$categories=[];
+        foreach($categoryTotals as $id=>$c){$r=0;foreach(array_slice($months,-3) as $month)$r=accounting_add($r,$categoryMonthly[$id][$month]??0);$total=accounting_decimal($c['cents']);$average=round((float)$total/12,2);$recentAverage=round($r/300,2);$categories[]=['account_id'=>$id,'category'=>$c['category'],'total_decimal'=>$total,'total'=>(float)$total,'monthly_avg'=>$average,'recent_avg'=>$recentAverage,'trend'=>forecast_trend($recentAverage,$average),'share_pct'=>$validShares?round($c['cents']/$totalExpenses*100,2):null];}
+        $budgets=[];$budgetSources=[];$budgetSchema=budget_revision_schema($pdo);if($budgetSchema['state']==='partial')throw new ReportingProblem('Budget approval records need an integrity review.',503);foreach($projection as $month){$root=$budgetSchema['complete']?budget_root($pdo,$month):null;$approved=$root&&$root['approved_revision_id']?budget_published($pdo,(int)$root['approved_revision_id']):null;$budgets[$month]=$approved?budget_approved_category_rows($approved):[];$budgetSources[$month]=$approved?['id'=>$approved['id'],'hash'=>$approved['payload_hash'],'state'=>'Approved']:['state'=>'No approved budget'];}
+        return ['version'=>FORECAST_VERSION,'basis'=>FORECAST_BASIS,'as_of'=>$today,'months'=>$months,'projection_months'=>$projection,'series'=>$series,'current_month'=>$current,'categories'=>$categories,'budgets'=>$budgets,'source_fingerprints'=>$sources,'approved_budget_sources'=>$budgetSources,
+            'metrics'=>['total_expenses'=>(float)accounting_decimal($totalExpenses),'total_income'=>(float)accounting_decimal($totalIncome),'recent_avg_expenses'=>round($recent/300,2),'positive_expense_months'=>$positive,'runway_months'=>null,'donor_concentration'=>null,'solvency_rating'=>null]];
     });
 }
 function forecast_trend(float $recent,float $average): string
@@ -57,16 +49,16 @@ function forecast_baseline_projection(array $history): array
 }
 function forecast_fingerprint(array $history): string
 {
-    foreach(['version','basis','as_of','months','projection_months','series','current_month','categories','budgets'] as $key){
+    foreach(['version','basis','as_of','months','projection_months','series','current_month','categories','budgets','source_fingerprints','approved_budget_sources'] as $key){
         if(!array_key_exists($key,$history)){throw new UnexpectedValueException('Incomplete forecast history.');}
     }
     // CHAR(40) cache identity; this is a content fingerprint, not a security token.
-    return sha1(json_encode([$history['version'],$history['basis'],$history['as_of'],$history['months'],$history['projection_months'],$history['series'],$history['current_month'],$history['categories'],$history['budgets']],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE));
+    return sha1(json_encode([$history['version'],$history['basis'],$history['as_of'],$history['months'],$history['projection_months'],$history['series'],$history['current_month'],$history['categories'],$history['budgets'],$history['source_fingerprints'],$history['approved_budget_sources']],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE));
 }
 function forecast_history_for_ai(array $history): array
 {
     return ['currency'=>'PHP','basis'=>$history['basis'],'as_of'=>$history['as_of'],'monthly_history'=>$history['series'],
-        'current_month_to_date'=>$history['current_month'],'category_expenses'=>$history['categories'],'recorded_budgets'=>$history['budgets'],
+        'current_month_to_date'=>$history['current_month'],'category_expenses'=>$history['categories'],'approved_budgets'=>$history['budgets'],'budget_approval_states'=>$history['approved_budget_sources'],
         'metrics'=>$history['metrics'],'projection_months'=>$history['projection_months'],'baseline_projection'=>forecast_baseline_projection($history)];
 }
 function forecast_validate_projection(array $decoded,array $months,float $peak,float $baseline): array
@@ -82,7 +74,7 @@ function forecast_cache_load(PDO $pdo,array $history): ?array
     $s=$pdo->prepare("SELECT History_JSON,Forecast_JSON,created_at FROM forecast_cache WHERE Data_Fingerprint=? AND Model<>'generation_attempt' AND created_at>=NOW()-INTERVAL 24 HOUR ORDER BY ForecastID DESC LIMIT 1");
     $s->execute([forecast_fingerprint($history)]);$r=$s->fetch(PDO::FETCH_ASSOC);if(!$r){return null;}
     $h=json_decode($r['History_JSON'],true);$f=json_decode($r['Forecast_JSON'],true);
-    if(!is_array($h)||!is_array($f)||($h['basis']??null)!==FORECAST_BASIS||($f['basis']??null)!==FORECAST_BASIS||($h['version']??null)!==2||($f['version']??null)!==2){return null;}
+    if(!is_array($h)||!is_array($f)||($h['basis']??null)!==FORECAST_BASIS||($f['basis']??null)!==FORECAST_BASIS||($h['version']??null)!==FORECAST_VERSION||($f['version']??null)!==FORECAST_VERSION){return null;}
     try{if(!hash_equals(forecast_fingerprint($history),forecast_fingerprint($h))){return null;}}
     catch(Throwable $e){return null;}
     $peak=0;foreach($history['series'] as $p){$peak=max($peak,abs($p['expenses']));}

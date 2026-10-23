@@ -1,0 +1,5 @@
+"""Run one declared mixed workload phase with private logs and isolated environment."""
+from pathlib import Path
+import argparse,json,os,subprocess
+root=Path(__file__).resolve().parent.parent;private=(root/'.migration-private').resolve();ap=argparse.ArgumentParser();ap.add_argument('--size',required=True,choices=['500','5000']);a=ap.parse_args();p=json.loads((private/'stages4-7-current.json').read_text());assert p['g5_passed'];fixture=Path(p['g6_fixture']).resolve();assert fixture.is_relative_to(private);env=os.environ.copy();env.update(p['environment'])
+r=subprocess.run(['C:/xampp/php/php.exe','scripts/test_stages4_7_workload.php','--fixture',str(fixture),'--lines',a.size],cwd=root,env=env,capture_output=True,text=True,encoding='utf-8',timeout=900);label='g6-workload-'+a.size;(fixture.parent/(label+'.stdout.log')).write_text(r.stdout,encoding='utf-8');(fixture.parent/(label+'.stderr.log')).write_text(r.stderr,encoding='utf-8');print(r.stdout[-2500:]);print(r.stderr[-1200:]);raise SystemExit(r.returncode or bool(r.stderr))

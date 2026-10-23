@@ -1,0 +1,57 @@
+{
+  "gate": "G5",
+  "passed": true,
+  "human_acceptance": false,
+  "visual_sizes": [
+    [
+      1366,
+      768
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "checks": [
+    {
+      "question": "Primary task obvious",
+      "passed": true,
+      "evidence": "Original image beside verified fields; Confirm and save details; visible Export all matching results"
+    },
+    {
+      "question": "Plain language",
+      "passed": true,
+      "evidence": "Review image details, complete/incomplete rows, live or frozen report scope; no raw provider/configuration internals"
+    },
+    {
+      "question": "Advanced details progressively disclosed",
+      "passed": true,
+      "evidence": "Original full-size action; report setup remains separate; extracted items remain optional manual detail"
+    },
+    {
+      "question": "Familiar financial columns",
+      "passed": true,
+      "evidence": "Item description/quantity/amount; ledger debit/credit/running; financial report columns and landscape print"
+    },
+    {
+      "question": "Draft versus recorded values distinct",
+      "passed": true,
+      "evidence": "Editable unposted form; Admin recorded review has zero authoring inputs; frozen report values read-only"
+    },
+    {
+      "question": "Important actions prominent",
+      "passed": true,
+      "evidence": "Confirm and save plus separated full-result Export/Print buttons; inspected1366 and1920"
+    },
+    {
+      "question": "Lifecycle clear",
+      "passed": true,
+      "evidence": "Not confirmed, unsaved changes, confirmed revision, lost-response unverified/recover, recorded read-only and exact frozen revision"
+    },
+    {
+      "question": "Errors explain recovery",
+      "passed": true,
+      "evidence": "Sum mismatch preserves rows and requests correction/incomplete explanation; expired review requires fresh Review; unavailable full-entry mode directs to History"
+    }
+  ]
+}

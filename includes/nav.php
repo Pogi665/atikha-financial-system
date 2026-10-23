@@ -57,6 +57,10 @@ $navGroups[] = ['Books & reports', [
     ['financial_records', 'financial_records.php', 'Find a transaction (Journal History)', 'records'],
     ['crb', 'financial_records.php?view=crb', 'Cash Receipts Book (CRB)', 'book'],
     ['cdb', 'financial_records.php?view=cdb', 'Cash Disbursements Book (CDB)', 'book'],
+    ['general_ledger', 'general_ledger.php', 'General Ledger', 'book'],
+    ['budgets', 'budgets.php', 'Monthly budgets', 'reports'],
+    ['financial_statements', 'financial_statements.php', 'Monthly financial reports', 'reports'],
+    ['report_bundles', 'report_bundles.php', 'Complete reports / month controls', 'reports'],
     ['reports', 'reports.php', 'Reports', 'reports'],
 ]];
 if ($navIsAdmin || $navIsExecutive) {
@@ -71,6 +75,7 @@ if ($navIsAdmin || $navIsExecutive) {
 if ($navIsAdmin) {
     $administration = [];
     if ($navStage1) $administration[] = ['accounting_setup', 'accounting_setup.php', 'Accounting setup', 'review'];
+    $administration[] = ['report_setup', 'report_setup.php', 'Reporting setup', 'review'];
     $administration[] = ['admin_accounts', 'admin_accounts.php', 'Chart of Accounts', 'review'];
     $administration[] = ['admin_users', 'admin_users.php', 'User management', 'users'];
     $administration[] = ['audit_trail', 'audit_trail.php', 'Audit trail', 'audit'];

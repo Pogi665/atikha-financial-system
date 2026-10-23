@@ -1,0 +1,119 @@
+{
+  "passed": true,
+  "selected_period_lines": 5000,
+  "model_query_count": 8,
+  "actual_window_plans": [
+    {
+      "sql": "WITH movements AS (SELECT j.id AS journal_id,l.id AS line_id,j.entry_date,j.reference,j.description,\n            COALESCE(j.source_book,'Legacy General Journal') AS source_book,\n            CASE WHEN JSON_VALID(j.party_snapshot) THEN JSON_UNQUOTE(JSON_EXTRACT(j.party_snapshot,'$.name')) ELSE NULL END AS party_name,\n            l.project_code_snapshot,l.project_name_snapshot,l.debit_amount,l.credit_amount,\n            SUM(l.debit_amount-l.credit_amount) OVER (ORDER BY j.entry_date,j.id,l.id ROWS UNBOUNDED PRECEDING) AS movement_balance\n            FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id\n            WHERE l.account_id=? AND j.status='posted' AND j.entry_date>=? AND j.entry_date<?) SELECT COUNT(*) AS total,COALESCE(SUM(CASE WHEN (?='' OR LOCATE(?,CONCAT_WS(' ',journal_id,source_book,reference,description,party_name,project_code_snapshot,project_name_snapshot))>0) THEN 1 ELSE 0 END),0) AS matched,\n            COALESCE(SUM(debit_amount),0) AS debits,COALESCE(SUM(credit_amount),0) AS credits FROM movements",
+      "plan": {
+        "query_block": {
+          "select_id": 1,
+          "table": {
+            "table_name": "<derived2>",
+            "access_type": "ALL",
+            "rows": 70,
+            "filtered": 100,
+            "materialized": {
+              "query_block": {
+                "select_id": 2,
+                "window_functions_computation": {
+                  "sorts": {
+                    "filesort": {
+                      "sort_key": "j.entry_date, j.`id`, l.`id`"
+                    }
+                  },
+                  "temporary_table": {
+                    "table": {
+                      "table_name": "l",
+                      "access_type": "ref",
+                      "possible_keys": [
+                        "idx_journal_lines_entry_account",
+                        "idx_journal_lines_account_entry"
+                      ],
+                      "key": "idx_journal_lines_entry_account",
+                      "key_length": "8",
+                      "used_key_parts": [
+                        "journal_entry_id",
+                        "account_id"
+                      ],
+                      "ref": [
+                        "synthetic_stage4_5000.j.id",
+                        "const"
+                      ],
+                      "rows": 1,
+                      "filtered": 100
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sql": "WITH movements AS (SELECT j.id AS journal_id,l.id AS line_id,j.entry_date,j.reference,j.description,\n            COALESCE(j.source_book,'Legacy General Journal') AS source_book,\n            CASE WHEN JSON_VALID(j.party_snapshot) THEN JSON_UNQUOTE(JSON_EXTRACT(j.party_snapshot,'$.name')) ELSE NULL END AS party_name,\n            l.project_code_snapshot,l.project_name_snapshot,l.debit_amount,l.credit_amount,\n            SUM(l.debit_amount-l.credit_amount) OVER (ORDER BY j.entry_date,j.id,l.id ROWS UNBOUNDED PRECEDING) AS movement_balance\n            FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id\n            WHERE l.account_id=? AND j.status='posted' AND j.entry_date>=? AND j.entry_date<?) SELECT * FROM movements WHERE (?='' OR LOCATE(?,CONCAT_WS(' ',journal_id,source_book,reference,description,party_name,project_code_snapshot,project_name_snapshot))>0) ORDER BY entry_date,journal_id,line_id LIMIT 25 OFFSET 0",
+      "plan": {
+        "query_block": {
+          "select_id": 1,
+          "read_sorted_file": {
+            "filesort": {
+              "sort_key": "movements.entry_date, movements.journal_id, movements.line_id",
+              "table": {
+                "table_name": "<derived2>",
+                "access_type": "ALL",
+                "rows": 70,
+                "filtered": 100,
+                "materialized": {
+                  "query_block": {
+                    "select_id": 2,
+                    "window_functions_computation": {
+                      "sorts": {
+                        "filesort": {
+                          "sort_key": "j.entry_date, j.`id`, l.`id`"
+                        }
+                      },
+                      "temporary_table": {
+                        "table": {
+                          "table_name": "l",
+                          "access_type": "ref",
+                          "possible_keys": [
+                            "idx_journal_lines_entry_account",
+                            "idx_journal_lines_account_entry"
+                          ],
+                          "key": "idx_journal_lines_entry_account",
+                          "key_length": "8",
+                          "used_key_parts": [
+                            "journal_entry_id",
+                            "account_id"
+                          ],
+                          "ref": [
+                            "synthetic_stage4_5000.j.id",
+                            "const"
+                          ],
+                          "rows": 1,
+                          "filtered": 100
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "all_templates": [
+    "SELECT UserID,FullName,Role,Is_Active FROM Users WHERE UserID=?",
+    "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()\n        AND TABLE_NAME IN ('projects','parties','journal_drafts','draft_evidence_reservations',\n        'advance_control_designations','posted_evidence_associations','evidence_allocations','accounting_write_state')",
+    "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE()\n        AND TABLE_NAME='journal_entries' AND COLUMN_NAME IN ('source_book','transaction_kind','party_id','party_snapshot')",
+    "SELECT CategoryID,Name,Account_Code,Account_Type,Normal_Balance,Is_Cash_Account,Is_Active\r\n        FROM Categories ORDER BY FIELD(Account_Type,'Asset','Liability','Equity','Income','Expense'),\r\n        Account_Code IS NULL,Account_Code,Name,CategoryID",
+    "SELECT j.id FROM journal_entries j LEFT JOIN journal_entry_lines l ON l.journal_entry_id=j.id\n            LEFT JOIN Categories c ON c.CategoryID=l.account_id\n            WHERE j.status='posted' AND j.entry_date<? AND EXISTS\n            (SELECT 1 FROM journal_entry_lines t WHERE t.journal_entry_id=j.id AND t.account_id=?)\n            GROUP BY j.id HAVING COUNT(l.id)<2 OR SUM(l.debit_amount)<>SUM(l.credit_amount)\n            OR SUM(l.debit_amount)<=0 OR SUM(CASE WHEN c.CategoryID IS NOT NULL\n            AND c.Account_Type IN ('Asset','Liability','Equity','Income','Expense')\n            AND ((l.debit_amount>0 AND l.credit_amount=0) OR (l.credit_amount>0 AND l.debit_amount=0)) THEN 0 ELSE 1 END)>0 LIMIT 1",
+    "SELECT COALESCE(SUM(l.debit_amount-l.credit_amount),0) FROM journal_entry_lines l\n            JOIN journal_entries j ON j.id=l.journal_entry_id WHERE l.account_id=? AND j.status='posted' AND j.entry_date<?",
+    "WITH movements AS (SELECT j.id AS journal_id,l.id AS line_id,j.entry_date,j.reference,j.description,\n            COALESCE(j.source_book,'Legacy General Journal') AS source_book,\n            CASE WHEN JSON_VALID(j.party_snapshot) THEN JSON_UNQUOTE(JSON_EXTRACT(j.party_snapshot,'$.name')) ELSE NULL END AS party_name,\n            l.project_code_snapshot,l.project_name_snapshot,l.debit_amount,l.credit_amount,\n            SUM(l.debit_amount-l.credit_amount) OVER (ORDER BY j.entry_date,j.id,l.id ROWS UNBOUNDED PRECEDING) AS movement_balance\n            FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id\n            WHERE l.account_id=? AND j.status='posted' AND j.entry_date>=? AND j.entry_date<?) SELECT COUNT(*) AS total,COALESCE(SUM(CASE WHEN (?='' OR LOCATE(?,CONCAT_WS(' ',journal_id,source_book,reference,description,party_name,project_code_snapshot,project_name_snapshot))>0) THEN 1 ELSE 0 END),0) AS matched,\n            COALESCE(SUM(debit_amount),0) AS debits,COALESCE(SUM(credit_amount),0) AS credits FROM movements",
+    "WITH movements AS (SELECT j.id AS journal_id,l.id AS line_id,j.entry_date,j.reference,j.description,\n            COALESCE(j.source_book,'Legacy General Journal') AS source_book,\n            CASE WHEN JSON_VALID(j.party_snapshot) THEN JSON_UNQUOTE(JSON_EXTRACT(j.party_snapshot,'$.name')) ELSE NULL END AS party_name,\n            l.project_code_snapshot,l.project_name_snapshot,l.debit_amount,l.credit_amount,\n            SUM(l.debit_amount-l.credit_amount) OVER (ORDER BY j.entry_date,j.id,l.id ROWS UNBOUNDED PRECEDING) AS movement_balance\n            FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id\n            WHERE l.account_id=? AND j.status='posted' AND j.entry_date>=? AND j.entry_date<?) SELECT * FROM movements WHERE (?='' OR LOCATE(?,CONCAT_WS(' ',journal_id,source_book,reference,description,party_name,project_code_snapshot,project_name_snapshot))>0) ORDER BY entry_date,journal_id,line_id LIMIT 25 OFFSET 0"
+  ],
+  "no_evidence_hydration": true
+}

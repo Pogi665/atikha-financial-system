@@ -1,0 +1,11 @@
+"""Run complete-month evidence from a new disposable source-posted fixture."""
+from pathlib import Path
+import hashlib,json,os,subprocess,sys
+root=Path(__file__).resolve().parent.parent;pp=root/'.migration-private/stages4-7-current.json';r=subprocess.run([sys.executable,str(root/'scripts/create_period_fixture.py')],capture_output=True,text=True,encoding='utf-8',cwd=root,timeout=360)
+if r.returncode:print(r.stdout+r.stderr);raise SystemExit(r.returncode)
+p=json.loads(pp.read_text(encoding='utf-8'));f=Path(p['g4_fixture']);run=f.parent;env=os.environ.copy();env.update(p['environment']);(run/'period-create.stdout.log').write_text(r.stdout,encoding='utf-8');(run/'period-create.stderr.log').write_text(r.stderr,encoding='utf-8')
+for name,extra in [('test_stage5_period_edges.php',['--prepare']),('test_stage5_completion.php',[]),('test_stage5_flag_off.php',[]),('test_stage5_period_edges.php',[]),('test_stage5_period_races.php',[]),('test_stage5_completion_negatives.php',[])]:
+ r=subprocess.run(['C:/xampp/php/php.exe',str(root/'scripts'/name),'--fixture',str(f)]+extra,capture_output=True,text=True,encoding='utf-8',env=env,cwd=root,timeout=240);label=name+('-prepare' if extra else '');(run/(label+'.stdout.log')).write_text(r.stdout,encoding='utf-8');(run/(label+'.stderr.log')).write_text(r.stderr,encoding='utf-8')
+ if r.returncode or r.stderr:print(r.stdout[-5000:]+r.stderr[-2000:]);raise SystemExit(1)
+ print(r.stdout.strip().splitlines()[-1])
+names=['includes/accounting_periods.php','includes/report_bundles.php','includes/financial_report_query.php','includes/stage1_common.php','includes/journal.php','includes/accounting_workspace.php','includes/cash_advance.php','includes/correction_drafts.php','includes/correction_posting.php','includes/accounts.php','migrations/024_report_bundles_periods.sql','scripts/test_stage5_completion.php','scripts/test_stage5_period_edges.php','scripts/test_stage5_period_races.php','scripts/test_stage5_flag_off.php','scripts/test_stage5_completion_negatives.php'];(run/'stage5-completion-source-pins.json').write_text(json.dumps({n:hashlib.sha256((root/n).read_bytes()).hexdigest() for n in names},indent=2),encoding='utf-8');p['g4_backend_run']=str(run);pp.write_text(json.dumps(p,indent=2),encoding='utf-8');print('Disposable source only; no working deployment.')

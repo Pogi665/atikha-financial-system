@@ -44,10 +44,9 @@ function correction_post(PDO $pdo,int $uid,array $r): array
     correction_guard($pdo,$uid,$r);$id=journal_id(journal_string($r,'draft_id'));$key=journal_string($r,'submission_key');
     if(!is_array($r['payload']??null))throw new JournalProblem('Correction payload must be an object.');
     return workspace_tx($pdo,$uid,function($version)use($pdo,$uid,$id,$key,$r){
-        $d=correction_entry_draft($pdo,$uid,$id,true);
+        $d=correction_entry_draft($pdo,$uid,$id);
         if(!hash_equals($d['submission_key'],$key))throw new JournalProblem('Draft submission key does not match.',409);
         // Persisted operation identity, never a submitted flag, selects the allowed writer.
-        if($d['state']!=='Posted'){$t=correction_entry_target($pdo,(int)$d['correction_target_journal_id'],true);correction_eligible($t);}
         $request=correction_request($pdo,$d,$r['payload']);$hash=hash('sha256',workspace_json($request));
         if($d['state']==='Posted'){
             $s=$pdo->prepare('SELECT * FROM journal_corrections WHERE draft_id=? AND submission_key=?');$s->execute([$id,$key]);$c=$s->fetch();
@@ -55,7 +54,7 @@ function correction_post(PDO $pdo,int $uid,array $r): array
             if($d['advance_id']!==null)advance_reconciled(advance_state($pdo,journal_today()));
             return correction_result($pdo,$c,true);
         }
-        workspace_revision($d,$r);
+        stage1_correction_period_guard($pdo,$request['entry_date'],(int)$d['correction_target_journal_id']);if($request['replacement']!==null&&$request['replacement']['entry_date']!==$request['entry_date'])stage1_correction_period_guard($pdo,$request['replacement']['entry_date'],(int)$d['correction_target_journal_id']);$d=correction_entry_draft($pdo,$uid,$id,true);workspace_revision($d,$r);
         if(workspace_json($request)!==workspace_json(correction_request($pdo,$d,$d['payload'])))throw new JournalProblem('Save and review your latest changes before posting.',409);
         $t=correction_entry_target($pdo,(int)$d['correction_target_journal_id'],true);correction_eligible($t);
         $comparison=correction_prepare_review($pdo,$uid,$d,$t,$version);$prepared=$comparison['prepared'];$input=$comparison['input'];
@@ -90,8 +89,8 @@ function correction_post(PDO $pdo,int $uid,array $r): array
             if($source===null){$s=$pdo->prepare('UPDATE Receipts SET JournalEntryID=?,Posted_File_SHA256=File_SHA256 WHERE ReceiptID=? AND JournalEntryID IS NULL');$s->execute([$n['id'],$doc['receipt_id']]);if($s->rowCount()!==1)throw new JournalProblem('Evidence was posted by another request.',409);}
             $amount=$doc['purpose']==='amount';
             $s=$pdo->prepare('INSERT INTO posted_evidence_associations(journal_id,receipt_id,purpose,support_side,declared_amount,accepted_amount,exclusion_reason,reviewed_by,reviewed_at,review_snapshot,source_association_id,correction_id) VALUES(?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),?,?,?)');
-            $s->execute([$n['id'],$doc['receipt_id'],$doc['purpose'],$amount?$doc['support_side']:null,$amount?$doc['declared_amount']:null,$amount?$doc['accepted_amount']:null,$doc['exclusion_reason'],$uid,workspace_json($doc+['sha256'=>$receipt['File_SHA256'],'attempt_version'=>$receipt['attempt_version'],'coverage'=>$prepared['coverage']]),$source,$cid]);$association=(int)$pdo->lastInsertId();
-            $s=$pdo->prepare('INSERT INTO evidence_allocations(association_id,line_id,amount) VALUES(?,?,?)');foreach($doc['allocations'] as $a)$s->execute([$association,$n['line_ids'][$a['client_id']],$a['amount']]);
+            $s->execute([$n['id'],$doc['receipt_id'],$doc['purpose'],$amount?$doc['support_side']:null,$amount?$doc['declared_amount']:null,$amount?$doc['accepted_amount']:null,$doc['exclusion_reason'],$uid,workspace_json($doc+['sha256'=>$receipt['File_SHA256'],'attempt_version'=>$receipt['attempt_version'],'item_review'=>$receipt['item_review']??null,'coverage'=>$prepared['coverage']]),$source,$cid]);$association=(int)$pdo->lastInsertId();
+            item_review_link($pdo,$association,$receipt['item_review']??null);$s=$pdo->prepare('INSERT INTO evidence_allocations(association_id,line_id,amount) VALUES(?,?,?)');foreach($doc['allocations'] as $a)$s->execute([$association,$n['line_ids'][$a['client_id']],$a['amount']]);
         }
         $pdo->prepare('DELETE FROM draft_evidence_reservations WHERE draft_id=?')->execute([$id]);
         $pdo->prepare('DELETE FROM correction_evidence_reservations WHERE draft_id=?')->execute([$id]);

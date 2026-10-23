@@ -67,11 +67,12 @@ def expected(role,s1=True,s2=True,ocr=True):
     if role=='Admin':
         groups.append('Transactions');keys+=['payment','receipt'] if s1 else [];keys+=['general_journal'];keys+=['ocr_expense'] if ocr else [];keys+=['accounting_drafts'] if s1 else []
     if s1 and s2:groups.append('Cash advances');keys+=['cash_advances']
-    groups+=['Books & reports','Communications'];keys+=['financial_records','crb','cdb','reports','external_email']
+    groups+=['Books & reports','Communications'];keys+=['financial_records','crb','cdb','general_ledger','budgets','financial_statements','report_bundles','reports','external_email']
     keys+=['board_messages'] if role=='Admin' else ['management_reviews','board_inbox']
-    if role=='Admin':groups.append('Administration');keys+=['accounting_setup'] if s1 else [];keys+=['admin_accounts','admin_users','audit_trail']
+    if role=='Admin':groups.append('Administration');keys+=['accounting_setup'] if s1 else [];keys+=['report_setup','admin_accounts','admin_users','audit_trail']
     return keys,groups
 urls={'dashboard':'dashboard.php','payment':'cash_disbursement.php','receipt':'cash_receipt.php','general_journal':'general_journal.php','ocr_expense':'ocr_expense.php','accounting_drafts':'accounting_drafts.php','cash_advances':'cash_advances.php','financial_records':'financial_records.php','crb':'financial_records.php?view=crb','cdb':'financial_records.php?view=cdb','reports':'reports.php','external_email':'external_email.php','board_messages':'board_messages.php','management_reviews':'management_reviews.php','board_inbox':'board_inbox.php','accounting_setup':'accounting_setup.php','admin_accounts':'admin_accounts.php','admin_users':'admin_users.php','audit_trail':'audit_trail.php'}
+urls.update({key:key+'.php' for key in ['general_ledger','budgets','financial_statements','report_bundles','report_setup']})
 try:
     for _ in range(60):
         try:
@@ -102,7 +103,7 @@ try:
         config()
         for role,ctx in [('Admin',admin),('Management',manager)]:
             for key in expected(role)[0]:
-                response=ctx.request.get(base+'/'+urls[key]);check(response.ok,role+' normal destination opens '+key)
+                response=ctx.request.get(base+'/'+urls[key]);check(response.status==503 if key in ['budgets','financial_statements','report_bundles','report_setup'] else response.ok,role+' destination opens or explicitly requires its unapplied additive schema '+key)
                 check([l['key'] for l in nav(response.text()).links if l['current']]==[key],role+' real route has correct current key '+key)
         for path in ['cash_receipt.php','cash_disbursement.php','general_journal.php','accounting_drafts.php','accounting_setup.php','admin_accounts.php','admin_users.php','audit_trail.php','ocr_expense.php','board_messages.php','journal_correction.php?journal_id='+str(fixture['ordinary_journal'])]:
             check(manager.request.get(base+'/'+path,max_redirects=0).status==403,'Management direct authoring/admin access denied '+path.split('?')[0])

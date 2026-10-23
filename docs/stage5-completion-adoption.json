@@ -1,0 +1,79 @@
+{
+  "gate": "G4",
+  "method": "Agent-inspected desktop states plus isolated Edge actions and actual rendered frozen print; not G7 or Atikha acceptance",
+  "viewports": [
+    [
+      1366,
+      768
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "checks": [
+    {
+      "check": "primary_task_obvious",
+      "passed": true,
+      "observed": "Complete reports / month controls navigation; prominent Submit complete reports and Management review/close/reopen sections."
+    },
+    {
+      "check": "plain_language",
+      "passed": true,
+      "observed": "Live preview, Frozen revision, Requested/Reviewed/Returned and Open/Closed; readable reasons and setup tasks, no engine hashes in normal use."
+    },
+    {
+      "check": "advanced_details_disclosed",
+      "passed": true,
+      "observed": "Captured reporting setup and month history collapsed on screen; report supporting bridge disclosed separately."
+    },
+    {
+      "check": "familiar_columns",
+      "passed": true,
+      "observed": "Worksheet split into familiar balance/book/result columns; TB, statements, cash flows, project activity, aging and approved/actual/remaining tables."
+    },
+    {
+      "check": "posted_vs_editable",
+      "passed": true,
+      "observed": "All financial amounts are text. Admin submits fixed calculated content; Management enters reasons and decisions without financial editing or private proof fields."
+    },
+    {
+      "check": "important_actions_prominent",
+      "passed": true,
+      "observed": "Green submit/review/close/reopen buttons in task sections, clear reviewed revision picker and exact reopen-month list."
+    },
+    {
+      "check": "lifecycle_clear",
+      "passed": true,
+      "observed": "Live versus exact frozen identities, current versus stale source, immutable return/new revision and open/closed cycle; close after reopening needs a new reviewed complete revision."
+    },
+    {
+      "check": "actionable_error",
+      "passed": true,
+      "observed": "Missing Return/Reopen reason is explained; closed-date Review gives the affected month and next Management task; uncertain submit/close responses retain explicit durable recovery."
+    }
+  ],
+  "human_acceptance": false,
+  "print_pages_inspected": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "print_identity_and_page_counters_verified_every_page": true,
+  "pdf_sha256": "885e43cc4cc73b7704f3f97c9aa233c340e16d94caabc5086deb4f21a44ecf33",
+  "captures_inspected": [
+    "complete-live-worksheet-1366.png",
+    "complete-management-budget-1366.png",
+    "complete-month-closed-1920.png",
+    "complete-reopen-preview-1366.png",
+    "complete-month-reopened-1366.png",
+    "complete-frozen-all-page-1.png through complete-frozen-all-page-10.png"
+  ]
+}

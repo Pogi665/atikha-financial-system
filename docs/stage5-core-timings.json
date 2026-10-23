@@ -1,0 +1,63 @@
+{
+  "gate": "G2",
+  "controlled_synthetic_evidence_not_SLA": true,
+  "workload": "8 journals / 16 lines; larger mixed report workload remains G6",
+  "timings": [
+    {
+      "role": "Admin",
+      "http_samples_ms": [
+        789.6727001061663,
+        206.1308000702411,
+        178.09589998796582,
+        219.45390000473708,
+        226.5045999083668,
+        201.62700000219047
+      ],
+      "median_ms": 206.1308000702411,
+      "slowest_http_ms": 789.6727001061663,
+      "target_ms": 2000,
+      "visible_samples_ms": [
+        477.3825000738725,
+        361.07810004614294,
+        348.3113000402227,
+        279.57370004151016,
+        333.4876000881195,
+        349.2600000463426
+      ],
+      "visible_median_ms": 348.3113000402227,
+      "slowest_visible_ms": 477.3825000738725,
+      "visible_target_ms": 3000,
+      "source_journals": 8,
+      "source_lines": 16,
+      "server_mode": "Normal MariaDB3306 / single PHP built-in / headless Edge / synthetic small connected report"
+    },
+    {
+      "role": "Management",
+      "http_samples_ms": [
+        235.38089997600764,
+        185.90939999558032,
+        187.74369999300689,
+        211.33110008668154,
+        202.73990009445697,
+        217.1162999002263
+      ],
+      "median_ms": 202.73990009445697,
+      "slowest_http_ms": 235.38089997600764,
+      "target_ms": 2000,
+      "visible_samples_ms": [
+        324.7016000095755,
+        282.2374999523163,
+        305.84159994032234,
+        267.62860000599176,
+        267.6789000397548,
+        311.1788999522105
+      ],
+      "visible_median_ms": 282.2374999523163,
+      "slowest_visible_ms": 324.7016000095755,
+      "visible_target_ms": 3000,
+      "source_journals": 8,
+      "source_lines": 16,
+      "server_mode": "Normal MariaDB3306 / single PHP built-in / headless Edge / synthetic small connected report"
+    }
+  ]
+}

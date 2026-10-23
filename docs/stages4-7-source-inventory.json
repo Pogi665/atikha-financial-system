@@ -1,0 +1,1025 @@
+{
+  "prepared": "2026-10-23",
+  "status": "Combined Stages 4-7 planning/source inspection only; implementation authorization pending",
+  "master_plan": "docs/stages4-7-plan.md",
+  "stage4_technical_annex": "docs/stage4-plan.md",
+  "baseline": {
+    "branch": "main",
+    "head": "60206a7047d99975a29245e236ae786d16e31bc7",
+    "origin_main_tracking": "60206a7047d99975a29245e236ae786d16e31bc7",
+    "live_remote_checked": false
+  },
+  "original_external_roadmap": {
+    "file": "plan_complete.md in user Downloads",
+    "sha256": "1bd40b6119d63f87e7f4fad06fee6537faae5addc5089f7b019a1d435cac6b48",
+    "inspected_section": "Shared accounting/period controls, original Stages 4-7, verification and rollout"
+  },
+  "pre_existing_changes_preserved": [
+    "README.md",
+    "docs/client-context.md",
+    "docs/project-status.md",
+    "docs/project-decisions.md",
+    "docs/usability-completion-plan.md",
+    "docs/stage4-plan.md",
+    "docs/stage4-source-inventory.json",
+    "docs/manuscript/compact-flowchart/overall-system-flowchart-compact.png",
+    "docs/manuscript/compact-flowchart/overall-system-flowchart-compact.svg",
+    "docs/manuscript/compact-flowchart/placement-and-explanation.md"
+  ],
+  "proposed_production_additions": [
+    "general_ledger.php",
+    "includes/general_ledger_query.php",
+    "assets/js/general_ledger.js",
+    "assets/css/general_ledger.css",
+    "financial_statements.php",
+    "report_setup.php",
+    "includes/financial_report_query.php",
+    "includes/report_configuration.php",
+    "includes/report_bundles.php",
+    "report_bundle_actions.php",
+    "assets/js/financial_reports.js",
+    "budgets.php",
+    "budget_actions.php",
+    "includes/budget_revisions.php",
+    "assets/js/budgets.js",
+    "assets/css/budgets.css",
+    "accounting_periods.php",
+    "period_actions.php",
+    "includes/accounting_periods.php",
+    "assets/js/accounting_periods.js",
+    "accounting_export.php",
+    "includes/accounting_export.php"
+  ],
+  "proposed_existing_production_changes": {
+    "includes/accounting_query.php": "Shared exact financial readers and complete projections; extend only for declared report contracts",
+    "includes/stage1_common.php": "Shared write-state barrier and installed-schema behavior",
+    "includes/accounting_workspace.php": "Ordinary durable recovery, new-version designations and closed-period posting checks",
+    "includes/cash_advance.php": "Advance post/recovery and due-date change closed-basis checks",
+    "includes/correction_posting.php": "Atomic reversal/replacement and committed retry before period checks",
+    "includes/correction_drafts.php": "Saved correction compatibility and reporting designation provenance",
+    "includes/journal.php": "Legacy canonical payload/recovery and shared period enforcement",
+    "includes/accounting_entry_page.php": "New explicit advanced GJ designation and evidence presentation",
+    "includes/nav.php": "Visible role-correct ledger/report/budget/period navigation",
+    "reports.php": "Live reports, old TB snapshots and new frozen complete revisions",
+    "journal_transaction.php": "Whitelisted ledger return context",
+    "includes/budget_query.php": "Keep old recorded budgets separate; approved actual basis",
+    "includes/dashboard_query.php": "Truthful cash/assets/advance/approved budget metrics",
+    "includes/management_dashboard.php": "Management metric and pending-review rendering",
+    "dashboard.php": "Role-specific approved budget and cash metric presentation",
+    "includes/forecast_query.php": "Recognized-expense classifications and cache version invalidation",
+    "review_actions.php": "New bundle and budget entity actions without changing retired legacy/Board contracts",
+    "management_reviews.php": "Management bundle/budget review queue",
+    "includes/review_ui.php": "Explicit distinct state/action presentations",
+    "assets/js/review_actions.js": "Durable new review actions and safe failure states",
+    "includes/receipt_ocr.php": "Versioned itemized suggestions/review and conditional completion",
+    "includes/gemini_receipt.php": "Bounded untrusted optional item normalizer",
+    "includes/receipts.php": "Protected evidence review provenance only where needed",
+    "ocr_expense.php": "Readable original image and manual item review",
+    "ocr_extract.php": "Preserve GJ-only handoff and compatibility",
+    "assets/js/ocr_expense.js": "Item review, manual fallback and uncertain-response recovery",
+    "assets/js/accounting_workspace.js": "Evidence/new-version fields and save/review recovery",
+    "assets/css/accounting_workspace.css": "Scoped evidence layout if needed",
+    "assets/css/reports.css": "Readable live/frozen report and print layouts",
+    "assets/css/ocr_expense.css": "Scoped side-by-side item review layout"
+  },
+  "conditional_shared_dependencies": [
+    "includes/report_snapshots.php",
+    "includes/stage1_common.php",
+    "includes/stage2_common.php",
+    "includes/stage3_common.php",
+    "includes/notifications.php",
+    "includes/cash_advance_lifecycle.php",
+    "assets/js/financial_records.js"
+  ],
+  "scope_note": "Names are proposed cohesive modules; confirm implementation allowlist and caller evidence first. Shared changes only for master contracts. No production file changed during planning.",
+  "proposed_migration_families": [
+    "versioned report mappings, journal reporting designations and cash-flow allocations",
+    "monthly budget roots, immutable revisions/lines, transitions and approved pointer",
+    "complete immutable report bundles/components and review events",
+    "monthly period roots and close/reopen events",
+    "versioned itemized extraction/manual evidence review"
+  ],
+  "migration_note": "Existing sequence observed 001-021; reserve 022+ only after fresh collision check. New DDL rehearsed only on guarded disposable DBs; no working apply/seed/activation authorization.",
+  "proposed_test_families": [
+    "Stage4 ledger and bounded-read performance",
+    "Stage5 statement oracles, configuration, cash-flow allocations and immutable bundles",
+    "Stage6 budgets, actuals, dashboards and competing approvals",
+    "period enforcement, retry compatibility, downstream closure and deterministic races",
+    "Stage7 manual/itemized evidence, controlled OCR and exact full-result exports",
+    "final connected Stages4-7 browser, human task guide, affected regressions and package verifier"
+  ],
+  "inspection": {
+    "includes/accounting_query.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Shared exact financial readers and complete projections; extend only for declared report contracts",
+      "sha256_at_inspection": "61a15b396cc5c2013484633e3a9ea82211bed7f2c2a4b15ca9939a256fc6b4fa",
+      "git_blob_at_baseline": "894b0e9e4ecf1c81bed6f2d4583d34da11e96963",
+      "symbols": {
+        "accounting_today": 6,
+        "accounting_date": 10,
+        "accounting_month_end": 18,
+        "accounting_next_day": 23,
+        "accounting_cents": 27,
+        "accounting_add": 40,
+        "accounting_decimal": 47,
+        "accounting_money": 52,
+        "accounting_read": 58,
+        "accounting_accounts": 71,
+        "accounting_integrity": 77,
+        "accounting_trial_balance": 88,
+        "accounting_kpis": 124,
+        "accounting_months": 137,
+        "accounting_monthly": 145,
+        "accounting_expenses": 173,
+        "accounting_records_filters": 184,
+        "accounting_records_request": 204,
+        "accounting_journal_projection": 275,
+        "accounting_complete_journals": 285,
+        "accounting_posted_journal": 335,
+        "accounting_records": 351
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "financial_records.php": {
+      "classification": "reference",
+      "purpose": "Retained full-entry books versus line-oriented History request contracts",
+      "sha256_at_inspection": "b86cadb1a0f8ff147b644b1031e8a2abc44f9b9dd18eef96932767a113a24851",
+      "git_blob_at_baseline": "7cc701632b51a80320e35dc6e1cf4f8caf35678e",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/js/financial_records.js": {
+      "classification": "reference",
+      "purpose": "Existing applied search/filter/export integration reference",
+      "sha256_at_inspection": "ab3d77a3775839af2005f7993a63227899d9c626de9738d835be70a0eee685e8",
+      "git_blob_at_baseline": "24f466c9790dc1bc6de7a12c52b8584618b53276",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/css/financial_records.css": {
+      "classification": "preserve",
+      "purpose": "Existing History/book styles",
+      "sha256_at_inspection": "c0603b2273ffba29d63fd5e3072a7245ee2db7d63542b55eac380f263288d31d",
+      "git_blob_at_baseline": "597fb80e3fc3535cf0d7dc696ed63628fa550ef6",
+      "symbols": {}
+    },
+    "includes/nav.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Visible role-correct ledger/report/budget/period navigation",
+      "sha256_at_inspection": "892d35c4d0ea9cfa75918af169e485947a608a7c4b03d39a6d8a97f3e2dd78cf",
+      "git_blob_at_baseline": "2ca299bd820e9499cf6b9727159e475f988ef6e0",
+      "symbols": {
+        "nav_link_class": 34
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "reports.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Live reports, old TB snapshots and new frozen complete revisions",
+      "sha256_at_inspection": "abd8898980df212471b2c8b44ad83f058bd5445250c6c5d2aa2db2881614c844",
+      "git_blob_at_baseline": "7fffbd3755e5abb5c7fa28e64a048e3dc987e832",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "journal_transaction.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Whitelisted ledger return context",
+      "sha256_at_inspection": "9d8fc9cac4649d91f0d76378b0937579f4695b55db7111b3046de7a9cdd496ec",
+      "git_blob_at_baseline": "685cb6180cfc2d12cad3eaa350fecedb0415e1ec",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/require_role.php": {
+      "classification": "reference",
+      "purpose": "Existing authenticated page gates",
+      "sha256_at_inspection": "4f47a8fe65354f26e50b6a64e70cefb1e089c1690223c187c2b54f2e2898669b",
+      "git_blob_at_baseline": "87761e12647c713916d493ad4f67560d7f08b4d3",
+      "symbols": {
+        "require_login": 12,
+        "require_role": 41
+      }
+    },
+    "includes/user_session.php": {
+      "classification": "reference",
+      "purpose": "Current database-backed active-role session validation",
+      "sha256_at_inspection": "bb840de5e1cbe90a2de3bfa5e7e93239af5281ebd2636ef3ad1bc5151d18f210",
+      "git_blob_at_baseline": "f85bb5ff36a474e79c2f64e762c170638114df0f",
+      "symbols": {
+        "user_session_validate": 5
+      }
+    },
+    "includes/user_roles.php": {
+      "classification": "preserve",
+      "purpose": "Existing Admin/Management vocabulary",
+      "sha256_at_inspection": "b2ea52211e5dfd738a666319c80543f0ce1869d26d83607854454be5f1936229",
+      "git_blob_at_baseline": "1d903ee3f5982509898b8368a0b9bd97353c6feb",
+      "symbols": {}
+    },
+    "includes/layout.php": {
+      "classification": "preserve",
+      "purpose": "Shared role shell",
+      "sha256_at_inspection": "2f7aa1c97baf1091bccd0a63cc5233d4acf3bc12eb6638c99442b816e20b2884",
+      "git_blob_at_baseline": "ffdcd08c5834fabda60a6c3993c3850cab411040",
+      "symbols": {}
+    },
+    "includes/journal.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Legacy canonical payload/recovery and shared period enforcement",
+      "sha256_at_inspection": "2cd02bd330186249c12b715d6e8904d81e955e4c31badef0ee97964dd1972b9b",
+      "git_blob_at_baseline": "05da0ff05050b9e6d3d70be3030feb693263b286",
+      "symbols": {
+        "__construct": 13,
+        "journal_today": 22,
+        "journal_submission_key": 27,
+        "journal_submission_valid": 37,
+        "journal_require_schema": 46,
+        "journal_accounts": 56,
+        "journal_string": 65,
+        "journal_id": 77,
+        "journal_amount": 88,
+        "journal_input": 99,
+        "journal_existing": 138,
+        "journal_post": 152
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/journal_corrections.php": {
+      "classification": "reference",
+      "purpose": "Preserve bounded U-PERF comparison path and privacy",
+      "sha256_at_inspection": "f04fb91fda3bdfe52d49416275540fbb84d2270da779ed8484cdf025776f413d",
+      "git_blob_at_baseline": "3f991fea0af6803aa0ac3fd94590b90d9f32c4d6",
+      "symbols": {
+        "correction_reader_guard": 7,
+        "correction_chain": 16,
+        "correction_metadata": 33,
+        "correction_posted_detail": 51,
+        "correction_control_integrity": 65,
+        "correction_integrity": 73
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/stage2_common.php": {
+      "classification": "reference",
+      "purpose": "Preserve trigger checks/evidence privacy under new migrations",
+      "sha256_at_inspection": "8544b392c2b74099f91d7362cdb27d7f2c32156b1fe56d67328a3656e9593781",
+      "git_blob_at_baseline": "4428d3acc41780d0cc724901e229b4c1b9140a8c",
+      "symbols": {
+        "stage2_tables": 4,
+        "stage2_schema": 8,
+        "stage2_enabled": 19,
+        "stage2_sensitive_journals": 23,
+        "stage2_sensitive_journals_direct": 27,
+        "workspace_ordinary": 38,
+        "stage2_private_viewer": 43
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/stage3_common.php": {
+      "classification": "reference",
+      "purpose": "Preserve correction validity, schema checks and Management sensitivity",
+      "sha256_at_inspection": "1f870d2388adccb963340c7438d35dea5c9f5cf2d590ecf47436ae3582fe7a64",
+      "git_blob_at_baseline": "066f0ef9cc71e36d779c92dc2966d83f6960bbca",
+      "symbols": {
+        "stage3_table": 7,
+        "stage3_schema_state": 11,
+        "stage3_schema": 45,
+        "stage3_enabled": 46,
+        "stage3_correction_valid": 51,
+        "stage3_sensitive_journals": 81,
+        "stage3_evidence_association_valid": 98,
+        "stage3_receipt_sensitive": 112
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/ledger_query.php": {
+      "classification": "reference",
+      "purpose": "Legacy utility caller compatibility; not new ledger financial source",
+      "sha256_at_inspection": "6dbb0e5a518b4f2866aa39aef188587e76246b870e9cbe0474e0e412200234bf",
+      "git_blob_at_baseline": "44fd24eb0dfd184a22783f19272e26bc5d4fdf6e",
+      "symbols": {
+        "ledger_parse_filters": 12,
+        "ledger_cents": 58,
+        "ledger_decimal": 67,
+        "ledger_money": 72,
+        "ledger_source_sql": 79,
+        "ledger_period": 95,
+        "ledger_filtered_rows": 140,
+        "ledger_completeness": 147,
+        "ledger_range_source": 161,
+        "ledger_matching_records": 179,
+        "ledger_view": 198,
+        "ledger_count": 221,
+        "ledger_fetch": 226,
+        "ledger_category_options": 236,
+        "ledger_records_filters": 249,
+        "ledger_records_dataset": 270,
+        "ledger_records_category_options": 335
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/report_snapshots.php": {
+      "classification": "reference",
+      "purpose": "Existing immutable TB workflow and non-posting advisory revision mutex; preserve old contract",
+      "sha256_at_inspection": "44b3d263e8ad48664cdeeca52f0b00bdeadaa5ba3b4fc3466a9bfa243ea5920b",
+      "git_blob_at_baseline": "bf231a56f348252b4daf95ab9e5e25ad8fb7ab6c",
+      "symbols": {
+        "__construct": 10,
+        "report_snapshot_available": 12,
+        "report_submission_token": 17,
+        "report_submission_valid": 23,
+        "report_actor": 29,
+        "report_snapshot_submit": 36,
+        "report_snapshot_review": 82,
+        "report_snapshot_load_id": 109
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/accounts.php": {
+      "classification": "reference",
+      "purpose": "Account identity/type/normal-side and inactive-history behavior",
+      "sha256_at_inspection": "95b65aa896e85ce420be95bce314d3c51f6a934dd2f32ec8126cf8942155a379",
+      "git_blob_at_baseline": "77d08a36ee3c575f8e4f1ebe79bfd7efaad912db",
+      "symbols": {}
+    },
+    "migrations/015_double_entry_core.sql": {
+      "classification": "reference only never rerun",
+      "purpose": "Existing journal DDL, status/date and account/journal indexes",
+      "sha256_at_inspection": "e17aeb4acbf71cbf97a621129fd4ed2a7e5325db3b5b68d6f47b9606b62e6e29",
+      "git_blob_at_baseline": "cfdddd0f4513496d2b7a44a9d43a42ac4e655d28",
+      "symbols": {}
+    },
+    "migrations/019_stage1_foundation.sql": {
+      "classification": "reference",
+      "purpose": "Installed foundation and hardcoded database-selection rehearsal constraint",
+      "sha256_at_inspection": "460b8d060026925e9cb72c736f6ad1306c54b8e1f68e0f484325b9ec9bb1a8c6",
+      "git_blob_at_baseline": "a0a86950d38f1b6df1c10484202f45b687a309b3",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "migrations/020_stage2_advances.sql": {
+      "classification": "reference",
+      "purpose": "Immutable advances and evidence/control invariants",
+      "sha256_at_inspection": "6df0aa92f6056aaeada095f179fd093a9e50e9f037a9c106d9123439eee9cfbe",
+      "git_blob_at_baseline": "808a1319bbac16ae511f506eb78500a2e75fc10a",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "migrations/021_journal_corrections.sql": {
+      "classification": "reference",
+      "purpose": "Immutable correction and posted-history triggers",
+      "sha256_at_inspection": "9fb3801f2a691b389788ddc7c2ac2ea8f5766cc541c9e829f05e55c7f7182536",
+      "git_blob_at_baseline": "59d6bfa796cda2a9b8403f4d23495fa29a7dd4d0",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "scripts/test_stage3_fixture.py": {
+      "classification": "reference",
+      "purpose": "Guarded fresh integrated synthetic clone helper",
+      "sha256_at_inspection": "db6369faa0de7562291c78614c8c7c5363fbe4655319b86a84fd4ce01785ee62",
+      "git_blob_at_baseline": "55a485cdeeae026035c3a9b237fa1c3612d172da",
+      "symbols": {}
+    },
+    "scripts/test_accounting.php": {
+      "classification": "reference evaluate fixture compatibility",
+      "purpose": "Trial Balance/report assertions; older raw posting fixtures need compatibility review",
+      "sha256_at_inspection": "db832205164b20c04bf5c3398e43397690e01fc6d7634beea48c0146be72c126",
+      "git_blob_at_baseline": "5d6dba82550d20453d48910be117d922733c8c45",
+      "symbols": {}
+    },
+    "scripts/test_accounting_browser.py": {
+      "classification": "reference evaluate fixture compatibility",
+      "purpose": "Existing report/browser and frozen revision assertions",
+      "sha256_at_inspection": "e38b64906d5414c1128e898a9f2a363724ce0ab10c56c8ff0e1f121e2dcb3ce7",
+      "git_blob_at_baseline": "be4cf8a2994e77e8033e5a573df61ef0913be160",
+      "symbols": {}
+    },
+    "scripts/test_usability_u2_c_browser.py": {
+      "classification": "reference affected regression",
+      "purpose": "Navigation, full-entry books and History",
+      "sha256_at_inspection": "8d4fffdf24284215e0bda1a8185315aff9fcbfe028bdc10d3acd16f652b2ddb6",
+      "git_blob_at_baseline": "e26229704fd3b80b03eba6d61f7fce22ab95932d",
+      "symbols": {}
+    },
+    "scripts/test_usability_u4_browser.py": {
+      "classification": "reference affected regression",
+      "purpose": "Exact journal and correction inspection",
+      "sha256_at_inspection": "22aadc0e66f400f3b55a2ce3fbe4cc2e8a915d2072711114441bbf4cadf9b7d3",
+      "git_blob_at_baseline": "6ae7830a9a0cd24b9ee9df975e7193bd427b7905",
+      "symbols": {}
+    },
+    "scripts/test_usability_u3_a_readback.py": {
+      "classification": "reference affected regression",
+      "purpose": "Management posted reads and evidence privacy",
+      "sha256_at_inspection": "1da48f2230c36e73ed2fdfea0231da878a023e507bf4c37ebe94b7afd910e043",
+      "git_blob_at_baseline": "d8e94da02ffccd914131aa295b02cf2c1d063718",
+      "symbols": {}
+    },
+    "scripts/test_usability_u5_browser.py": {
+      "classification": "reference",
+      "purpose": "Delivered daily workflow regression reference",
+      "sha256_at_inspection": "78cd3598aebc7b06e6b5f9c5c4d12069dc8a10ebad484a67916c6681c60c488e",
+      "git_blob_at_baseline": "7e65172025a28a0e896047835ea7a9838ee59957",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "docs/usability-completion-plan.md": {
+      "classification": "planning handoff update",
+      "purpose": "Retained original Stage4 identity and later-stage dependency order",
+      "sha256_at_inspection": "f41d7114d64e25841e599c75d451f5fb21817978f46c59cec135f7bc42ab7fa7",
+      "git_blob_at_baseline": "2697566e139c131f9a7653518b2b8b5271ff5080",
+      "symbols": {}
+    },
+    "docs/usability-u-perf-01-u5-approval.md": {
+      "classification": "preserve",
+      "purpose": "User-supplied final external approval and frozen package boundary",
+      "sha256_at_inspection": "6f21e7af056f02406cd6a147ffa233dddd6dff4123afff878c9b2e13f5a60f37",
+      "git_blob_at_baseline": "6297df29f938b6dd08479558f4174f200160123f",
+      "symbols": {}
+    },
+    "docs/usability-u-perf-01-u5-delivery.md": {
+      "classification": "reference",
+      "purpose": "Frozen approved source/evidence reference",
+      "sha256_at_inspection": "40bcbae4eda43c08ca73a07db09f8c6c434a9eeb2b03fd78aa910cc80e7256a4",
+      "git_blob_at_baseline": "396b022c7390593bf7984b0e79cca3b86a72760d",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "docs/usability-u5-task-guide.md": {
+      "classification": "reference",
+      "purpose": "Delivered user-facing save/review/record and inspection conventions",
+      "sha256_at_inspection": "b0329b1f37473dc0d4bf0ba2392d141e2452e6b44f7edece98c46035b8d94bb8",
+      "git_blob_at_baseline": "399ad017ae7dd469b8b5a0c702b3e7393da8816b",
+      "symbols": {}
+    },
+    "includes/cash_advance_lifecycle.php": {
+      "classification": "reference",
+      "purpose": "As-of operation and deadline/correction state",
+      "sha256_at_inspection": "7088b253ace7a0740ebce55e247a5b83f8b851ff3241abfec33960a935844b53",
+      "git_blob_at_baseline": "388e261a262916047b74dd3267373fb17d9b7c24",
+      "symbols": {
+        "advance_lifecycle_model": 5,
+        "advance_lifecycle_errors": 54,
+        "advance_lifecycle_amounts": 64,
+        "advance_lifecycle_state": 70,
+        "advance_lifecycle_candidate": 98,
+        "advance_correction_identity": 119
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/gemini_client.php": {
+      "classification": "reference",
+      "purpose": "Existing provider transport, no credentials/calls during planning",
+      "sha256_at_inspection": "4d1f7254e43f3862bc82c0fd68cfe0fd8aeebb49a2031d4a350e0e2835288020",
+      "git_blob_at_baseline": "342c1c8d89b49b67d550b455fda80b3ab8709771",
+      "symbols": {
+        "gemini_is_configured": 21,
+        "gemini_request": 36,
+        "gemini_structured_json": 174,
+        "gemini_normalized_from_raw": 217,
+        "gemini_strip_code_fences": 238,
+        "gemini_decode_json_string": 259,
+        "gemini_prepare_image_bytes": 279,
+        "gemini_downscale_jpeg": 303,
+        "gemini_audit_anomaly_scan": 360,
+        "normalize_anomaly_scan": 449,
+        "gemini_audit_summary": 521,
+        "gemini_forecast_projection": 621
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/notifications.php": {
+      "classification": "reference",
+      "purpose": "Durable review queue and post-commit notification warning",
+      "sha256_at_inspection": "ba82468c7c940b4c4719dddbb5297c4f739876c0c756f162a68ef9beeed16ea6",
+      "git_blob_at_baseline": "1757560922a4c1c38b7961df94afb0039bfde468",
+      "symbols": {
+        "notification_create": 21,
+        "notification_notify_management": 99,
+        "notification_fetch_for_user": 107,
+        "notification_unread_count": 133,
+        "notification_mark_read": 152,
+        "notification_mark_all_read": 177,
+        "notification_format_relative_time": 198,
+        "notification_review_status_label": 223,
+        "notification_review_status_badge_class": 235
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "receipt_attachment.php": {
+      "classification": "reference",
+      "purpose": "Direct sensitive evidence authorization remains mandatory",
+      "sha256_at_inspection": "a826d6536fce0e799f06a3d7926d79a4b1d374bcde601c7f054caf3092ee0a00",
+      "git_blob_at_baseline": "953d440bbcbefbcea63266dfc7bbc96b3097b702",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/js/payment_presentation.js": {
+      "classification": "reference",
+      "purpose": "U5 editable amount normalization and ordinary workflow compatibility",
+      "sha256_at_inspection": "a0894d99d51f96e43050987666b784bad97b15b5c41591c96f61d81a71d20c20",
+      "git_blob_at_baseline": "8ea7e1b1dc8f7c45ba043f3c9483c53f78191696",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "migrations/006_budgets.sql": {
+      "classification": "reference",
+      "purpose": "Historical category-name estimate/placeholder budgets; do not rerun or promote",
+      "sha256_at_inspection": "48b8f078341aba98006f68a9f72b0485f8f4284d1eb455728b924d9c73fe0673",
+      "git_blob_at_baseline": "088f390cc2a5317b19aff0665458a1af95d38347",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "migrations/017_trial_balance_snapshots.sql": {
+      "classification": "reference",
+      "purpose": "Existing immutable TB schema compatibility",
+      "sha256_at_inspection": "c1a179a5a8ee8b5554533328dbb9bc3e0d0fb5edfea40359ec99ce4b7b8ac21a",
+      "git_blob_at_baseline": "65179cf6c17aa1dba45a5b7960959a1c62edc92e",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "migrations/018_journal_receipt_evidence.sql": {
+      "classification": "reference",
+      "purpose": "Original evidence/extraction schema foundation",
+      "sha256_at_inspection": "243feee4996545a665efe6c9025240d1d5b1e216a302734948d60678dc051034",
+      "git_blob_at_baseline": "2eb7ccdb3a82a504163e6cbe16eaca7e4fb33a84",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "scripts/test_usability_u5_regressions.py": {
+      "classification": "reference",
+      "purpose": "Existing isolated test guard/prerequisite conventions",
+      "sha256_at_inspection": "aeceb5b48b28b7f9c14facf17c0ca9c00d4c45b290e0564aead7efb0b311ee71",
+      "git_blob_at_baseline": "25395a36fc960eb89904cd5dcf0056ec343b9b1a",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "scripts/test_usability_perf_reader.php": {
+      "classification": "reference",
+      "purpose": "Bounded complete-reader and snapshot assertions",
+      "sha256_at_inspection": "72d5cd307a6c488097059dd3b351c2c90f85217e923463c832ca75ec7f777dc3",
+      "git_blob_at_baseline": "2e3e5886975775168d12fa5e5b1f92bb3dcd92cf",
+      "symbols": {
+        "correction_posted_detail": 14,
+        "perf_baseline_detail": 14,
+        "pc": 22,
+        "rejected": 23,
+        "manifest": 24,
+        "prepare": 27
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "scripts/test_stage3_checkpoint5.php": {
+      "classification": "reference",
+      "purpose": "Integrated source/workflow regression reference",
+      "sha256_at_inspection": "e16e52fb3d87c91d26448750d1d423e3ddbc4f2a564dbea33e3eb1b986f7d992",
+      "git_blob_at_baseline": "7978f57e915a20d575c93af97151e696dc964759",
+      "symbols": {
+        "cp5manifest": 4,
+        "cp5worker": 31,
+        "cp5correct": 36
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "docs/phase-3-reporting.md": {
+      "classification": "reference",
+      "purpose": "Dated TB/report context; old book approximation superseded",
+      "sha256_at_inspection": "8972c6b5f970da10fb827af0d2bdfa2d10f9bf42fb26151a0c424fb5afdb3c3e",
+      "git_blob_at_baseline": "af68a5c205591739ad9a02b7b1c51d780c1991ae",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "docs/phase-4-ocr.md": {
+      "classification": "reference",
+      "purpose": "Dated OCR implementation evidence; older privacy description superseded",
+      "sha256_at_inspection": "1499208603ac8dbcf2c223ca52b861a960f45376c6275fd6e38ec1014f612700",
+      "git_blob_at_baseline": "5e8d4fe467b9716e92ef4b3b381eca145a0baaa9",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "docs/stage3-plan.md": {
+      "classification": "reference",
+      "purpose": "Retained global lock order, stage prerequisites and deferrals",
+      "sha256_at_inspection": "028efde10fa1b913e124a4c4838e3772f892a5f6a45c3d2055c6d1718d314925",
+      "git_blob_at_baseline": "84ff49bbb49048680ff1563b4eccbebe4a665c37",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/stage1_common.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Shared write-state barrier and installed-schema behavior",
+      "sha256_at_inspection": "4a4c383146ac32c6c4c5e38cd70c91719a56d574e528714c3f3b49d54430ccd9",
+      "git_blob_at_baseline": "146e0cc35824faba3c492df940cb5f9937ce5ab1",
+      "symbols": {
+        "stage1_schema": 4,
+        "stage1_enabled": 13,
+        "stage1_write_lock": 17,
+        "stage1_write_changed": 25,
+        "stage1_reserved_guard": 29,
+        "stage1_control_guard": 43
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/accounting_workspace.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Ordinary durable recovery, new-version designations and closed-period posting checks",
+      "sha256_at_inspection": "8caa99478c501ac90c8620322c2f3a61a7f85808d31fac47f87d20ff76647509",
+      "git_blob_at_baseline": "2d36ffe1fa08f2c5a9bb0af133155ae15a451a7c",
+      "symbols": {
+        "workspace_guard": 6,
+        "workspace_json": 16,
+        "workspace_noncorrection": 17,
+        "workspace_drafts": 22,
+        "workspace_tx": 49,
+        "workspace_audit": 59,
+        "workspace_draft": 65,
+        "workspace_revision": 76,
+        "workspace_payload": 83,
+        "workspace_document_ids": 124,
+        "workspace_draft_public": 125,
+        "workspace_save": 129,
+        "workspace_lists": 155,
+        "workspace_master_save": 164,
+        "workspace_control": 198,
+        "workspace_canonical": 216,
+        "workspace_canonical_documents": 234,
+        "workspace_resources": 256,
+        "workspace_prepare": 281,
+        "workspace_token": 314,
+        "workspace_review": 319,
+        "workspace_post": 333,
+        "workspace_write_post": 353,
+        "workspace_attach": 382,
+        "workspace_remove_or_discard": 398,
+        "workspace_upload": 418
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/cash_advance.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Advance post/recovery and due-date change closed-basis checks",
+      "sha256_at_inspection": "39e8f419bbfceec28e5ee04a64063e03dcd838e8e0a799ee0cd255abd3573b84",
+      "git_blob_at_baseline": "2171b1e153e610f1f77d6baf7a640cb49dd37f74",
+      "symbols": {
+        "advance_guard": 7,
+        "advance_draft": 16,
+        "advance_number": 20,
+        "advance_date": 21,
+        "advance_load": 27,
+        "advance_payload": 32,
+        "advance_save": 40,
+        "advance_canonical": 68,
+        "advance_state": 94,
+        "advance_reconciled": 98,
+        "advance_proof_context": 99,
+        "advance_confirm": 107,
+        "advance_prepare": 116,
+        "advance_review": 143,
+        "advance_post": 152,
+        "advance_write_operation": 166,
+        "advance_extend_due": 184,
+        "advance_summary": 192,
+        "advance_register": 197,
+        "advance_detail": 206,
+        "advance_draft_public": 216
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/correction_posting.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Atomic reversal/replacement and committed retry before period checks",
+      "sha256_at_inspection": "88852f374a0543bc8564a85760a11f4a1cf6b31c8ef3b04811a759adfbd26c91",
+      "git_blob_at_baseline": "22811d4fa5b3c91344648e8a3f379d0e2a6eec47",
+      "symbols": {
+        "correction_request": 5,
+        "correction_canonical_payload": 19,
+        "correction_result": 26,
+        "correction_insert_journal": 32,
+        "correction_post": 42
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/correction_drafts.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Saved correction compatibility and reporting designation provenance",
+      "sha256_at_inspection": "92df7f48adcd8b651f030f3cafdb7fa2f90aaabdc957910e57b01363365fee26",
+      "git_blob_at_baseline": "2e1ea170b489b7e7a2ce6023b532eb841069825a",
+      "symbols": {
+        "correction_guard": 6,
+        "correction_workflow_guard": 12,
+        "correction_entry_draft": 17,
+        "correction_entry_target": 21,
+        "correction_draft": 25,
+        "correction_target": 34,
+        "correction_eligible": 59,
+        "correction_book": 60,
+        "correction_payload": 66,
+        "correction_seed": 77,
+        "correction_documents": 89,
+        "correction_update": 90,
+        "correction_save": 96,
+        "correction_source": 115,
+        "correction_receipt": 120,
+        "correction_draft_download_allowed": 131,
+        "correction_public": 135,
+        "correction_document_blank": 148,
+        "correction_attach": 149,
+        "correction_remove_or_discard": 158,
+        "correction_release_stale_reservations": 167,
+        "correction_upload": 174,
+        "correction_resources": 188,
+        "correction_canonical": 206,
+        "correction_proof_context": 213,
+        "correction_confirm": 219,
+        "correction_dates": 224,
+        "correction_reversal": 228,
+        "correction_prepare_review": 233,
+        "correction_review": 243
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/accounting_entry_page.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "New explicit advanced GJ designation and evidence presentation",
+      "sha256_at_inspection": "47365018c421753993df7f195e3d4e9325373db316a79d2dedf826b6cb9b6a76",
+      "git_blob_at_baseline": "5145eeb2033c21e00c7b37e0c03cd015dddd836e",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/budget_query.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Keep old recorded budgets separate; approved actual basis",
+      "sha256_at_inspection": "9d8ab326ae0069c9382879c40b589d671c8a45f97cae62926fad5e8dbb8c7bcd",
+      "git_blob_at_baseline": "322914cc40440670ace58a14c2b9b3d131228a8f",
+      "symbols": {
+        "budget_fetch_month": 4,
+        "budget_total_for_month": 10,
+        "budget_mtd_spent_by_category": 14,
+        "budget_mtd_spent": 20,
+        "budget_utilization": 24,
+        "budget_overrun_categories": 35,
+        "budget_upcoming_totals": 39
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/dashboard_query.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Truthful cash/assets/advance/approved budget metrics",
+      "sha256_at_inspection": "a089e2020c36bfa845621098743e9499c443cf0d70d2eff4ad0a3d4ce92dfff4",
+      "git_blob_at_baseline": "4e5109714d7a93370a4de19300e5cc02dc47b6ee",
+      "symbols": {
+        "dashboard_kpi_series": 3
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/management_dashboard.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Management metric and pending-review rendering",
+      "sha256_at_inspection": "369349ce0000b8ddf25c151940401a0ac7d4e838bd76ed6bab7d9ecd554ae771",
+      "git_blob_at_baseline": "b1854319951ddb198edff50ef5fbef16886c9252",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "dashboard.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Role-specific approved budget and cash metric presentation",
+      "sha256_at_inspection": "f14b9db226dff39e57cb94722e81d5fbbcca7a53f3a1c92c55d13e5dc1c1a52e",
+      "git_blob_at_baseline": "450270364ed396c026a543d273df1e79bd06d3fd",
+      "symbols": {
+        "peso": 342,
+        "monthLabel": 345,
+        "show": 349,
+        "showNote": 353,
+        "breakdownMessage": 355,
+        "renderBreakdown": 360,
+        "renderChart": 376,
+        "renderMeta": 399,
+        "renderAdvisory": 403,
+        "render": 414,
+        "load": 434
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/forecast_query.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Recognized-expense classifications and cache version invalidation",
+      "sha256_at_inspection": "0899f501df8b23e6a43b189532afeef9113d7e911ac08a691cccbc68ac1f6790",
+      "git_blob_at_baseline": "83c604f08e4c01be497663059477ff06db63bfe8",
+      "symbols": {
+        "forecast_month_window": 10,
+        "forecast_projection_months": 11,
+        "forecast_fetch_history": 16,
+        "forecast_trend": 46,
+        "forecast_history_is_sufficient": 50,
+        "forecast_baseline_projection": 54,
+        "forecast_fingerprint": 58,
+        "forecast_history_for_ai": 66,
+        "forecast_validate_projection": 72,
+        "forecast_cache_load": 80
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "review_actions.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "New bundle and budget entity actions without changing retired legacy/Board contracts",
+      "sha256_at_inspection": "61ef39520bc0f03c7291b6e36ef8adb66daaa55a3d38a716fb349e26e7ccc480",
+      "git_blob_at_baseline": "71c3b9c0939e9b3ab5ca8457d2d0e99d64547714",
+      "symbols": {
+        "review_respond": 23
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "management_reviews.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Management bundle/budget review queue",
+      "sha256_at_inspection": "f613ca1cdb28cbdfb4c2f8a4a4c304b74d4215e1c474bd409ffcd6f13dd47d56",
+      "git_blob_at_baseline": "639df6b0aec8e6b31dd298713bb8301cc9f20881",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/review_ui.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Explicit distinct state/action presentations",
+      "sha256_at_inspection": "e79d5fbce549b506ed9a8d4ada67b412a11df8bf4a069f6cb0086861b854d3c6",
+      "git_blob_at_baseline": "72d45a0cbe9509cff6f77e0e2b750278e866bfcf",
+      "symbols": {
+        "review_render_status_badge": 8,
+        "review_can_send": 21
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/js/review_actions.js": {
+      "classification": "proposed_existing_change",
+      "purpose": "Durable new review actions and safe failure states",
+      "sha256_at_inspection": "c3d4a620352d3ddcacc23ed22be981ccaf9703ed8fa1b5bed100ec8cc7b7bf6b",
+      "git_blob_at_baseline": "bf08a34ab7635a543d032e8b272e20fd02cd6797",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/receipt_ocr.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Versioned itemized suggestions/review and conditional completion",
+      "sha256_at_inspection": "68ee49eb4f722c284dabd6ba1a933f8cbac7321f4e6f8d81176b9b2dba875c86",
+      "git_blob_at_baseline": "8cb1a9ddeba9104d448b9f1c89b13472f9e16a24",
+      "symbols": {
+        "receipt_schema_available": 11,
+        "receipt_require_schema": 19,
+        "receipt_enabled": 23,
+        "receipt_secret": 27,
+        "receipt_request_key": 34,
+        "receipt_request_valid": 39,
+        "receipt_request_guard": 45,
+        "receipt_actor_lock": 54,
+        "receipt_owned": 60,
+        "receipt_file_verify": 69,
+        "receipt_latest_attempt": 80,
+        "receipt_duplicate": 85,
+        "receipt_audit": 90,
+        "receipt_upload": 96,
+        "receipt_extract": 133,
+        "receipt_intake_signature": 190,
+        "receipt_review": 195,
+        "receipt_post_context": 205,
+        "receipt_lock_for_post": 223,
+        "receipt_link_post": 238,
+        "receipt_discard": 256,
+        "receipt_journal_evidence_internal": 274,
+        "receipt_posted_download_allowed": 308,
+        "receipt_journal_metadata": 324
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/gemini_receipt.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Bounded untrusted optional item normalizer",
+      "sha256_at_inspection": "4f49bba158ff87d3cdbaa7e88836ed414be455a140e3ad5a1eede1764466c0e7",
+      "git_blob_at_baseline": "e0340ebcb4c445d1f1c867e4ff4717b5a967aaf5",
+      "symbols": {
+        "gemini_receipt_system_prompt": 4,
+        "gemini_receipt_schema": 36,
+        "gemini_receipt_image": 48,
+        "gemini_receipt_failure_message": 59,
+        "gemini_extract_receipt": 73,
+        "normalize_receipt_data": 91
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "includes/receipts.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Protected evidence review provenance only where needed",
+      "sha256_at_inspection": "50b09c0f64c7e951d64ef879ae4e013cddd00cd4250b3d31f4a4e1698aa12402",
+      "git_blob_at_baseline": "0c21aa289812120cabc37b5d731d3f19b717b755",
+      "symbols": {
+        "receipt_upload_error_message": 26,
+        "store_uploaded_receipt": 52,
+        "load_owned_receipt": 189,
+        "receipt_absolute_path": 213,
+        "receipt_public_url": 218,
+        "load_transaction_receipt": 224,
+        "transaction_receipt_path": 235
+      },
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "ocr_expense.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Readable original image and manual item review",
+      "sha256_at_inspection": "54426ab64e05248e792de1ba4af84d396734f4d05474a62f7297f625e8dc27ae",
+      "git_blob_at_baseline": "6c9739fa9913774187a6a8d6f5a9e25e9c7018bc",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "ocr_extract.php": {
+      "classification": "proposed_existing_change",
+      "purpose": "Preserve GJ-only handoff and compatibility",
+      "sha256_at_inspection": "392c01402839f04354a153fc066ace793e485143a297f4746c400947d733eb3b",
+      "git_blob_at_baseline": "bbe9fa9ff55624e7be141864fd9ada8165cbaef7",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/js/ocr_expense.js": {
+      "classification": "proposed_existing_change",
+      "purpose": "Item review, manual fallback and uncertain-response recovery",
+      "sha256_at_inspection": "2d6401e5b966a0499e6e252ac1968ecdd028d71fac7aaa95b735d4fac5c09693",
+      "git_blob_at_baseline": "cf1350a9ccde51f750e9fdce973b690eea1bd33b",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/js/accounting_workspace.js": {
+      "classification": "proposed_existing_change",
+      "purpose": "Evidence/new-version fields and save/review recovery",
+      "sha256_at_inspection": "9cccbd07d08097a2c9bb5d11c291ef23219421d89c9bb5c2d7ed0486e4b3b229",
+      "git_blob_at_baseline": "1280b70696dcab71e268e0112f6d4319457f960f",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/css/accounting_workspace.css": {
+      "classification": "proposed_existing_change",
+      "purpose": "Scoped evidence layout if needed",
+      "sha256_at_inspection": "d42217d2b2995bb56d2c03747087ea818048ef6dc4babd490be4de63a7479528",
+      "git_blob_at_baseline": "9f58425d5435536aec5f9a57b6f4d3f1f67fcabd",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/css/reports.css": {
+      "classification": "proposed_existing_change",
+      "purpose": "Readable live/frozen report and print layouts",
+      "sha256_at_inspection": "374dffbb760181dfa4a48c2308d6cb94c87006158a46b066ca70406d6e9e0904",
+      "git_blob_at_baseline": "fbd577c3767eea4ab1e7c56e188b307ff2bd5c3d",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    },
+    "assets/css/ocr_expense.css": {
+      "classification": "proposed_existing_change",
+      "purpose": "Scoped side-by-side item review layout",
+      "sha256_at_inspection": "5ac0c37c6a015332fcb4ac2cbbde0cd46bf88ef93f79c15ecc9cc0e51bdcd7ee",
+      "git_blob_at_baseline": "cc5840e13a8d6fe538137138e92edf3ff11b5634",
+      "symbols": {},
+      "inspection_depth": "targeted source contracts and callers; related tests/migrations may be reference inventory only, not exhaustive audit"
+    }
+  },
+  "frozen_approved_package": {
+    "path": "docs/usability-u-perf-01-u5-review-package.zip",
+    "sha256": "8e66278fa16095fd9be07cafcde5cac7a5ae788c980cd4f2cdf7c603b9eece99"
+  },
+  "verification_limits": [
+    "Static source inspection, not deployed schema/query-plan verification.",
+    "No SQL, startup, migration, test fixture, browser, provider call or working login.",
+    "No application/test/config change, implementation, commit/push or live remote query.",
+    "Private memory was a locator only; contracts checked against current source and retained documents.",
+    "Historical acceptance evidence is dated; actual client configuration/rollout remains separate."
+  ],
+  "planning_package": "docs/stages4-7-plan-review-package.zip",
+  "planning_checks": "docs/stages4-7-planning-checks.json",
+  "review_supplement": {
+    "incorporated": "2026-10-23",
+    "source": "User-supplied ChatGPT review conveying reported client-visit observation and adoption clarifications",
+    "context_record": "docs/client-context.md",
+    "master_sections": [
+      4,
+      6,
+      7,
+      8,
+      10,
+      11,
+      13,
+      14,
+      17
+    ],
+    "principle": "Guided accounting forms; familiar financial review tables; validated editable grids only for legitimate drafts/configuration",
+    "internal_adoption_checks": {
+      "gates": [
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5"
+      ],
+      "questions_per_gate": 8,
+      "additional_external_pause": false
+    },
+    "actual_human_gate": "G7 retained",
+    "later_client_adoption": "Dedicated readiness/adoption pass after final source review and separately authorized safe working rollout/configuration",
+    "external_systems": "No cloning, integration, imported accounting policies, verified transfer formats or compatibility claims",
+    "year_default": "January-December initially; date/month-based arithmetic without historical rewrite",
+    "authorization": "Bounded documentation clarification; no broad planning cycle, full approval verdict or implementation command inferred"
+  }
+}
