@@ -1,0 +1,24 @@
+# Future source/document edits use LF. Do not renormalize the repository wholesale.
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.php text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.py text eol=lf
+*.sql text eol=lf
+*.html text eol=lf
+
+# Preserve exact baseline Git blob bytes of frozen memory archives.
+docs/history/*-legacy.md -text !eol
+
+# Binary artifacts: no text conversion or textual diff/merge.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.zip binary
+*.docx binary
+*.xlsx binary
+*.pptx binary

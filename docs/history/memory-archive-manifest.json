@@ -1,0 +1,43 @@
+{
+  "recorded_on": "2026-10-25",
+  "baseline_commit": "4d59ff176edde0b74324093aec0a5aa90786188a",
+  "hash_algorithm": "SHA-256 over archive bytes",
+  "archives": [
+    {
+      "original_path": "README.md",
+      "archive_path": "docs/history/readme-legacy.md",
+      "baseline_commit": "4d59ff176edde0b74324093aec0a5aa90786188a",
+      "git_blob_oid": "3031625f0c9291c397a613add29d3d8297c876e0",
+      "bytes": 55119,
+      "sha256": "7172b2d8cbd69438b06959362816304d68281eb09ccfe3567a902f673db0e02c",
+      "source": "git cat-file blob; not a working-tree copy"
+    },
+    {
+      "original_path": "docs/client-context.md",
+      "archive_path": "docs/history/client-context-legacy.md",
+      "baseline_commit": "4d59ff176edde0b74324093aec0a5aa90786188a",
+      "git_blob_oid": "b274ee8903d57547e69b1c223eeeb3cd17d8ceba",
+      "bytes": 20555,
+      "sha256": "640764b0e842f4e72f089bb3c04ea4767d63073d684db9df0d8baff906e66af3",
+      "source": "git cat-file blob; not a working-tree copy"
+    },
+    {
+      "original_path": "docs/project-decisions.md",
+      "archive_path": "docs/history/project-decisions-legacy.md",
+      "baseline_commit": "4d59ff176edde0b74324093aec0a5aa90786188a",
+      "git_blob_oid": "8d37f2d273407f6b2b0276f96e8f48083b4cb450",
+      "bytes": 55594,
+      "sha256": "c86f587a24991a1e36a57a7b1ee24560761230e3f124ec48edaa7f932d28a8da",
+      "source": "git cat-file blob; not a working-tree copy"
+    },
+    {
+      "original_path": "docs/project-status.md",
+      "archive_path": "docs/history/project-status-legacy.md",
+      "baseline_commit": "4d59ff176edde0b74324093aec0a5aa90786188a",
+      "git_blob_oid": "93d633e7a9afac764adf17fb84450737916f95d8",
+      "bytes": 177411,
+      "sha256": "dd8076abcf14102f2cac5444567d02c2a372648efdb408a6e88bc3a3434010b8",
+      "source": "git cat-file blob; not a working-tree copy"
+    }
+  ]
+}

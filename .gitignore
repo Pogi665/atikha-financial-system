@@ -16,3 +16,12 @@ uploads/receipts/*
 
 uploads/board/*
 !uploads/board/.gitignore
+
+# Generated Python caches. Existing tracked caches are not removed by these rules.
+__pycache__/
+*.pyc
+
+# Future disposable output; preserve the selected permanent visual evidence collection.
+/output/*
+!/output/system-visual-review/
+!/output/system-visual-review/**

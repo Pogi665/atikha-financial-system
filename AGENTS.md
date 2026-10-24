@@ -4,10 +4,15 @@ These instructions apply throughout this repository. Follow the user's current r
 
 ## Recover context before work
 
-- Read [README.md](README.md) and [project status](docs/project-status.md) at the start of a task and after context compaction if task state is unclear.
-- For requirements or accounting changes, read [client context](docs/client-context.md), [decisions](docs/project-decisions.md), and the relevant approved plan and latest delivery report linked from status.
-- Do not load every historical report for every small change. Follow the relevant links and inspect current source before relying on an old claim.
-- If documentation and current source/schema differ, identify the discrepancy. Never guess missing client facts, historical values, approval states, or test results.
+1. Read [PROJECT-BRIEF.md](PROJECT-BRIEF.md) for durable architecture and safeguards.
+2. Read [current state](docs/current-state.md) for the live baseline, scope and next action.
+3. Read relevant [decision records](docs/decisions/README.md).
+4. Read [client context](docs/client-context.md) only when client/accounting/adoption evidence is relevant.
+5. Follow task-specific plans/deliveries/history only as needed; do not load giant historical logs by default.
+
+- Use this order at task start and after compaction when state is unclear. README is an orientation page, not live status.
+- Verify current source before relying on dated evidence. If documentation and source/schema differ, identify the discrepancy; never guess client facts, historical values, approvals or test results.
+- Keep user product decisions, source-supported constraints, engineering defaults and confirmed client facts distinct.
 
 ## Scope and collaboration
 
@@ -38,8 +43,9 @@ These instructions apply throughout this repository. Follow the user's current r
 
 ## Maintain the handoff
 
-- After meaningful authorized work, update `docs/project-status.md` with scope, implementation/deployment distinction, verification boundaries, pending work, and the next action.
-- Update the relevant delivery report with concrete evidence. Update client context/decisions when the user corrects or selects a requirement; preserve source labels and superseded meaning.
-- Treat old delivery reports as dated evidence. Supersede obsolete status in the current status file rather than silently rewriting history.
-- Before ending a checkpoint or when compaction is approaching, record enough state to resume: changed components, completed checks, unresolved failures/approvals, and the next step. If an approval is pending, state it explicitly.
-- Existing private Codex memories are separate from repository documentation. Update those only when the user explicitly requests a memory update.
+- Rewrite [docs/current-state.md](docs/current-state.md) to contain only current truth when state changes. Do not prepend/append chronological 'Current' entries. Keep implementation, review, deployment and client acceptance distinct.
+- Put detailed implementation history, checks, failures, pending approvals and resumable checkpoint state in the relevant delivery/history record; summarize only the live next action in current-state.
+- Put durable behavior choices in small [decision records](docs/decisions/README.md), with source/date, Active or Superseded status and explicit supersession. Update the index. Put attributed client evidence and unresolved policy in client-context, not test progress or temporary authorization.
+- Treat old plans/deliveries as dated evidence. Do not rewrite frozen archives or packages to make later choices look earlier. [Archive provenance](docs/history/README.md) preserves baseline memory bytes.
+- Keep [README](README.md) and [PROJECT-BRIEF](PROJECT-BRIEF.md) concise and stable; project-status/project-decisions are compatibility pointers, not replacement logs. Follow the [artifact policy](docs/repository-artifact-policy.md); preserve deliberately tracked evidence.
+- Existing private Codex memories are separate from repository documentation. Update those only when the user explicitly requests a private-memory update.
