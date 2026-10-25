@@ -101,11 +101,37 @@ $csrfToken = csrf_token();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/atikha_ui.css?v=<?= filemtime(__DIR__.'/assets/css/atikha_ui.css') ?>">
-<link rel="stylesheet" href="assets/css/atikha_workspaces.css?v=<?= filemtime(__DIR__.'/assets/css/atikha_workspaces.css') ?>">
+    <style>
+        /* Page-local presentation; auth handlers and shared redesign assets stay unchanged. */
+        .auth-restored :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+        .auth-restored input:not([type=hidden]), .auth-restored button[type=submit] { min-height: 44px; }
+        .auth-restored #toggle-password { min-width: 44px; }
+        @media (prefers-reduced-motion: reduce) {
+            .auth-restored *, .auth-restored *::before, .auth-restored *::after {
+                animation: none !important; transition: none !important; scroll-behavior: auto !important;
+            }
+        }
+    </style>
 </head>
-<body class="atikha-ui ui-auth min-h-screen bg-slate-50 text-slate-900 antialiased">
+<body class="auth-restored min-h-screen bg-slate-50 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
+
+        <!-- Feature panel -->
+        <section
+            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-slate-900 bg-cover bg-center px-12 py-14 xl:px-16"
+            style="background-image: linear-gradient(to bottom right, rgba(15,23,42,0.92), rgba(6,78,59,0.82));"
+        >
+            <div class="max-w-md">
+                <h2 class="text-4xl font-bold leading-tight tracking-tight text-white text-balance">
+                    Securing the future of overseas Filipinos and their communities.
+                </h2>
+                <p class="mt-5 text-base leading-relaxed text-white/70 text-pretty">
+                    For your security, we sent a one-time verification code to your registered email before granting access.
+                </p>
+            </div>
+
+            <p class="text-xs text-white/50">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
+        </section>
 
         <!-- Form panel -->
         <main class="flex w-full flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:w-1/2 xl:w-2/5">
@@ -115,7 +141,7 @@ $csrfToken = csrf_token();
                     <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-slate-900 shadow-sm ring-1 ring-slate-900/5">
                         <img src="assets/img/atikha-logo.png" alt="Atikha organization logo" class="h-12 w-12 object-contain">
                     </div>
-                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Verify Your Identity</h1>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Verify your identity</h1>
                     <p class="mt-2 text-sm text-slate-500">
                         We sent a 6-digit code to
                         <span class="font-medium text-slate-700"><?= htmlspecialchars($maskedEmail, ENT_QUOTES, 'UTF-8') ?></span>.

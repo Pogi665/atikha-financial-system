@@ -14,6 +14,10 @@ Admin primary navigation: Dashboard, New Transaction, Transactions, Cash Advance
 
 One obvious Reports experience preserves exact legacy snapshot/JSON/print contracts. Progressive disclosure never conceals unresolved required fields without an attention indicator. Written rules and explicit U5/user decisions override incidental mockup text.
 
+### Authentication presentation exception - October 25, 2026
+
+The user approved restoring the earlier Login/MFA split layouts from db15b542 while retaining truthful current feature text and existing accessibility. This exception affects only those two presentation templates: dark left panels, right-side forms, Login gradient/fade animation and original responsive behavior. Do not revive forecasting/live-bank/unsupported provider claims or the missing MFA background-image request. Current authentication/reset/MFA PHP, scripts, routes, validation, CSRF, sessions and resend cooldown remain unchanged. Shared redesigned application surfaces stay intact. See the [bounded delivery](../auth-appearance-restore-delivery.md).
+
 ## Reason
 
 Observed user confusion and information density prompted a coherent presentation. External-software familiarity supports familiar tables, not cloning an external system.
