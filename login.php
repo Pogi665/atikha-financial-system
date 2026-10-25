@@ -25,6 +25,8 @@ $csrfToken = csrf_token();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link href="assets/css/auth-carousel.css?v=1" rel="stylesheet">
+    <script src="assets/js/auth-carousel.js?v=1" defer></script>
     <style>
         /* Page-local presentation; auth handlers and shared redesign assets stay unchanged. */
         .auth-restored :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
@@ -40,41 +42,38 @@ $csrfToken = csrf_token();
 <body class="auth-restored min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
 
-        <!-- Feature panel -->
-        <section
-    class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 bg-[size:200%_200%] animate-gradient-shift motion-reduce:animate-none px-12 py-14 xl:px-16"
->
-            <div class="max-w-md">
-                <h2 class="text-4xl font-bold leading-tight tracking-tight text-white text-balance">
-                    Securing the future of overseas Filipinos and their communities.
-                </h2>
-                <p class="mt-5 text-base leading-relaxed text-white/70 text-pretty">
-                    Record financial activity, review receipt details, and prepare clear reports. A secure workspace supporting Atikha's work with overseas Filipinos and their communities.
-                </p>
-
-                <ul class="mt-10 space-y-4 text-sm text-white/80">
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        OCR-assisted receipt reading with human review
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        Guided receipts, payments, journals and cash advances
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40">
-                            <svg class="h-3.5 w-3.5 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.1 3.1 6.8-6.8a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
-                        </span>
-                        Tamper-evident audit trails and financial reporting
-                    </li>
-                </ul>
+        <!-- Feature panel: local decorative photos; form logic stays independent. -->
+        <section data-auth-carousel data-photo-index="0"
+            class="auth-media relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden px-12 py-14 xl:px-16">
+            <div class="auth-media__photos" aria-hidden="true">
+                <picture>
+                    <source media="(min-width: 1024px)" srcset="assets/img/auth/optimized/discuss.webp">
+                    <img data-auth-photo class="auth-media__photo is-current" alt="" width="1600" height="994" decoding="async" fetchpriority="high">
+                </picture>
+                <img data-auth-photo class="auth-media__photo" alt="" width="1600" height="994" decoding="async">
             </div>
-
-            <p class="text-xs text-white/50">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
+            <div class="auth-media__copy">
+                <div class="auth-media__state" data-auth-state="login">
+                    <p class="auth-media__eyebrow">ATIKHA FINANCIAL MANAGEMENT SYSTEM</p>
+                    <h2 class="auth-media__headline">Empowering Communities, Supporting Change</h2>
+                    <p class="auth-media__description">Atikha works alongside migrants, families, and communities through programs in migration, reintegration, livelihood, learning, and local development. This system supports that work through organized, secure, and accountable financial records.</p>
+                </div>
+                <div class="auth-media__state" data-auth-state="recovery" hidden>
+                    <p class="auth-media__eyebrow">ACCOUNT RECOVERY</p>
+                    <h2 class="auth-media__headline">Secure Access, Continued Accountability</h2>
+                    <p class="auth-media__description">Password reset requests are handled through the system so authorized users can regain access while account security and administrative oversight are maintained.</p>
+                </div>
+            </div>
+            <div class="auth-media__bottom">
+                <div class="auth-media__caption" aria-live="off">
+                    <strong data-photo-title>Collaborative Learning</strong>
+                    <span data-photo-description>Strengthening knowledge through discussion, reflection, and shared experience.</span>
+                </div>
+                <div class="auth-media__footer">
+                    <p class="auth-media__legal">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
+                    <button data-photo-pause class="auth-media__pause" type="button" aria-pressed="false" hidden>Pause photos</button>
+                </div>
+            </div>
         </section>
 
         <!-- Form panel -->

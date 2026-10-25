@@ -18,6 +18,10 @@ One obvious Reports experience preserves exact legacy snapshot/JSON/print contra
 
 The user approved restoring the earlier Login/MFA split layouts from db15b542 while retaining truthful current feature text and existing accessibility. This exception affects only those two presentation templates: dark left panels, right-side forms, Login gradient/fade animation and original responsive behavior. Do not revive forecasting/live-bank/unsupported provider claims or the missing MFA background-image request. Current authentication/reset/MFA PHP, scripts, routes, validation, CSRF, sessions and resend cooldown remain unchanged. Shared redesigned application surfaces stay intact. See the [bounded delivery](../auth-appearance-restore-delivery.md).
 
+### Authentication community photos - October 25, 2026
+
+The user approved a bounded photo-carousel refinement on the restored Login/MFA split layout, including Login's existing recovery state. This supersedes only the plain/animated left-panel background and former feature copy, not the restored form layout. Use supplied local community imagery without renaming/overwriting originals, a dark emerald/slate overlay, fixed state-specific copy and small photo-associated captions. Crossfade photos calmly; never rotate the main message. Keep the existing below-1024px hiding/reflow. Load one photograph and one ahead rather than all originals at startup; reduced motion shows one stable photo. A quiet keyboard-operable Pause photos control stops automatic changes; captions are not live announcements. Current authentication PHP, existing functional scripts and right-side form panels remain unchanged. No inferred event/person/policy facts or obsolete forecasting/bank-feed claims. See [delivery and asset mapping](../auth-photo-carousel-delivery.md).
+
 ## Reason
 
 Observed user confusion and information density prompted a coherent presentation. External-software familiarity supports familiar tables, not cloning an external system.

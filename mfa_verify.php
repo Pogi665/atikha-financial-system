@@ -101,6 +101,8 @@ $csrfToken = csrf_token();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Login — Atikha Financial System</title>
     <link href="assets/css/tailwind.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link href="assets/css/auth-carousel.css?v=1" rel="stylesheet">
+    <script src="assets/js/auth-carousel.js?v=1" defer></script>
     <style>
         /* Page-local presentation; auth handlers and shared redesign assets stay unchanged. */
         .auth-restored :focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
@@ -116,21 +118,33 @@ $csrfToken = csrf_token();
 <body class="auth-restored min-h-screen bg-slate-50 text-slate-900 antialiased">
     <div class="min-h-screen flex flex-col lg:flex-row">
 
-        <!-- Feature panel -->
-        <section
-            class="relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden bg-slate-900 bg-cover bg-center px-12 py-14 xl:px-16"
-            style="background-image: linear-gradient(to bottom right, rgba(15,23,42,0.92), rgba(6,78,59,0.82));"
-        >
-            <div class="max-w-md">
-                <h2 class="text-4xl font-bold leading-tight tracking-tight text-white text-balance">
-                    Securing the future of overseas Filipinos and their communities.
-                </h2>
-                <p class="mt-5 text-base leading-relaxed text-white/70 text-pretty">
-                    For your security, we sent a one-time verification code to your registered email before granting access.
-                </p>
+        <!-- Feature panel: local decorative photos; form logic stays independent. -->
+        <section data-auth-carousel data-photo-index="0"
+            class="auth-media relative hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between overflow-hidden px-12 py-14 xl:px-16">
+            <div class="auth-media__photos" aria-hidden="true">
+                <picture>
+                    <source media="(min-width: 1024px)" srcset="assets/img/auth/optimized/discuss.webp">
+                    <img data-auth-photo class="auth-media__photo is-current" alt="" width="1600" height="994" decoding="async" fetchpriority="high">
+                </picture>
+                <img data-auth-photo class="auth-media__photo" alt="" width="1600" height="994" decoding="async">
             </div>
-
-            <p class="text-xs text-white/50">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
+            <div class="auth-media__copy">
+                <div class="auth-media__state">
+                    <p class="auth-media__eyebrow">SECURE ACCESS</p>
+                    <h2 class="auth-media__headline">Protecting the Work Behind Every Program</h2>
+                    <p class="auth-media__description">A verification code helps ensure that only authorized users can access Atikha’s financial records and reporting tools.</p>
+                </div>
+            </div>
+            <div class="auth-media__bottom">
+                <div class="auth-media__caption" aria-live="off">
+                    <strong data-photo-title>Collaborative Learning</strong>
+                    <span data-photo-description>Strengthening knowledge through discussion, reflection, and shared experience.</span>
+                </div>
+                <div class="auth-media__footer">
+                    <p class="auth-media__legal">&copy; <?= date('Y') ?> Atikha. Authorized personnel only.</p>
+                    <button data-photo-pause class="auth-media__pause" type="button" aria-pressed="false" hidden>Pause photos</button>
+                </div>
+            </div>
         </section>
 
         <!-- Form panel -->
