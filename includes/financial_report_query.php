@@ -104,6 +104,7 @@ function statement_cash_flows(array $journals,array $accounts,array $configurati
 function financial_report_model(PDO $pdo,int $uid,string $month,?string $cutoff=null): array
 {
     [$from,$to]=reporting_month_range($month);
+    if($cutoff===null)$cutoff=reporting_live_cutoff($month);
     if($cutoff!==null){try{$cutoff=accounting_date($cutoff);}catch(Throwable $e){throw new ReportingProblem('Choose a valid report cutoff.',400);}if($cutoff<$from||$cutoff>$to)throw new ReportingProblem('Keep the cutoff within the selected report month.',400);$to=$cutoff;}
     return accounting_read($pdo,function()use($pdo,$uid,$month,$from,$to){
         reporting_actor($pdo,$uid);report_configuration_require($pdo);$config=report_configuration_current($pdo,$from);$issues=[];$accounts=[];$state=[];$sourceValid=true;

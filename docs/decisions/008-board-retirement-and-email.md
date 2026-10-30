@@ -10,6 +10,8 @@ Board routes are authorized archive-only GET readers. Reject new Board writes be
 
 Use the existing outgoing Email backend: New Email/Sent first, secondary Delivery Issues when needed. Sending, Failed and Unknown/Delivery Unconfirmed remain distinct. Uncertain sends require checking delivery state, not blind resend. No incoming mailbox/IMAP/synchronization.
 
+The October 29 presentation removes archive discovery from normal Email and fits desktop conversation/detail panes to the viewport. Existing authorized historical routes and notification deep links remain preserved; this does not reactivate Board messaging or change delivery recovery.
+
 Review Queue retains actual authorized budget/report decisions and exact-item Open, not Board messages. Email does not approve financial records. Close/Reopen remains a separate authorized system workflow.
 
 ## Reason

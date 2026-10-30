@@ -1,0 +1,32 @@
+<?php
+if(PHP_SAPI!=='cli')exit;
+define('ATIKHA_ISOLATED_TEST',true);
+if(PHP_SAPI!=='cli')exit;
+require_once dirname(__DIR__).'/includes/planning_methods.php';
+require_once dirname(__DIR__).'/includes/accounting_query.php';
+require_once dirname(__DIR__).'/includes/audit_alerts.php';
+$checks=0;function verify($ok,string $label):void{global $checks;if(!$ok)throw new RuntimeException($label);$checks++;}
+verify(planning_round(5,2)===3&&planning_round(-5,2)===-3,'Symmetric exact-centavo rounding');
+foreach([[],[10],[10,20]] as $history)verify(planning_estimate($history)['state']==='insufficient','Insufficient history is not zero');
+verify(planning_estimate([0,0,0])['amount']===0,'Observed zero history remains a real zero');
+verify(planning_estimate([100,200,300])['amount']===200,'Three-month initial baseline');
+verify(planning_estimate([-100,-100,-100])['state']==='credit_dominated','Signed credits not clamped');
+verify(planning_predict([100,200,300],'weighted3')===233,'Weighted rational arithmetic');
+verify(planning_predict([100,200,300,400,500,600],'trend6')===700,'Six-month extrapolation');
+verify(planning_predict(array_fill(0,6,1000000000000000000),'trend6')===1000000000000000000,'Large exact forecast avoids overflowing intermediate numerator');
+verify(planning_predict([0,0,1],'weighted3')===1&&planning_predict([0,0,-1],'weighted3')===-1,'Signed half-cent weighted forecasts round away from zero');
+$series=array_map('accounting_cents',['218450.00','232300.00','225150.00','241800.00','249600.00','257350.00','264900.00','271450.00','279800.00','289650.00','298400.00','307250.00']);
+foreach(['last'=>'307250.00','mean3'=>'298433.33','weighted3'=>'301366.67','trend6'=>'315486.67'] as $method=>$expected)verify(accounting_decimal(planning_predict($series,$method))===$expected,'V2 independent benchmark '.$method);
+$estimate=planning_estimate($series);verify($estimate['folds']===6&&$estimate['mae']!==null,'Earlier-only common rolling origins');verify($estimate===planning_estimate($series),'Stable selected method and error');
+$constant=planning_estimate(array_fill(0,12,12300));verify($constant['method']==='last'&&$constant['mae']===0,'Stable conservative tie');
+$thrown=false;try{planning_estimate([100,1.1,200]);}catch(InvalidArgumentException $e){$thrown=true;}verify($thrown,'Reject inexact floating inputs');
+$logs=[];for($i=0;$i<8;$i++)$logs[]=['id'=>$i+1,'user_id'=>7,'FullName'=>'Finance Coordinator','created_at'=>sprintf('2026-10-29 10:00:%02d',$i),'action_type'=>'EDIT','module'=>'Budget Draft','ip_address'=>'127.0.0.1'];
+verify(count(audit_pattern_alerts(array_slice($logs,0,7)))===0,'Below edit threshold');$alerts=audit_pattern_alerts($logs);verify(count($alerts)===1&&count($alerts[0]['log_ids'])===8,'Distinct supported edit evidence');
+$spread=$logs;foreach($spread as $i=>&$row)$row['created_at']=sprintf('2026-10-29 10:%02d:00',$i);unset($row);verify(audit_pattern_alerts($spread)===[],'Window boundary excludes older activity');
+$other=$logs;foreach($other as &$row)$row['module']='High-value normal payment notification';unset($row);verify(audit_pattern_alerts($other)===[],'Operational notices not anomalies');
+$logins=[];foreach(['192.0.2.10','192.0.2.10','192.0.2.10','192.0.2.20'] as $i=>$ip)$logins[]=['id'=>$i+1,'user_id'=>7,'FullName'=>'Finance Coordinator','created_at'=>sprintf('2026-10-29 10:%02d:00',$i),'action_type'=>'LOGIN','module'=>'Authentication','ip_address'=>$ip];
+verify(count(audit_pattern_alerts($logins))===1,'Supported new successful address after prior history');verify(audit_pattern_alerts(array_slice($logins,2))===[],'No fabricated login baseline');$logins[3]['ip_address']='192.0.2.10';verify(audit_pattern_alerts($logins)===[],'Known address not flagged');
+$paired=array_slice($logs,0,6);$paired[]=['id'=>70,'user_id'=>7,'FullName'=>'Finance Coordinator','created_at'=>'2026-10-29 10:00:07','action_type'=>'CREATE','module'=>'Journal Correction','record_id'=>15,'new_values'=>'{}','ip_address'=>'127.0.0.1'];$paired[]=['id'=>71,'user_id'=>7,'FullName'=>'Finance Coordinator','created_at'=>'2026-10-29 10:00:07','action_type'=>'EDIT','module'=>'Correction Draft','record_id'=>25,'new_values'=>'{"state":"Posted","correction_id":15}','ip_address'=>'127.0.0.1'];verify(audit_pattern_alerts($paired)===[],'Correction and posted draft count as one business event');
+$warnings=[];verify(audit_pattern_alerts([['id'=>1,'created_at'=>'invalid']],AUDIT_ADVISORY_POLICY,$warnings)===[]&&count($warnings)===1,'Malformed source gives coverage warning, not an invented alert');
+verify(AUDIT_ADVISORY_POLICY['monetary_change_cents']===null&&AUDIT_ADVISORY_POLICY['operating_window']===null,'Unconfirmed policies disabled');
+echo json_encode(['passed'=>$checks,'v2_candidates'=>'four exact benchmark matches','selected'=>$estimate['method'],'mae'=>accounting_decimal($estimate['mae'])],JSON_PRETTY_PRINT).PHP_EOL;

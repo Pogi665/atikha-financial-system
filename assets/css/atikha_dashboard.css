@@ -189,3 +189,34 @@
     flex-wrap:wrap
   }
 }
+
+/* Compact attention rows and task tiles; accounting projections are unchanged. */
+.ui-dashboard-start {box-shadow:0 2px 4px #164b3b14;padding:12px 18px;border-radius:8px}
+.ui-dashboard-start .ui-icon {width:18px;height:18px}
+.atikha-ui main>.ui-dashboard-basis {margin-top:10px;margin-bottom:20px;max-width:1560px}
+.atikha-ui .ui-dashboard-basis>summary {font-size:13px;padding:4px 0;font-weight:500;color:var(--ui-muted)}
+.ui-dashboard-basis p {font-size:14px;color:var(--ui-muted);max-width:850px;margin:8px 0 0}
+.ui-attention h2,.ui-quick-section h2 {margin:0 0 12px}
+.ui-attention-row {border:1px solid var(--ui-border);border-radius:8px;padding:14px 16px;background:white;gap:14px;margin-top:10px}
+.ui-attention-row .ui-attention-icon {display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:8px;background:#edf3ed;color:var(--ui-brand)}
+.ui-attention-row .ui-attention-copy {min-width:0;flex:1}
+.ui-attention-overdue {background:#fffaf2;border-left:3px solid #b7791f}
+.ui-attention-overdue .ui-attention-icon {background:#fbecd0;color:#8a5511}
+.ui-attention-review {border-left:3px solid #779a86}
+.ui-attention-row strong {font-size:15px;line-height:22px}
+.ui-attention-row .ui-button {flex:none;font-size:13px;min-height:40px;padding:8px 12px}
+.ui-attention-row .ui-badge {font-size:12px;padding:3px 7px}
+.ui-quick-section {max-width:1560px}
+.ui-quick-actions {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ui-quick-task {display:flex;align-items:center;gap:12px;min-height:102px;padding:16px;border:1px solid var(--ui-border);border-radius:8px;background:white;text-decoration:none;transition:background .15s,border-color .15s}
+.ui-quick-task>span:nth-child(2) {min-width:0;flex:1}
+.ui-quick-task strong {display:block;font-size:14px;line-height:20px}
+.ui-quick-task small {display:block;margin-top:4px;font-size:13px;color:var(--ui-muted)}
+.ui-quick-task>.ui-icon {width:16px;height:16px}
+.ui-quick-task .ui-task-icon {width:36px;height:36px;border-radius:8px}
+.ui-quick-task-primary {background:#f0f6f1;border-color:#b1cbbb}
+.ui-quick-task:hover {background:#e9f2eb;border-color:#789e86}
+@media(max-width:1300px) {.ui-quick-actions {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px) {.ui-attention-row {flex-wrap:wrap}.ui-attention-row .ui-attention-copy {flex-basis:calc(100% - 56px)}.ui-attention-row .ui-badge {margin-left:52px}.ui-attention-row .ui-button {margin-left:auto}}
+@media(max-width:480px) {.ui-quick-actions {grid-template-columns:1fr}.ui-quick-task {min-height:86px}.ui-attention-row {padding:12px}.ui-attention-row .ui-button {width:auto}}
+@media(prefers-reduced-motion:reduce) {.ui-quick-task {transition:none}}

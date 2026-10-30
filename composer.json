@@ -3,7 +3,9 @@
     "description": "Atikha Financial Management System",
     "require": {
         "php": ">=8.0",
-        "phpmailer/phpmailer": "^6.9"
+        "dompdf/dompdf": "3.1.6",
+        "phpmailer/phpmailer": "^6.9",
+        "shuchkin/simplexlsxgen": "1.5.17"
     },
     "config": {
         "sort-packages": true

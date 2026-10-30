@@ -2,6 +2,7 @@
 require_once __DIR__ . '/user_roles.php';
 require_once __DIR__ . '/user_identities.php';
 require_once __DIR__ . '/logger.php';
+require_once __DIR__ . '/primary_administrator.php';
 
 function users_text(array $input, string $key): string
 {
@@ -52,6 +53,7 @@ function users_save(PDO $pdo, int $actorId, string $action, array $input): int
     }
     $pdo->beginTransaction();
     try {
+        $primaryId = primary_administrator_lock($pdo);
         $ids = array_unique(array_filter([$actorId, $id]));
         sort($ids, SORT_NUMERIC);
         $locked = [];
@@ -60,6 +62,7 @@ function users_save(PDO $pdo, int $actorId, string $action, array $input): int
         if (!$actor || !$actor['Is_Active'] || $actor['Role'] !== 'Admin') { throw new InvalidArgumentException('An active administrator account is required.'); }
         $before = $id ? ($locked[$id] ?? null) : null;
         if ($id && !$before) { throw new InvalidArgumentException('That user could not be found.'); }
+        primary_administrator_guard($primaryId, $actorId, $id, $action, $role ?? null);
         if ($id === $actorId && ($action === 'disable_user' || ($action === 'update_user' && $role !== 'Admin'))) {
             throw new InvalidArgumentException('You cannot disable your own account or remove your administrator role.');
         }

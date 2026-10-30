@@ -8,6 +8,11 @@ require_login();
 if($_SERVER['REQUEST_METHOD']!=='GET'){header('Allow: GET');http_response_code(405);exit('This page is read-only.');}
 $flags=layout_role_flags();$escape=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
 $mainView=!isset($_GET['view'])||!is_string($_GET['view'])||!in_array($_GET['view'],['crb','cdb'],true);
+// The normal finder/books are transaction-oriented. Preserve the existing line JSON
+// contract and an explicit accounting-detail view for compatibility.
+if(($_GET['format']??'')!=='json'&&($_GET['presentation']??'')!=='lines'){
+    require __DIR__.'/includes/transaction_records_page.php';exit;
+}
 $today=accounting_today();
 $filters=accounting_records_filters([]);$data=['rows'=>[],'journals'=>[]];$accounts=[];$filterError='';$ledgerError=false;
 if($mainView){

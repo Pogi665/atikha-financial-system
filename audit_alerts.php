@@ -1,0 +1,3 @@
+<?php
+session_start();require_once __DIR__.'/db_connect.php';require_once __DIR__.'/includes/audit_alerts.php';header('Content-Type: application/json; charset=utf-8');header('Cache-Control: private, no-store');
+try{if($_SERVER['REQUEST_METHOD']!=='GET')throw new ReportingProblem('Audit Alerts are read-only.',405);$result=audit_alert_model($pdo,(int)($_SESSION['UserID']??0));echo json_encode(['ok'=>true,'data'=>$result],JSON_THROW_ON_ERROR);}catch(Throwable $e){$known=$e instanceof ReportingProblem;http_response_code($known?$e->status:503);if(!$known)error_log('Audit alerts read: '.$e->getMessage());echo json_encode(['ok'=>false,'error'=>$known?$e->getMessage():'Audit Alerts could not be checked. No audit records changed.']);}

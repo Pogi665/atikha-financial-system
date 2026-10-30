@@ -35,7 +35,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
     <a href="#ca-reconciliation-details" id="ca-health-link" hidden>View full reconciliation</a>
 </section>
 <?php if($detail): ?>
-<p class="ca-date-basis"><strong><?= $historical?'Historical view':'Current view' ?> · As of <?= $esc($asof) ?></strong><br>Historical views include currently recorded postings through this accounting date; they are not frozen reports.</p>
+<p class="ca-date-basis"><strong><?= $historical?'Historical view':'Current view' ?> · As of <?= $esc(ui_date($asof)) ?></strong><br>Historical views include currently recorded postings through this accounting date; they are not frozen reports.</p>
 <form method="get" class="ca-date-form aw-no-print">
     <input type="hidden" name="advance_id" value="<?= $id ?>">
     <label>As of<input type="date" name="as_of" value="<?= $esc($asof) ?>" max="<?= journal_today() ?>" min="1000-01-01" required></label><button>Apply date</button>
@@ -43,7 +43,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 </form>
 <section class="aw-card ca-advance-summary" aria-labelledby="ca-employee">
     <h2 id="ca-employee"><?= $esc($detail['employee']) ?></h2><p class="ca-purpose"><?= $esc($detail['purpose']) ?></p>
-    <p class="ca-settlement-status">Settlement status: <strong><?= $esc(ucfirst(str_replace('_',' ',$detail['status']))) ?></strong></p>
+    <p class="ca-settlement-status">Settlement status: <strong><?= $esc($detail['status']==='partially_settled'?'Partial':ucfirst(str_replace('_',' ',$detail['status']))) ?></strong></p>
     <?php if($detail['can_settle']): ?><nav class="ca-next-actions aw-no-print" aria-label="Settle this advance"><a href="cash_advance_entry.php?workflow_kind=advance_liquidation&amp;advance_id=<?= $id ?>" class="ca-primary-link">Record liquidation</a><a href="cash_advance_entry.php?workflow_kind=advance_return&amp;advance_id=<?= $id ?>" class="ca-primary-link">Return unused cash</a></nav><?php endif; ?>
     <dl class="ca-context">
         <div><dt>Originating project</dt><dd><?= $esc($detail['project']) ?></dd></div>
@@ -51,9 +51,9 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
         <div><dt>Reference</dt><dd><?= $esc($detail['reference']?:'Not provided') ?></dd></div>
     </dl>
     <div class="aw-totals ca-balance-cards"><?php foreach(['released','liquidated','returned','outstanding'] as $k): ?><span<?= $k==='outstanding'?' class="ca-outstanding"':'' ?>><?= ucfirst($k) ?><strong><?= $esc($money($detail[$k])) ?></strong></span><?php endforeach; ?></div>
-    <div class="ca-status-line"><span>Due <?= $esc($detail['due_date']) ?></span><span><?= $detail['overdue_days']>0?$detail['overdue_days'].' days overdue · '.$esc($detail['aging_bucket']):'Not overdue at this date' ?></span></div>
+    <div class="ca-status-line"><span>Due <?= $esc(ui_date($detail['due_date'])) ?></span><span><?= $detail['overdue_days']>0?$detail['overdue_days'].' days overdue · '.$esc($detail['aging_bucket']):'Not overdue at this date' ?></span></div>
     <p class="aw-help">Original released amount: <?= $esc($money($detail['original_released'])) ?>. Balances are effective amounts through the selected date; General Journal reversals provide correction offsets.</p>
-    <?php if($detail['lifecycle_date']): ?><p><?= $esc(ucfirst($detail['status'])) ?> from <?= $esc($detail['lifecycle_date']) ?>. <a href="journal_corrections.php?journal_id=<?= (int)$detail['operations'][0]['journal_id'] ?>">View posted correction</a></p><?php endif; ?>
+    <?php if($detail['lifecycle_date']): ?><p><?= $esc(ucfirst($detail['status'])) ?> from <?= $esc(ui_date($detail['lifecycle_date'])) ?>. <a href="journal_corrections.php?journal_id=<?= (int)$detail['operations'][0]['journal_id'] ?>">View posted correction</a></p><?php endif; ?>
     <?php foreach(['original_advance_id'=>'View original advance','replacement_advance_id'=>'View replacement advance'] as $field=>$label): if($detail[$field]): ?><p><a href="cash_advances.php?advance_id=<?= (int)$detail[$field] ?>&amp;as_of=<?= $esc($asof) ?>"><?= $label ?></a></p><?php endif; endforeach; ?>
     <?php if($detail['can_settle']): ?><p class="aw-help aw-no-print">These actions remain subject to the server's current balance, evidence, lifecycle and reconciliation checks.</p>
     <?php elseif($historical&&$role==='Admin'): ?><p class="aw-no-print">This historical view does not start settlements. Open today's advance to see its current eligible actions.</p><?php endif; ?>
@@ -62,9 +62,9 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
     <h2 id="ca-timeline-title">Posted operation timeline</h2>
     <ol class="ca-timeline"><?php foreach($detail['operations'] as $op): ?>
         <li class="ca-operation">
-            <h3><?= $esc(ucfirst($op['kind'])) ?> · <?= $esc($op['date']) ?></h3>
+            <h3><?= $esc(ucfirst($op['kind'])) ?> · <?= $esc(ui_date($op['date'])) ?></h3>
             <p><strong><?= $op['is_reversal']?'Reversed original amount':($op['kind']==='release'?'Original release':'Original reduction') ?>: <?= $esc($money($op['amount'])) ?></strong> · <?= $esc($op['coverage']['status']) ?></p>
-            <p class="ca-operation-meta">Recorded <?= $esc($op['recorded_at_display']) ?> (Asia/Manila) · Reference: <?= $esc($op['reference']?:'Not provided') ?></p>
+            <p class="ca-operation-meta">Recorded <?= $esc(ui_datetime(preg_replace('/ \(Asia\/Manila\)$/','',$op['recorded_at_display']),'local')) ?> · Reference: <?= $esc($op['reference']?:'Not provided') ?></p>
             <p><a href="journal_transaction.php?journal_id=<?= (int)$op['journal_id'] ?>">View recorded transaction #<?= (int)$op['journal_id'] ?></a></p>
             <details class="ca-journal" data-ca-print><summary>Complete debit and credit journal</summary>
                 <div class="aw-table-wrap"><table class="aw-table"><thead><tr><th scope="col">Account</th><th scope="col">Actual project</th><th scope="col">Debit (PHP)</th><th scope="col">Credit (PHP)</th></tr></thead><tbody>
@@ -78,9 +78,9 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
     <?php endforeach; ?></ol>
 </section>
 <details class="aw-card ca-secondary" data-ca-print><summary>Accounting Details and Deadline History</summary>
-    <p>Initial deadline: <?= $esc($detail['initial_due_date']) ?></p>
+    <p>Initial deadline: <?= $esc(ui_date($detail['initial_due_date'])) ?></p>
     <?php if(!$detail['due_changes']): ?><p>No deadline extensions recorded through the selected date.</p><?php endif; ?>
-    <?php foreach($detail['due_changes'] as $change): ?><p><?= $esc($change['effective_date']) ?>: <?= $esc($change['old_due_date']) ?> → <?= $esc($change['new_due_date']) ?> · <?= $esc($change['reason']) ?></p><?php endforeach; ?>
+    <?php foreach($detail['due_changes'] as $change): ?><p><?= $esc(ui_date($change['effective_date'])) ?>: <?= $esc(ui_date($change['old_due_date'])) ?> → <?= $esc(ui_date($change['new_due_date'])) ?> · <?= $esc($change['reason']) ?></p><?php endforeach; ?>
 </details>
 <?php if($detail['can_settle']): ?>
 <details class="aw-card ca-secondary aw-no-print" id="ca-extension-panel"><summary>Extend liquidation deadline</summary>
@@ -101,7 +101,7 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
     <label class="ca-search">Search number, employee, purpose or reference<input name="search" maxlength="200" type="search"></label>
 </div><div class="aw-actions"><span id="ca-filter-status" role="status"></span><button class="aw-primary">Apply filters</button></div></form>
 <section class="aw-card"><h2>Advances</h2>
-    <div class="aw-table-wrap"><table class="aw-table ca-register-table"><thead><tr><th scope="col">Employee / Advance</th><th scope="col">Purpose</th><th scope="col">Project</th><th scope="col">Released</th><th scope="col">Liquidated</th><th scope="col">Returned</th><th scope="col">Outstanding</th><th scope="col">Due Date</th><th scope="col">Status</th></tr></thead><tbody id="ca-rows"></tbody></table></div>
+    <div class="aw-table-wrap"><table class="aw-table ca-register-table"><thead><tr><th scope="col">Employee / Advance</th><th scope="col">Purpose / Project</th><th scope="col">Outstanding</th><th scope="col">Due Date</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody id="ca-rows"></tbody></table></div>
     <div class="aw-actions aw-no-print"><button type="button" id="ca-prev">Previous</button><span id="ca-page"></span><button type="button" id="ca-next">Next</button></div>
 </section>
 <?php endif; ?>
@@ -113,4 +113,4 @@ layout_begin('Cash advances','cash_advances',[],'<link rel="stylesheet" href="as
 <noscript><p>JavaScript is required to load register results and the independent reconciliation check. Advance detail amounts and posted journals above remain read-only.</p></noscript>
 </div>
 <script type="application/json" id="advance-data"><?= json_encode(['csrf_token'=>csrf_token(),'detail'=>$detail,'has_posted_advances'=>(bool)$options,'role'=>$role],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_THROW_ON_ERROR) ?></script>
-<?php layout_end('<script src="assets/js/cash_advances.js?v='.filemtime(__DIR__.'/assets/js/cash_advances.js').'"></script>'); ?>
+<?php layout_end('<script src="assets/js/cash_advances.js?v='.filemtime(__DIR__.'/assets/js/cash_advances.js').'" defer></script>'); ?>

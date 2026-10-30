@@ -73,13 +73,14 @@ function budget_published(PDO $pdo,int $id): array
     if((int)($v['approved_revision_id']??0)===$id&&($event['decision']??null)!=='Approved')throw new ReportingProblem('The effective budget needs an approval integrity review.',503);
     return ['id'=>$id,'month'=>$payload['month'],'revision'=>(int)$v['revision_number'],'payload'=>$payload,'payload_hash'=>$v['payload_hash'],'prepared_by'=>$payload['prepared_name'],'prepared_at'=>$v['prepared_at'],'state'=>$event['decision']??'Submitted','review'=>$event,'is_effective'=>(int)($v['approved_revision_id']??0)===$id,'expected_approved_id'=>$v['expected_approved_id']===null?null:(int)$v['expected_approved_id'],'expected_approval_epoch'=>(int)$v['expected_approval_epoch'],'current_approved_id'=>$v['approved_revision_id']===null?null:(int)$v['approved_revision_id'],'current_approval_epoch'=>(int)$v['approval_epoch']];
 }
-function budget_save(PDO $pdo,int $uid,array $r): array
+function budget_save(PDO $pdo,int $uid,array $r,?callable $beforeCreate=null): array
 {
     reporting_csrf($r);budget_revision_require($pdo);if(!is_array($r['payload']??null))throw new ReportingProblem('Use a valid budget draft.',400);$payload=budget_revision_payload($r['payload']);$id=reporting_id($r['draft_id']??null,'draft',true);$copy=reporting_id($r['copied_revision_id']??null,'source budget revision',true);$key=reporting_text($r['request_key']??'',64,'draft identity',true);if(!preg_match('/\A[a-f0-9]{64}\z/',$key))throw new ReportingProblem('Reload the budget draft and try again.',400);$hash=hash('sha256',reporting_json([$payload,$copy]));
-    return reporting_tx($pdo,$uid,['Admin'],function()use($pdo,$uid,$r,$payload,$id,$copy,$key,$hash){
+    return reporting_tx($pdo,$uid,['Admin'],function()use($pdo,$uid,$r,$payload,$id,$copy,$key,$hash,$beforeCreate){
         budget_revision_require($pdo);
         if($id===null){$s=$pdo->prepare('SELECT id,creation_hash FROM budget_revision_drafts WHERE owner_id=? AND request_key=?');$s->execute([$uid,$key]);$old=$s->fetch(PDO::FETCH_ASSOC);if($old){if(!hash_equals($old['creation_hash'],$hash))throw new ReportingProblem('That draft identity was used with different contents.',409);return budget_draft($pdo,$uid,(int)$old['id']);}
             $pdo->prepare('INSERT INTO budget_revision_roots(budget_month) VALUES(?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)')->execute([$payload['month'].'-01']);$root=budget_root($pdo,$payload['month'],true);
+            if($beforeCreate)$beforeCreate($root);
             if($copy){$source=budget_published($pdo,$copy);if($source['month']!==$payload['month'])throw new ReportingProblem('Copy a revision from this budget month.');}
             budget_master_labels($pdo,$payload);$s=$pdo->prepare('INSERT INTO budget_revision_drafts(root_id,owner_id,request_key,creation_hash,payload,base_approved_id,base_approval_epoch,copied_revision_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())');$s->execute([$root['id'],$uid,$key,$hash,reporting_json($payload),$root['approved_revision_id'],$root['approval_epoch'],$copy]);$id=(int)$pdo->lastInsertId();reporting_audit($pdo,$uid,AUDIT_ACTION_CREATE,'Budget draft',$id,null,['month'=>$payload['month'],'copied_revision_id'=>$copy]);
         }else{

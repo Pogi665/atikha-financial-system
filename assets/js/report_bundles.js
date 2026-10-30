@@ -2,6 +2,7 @@
   'use strict';
   const boot = document.getElementById('rb-data'); if (!boot) return;
   const data = JSON.parse(boot.textContent), error = document.getElementById('rb-error'), notice = document.getElementById('rb-notice');
+  if(data.frozen){history.scrollRestoration='manual';const top=()=>{window.scrollTo(0,0);document.getElementById('rb-state')?.setAttribute('tabindex','-1');};window.addEventListener('pageshow',top);requestAnimationFrame(top);}
   const keys = new Map(); let busy = false;
   function key(action) { if (!keys.has(action)) keys.set(action, [...crypto.getRandomValues(new Uint8Array(32))].map(n => n.toString(16).padStart(2, '0')).join('')); return keys.get(action); }
   function fail(message) { error.textContent = message; error.hidden = false; error.scrollIntoView({block: 'center', behavior: 'instant'}); }

@@ -1,0 +1,13 @@
+<?php
+/** Controlled, escaped report template; never renders uploads or remote resources. */
+function report_export_pdf_html(array $model): string
+{
+    $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+    ob_start(); ?>
+    <!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+    @page{margin:35px 30px 40px}body{font-family:DejaVu Sans,sans-serif;font-size:9px;color:#20394b}h1{font-size:20px;margin:6px 0}h2{font-size:12px;margin:20px 0 8px}.brand{color:#007b63;font-weight:bold}p{line-height:1.5}table{border-collapse:collapse;width:100%;table-layout:fixed;margin:8px 0 18px}th,td{padding:6px;border-bottom:1px solid #dce5eb;text-align:left;word-wrap:break-word}th{background:#edf5f3}thead{display:table-header-group}tfoot{font-weight:bold}.money{text-align:right}.meta{color:#536779}.section{page-break-inside:auto}tr{page-break-inside:avoid}
+    </style></head><body><div class="brand">Atikha Finance</div><h1><?= $e($model['title']) ?></h1><p class="meta"><?php foreach($model['metadata'] as $key=>$value):if(in_array($key,['Text protection','Source fingerprint','Sort','Literal search'],true))continue; ?><?= $e($key) ?>: <?= $e($value) ?><br><?php endforeach; ?></p>
+    <?php foreach($model['sections'] as $section):$columns=$section['columns'];$groups=count($columns)>7?array_map(static fn($chunk)=>array_merge([$columns[0]],$chunk),array_chunk(array_slice($columns,1),5)):[$columns];foreach($groups as $part=>$cols): ?>
+    <section class="section"><h2><?= $e($section['title']) ?><?= count($groups)>1?' · '.($part+1).' / '.count($groups):'' ?></h2><table><thead><tr><?php foreach($cols as [$key,$label,$kind]): ?><th<?= $kind==='money'?' class="money"':'' ?>><?= $e($label) ?></th><?php endforeach; ?></tr></thead><tbody><?php foreach($section['rows'] as $row): ?><tr><?php foreach($cols as [$key,$label,$kind]): ?><td<?= $kind==='money'?' class="money"':'' ?>><?= $e($kind==='money'&&($row[$key]??null)!==null?accounting_money($row[$key]):($row[$key]??'—')) ?></td><?php endforeach; ?></tr><?php endforeach; ?><?php if(!$section['rows']): ?><tr><td colspan="<?= count($cols) ?>">No records for this selection.</td></tr><?php endif; ?></tbody><?php if($section['totals']): ?><tfoot><tr><?php foreach($cols as $index=>[$key,$label,$kind]): ?><td<?= $kind==='money'?' class="money"':'' ?>><?= $index===0?'Total':$e($kind==='money'&&isset($section['totals'][$key])?accounting_money($section['totals'][$key]):'') ?></td><?php endforeach; ?></tr></tfoot><?php endif; ?></table></section>
+    <?php endforeach;endforeach; ?></body></html><?php return ob_get_clean();
+}

@@ -61,6 +61,9 @@
   }
   function dirty() { if (!state.published) status.textContent = 'Draft — unsaved changes. Submit setup to make a new revision available to reports.'; }
   for (const kind of ['designations', 'cash_allocations', 'noncash_reclasses']) for (const row of state.payload[kind]) add(kind, row);
+  const task=document.getElementById('rs-focus-task'),filter=document.getElementById('rs-focus-filter'),mapping=document.getElementById('rs-mappings');
+  function focusMappings(){const selected=task.value;mapping.closest('table').dataset.focus=selected;let shown=0;for(const row of mapping.rows){const cash=row.querySelector('[data-field="cash"]'),section=row.querySelector('[data-field="section"]'),flow=row.querySelector('[data-field="flow"]');const unresolved=selected==='cash'?!cash.disabled:selected==='section'?!section.value.trim():!cash.checked&&!flow.value;row.hidden=filter.value==='unresolved'&&!unresolved;if(!row.hidden)shown++;}document.getElementById('rs-focus-status').textContent=shown+' accounts shown. All saved mappings are retained.';}
+  task?.addEventListener('change',focusMappings);filter?.addEventListener('change',focusMappings);if(task)focusMappings();
   if (state.published) return;
   form.addEventListener('input', dirty); form.addEventListener('change', dirty);
   document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => { add(b.dataset.add); dirty(); }));

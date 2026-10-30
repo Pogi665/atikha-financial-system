@@ -28,25 +28,26 @@
     byId('gl-sheet').hidden = !data.account; byId('gl-prompt').hidden = !!data.account;
     if (data.account) {
       text('gl-account-label', data.account.Name + (data.account.Account_Code ? ' · ' + data.account.Account_Code : '') + (Number(data.account.Is_Active) ? '' : ' (inactive)'));
-      text('gl-period-label', `${applied.from} to ${applied.to} · Live posted account movements`);
+      text('gl-period-label', `${AtikhaUI.date(applied.from)} to ${AtikhaUI.date(applied.to)} · Live posted account movements`);
       for (const [id, value] of [['gl-opening', balance(data.opening)], ['gl-debits', money(data.period_debits)], ['gl-credits', money(data.period_credits)], ['gl-ending', balance(data.ending)], ['gl-total-debits', money(data.period_debits)], ['gl-total-credits', money(data.period_credits)], ['gl-total-ending', balance(data.ending)]]) text(id, value);
       text('gl-counts', `Showing ${data.rows.length} of ${data.matching_count} matching movements; ${data.period_count} period movements. Balances include movements hidden by search.`);
       text('gl-page-notice', data.page_adjusted ? 'The requested page was beyond the results. Showing the last available page.' : '');
       const rows = [];
       for (const row of data.rows) {
         const tr = document.createElement('tr');
-        const values = [`${row.entry_date}\nJournal #${row.journal_id} · ${row.source_book}`, `${row.reference || 'Not provided'}\n${row.description}`, `${row.party_name || 'Not recorded'}\n${row.project_name_snapshot || 'Organization operations'}`, money(row.debit_amount), money(row.credit_amount), balance(row.running_balance)];
-        values.forEach((value, index) => { const td = document.createElement('td'); td.textContent = value; td.style.whiteSpace = index < 3 ? 'pre-line' : 'nowrap'; if (index > 2) td.className = 'gl-amount'; tr.append(td); });
-        const td = document.createElement('td'), a = document.createElement('a'); td.className = 'gl-no-print'; a.href = row.transaction_url; a.textContent = 'View transaction'; td.append(a); tr.append(td); rows.push(tr);
+        const values = [`${AtikhaUI.date(row.entry_date)}\nJournal #${row.journal_id} · ${row.source_book}\n${row.reference || 'No reference'}`, `${row.description}\n${row.party_name || 'Not recorded'}\n${row.project_name_snapshot || 'Organization operations'}`, money(row.debit_amount), money(row.credit_amount), balance(row.running_balance)];
+        const labels=['Date / Transaction','Description / Project','Debit','Credit','Running Balance'];
+        values.forEach((value, index) => { const td = document.createElement('td'); td.textContent = value;td.dataset.label=labels[index]; td.style.whiteSpace = index < 2 ? 'pre-line' : 'nowrap'; if (index > 1) td.className = 'gl-amount'; tr.append(td); });
+        const td = document.createElement('td'), a = document.createElement('a'); td.className = 'gl-no-print';td.dataset.label='Action'; a.href = row.transaction_url;a.className='gl-view'; a.textContent = 'View';a.setAttribute('aria-label','View transaction #'+row.journal_id); td.append(a); tr.append(td); rows.push(tr);
       }
-      if (!rows.length) { const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 7; td.textContent = data.period_count ? 'No movements match this search. Opening, totals and ending still cover the full period.' : 'No movements in this period. The opening balance carries forward.'; tr.append(td); rows.push(tr); }
+      if (!rows.length) { const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 6; td.textContent = data.period_count ? 'No movements match this search. Opening, totals and ending still cover the full period.' : 'No movements in this period. The opening balance carries forward.'; tr.append(td); rows.push(tr); }
       byId('gl-rows').replaceChildren(...rows);
       byId('gl-print').href = url({...applied, search: '', page: '1'}) + '&format=print';
-      byId('gl-export').href='financial_export.php?'+new URLSearchParams({...applied,kind:'ledger'});
+      document.querySelectorAll('[data-gl-format]').forEach(a=>a.href='financial_export.php?'+new URLSearchParams({...applied,kind:'ledger',format:a.dataset.glFormat}));
       byId('gl-prev').href = url({...applied, page: String(Math.max(1, Number(applied.page) - 1))});
       byId('gl-next').href = url({...applied, page: String(Math.min(data.pages, Number(applied.page) + 1))});
       text('gl-page-label', `Page ${applied.page} of ${data.pages}`);
-      text('gl-generated', `Generated ${data.generated_at}. Live values may change when new transactions are recorded.`);
+      text('gl-generated', `Generated ${AtikhaUI.datetime(data.generated_at.replace(/ Asia\/Manila$/,''),'local')}. Live values may change when new transactions are recorded.`);
     }
   }
   async function load(criteria, push = true) {
@@ -67,7 +68,7 @@
   form.addEventListener('input', () => { if (pending) { ++sequence; controller?.abort(); pending = false; } dirty = true; state(); });
   form.addEventListener('submit', event => { event.preventDefault(); const values = Object.fromEntries(new FormData(form)); values.page = '1'; load(values); });
   for (const id of ['gl-prev', 'gl-next']) byId(id).addEventListener('click', event => { event.preventDefault(); if (byId(id).getAttribute('aria-disabled') !== 'true') load(Object.fromEntries(new URL(byId(id).href).searchParams)); });
-  byId('gl-export').addEventListener('click',event=>{if(byId('gl-export').getAttribute('aria-disabled')==='true')event.preventDefault();});
+  document.querySelectorAll('[data-gl-format]').forEach(a=>a.addEventListener('click',event=>{if(dirty||pending||!model?.account)event.preventDefault();}));
   byId('gl-print').addEventListener('click', event => { if (byId('gl-print').getAttribute('aria-disabled') === 'true') event.preventDefault(); });
   addEventListener('popstate', () => load(Object.fromEntries(new URL(location.href).searchParams), false));
   if (applied) history.replaceState(null, '', url(applied));

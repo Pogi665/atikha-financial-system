@@ -25,7 +25,7 @@ try {
         catch (Throwable $e) { error_log('Snapshot comparison failed: '.$e->getMessage()); }
     } else {
         $year=isset($_GET['year'])?(int)$_GET['year']:$year; $month=isset($_GET['month'])?(int)$_GET['month']:$month;
-        $tb=accounting_trial_balance($pdo,accounting_month_end($year,$month));
+        $tb=accounting_trial_balance($pdo,reporting_live_cutoff(sprintf('%04d-%02d',$year,$month)));
     }
     if ($snapshotAvailable) {
         $s=$pdo->prepare('SELECT id,revision,review_status,captured_at FROM trial_balance_snapshots WHERE report_year=? AND report_month=? ORDER BY revision DESC');
@@ -34,6 +34,7 @@ try {
     $s=$pdo->prepare('SELECT ReportID,Review_Status,Total_Revenue,Total_Expenses,Net_Income,Created_At FROM Reports WHERE Report_Year=? AND Report_Month=?');
     $s->execute([$year,$month]); $legacy=$s->fetchAll(PDO::FETCH_ASSOC);
 } catch (InvalidArgumentException $e) { http_response_code(400); $error=$e->getMessage(); }
+catch (ReportingProblem $e) { http_response_code($e->status); $error=$e->getMessage(); }
 catch (ReportProblem $e) { http_response_code($e->status); $error=$e->getMessage(); }
 catch (Throwable $e) { http_response_code(503); error_log('Trial Balance unavailable: '.$e->getMessage()); $error='Unable to load the Trial Balance. Please try again later.'; }
 if($year<1000||$year>9998||$month<1||$month>12){$year=(int)substr($today,0,4);$month=(int)substr($today,5,2);}
@@ -49,7 +50,7 @@ layout_begin('Reports','reports',[], '<link rel="stylesheet" href="assets/css/re
 ?>
 <div class="js-review-root reports-page" data-csrf="<?= $escape($csrfToken) ?>">
 <div id="review-flash" class="hidden"></div>
-<div class="flex items-center justify-between gap-4 mb-6"><div><h1 class="text-2xl font-bold text-slate-900">Financial Reports</h1><p class="text-slate-600 mt-2">Trial Balance from posted double-entry journals.</p></div><button type="button" onclick="window.print()" class="<?= $btnPrimary ?> no-print">Print / Export PDF</button></div>
+<div class="flex items-center justify-between gap-4 mb-6"><div><h1 class="text-2xl font-bold text-slate-900">Financial Reports</h1><p class="text-slate-600 mt-2">Trial Balance from posted double-entry journals.</p></div><div class="ui-actions no-print"><?php if($tb): ?><?= ui_export_menu('financial_export.php?'.http_build_query($snapshotId?['kind'=>'snapshot','snapshot_id'=>$snapshotId]:['kind'=>'live','month'=>sprintf('%04d-%02d',$year,$month),'component'=>'trial_balance'])) ?><?php endif; ?><button type="button" onclick="window.print()" class="<?= $btnPrimary ?> no-print">Print</button></div></div>
 <section class="<?= $cardClass ?> no-print mb-6">
 <div class="flex flex-wrap justify-between gap-6"><div><h2 class="text-lg font-semibold text-slate-900 mb-4">Select Reporting Period</h2>
 <form method="GET" class="flex flex-wrap items-end gap-4">

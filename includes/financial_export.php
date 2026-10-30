@@ -1,6 +1,8 @@
 <?php
 /** Completed, typed export models. No evidence metadata or client-side arithmetic. */
 require_once __DIR__.'/financial_search.php';require_once __DIR__.'/general_ledger_query.php';require_once __DIR__.'/report_bundles.php';require_once __DIR__.'/report_component_view.php';
+require_once __DIR__.'/transaction_presentation.php';
+require_once __DIR__.'/report_snapshots.php';
 const FINANCIAL_EXPORT_MAX_LINES=100000;
 const FINANCIAL_EXPORT_MAX_BYTES=33554432;
 function financial_export_text($v):string
@@ -39,6 +41,24 @@ function financial_export_component(string $name,array $data):array
 }
 function financial_export_record_label($v):string{return trim((string)($v??''))===''?'Not recorded':trim((string)$v);}
 function financial_export_record_money(string $v):string{return accounting_money($v);}
+/** Explicit new presentation choices. Existing detailed export URLs retain their contract. */
+function financial_export_transactions(PDO $pdo,int $uid,array $request,string $kind,string $representation):array
+{
+    if($kind!=='history'&&!stage1_enabled($pdo))throw new ReportingProblem('Enable the accounting workspace setup before exporting a complete cash book.',503);
+    $request['view']=$kind==='history'?'records':$kind;$data=transaction_records_model($pdo,$uid,$request,true);
+    $title=['history'=>'Transaction History','cdb'=>'Cash Disbursements Book','crb'=>'Cash Receipts Book'][$kind];$rows=[];
+    if($representation==='transactions'){
+        foreach($data['rows'] as $row){$row['summary']=$row['amount']===null?$row['amount_text']:'';$rows[]=$row;}
+        $columns=[['journal_id','Journal','id'],['date_label','Date','text'],['type','Type','text'],['reference','Reference','text'],['party','Party','text'],['purpose','Purpose','text'],['project','Project','text'],['amount','Amount (PHP)','money'],['summary','Summary','text']];
+    }else{
+        foreach($data['rows'] as $row)foreach($data['journals'][$row['journal_id']]['lines'] as $line)$rows[]=$line+['party'=>$row['party'],'purpose'=>$row['purpose'],'account'=>($line['account_code']?:'#'.$line['account_id']).' · '.$line['account_name'].' · '.$line['account_type'],'project'=>transaction_project_label($line)];
+        $columns=[['journal_id','Journal','id'],['entry_date','Date','text'],['reference','Reference','text'],['party','Party','text'],['purpose','Purpose','text'],['account','Account','text'],['project','Project','text'],['debit_amount','Debit (PHP)','money'],['credit_amount','Credit (PHP)','money']];
+    }
+    $accountLabel='All accounts';foreach($data['accounts'] as $a)if((string)$a['CategoryID']===$data['criteria']['account_id'])$accountLabel=$a['Name'];
+    $projectLabel=$data['criteria']['project_id']==='0'?'Organization operations':'All projects';foreach($data['projects'] as $p)if((string)$p['id']===$data['criteria']['project_id'])$projectLabel=$p['name'];
+    return ['title'=>$title,'generated_at'=>$data['generated_at'],'metadata'=>['Period'=>($data['criteria']['from']?transaction_date($data['criteria']['from']):'Any date').' to '.($data['criteria']['to']?transaction_date($data['criteria']['to']):'Any date'),'Matching transactions'=>$data['matching_count'],'Search'=>$data['criteria']['search']?:'None','Transaction type'=>[''=>'All types','CDB'=>'Payments','CRB'=>'Money Received','GJ'=>'General Journal / Reversals'][$data['criteria']['book']],'Account'=>$accountLabel,'Account type'=>$data['criteria']['type']?:'All account types','Project'=>$projectLabel,'Scope'=>$representation==='transactions'?'Complete matching transaction list':'Every line of each matching transaction'],
+        'sections'=>[financial_export_section($representation==='transactions'?$title:'Detailed journal lines',$rows,$columns)]];
+}
 function financial_export_records(PDO $pdo,array $request,string $kind):array
 {
     if($kind!=='history'&&!stage1_enabled($pdo))throw new ReportingProblem('Full-entry cash-book export needs the saved accounting workspace setup. Journal History can export the validated posted lines.',503);
@@ -51,13 +71,20 @@ function financial_export_records(PDO $pdo,array $request,string $kind):array
 }
 function financial_export_model(PDO $pdo,int $uid,array $r):array
 {
-    return accounting_read($pdo,function()use($pdo,$uid,$r){reporting_actor($pdo,$uid);$kind=reporting_text($r['kind']??'',30,'export type',true);$rowCount=(int)$pdo->query("SELECT COUNT(*) FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id WHERE j.status='posted'")->fetchColumn();if($rowCount>FINANCIAL_EXPORT_MAX_LINES&&$kind!=='frozen')throw new ReportingProblem('This installation can export up to 100,000 source lines at once. Ask the administrator to arrange a larger validated export. No partial file was sent.',413);
+    return accounting_read($pdo,function()use($pdo,$uid,$r){reporting_actor($pdo,$uid);$kind=reporting_text($r['kind']??'',30,'export type',true);$rowCount=(int)$pdo->query("SELECT COUNT(*) FROM journal_entry_lines l JOIN journal_entries j ON j.id=l.journal_entry_id WHERE j.status='posted'")->fetchColumn();if($rowCount>FINANCIAL_EXPORT_MAX_LINES&&!in_array($kind,['frozen','snapshot'],true))throw new ReportingProblem('This installation can export up to 100,000 source lines at once. Ask the administrator to arrange a larger validated export. No partial file was sent.',413);
         $meta=['Organization'=>'Atikha Finance','Currency'=>'PHP','Text protection'=>'Text cells begin with an apostrophe for spreadsheet viewing; remove only deliberately. No external-system compatibility is claimed.'];$sections=[];$title='';
         if($kind==='ledger'){$data=ledger_read($pdo,$uid,$r,false,true);if(!$data['account'])throw new ReportingProblem('Choose an account before exporting.',400);$title='General Ledger';$meta+=['Account'=>$data['account']['Name'],'From'=>$data['criteria']['from'],'To'=>$data['criteria']['to'],'Scope'=>'All matching rows; running balances include movements hidden by search','Literal search'=>$data['criteria']['search'],'Opening balance'=>$data['opening'],'Full-period debit'=>$data['period_debits'],'Full-period credit'=>$data['period_credits'],'Ending balance'=>$data['ending'],'Matching rows'=>$data['matching_count']];$sections[]=financial_export_section('Chronological account movements',$data['rows'],[['entry_date','Date','text'],['journal_id','Journal','id'],['reference','Reference','text'],['description','Description','text'],['party_name','Party','text'],['project_name_snapshot','Project / operations','text'],['debit_amount','Debit (PHP)','money'],['credit_amount','Credit (PHP)','money'],['running_balance','Running balance (debit positive, credit negative)','money']]);}
-        elseif(in_array($kind,['history','crb','cdb'],true)){$m=financial_export_records($pdo,$r,$kind);$meta+=$m['metadata'];$sections=$m['sections'];$title=$kind==='history'?'Journal History':strtoupper($kind).' gross originating activity';}
+        elseif(in_array($kind,['history','crb','cdb'],true)){
+            $representation=reporting_text($r['representation']??'',30,'export presentation');
+            if($representation!==''){
+                if(!in_array($representation,['transactions','transaction_lines'],true))throw new ReportingProblem('Choose a listed export presentation.',400);
+                $m=financial_export_transactions($pdo,$uid,$r,$kind,$representation);$meta+=$m['metadata'];$sections=$m['sections'];$title=$m['title'];
+            }else{$m=financial_export_records($pdo,$r,$kind);$meta+=$m['metadata'];$sections=$m['sections'];$title=$kind==='history'?'Journal History':strtoupper($kind).' gross originating activity';}
+        }
+        elseif($kind==='snapshot'){$tb=report_snapshot_load_id($pdo,reporting_id($r['snapshot_id']??null,'saved Trial Balance'));if(!$tb)throw new ReportingProblem('Saved Trial Balance not found.',404);if($tb['invalid_journals']||$tb['difference']!=='0.00')throw new ReportingProblem('This saved Trial Balance needs an integrity review.',503);$title='Submitted Trial Balance';$meta+=['Scope'=>'Exact saved Trial Balance copy','Frozen revision'=>$tb['header']['revision'],'As of'=>$tb['as_of'],'Prepared by'=>$tb['header']['submitter_name'],'State'=>$tb['header']['review_status']];$rows=[];foreach($tb['rows'] as $row)$rows[]=['account_name'=>$row['Name'],'ending_debit'=>$row['debit_balance'],'ending_credit'=>$row['credit_balance']];$sections=financial_export_component('trial_balance',['rows'=>$rows,'total_debits'=>$tb['total_debits'],'total_credits'=>$tb['total_credits'],'difference'=>$tb['difference']]);}
         elseif(in_array($kind,['live','frozen'],true)){$component=reporting_text($r['component']??'',40,'report',true);if(!isset(REPORT_COMPONENT_TITLES[$component]))throw new ReportingProblem('Choose a valid report.',400);$title=REPORT_COMPONENT_TITLES[$component];if($kind==='frozen'){$bundle=report_bundle_load($pdo,$uid,reporting_id($r['bundle_id']??null),false);$data=$bundle['payload']['components'][$component];$meta+=['Month'=>$bundle['month'],'Scope'=>'Exact stored frozen component','Frozen revision'=>$bundle['revision'],'State'=>$bundle['state'],'Prepared by'=>$bundle['prepared_by'],'Prepared at'=>$bundle['prepared_at']];}
-            else{$month=reporting_month($r['month']??substr(accounting_today(),0,7));$m=report_bundle_model($pdo,$uid,$month);$data=$m['components'][$component];$meta+=['Month'=>$month,'Scope'=>'Live report; changes with later authorized postings/configuration','Completeness'=>$m['complete']?'Complete':'Incomplete: '.implode(' ',$m['issues'])];if(!$m['complete']&&!in_array($component,['worksheet','trial_balance','project_activity','advance_aging','budget_actuals'],true))throw new ReportingProblem('Complete the report setup and resolve the listed issues before exporting this statement.',422);}$sections=financial_export_component($component,$data);}
-        else throw new ReportingProblem('Choose a supported export.',400);return ['kind'=>$kind,'title'=>$title,'metadata'=>$meta,'sections'=>$sections,'generated_at'=>(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m-d H:i:s').' Asia/Manila','filename'=>'atikha-'.$kind.'-'.date('Ymd-His').'.csv'];
+            else{$month=reporting_month($r['month']??substr(accounting_today(),0,7));$m=report_bundle_model($pdo,$uid,$month);$data=$m['components'][$component];$meta+=['Month'=>$month,'From'=>$m['from'],'Actuals through'=>$m['as_of'],'Scope'=>'Live report; changes with later authorized postings/configuration','Completeness'=>$m['complete']?'Complete':'Incomplete: '.implode(' ',$m['issues'])];if(!$m['complete']&&!in_array($component,['worksheet','trial_balance','project_activity','advance_aging','budget_actuals'],true))throw new ReportingProblem('Complete the report setup and resolve the listed issues before exporting this statement.',422);}if($kind==='frozen')$meta+=['From'=>$bundle['payload']['manifest']['from'],'Actuals through'=>$bundle['payload']['manifest']['as_of']];$sections=financial_export_component($component,$data);}
+        else throw new ReportingProblem('Choose a supported export.',400);return ['kind'=>$kind,'title'=>$title,'metadata'=>$meta,'sections'=>$sections,'transaction_presentation'=>in_array($kind,['history','crb','cdb'],true)&&!empty($r['representation']),'generated_at'=>isset($representation)&&$representation!==''?$m['generated_at']:(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m-d H:i:s').' Asia/Manila','filename'=>'atikha-'.$kind.'-'.date('Ymd-His').'.csv'];
     });
 }
 /** No successful response is sent until every model cell has been validated and spooled. */

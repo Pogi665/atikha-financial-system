@@ -66,3 +66,5 @@
 .accounts-page .account-accounting-tags { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem; font-size:.75rem; color:#475569; }
 .accounts-page .account-accounting-tags span { background:#f1f5f9; border-radius:.25rem; padding:.15rem .4rem; }
 .accounts-page .accounts-form-grid > p { grid-column:1/-1; }
+
+.accounts-page .account-description{max-width:45ch;margin-top:8px;font-size:13px;color:#587068}.accounts-page .account-description summary{cursor:pointer}.accounts-page .account-description p{white-space:pre-wrap;margin:8px 0}.accounts-page table{table-layout:fixed;width:100%}.accounts-page thead th:first-child{width:65%}.accounts-page thead th:nth-child(2){width:15%}.accounts-page thead th:nth-child(3){width:20%}.accounts-page .accounts-form-grid .accounts-form-actions{position:sticky;bottom:0;background:#fff;padding:16px 0}.accounts-page th,.accounts-page td{overflow-wrap:anywhere}

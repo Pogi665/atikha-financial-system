@@ -5,6 +5,7 @@ require_once __DIR__.'/db_connect.php';
 require_once __DIR__.'/includes/require_role.php';
 require_once __DIR__.'/includes/receipt_ocr.php';
 require_once __DIR__.'/includes/layout.php';
+require_once __DIR__.'/includes/receipt_review_view.php';
 require_login();require_role(['Admin'],'Scan Receipt');
 header('Cache-Control: no-store');
 if(!in_array($_SERVER['REQUEST_METHOD'],['GET','POST'],true)){header('Allow: GET, POST');http_response_code(405);exit;}
@@ -57,7 +58,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if(isset($_GET['discarded'])):?><p role="status">Receipt discarded.</p><?php endif;?>
 <section id="ocr-mutation-feedback" class="ocr-warning" hidden aria-labelledby="ocr-mutation-heading"><h2 id="ocr-mutation-heading">Receipt action not verified</h2><p id="ocr-mutation-status" role="status" aria-live="polite"></p><button type="button" id="ocr-check-state">Check saved receipt state</button> <button type="button" id="ocr-replay-retry" hidden>Check original extraction result</button> <a id="ocr-open-state" hidden>Open saved receipt</a></section>
 <?php if($available):?>
-<ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Review Details</li><li><span>3</span>Continue</li></ol>
+<ol class="ocr-steps" aria-label="Receipt workflow"><li class="<?= $receipt?'is-complete':'is-current' ?>"><span>1</span>Upload</li><li class="<?= $receipt?'is-current':'' ?>"><span>2</span>Review Receipt</li><li><span>3</span>Continue to General Journal</li></ol>
 <div class="ocr-grid">
 <section class="ocr-card"><div class="ocr-card-heading"><h2><?= $receipt?'Original image':'Upload a receipt' ?></h2><span class="ocr-tag">Private image</span></div>
 <?php if(!$receipt):?>
@@ -74,7 +75,7 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php else:?>
 <div class="ocr-preview-frame"><img class="ocr-preview" src="receipt_attachment.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>" alt="Uploaded receipt evidence"></div>
 <div class="ocr-image-footer"><div><strong><?= $escape($receipt['Original_Filename'] ?: 'Receipt image') ?></strong><p class="ocr-help"><?= $escape(number_format((int)$receipt['File_Size']/1024,1)) ?> KiB · Original saved</p></div>
-<a href="receipt_attachment.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>&amp;download=1">Download original</a></div>
+<button type="button" class="ui-button" id="ocr-zoom">Enlarge Image</button><a href="receipt_attachment.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>&amp;download=1">Download original</a></div>
 <?php endif;?>
 </section>
 <section class="ocr-card"><div class="ocr-card-heading"><h2>Receipt details</h2><span class="ocr-tag ocr-tag-<?= $escape($statusStyle) ?>"><?= $escape($statusLabel) ?></span></div>
@@ -82,10 +83,10 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php if($failureMessage):?><div class="ocr-warning" role="status"><strong><?= str_contains($failureMessage,'service is busy')?'AI service is busy':'Automatic reading unavailable' ?></strong><p><?= $escape($failureMessage) ?></p></div><?php endif;?>
 <?php if($state==='Pending'):?><p role="status">The image is being read. Reload this page shortly to check the result.</p><?php endif;?>
 <?php if($data):?>
-<p class="ocr-help">Compare these suggestions with the original image before continuing.</p>
+<p class="ocr-help">Details were read automatically. Check them before continuing. Suggested accounts require your confirmation in General Journal.</p>
 <div class="ocr-amount"><span>Document total</span><strong><?= $escape(($data['currency']??'').' '.($data['total_amount']??'Needs review')) ?></strong><small>An amount due does not confirm that payment was made.</small></div>
 <dl class="ocr-facts">
-<?php foreach(['merchant'=>'Merchant','document_type'=>'Document type','reference'=>'Reference','date_text'=>'Printed date','transaction_date'=>'Suggested date','currency'=>'Currency','payment_text'=>'Payment information','suggested_debit_account_id'=>'Suggested expense account','classification_reason'=>'Why this account'] as $field=>$label):?>
+<?php foreach(['merchant'=>'Merchant','document_type'=>'Document type','reference'=>'Reference','date_text'=>'Printed date','transaction_date'=>'Suggested date','currency'=>'Currency','payment_text'=>'Payment information','suggested_debit_account_id'=>'Suggested account/category','classification_reason'=>'Why this account'] as $field=>$label):?>
 <dt><?= $escape($label) ?></dt><dd><?= $escape($field==='suggested_debit_account_id'?$suggestedAccount:($data[$field]??'Needs review')) ?></dd>
 <?php endforeach;?></dl>
 <p class="ocr-help">AI reading confidence: <?= (int)round(($data['confidence']??0)*100) ?>%. This does not verify the document's authenticity.</p>
@@ -93,15 +94,14 @@ layout_begin('Scan Receipt','ocr_expense',[],'<link rel="stylesheet" href="asset
 <?php foreach($data['warnings']??[] as $warning):?><p class="ocr-warning"><?= $escape($warning) ?></p><?php endforeach;?>
 <?php if($data['missing']??[]):?><p class="ocr-warning">Needs review: <?= $escape(implode(', ',$data['missing'])) ?></p><?php endif;?>
 <?php endif;?>
-<?php if(!$data&&$state!=='Pending'):?><div class="ocr-manual"><h3>Continue with the original image</h3><p>You can enter the date, amount and accounts manually in General Journal. The image stays attached for review.</p></div><?php endif;?>
-<?php if($ready):?><?php if(item_review_schema($pdo)==='complete'):?><p><a class="ocr-primary" href="evidence_item_review.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Review item details</a></p><p class="ocr-help">Optional manual item review. Check the original image; incomplete itemization does not supply extra monetary coverage.</p><?php endif;?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Continue to General Journal</a>
-<p class="ocr-help">Confirm the date and amount, choose the actual credit account and enter the business purpose there. Nothing is posted automatically.</p><?php endif;?>
+<?php if(!$data&&$state!=='Pending'):?><div class="ocr-manual"><h3>Continue with the original image</h3><p>Automatic reading unavailable. Enter the receipt details manually below; the original image stays available for review.</p></div><?php endif;?>
+<?php if($ready): ?><?php if(item_review_schema($pdo)==='complete'):receipt_review_view($pdo,$receipt,$data);else: ?><a class="ocr-primary" href="general_journal.php?receipt_id=<?= (int)$receipt['ReceiptID'] ?>">Continue to General Journal</a><?php endif;endif; ?>
 <?php if($receipt['JournalEntryID']===null):?>
 <div class="ocr-actions">
-<form method="post" action="ocr_expense.php" id="receipt-retry"><?= csrf_field() ?><input type="hidden" name="request_key" value="<?= $escape($requestKey) ?>"><input type="hidden" name="receipt_id" value="<?= (int)$receipt['ReceiptID'] ?>"><input type="hidden" name="action" value="retry"><button type="submit" <?= $state==='Pending'?'disabled':'' ?>>Retry Extraction</button><span class="ocr-help" id="ocr-retry-progress" role="status" aria-live="polite"></span></form>
+<form method="post" action="ocr_expense.php" id="receipt-retry"><?= csrf_field() ?><input type="hidden" name="request_key" value="<?= $escape($requestKey) ?>"><input type="hidden" name="receipt_id" value="<?= (int)$receipt['ReceiptID'] ?>"><input type="hidden" name="action" value="retry"><button type="submit" <?= $state==='Pending'||!gemini_is_configured()?'disabled hidden':'' ?>>Retry Automatic Reading</button><span class="ocr-help" id="ocr-retry-progress" role="status" aria-live="polite"></span></form>
 <form method="post" action="ocr_expense.php" id="receipt-discard"><?= csrf_field() ?><input type="hidden" name="request_key" value="<?= $escape($requestKey) ?>"><input type="hidden" name="receipt_id" value="<?= (int)$receipt['ReceiptID'] ?>"><input type="hidden" name="action" value="discard"><button type="submit" class="ocr-danger">Discard image</button></form>
 </div><?php endif;?>
 <?php else:?><div class="ocr-empty"><h3>Your receipt details will appear here</h3><p>Upload an image to suggest the merchant, date, amount and expense account.</p><p class="ocr-help">You check the suggestions and choose the credit account in General Journal. Uploading an image does not post a financial record.</p></div><?php endif;?>
 </section></div>
 <?php endif;?></div>
-<?php layout_end('<script src="assets/js/ocr_expense.js?v='.filemtime(__DIR__.'/assets/js/ocr_expense.js').'"></script>'); ?>
+<?php layout_end('<script src="assets/js/evidence_item_review.js?v='.filemtime(__DIR__.'/assets/js/evidence_item_review.js').'"></script><script src="assets/js/ocr_expense.js?v='.filemtime(__DIR__.'/assets/js/ocr_expense.js').'"></script>'); ?>

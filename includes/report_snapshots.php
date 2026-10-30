@@ -2,6 +2,7 @@
 /** Frozen Trial Balance submissions. Legacy Reports are never rewritten. */
 require_once __DIR__.'/accounting_query.php';
 require_once __DIR__.'/csrf.php';
+require_once __DIR__.'/reporting_common.php';
 require_once __DIR__.'/logger.php';
 require_once __DIR__.'/notifications.php';
 class ReportProblem extends RuntimeException
@@ -40,7 +41,7 @@ function report_snapshot_submit(PDO $pdo,int $userId,array $input): array
     }
     if (!csrf_verify($input['csrf_token'])) { throw new ReportProblem('Reload the page and try again.',400); }
     if (!ctype_digit($input['report_year'])||!ctype_digit($input['report_month'])) { throw new ReportProblem('Invalid report period.',400); }
-    $year=(int)$input['report_year']; $month=(int)$input['report_month']; $asOf=accounting_month_end($year,$month);
+    $year=(int)$input['report_year']; $month=(int)$input['report_month']; $asOf=reporting_actual_cutoff(sprintf('%04d-%02d',$year,$month));if($asOf===null)throw new ReportProblem('Actual reports are not available for a future month.',422);
     $key=$input['submission_key']; $fingerprint=$input['source_fingerprint'];
     if (!report_submission_valid($key,$year,$month,$fingerprint)) { throw new ReportProblem('Invalid submission signature. Reload the report.',400); }
     if (!report_snapshot_available($pdo)) { throw new ReportProblem('Trial Balance reviews require migration 017.',503); }

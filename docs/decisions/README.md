@@ -14,6 +14,8 @@ Read only records relevant to the task. These describe behavior; [current state]
 - [010: Distinct cash books, History, account ledger and exports](010-financial-reader-scopes.md) - Active
 - [011: Explicit reporting setup, immutable submissions and period integrity](011-reporting-and-period-controls.md) - Active
 - [012: Effective approved budget revisions and recognized actuals](012-budget-revisions-and-actuals.md) - Active
+- [013: Deterministic planning and explainable audit advisories](013-deterministic-planning-and-audit-advisories.md) - Active
+- [014: Explicit Primary Administrator protection](014-primary-administrator-protection.md) - Active
 
 ## Maintenance
 

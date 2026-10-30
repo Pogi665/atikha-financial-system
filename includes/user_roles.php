@@ -10,7 +10,7 @@
 
 const USER_ROLE_LABELS = [
     'Admin'      => 'System Administrator',
-    'Management' => 'Management and Board',
+    'Management' => 'Management & Board',
 ];
 
 const USER_PASSWORD_MIN_LENGTH = 8;

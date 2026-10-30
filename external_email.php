@@ -92,7 +92,7 @@ $bodyClass = 'min-h-screen min-w-[1024px] bg-slate-50 external-email-page' . ($f
 function external_escape($value): string { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 function external_date(?string $value): string { return $value ? date('M j, Y g:i A', strtotime($value)) : ''; }
 $fieldClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100';
-$extraHead = '<style>.external-email-page main{padding:1.5rem}.external-email-page .email-preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>';
+$extraHead = '<link rel="stylesheet" href="assets/css/external_email.css?v='.filemtime(__DIR__.'/assets/css/external_email.css').'"><style>.external-email-page main{padding:1.5rem}.external-email-page .email-preview{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>';
 layout_begin('Email', $activePage, [], $extraHead, $bodyClass);
 ?>
 <div class="flex h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" data-external-mail>
@@ -110,7 +110,7 @@ layout_begin('Email', $activePage, [], $extraHead, $bodyClass);
                 <?php if($issueCount!==0||$folder==='issues'): ?><a href="external_email.php?folder=issues" class="flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium <?= $folder === 'issues' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:bg-slate-100' ?>" <?= $folder === 'issues' ? 'aria-current="page"' : '' ?>>Delivery Issues<?= $issueCount===null?'':' ('.$issueCount.')' ?></a><?php endif; ?>
             </div>
         </div>
-        <p class="ui-legacy-link"><a href="<?= $flags['isExecutive']?'board_inbox.php':'board_messages.php' ?>">Legacy Communications Archive</a></p>
+
         <div class="flex-1 min-h-0 overflow-y-auto" aria-label="<?= $folder === 'sent' ? 'Sent emails' : 'Delivery Issues' ?>">
             <?php if ($loadError !== ''): ?>
                 <p class="p-5 text-sm text-red-700" role="alert"><?= external_escape($loadError) ?></p>
@@ -147,7 +147,7 @@ layout_begin('Email', $activePage, [], $extraHead, $bodyClass);
                     <div><label for="email-subject" class="mb-1 block text-sm font-medium text-slate-600">Subject</label><input id="email-subject" type="text" name="subject" required maxlength="255" placeholder="Add a subject" class="<?= $fieldClass ?>" value="<?= external_escape($draft['subject']) ?>"></div>
                     <div><label for="email-body" class="mb-1 block text-sm font-medium text-slate-600">Message</label><textarea id="email-body" name="message_body" required rows="10" placeholder="Write your email..." class="<?= $fieldClass ?> resize-y"><?= external_escape($draft['message_body']) ?></textarea></div>
                 </div>
-                <div class="shrink-0 p-4 border-t border-slate-200 bg-slate-50">
+                <div class="shrink-0 p-4 border-t border-slate-200 bg-slate-50" data-compose-actions>
                     <div class="flex items-center gap-3">
                         <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" <?= !$configuration['ready'] || $loadError !== '' ? 'disabled' : '' ?> data-send-button>Send email</button>
                         <input id="email-attachment" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png" class="hidden" aria-describedby="attachment-name">

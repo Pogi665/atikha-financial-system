@@ -1,5 +1,7 @@
 (function () {
     'use strict';
+    document.getElementById('ocr-zoom')?.addEventListener('click',e=>{const img=document.querySelector('.ocr-preview'),dialog=document.createElement('dialog');dialog.className='ocr-zoom-dialog';dialog.setAttribute('aria-label','Original receipt image');const close=document.createElement('button');close.type='button';close.className='ui-button';close.textContent='Close Image';const copy=img.cloneNode();copy.removeAttribute('class');dialog.append(close,copy);document.body.append(dialog);const finish=()=>{dialog.close();dialog.remove();e.target.focus();};close.addEventListener('click',finish);dialog.addEventListener('cancel',ev=>{ev.preventDefault();finish();});dialog.showModal();close.focus();});
+    const next=document.getElementById('ocr-continue');next?.addEventListener('click',e=>{if(next.getAttribute('aria-disabled')==='true')e.preventDefault();});document.getElementById('ir-form')?.addEventListener('input',()=>{next?.setAttribute('aria-disabled','true');next?.setAttribute('tabindex','-1');});document.addEventListener('receipt-details-saved',()=>{next?.removeAttribute('aria-disabled');next?.removeAttribute('tabindex');});
     const form = document.getElementById('receipt-upload');
     const fileInput = document.getElementById('receipt-image');
     let previewUrl = '';
@@ -65,9 +67,9 @@
         }catch(e){unknown('The '+request.action+' response was interrupted or could not be verified. Keep receipt #'+request.id+' and check its saved state before another action. '+e.message);}
         finally{mutationBusy=false;replay.disabled=false;}
     }
-    for(const id of ['receipt-retry','receipt-discard'])document.getElementById(id)?.addEventListener('submit',event=>{
+    for(const id of ['receipt-retry','receipt-discard'])document.getElementById(id)?.addEventListener('submit',async event=>{
         const receiptForm=event.currentTarget;
-        if(id==='receipt-discard'&&!window.confirm('Discard this unposted receipt and delete its image?')){event.preventDefault();return;}
+        event.preventDefault();if(id==='receipt-discard'&&!await AtikhaUI.confirm({title:'Discard Receipt?',message:'Discard this unrecorded receipt and delete its private image?',confirm:'Discard Receipt',destructive:true}))return;
         if(!window.fetch)return;
         event.preventDefault();if(mutation||mutationBusy||receiptForm.querySelector('button').disabled)return;
         // Freeze the existing form/request identity. A retry never creates a replacement key.

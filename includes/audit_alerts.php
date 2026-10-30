@@ -1,0 +1,34 @@
+<?php
+require_once __DIR__.'/audit_query.php';require_once __DIR__.'/reporting_common.php';require_once __DIR__.'/advisory_policy.php';
+function audit_pattern_alerts(array $logs,array $policy=AUDIT_ADVISORY_POLICY,?array &$warnings=null): array
+{
+    $valid=[];foreach($logs as $log){if(!is_array($log)||!isset($log['id'],$log['user_id'],$log['created_at'],$log['action_type'],$log['module'],$log['FullName'])||!is_string($log['created_at'])||!is_string($log['module'])||!is_string($log['action_type'])||strtotime($log['created_at'].' UTC')===false){$warnings[]='Some historical events have incomplete source fields and were not classified.';continue;}$valid[]=$log;}$logs=$valid;$seen=[];
+    usort($logs,static fn($a,$b)=>strcmp($a['created_at'],$b['created_at'])?:((int)$a['id']<=>(int)$b['id']));$actors=[];$signins=[];$alerts=[];
+    foreach($logs as $log){$uid=(int)$log['user_id'];$stamp=strtotime($log['created_at'].' UTC');
+        if($log['action_type']==='LOGIN'&&filter_var($log['ip_address'],FILTER_VALIDATE_IP)&&!in_array($log['ip_address'],['0.0.0.0','127.0.0.1','::1'],true))$signins[$uid][]=$log;
+        if(!in_array($log['action_type'],['EDIT','CREATE'],true)||!in_array(strtolower($log['module']),['general journal','journal draft','journal correction','correction draft','cash advance operation','cash advance deadline','advance draft','budget draft','budget revision','budget review','report setup draft','report configuration'],true))continue;
+        $new=json_decode($log['new_values']??'null',true);$event='audit:'.$log['id'];
+        if(strtolower($log['module'])==='journal correction')$event='correction:'.($log['record_id']??$log['id']);
+        elseif(strtolower($log['module'])==='general journal')$event='journal:'.($log['record_id']??$log['id']);
+        elseif(is_array($new)&&($new['state']??null)==='Posted'){if(isset($new['correction_id']))$event='correction:'.$new['correction_id'];elseif(isset($new['journal_id']))$event='journal:'.$new['journal_id'];}
+        if(isset($seen[$uid][$event]))continue;$seen[$uid][$event]=true;
+        $actors[$uid]=array_values(array_filter($actors[$uid]??[],static fn($event)=>strtotime($event['created_at'].' UTC')>$stamp-$policy['edit_window_seconds']));$actors[$uid][]=$log;
+        if(count($actors[$uid])===$policy['edit_count'])$alerts[]=['rule'=>'edit_burst','policy_version'=>$policy['version'],'observed_count'=>count($actors[$uid]),'threshold'=>$policy['edit_count'],'window_seconds'=>$policy['edit_window_seconds'],'reason'=>count($actors[$uid]).' financial modifications by '.$log['FullName'].' within '.(int)($policy['edit_window_seconds']/60).' minutes.','log_ids'=>array_map('intval',array_column($actors[$uid],'id')),'observed_at'=>$log['created_at'],'severity'=>'Review activity'];
+    }
+    foreach($signins as $rows){$previous=[];foreach($rows as $latest){if(count($previous)>=$policy['login_history_minimum']&&!in_array($latest['ip_address'],array_column($previous,'ip_address'),true))$alerts[]=['rule'=>'new_successful_ip','policy_version'=>$policy['version'],'observed_count'=>count($previous),'threshold'=>$policy['login_history_minimum'],'observed_ip'=>$latest['ip_address'],'reason'=>'A successful sign-in by '.$latest['FullName'].' used an address not seen in '.count($previous).' earlier recorded sign-ins in this period. Shared networks and VPNs may explain this.','log_ids'=>[(int)$latest['id']],'observed_at'=>$latest['created_at'],'severity'=>'Information'];$previous[]=$latest;}}
+    return $alerts;
+}
+function audit_alert_model(PDO $pdo,int $uid): array
+{
+    reporting_actor($pdo,$uid,['Admin']);return accounting_read($pdo,function()use($pdo){
+        $from=(new DateTimeImmutable('now',new DateTimeZone('UTC')))->modify('-30 days')->format('Y-m-d');$filters=audit_filters_from_request(['date_from'=>$from]);$logs=audit_fetch_logs($pdo,$filters,5001);$limited=count($logs)>5000;$logs=array_slice($logs,0,5000);$policy=AUDIT_ADVISORY_POLICY;$warnings=[];$alerts=audit_pattern_alerts($logs,$policy,$warnings);
+        $identity=user_identity_table($pdo);
+        $q=$pdo->query("SELECT c.id,c.target_journal_id,c.reason,c.created_by,c.created_at,u.FullName FROM journal_corrections c JOIN ".$identity." u ON u.UserID=c.created_by WHERE c.created_at>=UTC_TIMESTAMP()-INTERVAL 24 HOUR ORDER BY c.created_by,c.id LIMIT 5001");$corrections=[];$rows=$q->fetchAll(PDO::FETCH_ASSOC);$limited=$limited||count($rows)>5000;
+        foreach(array_slice($rows,0,5000) as $row)$corrections[(int)$row['created_by']][]=$row;
+        foreach($corrections as $rows)if(count($rows)>=$policy['correction_count'])$alerts[]=['rule'=>'repeated_corrections','policy_version'=>$policy['version'],'observed_count'=>count($rows),'threshold'=>$policy['correction_count'],'window_seconds'=>$policy['correction_window_seconds'],'corrections'=>array_map(static fn($r)=>array_intersect_key($r,array_flip(['id','target_journal_id','reason'])),$rows),'reason'=>count($rows).' posted correction chains by '.$rows[0]['FullName'].' within 24 hours. Review the recorded reasons.','log_ids'=>[],'correction_ids'=>array_map('intval',array_column($rows,'id')),'observed_at'=>$rows[count($rows)-1]['created_at'],'severity'=>'Review activity'];
+        $q=$pdo->query("SELECT a.id,a.requested_by_user_id,a.completed_at,a.error_message,u.FullName FROM receipt_ocr_attempts a JOIN ".$identity." u ON u.UserID=a.requested_by_user_id WHERE a.state='Failed' AND a.model<>'manual' AND a.completed_at>=UTC_TIMESTAMP()-INTERVAL 15 MINUTE ORDER BY a.id LIMIT 5001");$failures=[];$rows=$q->fetchAll(PDO::FETCH_ASSOC);$limited=$limited||count($rows)>5000;
+        foreach(array_slice($rows,0,5000) as $row)if(!preg_match('/not configured|manual|superseded|unavailable/i',$row['error_message']??''))$failures[(int)$row['requested_by_user_id']][]=$row;
+        foreach($failures as $rows)if(count($rows)>=$policy['ocr_failure_count'])$alerts[]=['rule'=>'ocr_failures','policy_version'=>$policy['version'],'observed_count'=>count($rows),'threshold'=>$policy['ocr_failure_count'],'window_seconds'=>$policy['ocr_failure_window_seconds'],'attempt_ids'=>array_map('intval',array_column($rows,'id')),'reason'=>count($rows).' automatic receipt-reading failures for '.$rows[0]['FullName'].' within 15 minutes. Check service availability and image quality.','log_ids'=>[],'observed_at'=>$rows[count($rows)-1]['completed_at'],'severity'=>'Review service'];
+        return ['alerts'=>$alerts,'from'=>$from,'limited'=>$limited,'examined'=>count($logs),'policy'=>$policy['version'],'coverage'=>array_merge(array_values(array_unique($warnings)),['Failed sign-in monitoring is unavailable: no authoritative failed-authentication event stream.','Operating-hours monitoring is disabled: no confirmed operating-hours policy.','Monetary-change monitoring is disabled until a reviewed threshold and reliable structured fields are configured.']),'advisory'=>true];
+    });
+}

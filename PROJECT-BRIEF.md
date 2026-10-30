@@ -7,7 +7,8 @@ Atikha Finance is a PHP financial-management capstone intended to support an NGO
 - Server-rendered PHP with small shared PHP/JavaScript presentation components, MariaDB/MySQL, Tailwind CSS and scoped CSS. Composer requires PHP >=8.0 and PHPMailer; this minimum is not a tested-platform certification. No frontend framework rewrite.
 - Guided receipt/payment/journal, draft, advance, liquidation/return, correction and evidence workflows write through existing server services. Worksheet readers cover books, account ledger, financial reports, budget actuals and exports. Frozen submissions/revisions and period controls preserve review identity.
 - Admin prepares accounting records, configuration and drafts and uses authorized administration tools. Management has a distinct dashboard/Review Queue, authorized budget/report/period decisions, financial readers and Email; it cannot author accounting entries or access Admin setup/private evidence.
-- Normal dashboards have no forecasting. OCR is assistive; forecasting/provider services are dormant dependencies where retained. Email is outgoing correspondence; retired Board messaging is historical archive access.
+- Normal dashboards have no forecasting. A separate deterministic Planning & Forecasting reader provides advisory recognized-expense estimates and explicit private budget-draft suggestions; Gemini forecast/audit services remain dormant. OCR is assistive. Email is outgoing correspondence; retired Board messaging is historical archive access.
+- The Primary Administrator is an explicitly designated protected Admin account, not a third role. Additive component 026 and initialization need a separately authorized working rollout. See the [decision index](docs/decisions/README.md).
 
 ## Accounting and integrity
 

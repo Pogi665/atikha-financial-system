@@ -13,6 +13,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/logger.php';
 require_once __DIR__ . '/includes/user_roles.php';
+require_once __DIR__ . '/includes/users.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -70,6 +71,17 @@ if (strlen($newPassword) < USER_PASSWORD_MIN_LENGTH) {
 try {
     $pdo->beginTransaction();
 
+    $primaryId = primary_administrator_lock($pdo);
+    // Peek only to establish the shared lock order; recheck the reset under lock.
+    $peek = $pdo->prepare("SELECT UserID FROM password_resets WHERE ResetID=? AND Status='pending'");
+    $peek->execute([$resetId]); $peekTarget = (int)$peek->fetchColumn();
+    if (!$peekTarget) throw new InvalidArgumentException('That request was already resolved or is unavailable.');
+    $lockIds = array_values(array_unique([$adminId,$peekTarget])); sort($lockIds,SORT_NUMERIC);
+    $lockedUsers=[];foreach($lockIds as $lockId)$lockedUsers[$lockId]=users_load($pdo,$lockId,true);
+    $actor=$lockedUsers[$adminId]??null;
+    if(!$actor || !(int)$actor['Is_Active'] || $actor['Role']!=='Admin')throw new InvalidArgumentException('An active administrator account is required.');
+    primary_administrator_guard($primaryId,$adminId,$peekTarget,'reset_password');
+
     // FOR UPDATE holds the row for the rest of the transaction, so two admins
     // resolving the same request at once cannot both write a password.
     $lookup = $pdo->prepare(
@@ -87,6 +99,7 @@ try {
     }
 
     $targetUserId = (int) $reset['UserID'];
+    if($targetUserId!==$peekTarget || !isset($lockedUsers[$targetUserId]))throw new InvalidArgumentException('The reset request changed. Reload before trying again.');
 
     $updateUser = $pdo->prepare(
         'UPDATE Users
@@ -133,7 +146,7 @@ try {
     }
 
     error_log('Password reset resolution failed for request ' . $resetId . ': ' . $e->getMessage());
-    resolve_respond(false, null, 'The password could not be reset. Please try again.', 500);
+    resolve_respond(false, null, $e instanceof InvalidArgumentException ? $e->getMessage() : 'The password could not be reset. Please try again.', $e instanceof InvalidArgumentException ? 409 : 500);
 }
 
 resolve_respond(true, ['reset_id' => $resetId], '');

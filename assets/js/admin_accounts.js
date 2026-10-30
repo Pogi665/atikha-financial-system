@@ -85,8 +85,8 @@
             }
             return false;
         }
-        function closeAccount(force) {
-            if (!force && isDirty() && !window.confirm('Discard the unsaved account changes?')) return;
+        async function closeAccount(force) {
+            if (!force && isDirty() && !await AtikhaUI.confirm({title:'Discard Unsaved Changes?',message:'Your unsaved account changes will be lost.',confirm:'Discard Changes',destructive:true})) return;
             cleanModalUrl();
             finishOverlay(accountModal, activeOpener);
             accountForm.reset();

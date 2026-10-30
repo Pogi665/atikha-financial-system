@@ -1,0 +1,6 @@
+<?php
+session_start();require_once __DIR__.'/db_connect.php';require_once __DIR__.'/includes/require_role.php';require_login();require_role(['Admin'],'Transactions');require_once __DIR__.'/includes/layout.php';
+if($_SERVER['REQUEST_METHOD']!=='GET'){header('Allow: GET');http_response_code(405);exit;}
+layout_begin('Transactions','transactions');ui_page_heading('Transactions','Choose the records you want to review.');
+$tasks=[['financial_records.php','Find a Transaction','Search recorded activity across the accounting records.','search'],['financial_records.php?view=crb','Cash Receipts Book','Review recorded money received.','received'],['financial_records.php?view=cdb','Cash Disbursements Book','Review recorded payments.','paid'],['general_ledger.php','General Ledger','Review account activity and balances.','book']];
+?><div class="ui-task-launcher"><div class="ui-launcher-grid"><?php foreach($tasks as [$url,$title,$help,$icon]):?><a class="ui-task" href="<?= ui_escape($url) ?>"><span class="ui-task-icon"><?= ui_icon($icon) ?></span><div><strong><?= ui_escape($title) ?></strong><p><?= ui_escape($help) ?></p></div><?= ui_icon('chevron') ?></a><?php endforeach;?></div></div><?php layout_end(); ?>

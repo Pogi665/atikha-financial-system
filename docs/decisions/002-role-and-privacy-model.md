@@ -8,6 +8,8 @@
 
 Stored roles are Admin and Management; display job titles do not create permissions or approval tiers. Admin authors authorized accounting/configuration. Management has its own dashboard/Review Queue, exact financial review/approval/period decisions, permitted readers and Email, not Admin authoring/setup tools.
 
+The October 29 final pre-defense direction standardizes display labels to System Administrator and Management & Board without changing either stored role. The explicit [Primary Administrator designation](014-primary-administrator-protection.md) protects one Admin account; it is not an additional operational role.
+
 Drafts are owner-private. Management receives permitted posted financial/aggregate coverage, not private evidence images, hashes, per-document review context or mutation controls. Enforce this across HTML, JSON, print, export, metadata, downloads, direct/forged requests and flags-off paths. Preserve retired actors/identities without restoring login access.
 
 ## Reason

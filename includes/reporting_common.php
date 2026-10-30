@@ -48,6 +48,18 @@ function reporting_month_range(string $month): array
 {
     $month=reporting_month($month);return [$month.'-01',accounting_month_end((int)substr($month,0,4),(int)substr($month,5,2))];
 }
+/** Live actuals only. Null means the planning month has not begun. */
+function reporting_actual_cutoff(string $month, ?string $today=null): ?string
+{
+    [$from,$end]=reporting_month_range($month);$today=$today===null?accounting_today():accounting_date($today);
+    return $from>$today?null:min($end,$today);
+}
+function reporting_live_cutoff(string $month): string
+{
+    $cutoff=reporting_actual_cutoff($month);
+    if($cutoff===null)throw new ReportingProblem('Actual reports are not available for a future month. Choose this month or an earlier month; use Budgets or Planning for future allocations.',422);
+    return $cutoff;
+}
 function reporting_amount($value,string $label='amount',bool $positive=false): string
 {
     $v=reporting_text($value,32,$label,true);

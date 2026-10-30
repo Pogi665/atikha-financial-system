@@ -30,8 +30,9 @@
             const correction=row.workflow_kind==='correction',advance=row.workflow_kind?.startsWith('advance_');
             ['Draft #'+row.id,task(row)+' · '+row.source_book+' / '+(row.entry_date||'No accounting date'),row.description||'No purpose or reason yet',row.updated_at_display].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});
             const actions=document.createElement('td'),a=document.createElement('a');
+            actions.className='ui-draft-actions';a.className='ui-button ui-draft-continue';
             a.href=(correction?'journal_correction.php':advance?'cash_advance_entry.php':({CRB:'cash_receipt.php',CDB:'cash_disbursement.php',GJ:'general_journal.php'}[row.source_book]))+'?draft_id='+row.id;a.textContent='Continue';actions.append(a,' ');
-            const b=document.createElement('button');b.textContent='Discard';b.type='button';
+            const b=document.createElement('button');b.textContent='Discard';b.type='button';b.className='ui-button ui-draft-discard';
             const originalHref=a.getAttribute('href');
             function sync(){
                 const state=mutations.get(String(row.id));
@@ -52,7 +53,7 @@
                     }catch(e){mutations.set(String(row.id),'unknown');error.textContent='Discard result remains unverified. '+e.message;}
                     finally{sync();}return;
                 }
-                if(!confirm('Discard draft #'+row.id+' ('+task(row)+') and its reserved images? No posted financial records will change.'))return;
+                if(!await AtikhaUI.confirm({title:'Discard Draft?',message:'Discard draft #'+row.id+' ('+task(row)+') and its reserved images? No recorded financial records will change.',confirm:'Discard Draft',destructive:true}))return;
                 mutations.set(String(row.id),'pending');sync();error.textContent='';let discarded=false;
                 try{
                     const r=await fetch(correction?'journal_correction_actions.php':advance?'cash_advance_actions.php':'accounting_actions.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'discard',csrf_token:csrf,draft_id:String(row.id),revision:String(row.revision)})});

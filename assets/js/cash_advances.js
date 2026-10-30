@@ -48,9 +48,9 @@
         });
         if(!rows.length)fragment.append(node('p',config.role==='Admin'?'No designated control accounts. Accounting Setup can designate unused eligible accounts.':'No designated control accounts.'));
         const text=bad
-            ?'Integrity discrepancy in '+bad+' control account'+(bad===1?'':'s')+' · As of '+asof+'. This independent check includes accounts outside the register filters. Posting may be blocked; inspect the details before proceeding.'
-            :rows.length?'All '+rows.length+' control account'+(rows.length===1?'':'s')+' reconciled · As of '+asof+'. This check is independent of register filters.'
-            :'No designated control accounts · As of '+asof+'.';
+            ?'Integrity discrepancy in '+bad+' control account'+(bad===1?'':'s')+' · As of '+AtikhaUI.date(asof)+'. This independent check includes accounts outside the register filters. Posting may be blocked; inspect the details before proceeding.'
+            :rows.length?'All '+rows.length+' control account'+(rows.length===1?'':'s')+' reconciled · As of '+AtikhaUI.date(asof)+'. This check is independent of register filters.'
+            :'No designated control accounts · As of '+AtikhaUI.date(asof)+'.';
         return {fragment,bad,text};
     }
     function unverifiedReconciliation(state){
@@ -68,24 +68,25 @@
     }
     function showReconciliation(view,asof){
         $('ca-reconciliation').replaceChildren(view.fragment);
-        $('ca-health-message').textContent=view.text;
+        $('ca-health-message').textContent=view.bad?view.text:'Accounting records reconciled. View details when needed.';$('ca-health-title').textContent=view.bad?'Accounting check needs attention':'Accounting records reconciled';
         $('ca-health').classList.toggle('ca-health-warning',view.bad>0);
         $('ca-health').classList.remove('ca-health-loading','ca-health-unavailable');
         $('ca-health').dataset.state=view.bad>0?'discrepancy':'healthy';
         $('ca-health-link').hidden=false;$('ca-reconciliation-details').hidden=false;
-        $('ca-reconciliation-basis').textContent='As of '+asof+' · All posted advances and control-account lines are included, independently of employee, project, status, overdue and search filters.';
+        $('ca-reconciliation-basis').textContent='As of '+AtikhaUI.date(asof)+' · All posted advances and control-account lines are included, independently of employee, project, status, overdue and search filters.';
     }
     function renderRow(r,asof){
         if(!Number.isSafeInteger(r.id)||r.id<=0||typeof r.status!=='string')throw new Error('The advance row response could not be verified.');
         const tr=document.createElement('tr'),first=document.createElement('td'),a=node('a',r.number);
         tr.dataset.advanceId=String(r.id);a.href='cash_advances.php?'+new URLSearchParams({advance_id:String(r.id),as_of:asof});
         first.append(node('strong',r.employee),node('p',''));first.lastChild.append(a);tr.append(first);
-        tr.append(node('td',r.purpose),node('td',r.project));
-        ['released','liquidated','returned','outstanding'].forEach(key=>{const cell=node('td',money(r[key]));cell.className='ca-money';if(key==='outstanding')cell.classList.add('ca-row-outstanding');tr.append(cell);});
-        tr.append(node('td',r.due_date));
+        const purpose=node('td',r.purpose);purpose.append(node('small',r.project));tr.append(purpose);
+        const amount=node('td',money(r.outstanding));amount.className='ca-money ca-row-outstanding';
+        const totals=document.createElement('details'),summary=node('summary','Amount details');totals.append(summary);['released','liquidated','returned'].forEach(key=>totals.append(node('small',key.charAt(0).toUpperCase()+key.slice(1)+': '+money(r[key]))));amount.append(totals);tr.append(amount,node('td',AtikhaUI.date(r.due_date)));
         const status=document.createElement('td'),label=r.status==='partially_settled'?'Partial':r.status.replaceAll('_',' '),badge=node('span',label.charAt(0).toUpperCase()+label.slice(1));badge.className='ca-badge ui-badge';status.append(badge);
-        if(r.overdue_days>0){const late=node('span','Overdue');late.className='ui-badge ui-badge-error';status.append(late,node('small',r.overdue_days+' days ('+r.aging_bucket+')'));}
-        tr.append(status);return tr;
+        if(r.overdue_days>0){const late=node('span','Overdue');late.className='ui-badge ui-badge-error';status.append(late,node('small',r.overdue_days+' days'));}
+        tr.append(status);const action=document.createElement('td'),view=node('a','View');view.href=a.href;view.className='ui-button';view.setAttribute('aria-label','View '+r.number);action.append(view);tr.append(action);
+        ['Employee / Advance','Purpose / Project','Outstanding','Due Date','Status','Action'].forEach((label,i)=>tr.children[i].dataset.label=label);return tr;
     }
     function registerView(d){
         if(!d||!Array.isArray(d.rows)||!Number.isSafeInteger(d.count)||d.count<0||!Number.isSafeInteger(d.page)||d.page<1||!Number.isSafeInteger(d.pages)||d.pages<d.page||typeof d.as_of!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d.as_of))throw new Error('The advance register response could not be verified.');
@@ -93,7 +94,7 @@
         d.rows.forEach(r=>rows.append(renderRow(r,d.as_of)));
         if(!d.rows.length){
             const tr=document.createElement('tr'),td=node('td',config.has_posted_advances?'No posted advances match these filters.':'No posted advances yet.');
-            td.colSpan=9;td.append(node('p',config.has_posted_advances?'Try another date or adjust the applied filters.':config.role==='Admin'?'Use Release an advance to record a release after reviewing it.':'Posted advances will appear here when recorded.'));
+            td.colSpan=6;td.append(node('p',config.has_posted_advances?'Try another date or adjust the applied filters.':config.role==='Admin'?'Use Release an advance to record a release after reviewing it.':'Posted advances will appear here when recorded.'));
             tr.append(td);rows.append(tr);
         }
         ['released','liquidated','returned','outstanding'].forEach(key=>{
@@ -114,7 +115,7 @@
             // Build the entire successful view before replacing the applied snapshot.
             const d=data.result,view=registerView(d);
             $('ca-rows').replaceChildren(view.rows);$('ca-totals').replaceChildren(view.totals);showReconciliation(view.reconciliation,d.as_of);
-            $('ca-basis').textContent='POSTED advances · As of '+d.as_of;$('ca-notice').textContent=d.restatement_notice;
+            $('ca-basis').textContent='POSTED advances · As of '+AtikhaUI.date(d.as_of);$('ca-notice').textContent=d.restatement_notice;
             current=d.page;pages=d.pages;$('ca-page').textContent='Page '+current+' of '+pages+' · '+d.count+' matching advances';
             $('ca-prev').disabled=current<=1;$('ca-next').disabled=current>=pages;applied=snapshot;
             $('ca-applied-filters').textContent=filterSummary(snapshot);

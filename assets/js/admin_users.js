@@ -90,8 +90,8 @@
             }
             return userForm.querySelector('[name="password"]').value !== '';
         }
-        function closeUser(force) {
-            if (!force && isDirty() && !window.confirm('Discard the unsaved user changes?')) return;
+        async function closeUser(force) {
+            if (!force && isDirty() && !await AtikhaUI.confirm({title:'Discard Unsaved Changes?',message:'Your unsaved user changes will be lost.',confirm:'Discard Changes',destructive:true})) return;
             cleanModalUrl();
             finishOverlay(userModal, activeOpener);
             userForm.reset();
@@ -204,8 +204,8 @@
         if (resetCount) resetCount.textContent = String(count);
         if (resetBody && count === 0 && !resetBody.querySelector('#resets-empty')) resetBody.innerHTML = '<tr id="resets-empty"><td colspan="4" class="px-6 py-10 text-center"><p class="font-medium text-slate-700">No pending requests</p><p class="mt-1 text-sm text-slate-500">New requests from the login page will appear here.</p></td></tr>';
     }
-    function closeReset(force) {
-        if (!force && resetPassword.value !== '' && !window.confirm('Discard the temporary password you entered?')) return;
+    async function closeReset(force) {
+        if (!force && resetPassword.value !== '' && !await AtikhaUI.confirm({title:'Discard Unsaved Password?',message:'The temporary password you entered has not been saved.',confirm:'Discard Changes',destructive:true})) return;
         clearResetMessage(); resetPassword.value = ''; finishOverlay(resetModal, activeOpener);
     }
     if (resetModal && resetForm) {
