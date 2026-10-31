@@ -1,15 +1,17 @@
 # Current state
 
-Updated October 30, 2026. Current truth only; historical records retain their dated boundaries.
+Updated October 31, 2026. Current truth only; historical records retain their dated boundaries.
 
 ## Source and working rollout
 
-- Branch `main`. This handoff describes the successful-defense source checkpoint. Use Git HEAD and `origin/main` to identify the committed checkpoint; its previous remote baseline was `1bb6a074f99c42569c88bf73a3d2a54dd3f532d2`. On October 30 the owner reported a successful capstone defense and identified this local workspace and working database as the system demonstrated.
+- Branch `main`; current committed HEAD and cached `origin/main` are `1ce6d20537235f703c7f887f96caacaf3f845a0b` (documentation-only checkpoint report). The defended application is preserved at `02a71aee9132ac27c945b259df02aa06e13d82bd` and annotated tag `defense-success-2026-10-30`. On October 30 the owner reported a successful capstone defense. The bounded local Planning visualization improvement below is uncommitted and awaits review.
 - Stages 1–7, Refined Client Experience and the [final pre-defense work](final-predefense-oneshot-delivery.md) remain implemented. Earlier [redesign](presentation-redesign-review-approval.md) and [auth-carousel](auth-photo-carousel-review-approval.md) approvals apply to their reviewed committed boundaries, not later local work.
 - The explicitly authorized [owner corrections and working rollout](final-owner-fixes-working-rollout.md) are complete, including owner-selected Primary Administrator initialization. Planning defaults to next month with positive-only private budget recommendations and safe approval-context copying. Reports use current-date live cutoffs, clear frozen context, unclipped export menus and same-page printing; Budget actuals use truthful past/current/future cutoffs. Financial recognition/forecast mathematics remain authoritative.
 - The normal XAMPP application at `http://127.0.0.1/Financial%20Management%20System/` now uses populated **`atikha_finance`** with the fictional **ATIKHA-DEMO-V2-FULL** defense dataset. This working-data replacement was explicitly authorized after verified full database/upload backup and restoration testing. Existing real Users/authentication identities/passwords/MFA fields/settings were preserved exactly. No actual confidential client financial data was used as presentation fixtures.
 - Complete schema is installed. Component 026 was applied once after complete predecessor verification; no destructive/historical migration was replayed. Locked dependencies are installed. The earlier rollback backup is retained, and a verified private current-state database/upload backup now includes the defended data and Primary designation. MySQL was started with its existing configuration for read-only checkpoint backup; Apache remains stopped as found at checkpoint preflight.
 - **Primary Administrator is initialized: UserID 1 — System Administrator**, explicitly selected by the owner, with UserID 1 as designation actor on October 29, 2026. Stored role remains `Admin`. Working service/browser checks verified ordinary-Admin restrictions, protected reset handling, singleton/FK integrity and retry recovery. Credentials/MFA and all V2 financial tables were unchanged; exactly one designation audit exists. No migration/reseed was repeated.
+
+- The approved [Planning historical bar fix](planning-forecast-bars-fix-delivery.md) is implemented locally: existing brand-green fills and signed month/amount labels above proportional magnitude tracks. Forecasting/services and data are unchanged. Fixed-template Admin/Management visual checks and pure contracts passed; authenticated working role acceptance and physical browser zoom were not performed. No database access or budget creation occurred during this bounded change.
 
 ## Verification and preserved environments
 
@@ -20,6 +22,6 @@ Updated October 30, 2026. Current truth only; historical records retain their da
 
 ## Defense checkpoint and acceptance boundary
 
-Preserve the complete defended source in the explicitly authorized successful-defense Git checkpoint. Primary designation and working rollout are complete. Any later improvement, designation transfer, participant walkthrough restart, release/tag or deployment needs its own instruction; no new feature work is part of this checkpoint.
+The successful-defense source checkpoint and permanent tag are preserved. Primary designation and working rollout are complete. The next action is owner review of the local bounded Planning bar change before any commit/push. No participant walkthrough has resumed; further changes or operational work require their own authorization.
 
 The approved pre-defense plan treats prior owner/module/U-series work as requirements discovery; it does not require restarting a formal study. Physical screen-reader/zoom and broader device/browser acceptance, accessibility certification, real provider/login/MFA acceptance and Atikha/client acceptance remain separate and unclaimed. Source implementation, working rollout and client acceptance are distinct.
